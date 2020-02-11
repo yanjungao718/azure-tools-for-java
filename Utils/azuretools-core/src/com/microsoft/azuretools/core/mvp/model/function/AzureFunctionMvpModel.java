@@ -56,8 +56,7 @@ public class AzureFunctionMvpModel {
     }
 
     public FunctionApp getFunctionById(String sid, String id) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        FunctionApp app = azure.appServices().functionApps().getById(id);
+        FunctionApp app = getFunctionAppsClient(sid).getById(id);
         if (app == null) {
             throw new IOException(CANNOT_GET_FUNCTION_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
@@ -116,7 +115,7 @@ public class AzureFunctionMvpModel {
         Observable.from(subs).flatMap((sd) ->
                 Observable.create((subscriber) -> {
                     try {
-                        List<ResourceEx<FunctionApp>> functionList = listFunctions(sd.subscriptionId(), forceReload);
+                        List<ResourceEx<FunctionApp>> functionList = listFunctionsInSubscription(sd.subscriptionId(), forceReload);
                         synchronized (functions) {
                             functions.addAll(functionList);
                         }
@@ -132,7 +131,7 @@ public class AzureFunctionMvpModel {
      * List all Function Apps by subscription id.
      */
     @NotNull
-    public List<ResourceEx<FunctionApp>> listFunctions(final String subscriptionId, final boolean forceReload)
+    public List<ResourceEx<FunctionApp>> listFunctionsInSubscription(final String subscriptionId, final boolean forceReload)
             throws IOException {
         if (!forceReload && subscriptionIdToFunctionApps.get(subscriptionId) != null) {
             return subscriptionIdToFunctionApps.get(subscriptionId);
@@ -151,7 +150,7 @@ public class AzureFunctionMvpModel {
         return functions;
     }
 
-    private FunctionApps getFunctionAppsClient(String sid) throws IOException {
+    private static FunctionApps getFunctionAppsClient(String sid) throws IOException {
         return AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps();
     }
 
