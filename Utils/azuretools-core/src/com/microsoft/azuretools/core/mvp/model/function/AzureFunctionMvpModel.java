@@ -26,6 +26,7 @@ package com.microsoft.azuretools.core.mvp.model.function;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.FunctionApps;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -64,20 +65,20 @@ public class AzureFunctionMvpModel {
     }
 
     public void deleteFunction(String sid, String appId) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps().deleteById(appId);
+        getFunctionAppsClient(sid).deleteById(appId);
         subscriptionIdToFunctionApps.remove(sid);
     }
 
     public void restartFunction(String sid, String appId) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps().getById(appId).restart();
+        getFunctionAppsClient(sid).getById(appId).restart();
     }
 
     public void startFunction(String sid, String appId) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps().getById(appId).start();
+        getFunctionAppsClient(sid).getById(appId).start();
     }
 
     public void stopFunction(String sid, String appId) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps().getById(appId).stop();
+        getFunctionAppsClient(sid).getById(appId).stop();
     }
 
     /**
@@ -148,6 +149,10 @@ public class AzureFunctionMvpModel {
         subscriptionIdToFunctionApps.put(subscriptionId, functions);
 
         return functions;
+    }
+
+    private FunctionApps getFunctionAppsClient(String sid) throws IOException {
+        return AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps();
     }
 
     private static final class SingletonHolder {
