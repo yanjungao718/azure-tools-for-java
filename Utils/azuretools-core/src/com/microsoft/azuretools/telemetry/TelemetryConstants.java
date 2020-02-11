@@ -67,7 +67,7 @@ public class TelemetryConstants {
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
-    public static final String TRIGGER_FUNCTION = "function-trigger";
+    public static final String TRIGGER_FUNCTION = "trigger-function";
     public static final String ENABLE_FUNCTION = "enable-function";
     public static final String DISABLE_FUNCTION = "disable-function";
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
