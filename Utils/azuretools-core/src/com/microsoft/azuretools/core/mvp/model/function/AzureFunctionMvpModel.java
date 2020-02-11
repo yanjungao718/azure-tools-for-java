@@ -131,7 +131,7 @@ public class AzureFunctionMvpModel {
      * List all Function Apps by subscription id.
      */
     @NotNull
-    public List<ResourceEx<FunctionApp>> listFunctionsInSubscription(final String subscriptionId, final boolean forceReload)
+    private List<ResourceEx<FunctionApp>> listFunctionsInSubscription(final String subscriptionId, final boolean forceReload)
             throws IOException {
         if (!forceReload && subscriptionIdToFunctionApps.get(subscriptionId) != null) {
             return subscriptionIdToFunctionApps.get(subscriptionId);
