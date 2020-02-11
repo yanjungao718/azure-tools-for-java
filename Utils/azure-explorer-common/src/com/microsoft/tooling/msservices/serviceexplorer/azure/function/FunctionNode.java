@@ -46,7 +46,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     private static final String DELETE_FUNCTION_PROMPT_MESSAGE = "This operation will delete the Function App: %s.\n"
             + "Are you sure you want to continue?";
     private static final String DELETE_FUNCTION_PROGRESS_MESSAGE = "Deleting Function App";
-    private static final String LABEL = "Function";
+    private static final String FUNCTION_LABEL = "Function";
     private static final String FAILED_TO_START_FUNCTION_APP = "Failed to start function app %s";
     private static final String FAILED_TO_RESTART_FUNCTION_APP = "Failed to restart function app %s";
     private static final String FAILED_TO_STOP_FUNCTION_APP = "Failed to stop function app %s";
@@ -62,7 +62,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
      */
     public FunctionNode(AzureRefreshableNode parent, String subscriptionId, String functionAppId, String functionAppName,
                         String state, String hostName, String os, Map<String, String> propertyMap) {
-        super(functionAppId, functionAppName, LABEL, parent, subscriptionId, hostName, os, state);
+        super(functionAppId, functionAppName, FUNCTION_LABEL, parent, subscriptionId, hostName, os, state);
         this.functionAppId = functionAppId;
         this.functionAppName = functionAppName;
         this.propertyMap = propertyMap;
