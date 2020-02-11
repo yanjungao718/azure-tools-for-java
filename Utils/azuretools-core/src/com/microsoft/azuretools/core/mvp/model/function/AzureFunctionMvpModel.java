@@ -83,14 +83,13 @@ public class AzureFunctionMvpModel {
     /**
      * List app service plan by subscription id and resource group name.
      */
-    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
+    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group)
+            throws IOException {
         List<AppServicePlan> appServicePlans = new ArrayList<>();
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));
-        } catch (Exception e) {
-            // swallow exception and return empty list
-        }
+
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));
+
         return appServicePlans;
     }
 
@@ -115,9 +114,13 @@ public class AzureFunctionMvpModel {
         }
         Observable.from(subs).flatMap((sd) ->
                 Observable.create((subscriber) -> {
-                    List<ResourceEx<FunctionApp>> functionList = listFunctions(sd.subscriptionId(), forceReload);
-                    synchronized (functions) {
-                        functions.addAll(functionList);
+                    try {
+                        List<ResourceEx<FunctionApp>> functionList = listFunctions(sd.subscriptionId(), forceReload);
+                        synchronized (functions) {
+                            functions.addAll(functionList);
+                        }
+                    } catch (IOException e) {
+                        // swallow exception and skip error subscription
                     }
                     subscriber.onCompleted();
                 }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
@@ -128,23 +131,22 @@ public class AzureFunctionMvpModel {
      * List all Function Apps by subscription id.
      */
     @NotNull
-    public List<ResourceEx<FunctionApp>> listFunctions(final String subscriptionId, final boolean forceReload) {
+    public List<ResourceEx<FunctionApp>> listFunctions(final String subscriptionId, final boolean forceReload)
+            throws IOException {
         if (!forceReload && subscriptionIdToFunctionApps.get(subscriptionId) != null) {
             return subscriptionIdToFunctionApps.get(subscriptionId);
         }
 
         List<ResourceEx<FunctionApp>> functions = new ArrayList<>();
-        try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-            functions = azure.appServices().functionApps()
-                    .list()
-                    .stream()
-                    .map(app -> new ResourceEx<FunctionApp>(app, subscriptionId))
-                    .collect(Collectors.toList());
-            subscriptionIdToFunctionApps.put(subscriptionId, functions);
-        } catch (IOException e) {
-            // swallow exception and return empty list
-        }
+
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
+        functions = azure.appServices().functionApps()
+                .list()
+                .stream()
+                .map(app -> new ResourceEx<FunctionApp>(app, subscriptionId))
+                .collect(Collectors.toList());
+        subscriptionIdToFunctionApps.put(subscriptionId, functions);
+
         return functions;
     }
 
