@@ -23,10 +23,12 @@
 
 package com.microsoft.azuretools.core.mvp.model.function;
 
+import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApps;
+import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -125,6 +127,13 @@ public class AzureFunctionMvpModel {
                     subscriber.onCompleted();
                 }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
         return functions;
+    }
+
+    public List<FunctionEnvelope> listFunctionEnvelopeInFunctionApp(String sid, String id) throws IOException {
+        FunctionApp app = getFunctionById(sid, id);
+        PagedList<FunctionEnvelope> functions = app.manager().functionApps().listFunctions(app.resourceGroupName(), app.name());
+        functions.loadAll();
+        return new ArrayList<>(functions);
     }
 
     /**
