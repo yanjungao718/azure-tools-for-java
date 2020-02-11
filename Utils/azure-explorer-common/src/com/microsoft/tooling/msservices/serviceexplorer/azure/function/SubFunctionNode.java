@@ -28,41 +28,38 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SubFunctionNode extends Node {
-    public SubFunctionNode(String id, String name, Node parent, String iconPath) {
-        super(id, name, parent, iconPath);
+
+    private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
+
+    public SubFunctionNode(String id, String name, Node parent) {
+        super(id, name, parent, SUB_FUNCTION_ICON_PATH);
     }
 
-    public SubFunctionNode(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
-        super(id, name, parent, iconPath, delayActionLoading);
-    }
-
-    @Override
-    public String getIconPath() {
-        return "azure-function-function-small.png";
+    public SubFunctionNode(String id, String name, Node parent, boolean delayActionLoading) {
+        super(id, name, parent, SUB_FUNCTION_ICON_PATH, delayActionLoading);
     }
 
     @Override
     protected void loadActions() {
         addAction("Trigger",
-                new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP, new NodeActionListener() {
+                new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                            // Todo: Implement trigger method according to trigger type
+                        // Todo: Implement trigger method according to trigger type
                     }
                 }));
         addAction("Enable",
-                new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP,new NodeActionListener() {
+                new WrappedTelemetryNodeActionListener(FUNCTION, ENABLE_FUNCTION, new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                         // Todo: Implement enable method according to trigger type
                     }
                 }));
         addAction("Disable",
-                new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP,new NodeActionListener() {
+                new WrappedTelemetryNodeActionListener(FUNCTION, DISABLE_FUNCTION, new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                         // Todo: Implement disable method according to trigger type
