@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
@@ -33,7 +34,7 @@ public class FunctionNodePresenter<V extends FunctionNodeView> extends MvpPresen
         AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, appId);
         final FunctionNodeView view = getMvpView();
         if (view != null) {
-            view.renderNode(WebAppBaseState.RUNNING);
+            view.renderNode(getFunctionStatus(subscriptionId, appId));
         }
     }
 
@@ -41,7 +42,7 @@ public class FunctionNodePresenter<V extends FunctionNodeView> extends MvpPresen
         AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, appId);
         final FunctionNodeView view = getMvpView();
         if (view != null) {
-            view.renderNode(WebAppBaseState.RUNNING);
+            view.renderNode(getFunctionStatus(subscriptionId, appId));
         }
     }
 
@@ -49,7 +50,7 @@ public class FunctionNodePresenter<V extends FunctionNodeView> extends MvpPresen
         AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, appId);
         final FunctionNodeView view = getMvpView();
         if (view != null) {
-            view.renderNode(WebAppBaseState.STOPPED);
+            view.renderNode(getFunctionStatus(subscriptionId, appId));
         }
     }
 
@@ -58,5 +59,10 @@ public class FunctionNodePresenter<V extends FunctionNodeView> extends MvpPresen
         if (view != null) {
             view.renderSubModules(AzureFunctionMvpModel.getInstance().listFunctionEnvelopeInFunctionApp(subscriptionId, appId));
         }
+    }
+
+    private WebAppBaseState getFunctionStatus(String subscriptionId, String appId) throws IOException {
+        final FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, appId);
+        return WebAppBaseState.fromString(target.state());
     }
 }
