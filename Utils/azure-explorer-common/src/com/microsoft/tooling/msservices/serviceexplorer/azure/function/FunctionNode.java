@@ -55,17 +55,17 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     private final FunctionNodePresenter<FunctionNode> functionNodePresenter;
     private String functionAppName;
     private String functionAppId;
-    private Map<String, String> propertyMap;
+    private String region;
 
     /**
      * Constructor.
      */
     public FunctionNode(AzureRefreshableNode parent, String subscriptionId, String functionAppId, String functionAppName,
-                        String state, String hostName, String os, Map<String, String> propertyMap) {
+                        String state, String hostName, String os, String region) {
         super(functionAppId, functionAppName, FUNCTION_LABEL, parent, subscriptionId, hostName, os, state);
         this.functionAppId = functionAppId;
         this.functionAppName = functionAppName;
-        this.propertyMap = propertyMap;
+        this.region = region;
         functionNodePresenter = new FunctionNodePresenter<>();
         functionNodePresenter.onAttachView(FunctionNode.this);
         loadActions();
@@ -122,7 +122,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.propertyMap.get("regionName"));
+        properties.put(AppInsightsConstants.Region, region);
         return properties;
     }
 
