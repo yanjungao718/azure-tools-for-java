@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 
 public class AzureFunctionMvpModel {
 
-    public static final String CANNOT_GET_FUNCTION_APP_WITH_ID = "Cannot get Function App with ID: ";
+    private static final String CANNOT_GET_FUNCTION_APP_WITH_ID = "Cannot get Function App with ID: ";
     private final Map<String, List<ResourceEx<FunctionApp>>> subscriptionIdToFunctionApps;
 
     private AzureFunctionMvpModel() {
