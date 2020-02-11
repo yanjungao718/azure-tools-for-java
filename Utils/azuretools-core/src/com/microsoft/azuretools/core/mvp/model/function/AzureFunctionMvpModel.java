@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 public class AzureFunctionMvpModel {
 
-    public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Function App with ID: ";
+    public static final String CANNOT_GET_FUNCTION_APP_WITH_ID = "Cannot get Function App with ID: ";
     private final Map<String, List<ResourceEx<FunctionApp>>> subscriptionIdToFunctionApps;
 
     private AzureFunctionMvpModel() {
@@ -58,7 +58,7 @@ public class AzureFunctionMvpModel {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         FunctionApp app = azure.appServices().functionApps().getById(id);
         if (app == null) {
-            throw new IOException(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
+            throw new IOException(CANNOT_GET_FUNCTION_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
     }
@@ -104,10 +104,10 @@ public class AzureFunctionMvpModel {
     /**
      * List all the Function Apps in selected subscriptions.
      *
-     * @param force flag indicating whether force to fetch most updated data from server
+     * @param forceReload flag indicating whether force to fetch latest data from server
      * @return list of Function App
      */
-    public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean force) {
+    public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean forceReload) {
         final List<ResourceEx<FunctionApp>> functions = new ArrayList<>();
         List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
         if (subs.size() == 0) {
@@ -115,7 +115,7 @@ public class AzureFunctionMvpModel {
         }
         Observable.from(subs).flatMap((sd) ->
                 Observable.create((subscriber) -> {
-                    List<ResourceEx<FunctionApp>> functionList = listFunctions(sd.subscriptionId(), force);
+                    List<ResourceEx<FunctionApp>> functionList = listFunctions(sd.subscriptionId(), forceReload);
                     synchronized (functions) {
                         functions.addAll(functionList);
                     }
@@ -128,8 +128,8 @@ public class AzureFunctionMvpModel {
      * List all Function Apps by subscription id.
      */
     @NotNull
-    public List<ResourceEx<FunctionApp>> listFunctions(final String subscriptionId, final boolean force) {
-        if (!force && subscriptionIdToFunctionApps.get(subscriptionId) != null) {
+    public List<ResourceEx<FunctionApp>> listFunctions(final String subscriptionId, final boolean forceReload) {
+        if (!forceReload && subscriptionIdToFunctionApps.get(subscriptionId) != null) {
             return subscriptionIdToFunctionApps.get(subscriptionId);
         }
 
