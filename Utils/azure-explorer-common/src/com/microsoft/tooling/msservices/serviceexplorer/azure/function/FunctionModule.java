@@ -53,11 +53,6 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
-        functionModulePresenter.onModuleRefresh();
-    }
-
-    @Override
     public void removeNode(String sid, String id, Node node) {
         try {
             functionModulePresenter.onDeleteFunctionApp(sid, id);
@@ -66,6 +61,21 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
             DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_DELETE_FUNCTION_APP, node.getName()),
                     e, ERROR_DELETING_FUNCTION_APP, false, true);
         }
+    }
+
+    @Override
+    public void renderChildren(@NotNull final List<ResourceEx<FunctionApp>> resourceExes) {
+        for (final ResourceEx<FunctionApp> resourceEx : resourceExes) {
+            final FunctionApp app = resourceEx.getResource();
+            final FunctionNode node = new FunctionNode(this, resourceEx.getSubscriptionId(), app.id(), app.name(),
+                    app.state(), app.defaultHostName(), app.operatingSystem().toString(),app.regionName());
+            addChildNode(node);
+        }
+    }
+
+    @Override
+    protected void refreshItems() throws AzureCmdException {
+        functionModulePresenter.onModuleRefresh();
     }
 
     private void createListener() {
@@ -94,15 +104,5 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
             }
         };
         AzureUIRefreshCore.addListener(FUNCTION_MODULE, listener);
-    }
-
-    @Override
-    public void renderChildren(@NotNull final List<ResourceEx<FunctionApp>> resourceExes) {
-        for (final ResourceEx<FunctionApp> resourceEx : resourceExes) {
-            final FunctionApp app = resourceEx.getResource();
-            final FunctionNode node = new FunctionNode(this, resourceEx.getSubscriptionId(), app.id(), app.name(),
-                app.state(), app.defaultHostName(), app.operatingSystem().toString(),app.regionName());
-            addChildNode(node);
-        }
     }
 }
