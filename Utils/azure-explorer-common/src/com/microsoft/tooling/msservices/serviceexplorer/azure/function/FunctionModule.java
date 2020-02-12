@@ -60,6 +60,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
         } catch (IOException | CloudException e) {
             DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_DELETE_FUNCTION_APP, node.getName()),
                     e, ERROR_DELETING_FUNCTION_APP, false, true);
+            functionModulePresenter.onModuleRefresh();
         }
     }
 
