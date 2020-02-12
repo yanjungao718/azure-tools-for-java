@@ -91,12 +91,12 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
                         removeAllChildNodes();
                         break;
                     case REFRESH:
-                        if (event.object == null || FunctionModule.class.getName().equals(event.object)) {
+                        if (isFunctionModuleEvent(event.object)) {
                             load(true);
                         }
                         break;
                     default:
-                        if ((event.object == null || FunctionModule.class.getName().equals(event.object)) && hasChildNodes()) {
+                        if (isFunctionModuleEvent(event.object) && hasChildNodes()) {
                             load(true);
                         }
                         break;
@@ -104,5 +104,9 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
             }
         };
         AzureUIRefreshCore.addListener(FUNCTION_MODULE, listener);
+    }
+
+    private static boolean isFunctionModuleEvent(Object eventObject) {
+        return eventObject == null || FunctionModule.class.getName().equals(eventObject);
     }
 }
