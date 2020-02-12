@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -60,12 +61,12 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     /**
      * Constructor.
      */
-    public FunctionNode(AzureRefreshableNode parent, String subscriptionId, String functionAppId, String functionAppName,
-                        String state, String hostName, String os, String region) {
-        super(functionAppId, functionAppName, FUNCTION_LABEL, parent, subscriptionId, hostName, os, state);
-        this.functionAppId = functionAppId;
-        this.functionAppName = functionAppName;
-        this.region = region;
+    public FunctionNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
+        super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
+                functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
+        this.functionAppId = functionApp.id();
+        this.functionAppName = functionApp.name();
+        this.region = functionApp.regionName();
         functionNodePresenter = new FunctionNodePresenter<>();
         functionNodePresenter.onAttachView(FunctionNode.this);
         loadActions();
