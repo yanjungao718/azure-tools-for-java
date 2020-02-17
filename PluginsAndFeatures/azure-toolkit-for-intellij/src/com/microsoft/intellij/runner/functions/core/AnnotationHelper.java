@@ -82,10 +82,8 @@ public class AnnotationHelper {
                     if (enumClass != null) {
                         try {
                             return getEnumFieldString(enumClass.getQualifiedName(), enumConstant.getName());
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
+                        } catch (ClassNotFoundException | IllegalAccessException e) {
+                            throw new AzureExecutionException(e.getMessage(), e);
                         }
                     } else {
                         return enumConstant.getName();

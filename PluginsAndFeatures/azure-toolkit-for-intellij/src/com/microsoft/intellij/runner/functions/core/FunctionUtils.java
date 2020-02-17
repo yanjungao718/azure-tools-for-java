@@ -49,6 +49,7 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.common.function.utils.CommandUtils;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.maven.common.utils.SneakyThrowUtils;
+import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -100,9 +101,13 @@ public class FunctionUtils {
 
     public static boolean isFunctionProject(Project project) {
         final List<Library> libraries = new ArrayList<>();
-        OrderEnumerator.orderEntries(project).productionOnly().forEachLibrary(library -> libraries.add(library));
-        return ListUtils.indexOf(libraries, library ->
-                StringUtils.contains(library.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) >= 0;
+        OrderEnumerator.orderEntries(project).productionOnly().forEachLibrary(library -> {
+            if (StringUtils.contains(library.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
+                libraries.add(library);
+            }
+            return true;
+        });
+        return libraries.size() > 0;
     }
 
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
@@ -175,9 +180,9 @@ public class FunctionUtils {
             }
             return true;
         });
-
+        final File libFolder = new File(stagingFolder.toFile(), "lib");
         for (final File file : jarFiles) {
-            FileUtils.copyFileToDirectory(file, new File(stagingFolder.toFile(), "lib"));
+            FileUtils.copyFileToDirectory(file, libFolder);
         }
     }
 
@@ -192,23 +197,7 @@ public class FunctionUtils {
     }
 
     public static String getFuncPath() throws IOException, InterruptedException {
-        final List<String> outputStrings = executeMultipLineOutput(
-                CommandUtils.isWindows() ? "where func" : "which func");
-        for (final String outputLine : outputStrings) {
-            if (StringUtils.isBlank(outputLine)) {
-                continue;
-            }
-            final File file = new File(outputLine.replaceAll("\\r|\\n", ""));
-            if (file.exists() && file.isFile()) {
-                final File funcExe = new File(
-                        Paths.get(file.getParent(), "node_modules", "azure-functions-core-tools", "bin").toFile(),
-                        CommandUtils.isWindows() ? "func.exe" : "func");
-                if (funcExe.exists()) {
-                    return funcExe.getAbsolutePath();
-                }
-            }
-        }
-        return null;
+        return FunctionCliResolver.resolveFunc();
     }
 
     private static String stripExtraCharacters(String fileName) {
@@ -265,7 +254,7 @@ public class FunctionUtils {
         for (final JvmAnnotation annotation : annos) {
             final Binding binding = getBinding(annotation);
             if (binding != null) {
-                System.out.println("Adding binding: " + binding.toString());
+                Log.debug("Adding binding: " + binding.toString());
                 bindings.add(binding);
             }
         }
