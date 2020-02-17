@@ -31,7 +31,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -47,35 +46,28 @@ public class JarUtils {
 
     private static final int BUFFER_SIZE = 4096;
 
-    public static Path buildJarFileToStagingPath(String stagingFolder, Module module) {
-        String moduleName = module.getName();
-        Manifest manifest = new Manifest();
-        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        manifest.getMainAttributes().put(new Attributes.Name("Created-By"), "Azure Intellj Plugin");
-
-        String path = CompilerPaths.getModuleOutputPath(module, false);
-
+    public static Path buildJarFileToStagingPath(String stagingFolder, Module module) throws IOException, AzureExecutionException {
+        final String moduleName = module.getName();
+        final String path = CompilerPaths.getModuleOutputPath(module, false);
         final Path outputFile = Paths.get(stagingFolder, moduleName + ".jar");
         try (final ZipOutputStream outputZip = getZipOutputStream(outputFile, true)) {
             zipDirectory(new File(path), "", outputZip);
             addManifest(outputZip);
-        } catch (IOException | AzureExecutionException e) {
-            e.printStackTrace();
         }
         return outputFile;
     }
 
     private static void zipDirectory(File folder, String parentFolder, ZipOutputStream zos)
-            throws FileNotFoundException, IOException {
-        String prefix = StringUtils.isBlank(parentFolder) ? "" : (parentFolder + "/");
-        for (File file : folder.listFiles()) {
+            throws IOException {
+        final String prefix = StringUtils.isBlank(parentFolder) ? "" : (parentFolder + "/");
+        for (final File file : folder.listFiles()) {
             if (file.isDirectory()) {
-                zipDirectory(file, prefix+ file.getName(), zos);
+                zipDirectory(file, prefix + file.getName(), zos);
                 continue;
             }
             zos.putNextEntry(new ZipEntry(prefix + file.getName()));
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-                byte[] bytesIn = new byte[BUFFER_SIZE];
+                final byte[] bytesIn = new byte[BUFFER_SIZE];
                 int read = 0;
                 while ((read = bis.read(bytesIn)) != -1) {
                     zos.write(bytesIn, 0, read);
@@ -95,7 +87,7 @@ public class JarUtils {
                 try {
                     Files.delete(outputFile);
                 } catch (IOException exception) {
-                    throw new IllegalStateException("Removing \"" + outputFile + "\" failed. Not writing out anything.",
+                    throw new AzureExecutionException("Removing \"" + outputFile + "\" failed. Not writing out anything.",
                             exception);
                 }
             } else {

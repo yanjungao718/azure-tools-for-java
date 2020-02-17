@@ -37,13 +37,13 @@ import java.util.Map;
 
 public class FunctionJsonWriter {
     public static void writeFunctionJsonFile(File file, FunctionConfiguration config) throws IOException {
-        Map<String, Object> json = new LinkedHashMap<>();
+        final Map<String, Object> json = new LinkedHashMap<>();
         json.put("scriptFile", config.getScriptFile());
         json.put("entryPoint", config.getEntryPoint());
-        List<Map<String, Object>> lists = new ArrayList<>();
+        final List<Map<String, Object>> lists = new ArrayList<>();
         if (config.getBindings() != null) {
-            for (Binding binding : config.getBindings()) {
-                Map<String, Object> bindingJson = new LinkedHashMap<>();
+            for (final Binding binding : config.getBindings()) {
+                final Map<String, Object> bindingJson = new LinkedHashMap<>();
                 bindingJson.put("type", binding.getType());
                 bindingJson.put("direction", binding.getDirection());
                 bindingJson.put("name", binding.getName());
@@ -63,5 +63,5 @@ public class FunctionJsonWriter {
         FileUtils.write(file, GSON.toJson(json), "utf8");
     }
 
-    private static final Gson GSON =  new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }
