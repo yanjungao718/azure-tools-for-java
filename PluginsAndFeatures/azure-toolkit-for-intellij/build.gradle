@@ -75,6 +75,9 @@ repositories {
     maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
     mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/commicrosoftazure-3722/'
+    }
 }
 
 configurations {
@@ -108,6 +111,12 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
+    }
+    compile 'com.microsoft.azure:azure-tools-common:0.1.0', {
+        exclude group: "com.google.guava", module: "guava"
+        exclude group: "commons-io", module: "commons-io"
+        exclude group: "com.microsoft.azure", module: "azure-mgmt-appservice"
+        exclude group: "com.microsoft.azure", module: "azure"
     }
     compile 'com.spotify:docker-client:8.11.7'
 
