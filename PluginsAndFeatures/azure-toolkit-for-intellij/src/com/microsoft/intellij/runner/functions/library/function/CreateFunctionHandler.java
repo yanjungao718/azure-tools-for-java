@@ -151,7 +151,7 @@ public class CreateFunctionHandler {
                 builder = new LinuxFunctionRuntimeHandler.Builder();
                 break;
             case Docker:
-                throw new UnsupportedOperationException("The 'docker' runtime is now supported in current version.");
+                throw new UnsupportedOperationException("The 'docker' runtime is not supported in current version.");
             default:
                 throw new AzureExecutionException(String.format("Unsupported runtime %s", os));
         }
