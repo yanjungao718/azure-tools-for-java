@@ -25,7 +25,6 @@ package com.microsoft.intellij.util;
 
 import com.google.common.io.Files;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +36,10 @@ import java.util.stream.Collectors;
 
 public class AzureFunctionsUtils {
     public static File createMavenProjectToTempFolder(final String groupId, final String artifactId,
-            final String version, final String packageName, final String appName)
+            final String version, final String packageName)
             throws IOException, InterruptedException {
-        final boolean isWindows = isWindows();
-        final List<File> mvnCmds = resolvePathForCommand(isWindows ? "mvn.cmd" : "mvn", true);
+        final boolean isWindows = CommandUtils.isWindows();
+        final List<File> mvnCmds = resolvePathForCommand(isWindows ? "mvn.cmd" : "mvn");
         if (!mvnCmds.isEmpty()) {
             final File mvnCmd = mvnCmds.get(0);
             final File folder = Files.createTempDir();
@@ -51,11 +50,10 @@ public class AzureFunctionsUtils {
             maps.put("-DartifactId", artifactId);
             maps.put("-Dversion", version);
             maps.put("-Dpackage", packageName);
-            maps.put("-DappName", appName);
             final String args = maps.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining(" "));
-            IntellijCommandUtils.executeMultipleLineOutput(mvnCmd.getAbsolutePath() + " archetype:generate" + " -B " + args, folder, isWindows);
+            CommandUtils.executeMultipleLineOutput(mvnCmd.getAbsolutePath() + " archetype:generate" + " -B " + args, folder);
 
             return folder;
         }
@@ -63,13 +61,9 @@ public class AzureFunctionsUtils {
 
     }
 
-    private static List<File> resolvePathForCommand(final String command, final boolean isWindows)
+    private static List<File> resolvePathForCommand(final String command)
             throws IOException, InterruptedException {
-        return extractFileFromOutput(IntellijCommandUtils.executeMultipleLineOutput((isWindows ? "where " : "which ") + command, null, isWindows));
-    }
-
-    private static boolean isWindows() {
-        return SystemUtils.IS_OS_WINDOWS;
+        return extractFileFromOutput(CommandUtils.executeMultipleLineOutput((CommandUtils.isWindows() ? "where " : "which ") + command, null));
     }
 
     private static List<File> extractFileFromOutput(final String[] outputStrings) {

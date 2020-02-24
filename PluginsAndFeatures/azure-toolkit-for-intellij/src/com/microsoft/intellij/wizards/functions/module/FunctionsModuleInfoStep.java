@@ -60,8 +60,6 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
 
     private JBTextField packageNameField;
 
-    private JBTextField appNameField;
-
     private final WizardContext context;
 
     public FunctionsModuleInfoStep(final WizardContext context) {
@@ -81,7 +79,6 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
         context.putUserData(AzureFunctionsConstants.WIZARD_ARTIFACTID_KEY, artifactIdField.getText());
         context.putUserData(AzureFunctionsConstants.WIZARD_VERSION_KEY, versionField.getText());
         context.putUserData(AzureFunctionsConstants.WIZARD_PACKAGE_NAME_KEY, packageNameField.getText());
-        context.putUserData(AzureFunctionsConstants.WIZARD_APP_NAME_KEY, appNameField.getText());
     }
 
     @Override
@@ -96,7 +93,6 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
         final String artifactId = context.getUserData(AzureFunctionsConstants.WIZARD_ARTIFACTID_KEY);
         final String version = context.getUserData(AzureFunctionsConstants.WIZARD_VERSION_KEY);
         final String packageName = context.getUserData(AzureFunctionsConstants.WIZARD_PACKAGE_NAME_KEY);
-        final String appName = context.getUserData(AzureFunctionsConstants.WIZARD_APP_NAME_KEY);
         try {
             final FormBuilder formBuilder = new FormBuilder();
             final CollectionComboBoxModel<String> toolModel = new CollectionComboBoxModel<>(
@@ -113,8 +109,6 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
             packageNameField = new JBTextField(getCurrentOrDefaultValue(packageName, "org.example.functions"));
             formBuilder.addLabeledComponent("Package name:", packageNameField);
 
-            appNameField = new JBTextField(getCurrentOrDefaultValue(appName, "function1"));
-            formBuilder.addLabeledComponent("App name:", appNameField);
             panel.add(ScrollPaneFactory.createScrollPane(formBuilder.getPanel(), true), "North");
         } catch (final RuntimeException e) {
             LOGGER.error(e.getLocalizedMessage(), e);
@@ -135,7 +129,6 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
         validateProperties("Artifact id", artifactIdField.getText(), ValidationUtils::isValidGroupIdArtifactId);
         validateProperties("Version", versionField.getText(), ValidationUtils::isValidVersion);
         validateProperties("Package name", packageNameField.getText(), ValidationUtils::isValidJavaPackageName);
-        validateProperties("App name", appNameField.getText(), ValidationUtils::isValidFunctionName);
         return true;
     }
 

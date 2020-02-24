@@ -121,11 +121,10 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
             final String artifactId = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_ARTIFACTID_KEY);
             final String version = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_VERSION_KEY);
             final String packageName = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_PACKAGE_NAME_KEY);
-            final String appName = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_APP_NAME_KEY);
             File tempFolder = null;
             try {
                 tempFolder = AzureFunctionsUtils.createMavenProjectToTempFolder(groupId, artifactId, version,
-                        packageName, appName);
+                        packageName);
                 if (tempFolder != null) {
                     final File tempProjectFolder = new File(tempFolder, artifactId);
                     if (tempProjectFolder.exists() && tempProjectFolder.isDirectory()) {

@@ -24,20 +24,24 @@ package com.microsoft.intellij.util;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
 
-public class IntellijCommandUtils {
-
-    public static String[] executeMultipleLineOutput(final String cmd, File cwd, final boolean isWindows)
+public class CommandUtils {
+    public static String[] executeMultipleLineOutput(final String cmd, File cwd)
             throws IOException, InterruptedException {
-        final String[] cmds = isWindows ? new String[]{"cmd.exe", "/c", cmd} : new String[]{"bash", "-c", cmd};
+        final String[] cmds = isWindows() ? new String[]{"cmd.exe", "/c", cmd} : new String[]{"bash", "-c", cmd};
         final Process p = Runtime.getRuntime().exec(cmds, null, cwd);
         final int exitCode = p.waitFor();
         if (exitCode != 0) {
             return new String[0];
         }
         return StringUtils.split(IOUtils.toString(p.getInputStream(), "utf8"));
+    }
+
+    public static boolean isWindows() {
+        return SystemUtils.IS_OS_WINDOWS;
     }
 }
