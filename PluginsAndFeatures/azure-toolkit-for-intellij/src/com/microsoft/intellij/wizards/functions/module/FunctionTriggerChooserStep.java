@@ -49,7 +49,8 @@ import java.util.List;
 public class FunctionTriggerChooserStep extends ModuleWizardStep {
     private final WizardContext wizardContext;
     private JTable table;
-
+    private List<String> SUPPORTED_TRIGGERS = Arrays.asList("HttpTrigger", "BlobTrigger", "QueueTrigger", "TimerTrigger", "EventHubTrigger");
+    private List<String> INITIAL_SELECTED_TRIGGERS = Arrays.asList("HttpTrigger");
 
     FunctionTriggerChooserStep(final WizardContext wizardContext) {
         this.wizardContext = wizardContext;
@@ -96,10 +97,8 @@ public class FunctionTriggerChooserStep extends ModuleWizardStep {
 
     private void setupFunctionTriggers() {
         final DefaultTableModel model = (DefaultTableModel) table.getModel();
-        boolean isFirst = true;
-        for (final String s : Arrays.asList("HttpTrigger", "BlobTrigger", "QueueTrigger", "TimerTrigger", "EventHubTrigger")) {
-            model.addRow(new Object[] { isFirst, s });
-            isFirst = false;
+        for (final String trigger : SUPPORTED_TRIGGERS) {
+            model.addRow(new Object[] { INITIAL_SELECTED_TRIGGERS.contains(trigger), trigger });
         }
         model.fireTableDataChanged();
     }
