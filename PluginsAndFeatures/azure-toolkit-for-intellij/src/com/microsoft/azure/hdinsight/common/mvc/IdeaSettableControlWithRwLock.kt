@@ -20,21 +20,20 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.action
+package com.microsoft.azure.hdinsight.common.mvc
 
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.ex.ActionManagerEx
-import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
-import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.util.runInReadAction
+import com.microsoft.intellij.util.runInWriteAction
 
-open class SeqActions(private vararg val actionIds: String): AzureAnAction(), ILogger {
-    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
-        for (actiondId: String in actionIds) {
-            val action = ActionManagerEx.getInstance().getAction(actiondId)
-            action?.actionPerformed(anActionEvent)
-                ?: log().error("Can't perform the action with id $actiondId")
-        }
-        return true
+interface IdeaSettableControlWithRwLock<T> : IdeaSettableControlView<T> {
+    override fun setDataInDispatch(from: T) {
+        runInWriteAction { writeWithLock(from) }
     }
+
+    override fun getData(to: T) {
+        runInReadAction { readWithLock(to) }
+    }
+
+    fun readWithLock(to: T)
+    fun writeWithLock(from: T)
 }
