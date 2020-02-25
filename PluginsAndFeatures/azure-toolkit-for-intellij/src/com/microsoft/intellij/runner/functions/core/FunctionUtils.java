@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.functions.core;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.lang.jvm.JvmAnnotation;
@@ -149,8 +148,7 @@ public class FunctionUtils {
     }
 
     private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
-        final Gson gson = JsonUtils.getGson();
-        final JsonObject jsonObject = gson.fromJson(FileUtils.readFileToString(target), JsonObject.class);
+        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
         final JsonObject valueObject = new JsonObject();
         appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
         jsonObject.add("Values", valueObject);
@@ -163,6 +161,8 @@ public class FunctionUtils {
         final Path jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
         configMap.values().forEach(config -> config.setScriptFile(scriptFilePath));
+
+        FileUtils.cleanDirectory(stagingFolder.toFile());
         for (final Map.Entry<String, FunctionConfiguration> config : configMap.entrySet()) {
             if (StringUtils.isNotBlank(config.getKey())) {
                 final File functionJsonFile = Paths.get(stagingFolder.toString(), config.getKey(), FUNCTION_JSON)

@@ -22,10 +22,6 @@
  */
 package com.microsoft.intellij.actions;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.intellij.ide.IdeView;
 import com.intellij.ide.actions.CreateElementActionBase;
 import com.intellij.ide.actions.CreateFileAction;
@@ -43,13 +39,9 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiNameHelper;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.*;
+import com.intellij.psi.util.ClassUtil;
+import com.intellij.util.IncorrectOperationException;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
 import com.microsoft.azure.management.Azure;
@@ -64,13 +56,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
-import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,41 +72,61 @@ public class CreateFunctionAction extends CreateElementActionBase {
     @Override
     protected PsiElement[] invokeDialog(Project project, PsiDirectory psiDirectory) {
         PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-        // get existing package from current directoy
+        // get existing package from current directory
         String hintPackageName = pkg == null ? "" : pkg.getQualifiedName();
 
         CreateFunctionForm form = new CreateFunctionForm(project, hintPackageName);
         List<PsiElement> psiElements = new ArrayList<>();
         if (form.showAndGet()) {
-            Map<String, String> parameters = form.getTemplateParameters();
-            String triggerType = form.getTriggerType();
-            String packageName = parameters.get("packageName");
-            String className = parameters.get("className");
-
-            PsiDirectory directory = com.intellij.psi.util.ClassUtil.sourceRoot(psiDirectory);
-            String newName = packageName.replace('.', '/');
             final FunctionTemplate bindingTemplate;
             try {
+                Map<String, String> parameters = form.getTemplateParameters();
+                final String connectionName = parameters.get("connection");
+                String triggerType = form.getTriggerType();
+                String packageName = parameters.get("packageName");
+                String className = parameters.compute("className", (k, v) -> AzureFunctionsUtils.normalizeClassName(v));
+                PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
+                String newName = packageName.replace('.', '/');
                 bindingTemplate = form.getFunctionTemplate(triggerType);
-                final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
-                Application application = ApplicationManager.getApplication();
-                application.runWriteAction(() -> {
-                    CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction((Computable<CreateFileAction.MkDirs>) () -> new CreateFileAction.MkDirs(newName + '/' + className, directory));
-                    PsiFileFactory factory = PsiFileFactory.getInstance(project);
-                    CommandProcessor.getInstance().executeCommand(project, () -> {
-                        PsiFile psiFile = factory.createFileFromText(className
-                                + ".java", JavaFileType.INSTANCE, functionClassContent);
 
-                        psiElements.add(mkDirs.directory.add(psiFile));
-                    }, null, null);
-
-                    if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
-                        String connectionString = getEventHubNamespaceConnectionString(form.getEventHubNamespace());
-                        saveLocalSetting(project, parameters.get("connection"), connectionString);
+                if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+                    if (StringUtils.isBlank(connectionName)) {
+                        throw new AzureExecutionException("Required property <connection> is missing");
                     }
-                });
+                }
 
+                final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
+                if (StringUtils.isNotEmpty(functionClassContent)) {
+                    Application application = ApplicationManager.getApplication();
+                    application.runWriteAction(() -> {
 
+                        CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
+                                (Computable<CreateFileAction.MkDirs>) () ->
+                                        new CreateFileAction.MkDirs(newName + '/' + className, directory));
+                        PsiFileFactory factory = PsiFileFactory.getInstance(project);
+                        try {
+                            mkDirs.directory.checkCreateFile(className + ".java");
+                        } catch (IncorrectOperationException e) {
+                            PluginUtil.displayErrorDialog("Create Azure Function Class error", e.getMessage());
+                            return;
+                        }
+                        CommandProcessor.getInstance().executeCommand(project, () -> {
+                            PsiFile psiFile = factory.createFileFromText(className
+                                    + ".java", JavaFileType.INSTANCE, functionClassContent);
+                            psiElements.add(mkDirs.directory.add(psiFile));
+                        }, null, null);
+
+                        if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+                            try {
+                                String connectionString = getEventHubNamespaceConnectionString(form.getEventHubNamespace());
+                                AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
+                                        parameters.get("connection"), connectionString);
+                            } catch (IOException e) {
+                                PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                            }
+                        }
+                    });
+                }
             } catch (AzureExecutionException e) {
                 PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
             }
@@ -129,57 +136,12 @@ public class CreateFunctionAction extends CreateElementActionBase {
         }
         return psiElements.toArray(new PsiElement[0]);
     }
-    private String getEventHubNamespaceConnectionString(EventHubNamespace eventHubNamespace) {
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
-            EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
-                    authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
-                    "RootManageSharedAccessKey");
-            return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();
-        } catch (IOException e) {
-            return null;
-        }
-    }
-    private static final String DEFAULT_LOCAL_SETTINGS_JSON = "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"java\"}}";
-
-    public void saveLocalSetting(Project project, String key, String value) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        ;
-        JsonObject localSettings = null;
-        final Path localSettingPath = Paths.get(project.getBasePath(), "local.settings.json");
-        synchronized (this) {
-            try (FileInputStream fis = new FileInputStream(localSettingPath.toFile());
-                 InputStreamReader isr = new InputStreamReader(fis)) {
-                localSettings = gson.fromJson(isr, JsonObject.class);
-            } catch (IOException | JsonParseException e) {
-                localSettings = gson.fromJson(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
-            }
-        }
-        JsonObject appSettings = localSettings.getAsJsonObject("Values");
-        appSettings.addProperty(key, value);
-        try (Writer writer = new FileWriter(localSettingPath.toFile())) {
-            gson.toJson(localSettings, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @NotNull
     @Override
     protected PsiElement[] create(@NotNull String s, PsiDirectory psiDirectory) throws Exception {
         return new PsiElement[0];
     }
-
-    private static boolean doCheckPackageExists(PsiDirectory directory) {
-        PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(directory);
-        if (pkg == null) {
-            return false;
-        }
-
-        String name = pkg.getQualifiedName();
-        return StringUtil.isEmpty(name) || PsiNameHelper.getInstance(directory.getProject()).isQualifiedName(name);
-    }
-
 
     @Override
     protected boolean isAvailable(final DataContext dataContext) {
@@ -206,9 +168,29 @@ public class CreateFunctionAction extends CreateElementActionBase {
     }
 
     @Override
-    protected String getActionName(PsiDirectory directory, String newName) {
+    protected String getActionName(PsiDirectory psiDirectory, String s) {
         return "";
     }
 
+    private static boolean doCheckPackageExists(PsiDirectory directory) {
+        PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(directory);
+        if (pkg == null) {
+            return false;
+        }
 
+        String name = pkg.getQualifiedName();
+        return StringUtil.isEmpty(name) || PsiNameHelper.getInstance(directory.getProject()).isQualifiedName(name);
+    }
+
+    private String getEventHubNamespaceConnectionString(EventHubNamespace eventHubNamespace) {
+        try {
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
+            EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
+                    authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
+                    "RootManageSharedAccessKey");
+            return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();
+        } catch (IOException e) {
+            return null;
+        }
+    }
 }

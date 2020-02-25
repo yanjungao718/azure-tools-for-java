@@ -24,7 +24,11 @@
 package com.microsoft.intellij.util;
 
 import com.google.common.io.Files;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
+import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -36,6 +40,33 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AzureFunctionsUtils {
+    public static void applyKeyValueToLocalSettingFile(File localSettingFile, String key, String value) throws IOException {
+        if (!localSettingFile.getParentFile().isDirectory()) {
+            throw new IOException("Cannot save file to a non-existing directory: " + localSettingFile.getParent());
+        }
+        final JsonObject localSettingRoot = localSettingFile.exists() ?
+                JsonUtils.readJsonFile(localSettingFile) : new JsonObject();
+        if (localSettingRoot.has("IsEncrypted")) {
+            localSettingRoot.add("IsEncrypted", new JsonPrimitive(false));
+        }
+        JsonObject appSettings = localSettingRoot.getAsJsonObject("Values");
+        if (appSettings == null) {
+            appSettings = new JsonObject();
+            localSettingRoot.add("Values", appSettings);
+        }
+
+        appSettings.addProperty(key, value);
+        JsonUtils.writeJsonToFile(localSettingFile, localSettingRoot);
+    }
+
+    public static String normalizeClassName(String className) {
+        if (StringUtils.isBlank(className)) {
+            return "untitled";
+        }
+        final String trimClassName = className.endsWith(".java") ? className.substring(0, className.length() - 5) : className;
+        return trimClassName.replaceAll("[^\\.a-zA-Z0-9\\_\\$]+", "").replace('.', '_');
+    }
+
     public static File createMavenProjectToTempFolder(final String groupId, final String artifactId,
             final String version, final String packageName)
             throws IOException, InterruptedException {
@@ -61,9 +92,13 @@ public class AzureFunctionsUtils {
         return null;
     }
 
-    public static String substituteParametersInTemplate(final FunctionTemplate template, final Map<String, String> params) {
+    public static String substituteParametersInTemplate(final FunctionTemplate template, final Map<String, String> params)
+            throws AzureExecutionException {
         String ret = template.getFiles().get("function.java");
         for (final Map.Entry<String, String> entry : params.entrySet()) {
+            if (entry.getValue() == null) {
+                throw new AzureExecutionException("Required property:" + entry.getKey() + " is missing");
+            }
             ret = ret.replace(String.format("$%s$", entry.getKey()), entry.getValue());
         }
         return ret;

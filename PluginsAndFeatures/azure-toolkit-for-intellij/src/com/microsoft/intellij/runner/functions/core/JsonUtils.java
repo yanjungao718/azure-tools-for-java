@@ -33,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.util.Map;
 
 public class JsonUtils {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -47,6 +48,12 @@ public class JsonUtils {
         }
     }
 
+    public static void writeJsonToFile(File targetFile, Map<String, Object> json) throws IOException {
+        try (Writer writer = new FileWriter(targetFile)) {
+            GSON.toJson(json, writer);
+        }
+    }
+
     public static JsonObject readJsonFile(File target) {
         try (FileInputStream fis = new FileInputStream(target);
              InputStreamReader isr = new InputStreamReader(fis)) {
@@ -55,5 +62,9 @@ public class JsonUtils {
         } catch (IOException | JsonParseException e) {
             return null;
         }
+    }
+
+    public static <T> T fromJsonString(String jsonString, Class<T> clz) {
+        return GSON.fromJson(jsonString, clz);
     }
 }

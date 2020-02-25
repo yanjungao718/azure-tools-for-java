@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.component.table;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
@@ -37,26 +35,23 @@ import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AppSettingsTableUtils {
 
-    private static final String DEFAULT_LOCAL_SETTINGS_JSON = "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"java\"}}";
+    private static final String DEFAULT_LOCAL_SETTINGS_JSON =
+            "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"java\"}}";
     private static final String LOCAL_SETTINGS_VALUES = "Values";
     private static final String EXPORT_APP_SETTINGS = "Export app settings to local.settings.json";
     private static final String EXPORT_APP_SETTINGS_FAILED = "Fail to save app settings to local.settings.json";
@@ -68,7 +63,8 @@ public class AppSettingsTableUtils {
         // create the parent panel which contains app settings table and prompt panel
         result.setLayout(new GridLayoutManager(2, 1));
         final JTextPane promptPanel = new JTextPane();
-        final GridConstraints paneConstraint = new GridConstraints(1, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 7, 7, null, null, null);
+        final GridConstraints paneConstraint = new GridConstraints(1, 0, 1, 1, 0,
+                GridConstraints.FILL_BOTH, 7, 7, null, null, null);
         result.add(promptPanel, paneConstraint);
 
         final AnActionButton btnAdd = new AnActionButton("Add", AllIcons.General.Add) {
@@ -176,17 +172,14 @@ public class AppSettingsTableUtils {
         if (!target.exists()) {
             target.createNewFile();
         }
-        final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         JsonObject jsonObject = JsonUtils.readJsonFile(target);
         if (jsonObject == null) {
-            jsonObject = gson.fromJson(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
+            jsonObject = JsonUtils.fromJsonString(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
         }
         final JsonObject valueObject = new JsonObject();
         appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
         jsonObject.add(LOCAL_SETTINGS_VALUES, valueObject);
-        try (Writer writer = new FileWriter(target)) {
-            gson.toJson(jsonObject, writer);
-        }
+        JsonUtils.writeJsonToFile(target, jsonObject);
     }
 
 }

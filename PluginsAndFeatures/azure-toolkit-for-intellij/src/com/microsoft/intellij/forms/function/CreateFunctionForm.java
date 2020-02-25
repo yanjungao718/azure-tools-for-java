@@ -29,8 +29,8 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.PopupMenuListenerAdapter;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
@@ -54,11 +54,7 @@ import rx.schedulers.Schedulers;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -115,7 +111,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             public void customize(JList jList, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof EventHubNamespace) {
                     setText(((EventHubNamespace) object).name());
-                } else {
+                } else if (object instanceof String) {
                     setText(object.toString());
                 }
             }
@@ -253,13 +249,23 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
                 break;
             case EVENT_HUB_TRIGGER:
                 result.put("connection", txtConnection.getText());
-                result.put("eventHubName", ((EventHub) cbEventHubName.getSelectedItem()).name());
-                result.put("consumerGroup", ((EventHubConsumerGroup) cbConsumerGroup.getSelectedItem()).name());
+                result.put("eventHubName", getSelectedEventHubName());
+                result.put("consumerGroup", getConsumerGroupName());
                 break;
             default:
                 break;
         }
         return result;
+    }
+
+    private String getSelectedEventHubName() {
+        final EventHub hub = (EventHub) cbEventHubName.getSelectedItem();
+        return hub == null ? null : hub.name();
+    }
+
+    private String getConsumerGroupName() {
+        final EventHubConsumerGroup group = (EventHubConsumerGroup) cbConsumerGroup.getSelectedItem();
+        return group == null ? null : group.name();
     }
 
     private void fillModules() {
@@ -298,7 +304,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         result.put(HTTP_TRIGGER, new JComponent[]{lblAuthLevel, cbAuthLevel});
         result.put(TIMER_TRIGGER, new JComponent[]{lblCron, cbCron});
         result.put(EVENT_HUB_TRIGGER, new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
-                cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
+            cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
         return result;
     }
 

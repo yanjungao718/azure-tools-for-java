@@ -22,11 +22,8 @@
 
 package com.microsoft.intellij.runner.functions.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,8 +57,6 @@ public class FunctionJsonWriter {
             json.put("bindings", lists.toArray());
         }
 
-        FileUtils.write(file, GSON.toJson(json), "utf8");
+        JsonUtils.writeJsonToFile(file, json);
     }
-
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 }
