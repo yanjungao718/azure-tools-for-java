@@ -162,7 +162,6 @@ public class FunctionUtils {
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
         configMap.values().forEach(config -> config.setScriptFile(scriptFilePath));
 
-        FileUtils.cleanDirectory(stagingFolder.toFile());
         for (final Map.Entry<String, FunctionConfiguration> config : configMap.entrySet()) {
             if (StringUtils.isNotBlank(config.getKey())) {
                 final File functionJsonFile = Paths.get(stagingFolder.toString(), config.getKey(), FUNCTION_JSON)
