@@ -40,10 +40,6 @@ public class FunctionRunModel extends IntelliJFunctionContext {
         super(project);
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public Artifact getArtifact() {
         return artifact;
     }

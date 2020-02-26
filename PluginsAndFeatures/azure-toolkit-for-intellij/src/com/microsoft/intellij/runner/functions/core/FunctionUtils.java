@@ -87,10 +87,10 @@ public class FunctionUtils {
         }).toArray(Module[]::new);
     }
 
-    public static Module getFunctionModuleByFilePath(Project project, String moduleFilePath) {
+    public static Module getFunctionModuleByName(Project project, String name) {
         final Module[] modules = listFunctionModules(project);
         return Arrays.stream(modules)
-                .filter(module -> StringUtils.equals(moduleFilePath, module.getModuleFilePath()))
+                .filter(module -> StringUtils.equals(name, module.getName()))
                 .findFirst().orElse(null);
     }
 

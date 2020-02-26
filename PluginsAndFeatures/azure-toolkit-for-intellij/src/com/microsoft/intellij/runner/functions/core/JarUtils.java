@@ -63,6 +63,9 @@ public class JarUtils {
 
     private static void zipDirectory(File folder, String parentFolder, ZipOutputStream zos)
             throws IOException {
+        if (!folder.isDirectory()) {
+            return;
+        }
         final String prefix = StringUtils.isBlank(parentFolder) ? "" : (parentFolder + "/");
         for (final File file : folder.listFiles()) {
             if (file.isDirectory()) {

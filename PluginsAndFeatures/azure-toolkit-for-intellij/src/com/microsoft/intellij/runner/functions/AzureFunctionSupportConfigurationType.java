@@ -23,20 +23,27 @@
 
 package com.microsoft.intellij.runner.functions;
 
-import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
+import com.intellij.icons.AllIcons;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
 import com.microsoft.intellij.util.PluginUtil;
 
-import org.jetbrains.annotations.NotNull;
+import javax.swing.*;
 
-import javax.swing.Icon;
+import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.AZURE_FUNCTIONS_ICON;
 
-public class AzureFunctionSupportConfigurationType implements ConfigurationType {
+public class AzureFunctionSupportConfigurationType extends ConfigurationTypeBase implements ConfigurationType {
 
-    public static final String ICON_PATH = "/icons/azure-functions-small.png";
+    public static final String ICON_PATH = "/icons/" + AZURE_FUNCTIONS_ICON;
+
+    protected AzureFunctionSupportConfigurationType() {
+        super("AZURE_FUNCTION_SUPPORT", AzureFunctionsConstants.DISPLAY_NAME, "Execute the azure functions", AllIcons.Actions.Execute);
+        addFactory(new FunctionRunConfigurationFactory(this));
+        addFactory(new FunctionDeploymentConfigurationFactory(this));
+    }
 
     public static AzureFunctionSupportConfigurationType getInstance() {
         return ConfigurationTypeUtil.findConfigurationType(AzureFunctionSupportConfigurationType.class);
@@ -48,24 +55,7 @@ public class AzureFunctionSupportConfigurationType implements ConfigurationType 
     }
 
     @Override
-    public String getConfigurationTypeDescription() {
-        return AzureFunctionsConstants.DISPLAY_NAME;
-    }
-
-    @Override
     public Icon getIcon() {
         return PluginUtil.getIcon(ICON_PATH);
-    }
-
-    @NotNull
-    @Override
-    public String getId() {
-        return "AZURE_FUNCTION_SUPPORT";
-    }
-
-    @Override
-    public ConfigurationFactory[] getConfigurationFactories() {
-        // Todo: update after commit specified configuration factory
-        return new ConfigurationFactory[] { new FunctionDeploymentConfigurationFactory(this), new FunctionRunConfigurationFactory(this) };
     }
 }

@@ -147,6 +147,9 @@
       implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
     <facetType implementation="com.microsoft.intellij.wizards.functions.facet.FunctionsFacetType"/>
     <moduleBuilder builderClass="com.microsoft.intellij.wizards.functions.module.FunctionsModuleBuilder"/>
+    <runConfigurationProducer implementation="com.microsoft.intellij.runner.functions.FunctionRunConfigurationProducer"/>
+    <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
+                              implementationClass="com.microsoft.intellij.runner.functions.FunctionRunLineMarkerProvider"/>
   </extensions>
 
   <application-components>

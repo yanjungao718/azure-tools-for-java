@@ -132,7 +132,6 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         setResourceGroup(targetFunction.resourceGroupName());
     }
 
-
     @Override
     public FunctionDeployModel getModel() {
         return this.functionDeployModel;
@@ -175,12 +174,12 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     }
 
     public Module getModule() {
-        return module == null ? FunctionUtils.getFunctionModuleByFilePath(getProject(), functionDeployModel.getModuleFilePath()) : module;
+        return module == null ? FunctionUtils.getFunctionModuleByName(getProject(), functionDeployModel.getModuleName()) : module;
     }
 
     public void setModule(Module module) {
         this.module = module;
-        functionDeployModel.setModuleFilePath(module.getModuleFilePath());
+        functionDeployModel.setModuleName(module.getName());
     }
 
     @Override

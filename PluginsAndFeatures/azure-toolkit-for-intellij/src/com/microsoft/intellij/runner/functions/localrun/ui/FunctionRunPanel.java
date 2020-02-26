@@ -116,7 +116,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         }
         for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
             final Module module = cbFunctionModule.getItemAt(i);
-            if (configuration.getModuleFilePath() != null && Paths.get(module.getModuleFilePath()).equals(Paths.get(configuration.getModuleFilePath()))) {
+            if (StringUtils.equals(configuration.getModuleName(), module.getName())) {
                 cbFunctionModule.setSelectedIndex(i);
                 break;
             }
