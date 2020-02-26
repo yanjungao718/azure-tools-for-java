@@ -26,11 +26,10 @@ package com.microsoft.intellij.runner.functions.localrun;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
@@ -43,7 +42,8 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Paths;
 import java.util.Map;
 
-public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel> {
+public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel>
+    implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption {
 
     private JsonObject appSettingsJsonObject;
     private FunctionRunModel functionRunModel;
@@ -55,6 +55,12 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         this.functionRunModel = new FunctionRunModel(project);
     }
 
+    @NotNull
+    @Override
+    public Module[] getModules() {
+        return ModuleManager.getInstance(getProject()).getModules();
+    }
+
     @Override
     public FunctionRunModel getModel() {
         return functionRunModel;
@@ -62,7 +68,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     @Override
     public String getTargetName() {
-        return "null";
+        return "untitled";
     }
 
     @Override
@@ -178,5 +184,16 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     @Override
     public void validate() throws ConfigurationException {
 
+    }
+
+    @Override
+    public boolean isGeneratedName() {
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public String suggestedName() {
+        return "Unnamed";
     }
 }

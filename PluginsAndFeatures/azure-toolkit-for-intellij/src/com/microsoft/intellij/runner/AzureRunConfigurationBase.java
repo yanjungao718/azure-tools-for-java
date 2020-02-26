@@ -23,7 +23,7 @@
 package com.microsoft.intellij.runner;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.RunConfigurationBase;
+import com.intellij.execution.configurations.LocatableConfigurationBase;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
@@ -31,14 +31,13 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.Accessor;
-import com.intellij.util.xmlb.SerializationFilter;
 import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase {
+public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase {
     private boolean firstTimeCreated = true;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {

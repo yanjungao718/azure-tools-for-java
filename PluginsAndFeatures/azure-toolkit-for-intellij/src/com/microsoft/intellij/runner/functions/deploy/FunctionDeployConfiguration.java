@@ -27,8 +27,10 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
@@ -45,7 +47,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel> {
+public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
+    implements RunProfileWithCompileBeforeLaunchOption {
 
     private final FunctionDeployModel functionDeployModel;
     private Map<String, String> appSettings;
@@ -54,6 +57,12 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public FunctionDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         functionDeployModel = new FunctionDeployModel(project);
+    }
+
+    @NotNull
+    @Override
+    public Module[] getModules() {
+        return ModuleManager.getInstance(getProject()).getModules();
     }
 
     public String getSubscription() {
