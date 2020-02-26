@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.component.table;
 
-
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -99,7 +98,7 @@ public class AppSettingModel implements TableModel {
     }
 
     public String getAppSettingsKey(int row) {
-        if (appSettings == null || row >= appSettings.size()) {
+        if (appSettings == null || row > appSettings.size()) {
             return null;
         }
         return appSettings.get(row).getKey();
