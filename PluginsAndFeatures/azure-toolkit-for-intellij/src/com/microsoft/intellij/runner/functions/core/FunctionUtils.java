@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.functions.core;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.intellij.codeInsight.AnnotationUtil;
+import com.intellij.codeInsight.MetaAnnotationUtil;
 import com.intellij.lang.jvm.JvmAnnotation;
 import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.openapi.module.Module;
@@ -43,6 +44,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
+import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
@@ -69,8 +71,8 @@ import java.util.*;
 
 public class FunctionUtils {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
-    public static final String AZURE_FUNCTION_ANNOTATION_CLASS = "com.microsoft.azure.functions.annotation.FunctionName";
 
+    private static final String AZURE_FUNCTION_ANNOTATION_CLASS = "com.microsoft.azure.functions.annotation.FunctionName";
     private static final String FUNCTION_JSON = "function.json";
     private static final String HTTP_OUTPUT_DEFAULT_NAME = "$return";
     private static final String DEFAULT_HOST_JSON = "{\"version\":\"2.0\",\"extensionBundle\":" +
@@ -116,6 +118,10 @@ public class FunctionUtils {
 
     public static final Path getDefaultHostJson(Project project) {
         return new File(project.getBasePath(), "host.json").toPath();
+    }
+
+    public static boolean isFunctionClassAnnotated(final PsiMethod method) {
+        return MetaAnnotationUtil.isMetaAnnotated(method, ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
     }
 
     public static final Path createTempleHostJson() {

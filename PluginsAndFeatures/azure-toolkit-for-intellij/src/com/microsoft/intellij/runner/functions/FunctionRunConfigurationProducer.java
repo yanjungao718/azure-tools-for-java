@@ -21,7 +21,6 @@
  */
 package com.microsoft.intellij.runner.functions;
 
-import com.intellij.codeInsight.MetaAnnotationUtil;
 import com.intellij.execution.Location;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.actions.ConfigurationContext;
@@ -31,7 +30,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiMethod;
-import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
@@ -45,10 +43,6 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     @Override
     public ConfigurationFactory getConfigurationFactory() {
         return AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories()[0];
-    }
-
-    public static boolean isFunctionClassAnnotated(final PsiMethod method) {
-        return MetaAnnotationUtil.isMetaAnnotated(method, ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
     }
 
     @Override
@@ -98,7 +92,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     private static Location<PsiMethod> getAzureFunctionMethods(final Location<?> location) {
         for (Iterator<Location<PsiMethod>> iterator = location.getAncestors(PsiMethod.class, false); iterator.hasNext();) {
             final Location<PsiMethod> methodLocation = iterator.next();
-            if (isFunctionClassAnnotated(methodLocation.getPsiElement())) {
+            if (FunctionUtils.isFunctionClassAnnotated(methodLocation.getPsiElement())) {
                 return methodLocation;
             }
         }

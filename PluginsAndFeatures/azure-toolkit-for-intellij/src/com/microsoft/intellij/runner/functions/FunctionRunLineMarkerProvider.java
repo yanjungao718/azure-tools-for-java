@@ -30,6 +30,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
 import com.intellij.util.containers.ContainerUtil;
+import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,11 +40,10 @@ public class FunctionRunLineMarkerProvider extends RunLineMarkerContributor {
     public Info getInfo(@NotNull PsiElement e) {
         if (isIdentifier(e)) {
             PsiElement element = e.getParent();
-            if (element instanceof PsiMethod &&
-                            FunctionRunConfigurationProducer.isFunctionClassAnnotated((PsiMethod) element)) {
+            if (element instanceof PsiMethod && FunctionUtils.isFunctionClassAnnotated((PsiMethod) element)) {
                 final AnAction[] actions = ExecutorAction.getActions();
                 return new Info(AllIcons.RunConfigurations.TestState.Run, actions,
-                        element1 -> StringUtil.join(ContainerUtil.mapNotNull(actions, action -> getText(action, element1)),
+                    element1 -> StringUtil.join(ContainerUtil.mapNotNull(actions, action -> getText(action, element1)),
                                 "\n"));
             }
         }
