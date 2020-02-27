@@ -39,12 +39,11 @@ public class FunctionRunLineMarkerProvider extends RunLineMarkerContributor {
     @Override
     public Info getInfo(@NotNull PsiElement e) {
         if (isIdentifier(e)) {
-            PsiElement element = e.getParent();
-            if (element instanceof PsiMethod && FunctionUtils.isFunctionClassAnnotated((PsiMethod) element)) {
-                final AnAction[] actions = ExecutorAction.getActions();
+            final PsiElement parentElement = e.getParent();
+            if (parentElement instanceof PsiMethod && FunctionUtils.isFunctionClassAnnotated((PsiMethod) parentElement)) {
+                final AnAction[] actions = ExecutorAction.getActions(1);
                 return new Info(AllIcons.RunConfigurations.TestState.Run, actions,
-                    element1 -> StringUtil.join(ContainerUtil.mapNotNull(actions, action -> getText(action, element1)),
-                                "\n"));
+                    element -> StringUtil.join(ContainerUtil.mapNotNull(actions, action -> getText(action, element)), "\n"));
             }
         }
         return null;
