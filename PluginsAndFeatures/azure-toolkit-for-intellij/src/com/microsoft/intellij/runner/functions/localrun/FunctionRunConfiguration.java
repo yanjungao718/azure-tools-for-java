@@ -57,12 +57,17 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     @NotNull
     @Override
     public Module[] getModules() {
-        final Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
+        final Module module = getModule();
         return module == null ? Module.EMPTY_ARRAY : new Module[] { module };
     }
 
     public Module getModule() {
-        return ReadAction.compute(() -> getConfigurationModule().getModule());
+        Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
+        if (module == null && StringUtils.isNotEmpty(this.functionRunModel.getModuleName())) {
+            module = FunctionUtils.getFunctionModuleByName(getProject(), this.functionRunModel.getModuleName());
+            this.myModule.setModule(module);
+        }
+        return module;
     }
 
     @Override

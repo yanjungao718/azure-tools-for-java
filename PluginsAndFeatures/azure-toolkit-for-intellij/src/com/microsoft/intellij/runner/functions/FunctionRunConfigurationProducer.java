@@ -60,7 +60,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
         final RunnerAndConfigurationSettings template = context.getRunManager().getConfigurationTemplate(getConfigurationFactory());
 
         final Module contextModule = context.getModule();
-        final Module predefinedModule = ((FunctionRunConfiguration) template.getConfiguration()).getConfigurationModule().getModule();
+        final Module predefinedModule = ((FunctionRunConfiguration) template.getConfiguration()).getModule();
         if (predefinedModule != null) {
             runConfiguration.initializeDefaults(predefinedModule);
         } else {
@@ -100,7 +100,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     }
 
     private Module findModule(FunctionRunConfiguration configuration, Module contextModule) {
-        if (configuration.getConfigurationModule().getModule() == null && contextModule != null) {
+        if (configuration.getModule() == null && contextModule != null) {
             return contextModule;
         }
         return null;
