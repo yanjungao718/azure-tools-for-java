@@ -77,12 +77,15 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
 
     @Override
     public boolean isConfigurationFromContext(AzureRunConfigurationBase appConfiguration, ConfigurationContext context) {
+        if (!(appConfiguration instanceof FunctionRunConfiguration)) {
+            return false;
+        }
         Location<PsiMethod> methodLocation = getAzureFunctionMethods(context.getLocation());
         if (methodLocation == null) {
             return false;
         }
 
-        final Module configurationModule = appConfiguration.getConfigurationModule().getModule();
+        final Module configurationModule = ((FunctionRunConfiguration) appConfiguration).getModule();
         if (Comparing.equal(context.getModule(), configurationModule)) {
             return true;
         }
