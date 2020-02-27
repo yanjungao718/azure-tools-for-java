@@ -39,35 +39,35 @@ import java.util.Map;
 
 public class IntelliJFunctionContext implements IFunctionContext {
 
-    protected Map<Class<? extends Object>, Object> providerMap = new HashMap<>();
+    private Map<Class<? extends Object>, Object> providerMap = new HashMap<>();
 
-    protected String subscription;
+    private String subscription;
 
-    protected String resourceGroup;
+    private String resourceGroup;
 
-    protected String appName;
+    private String appName;
 
-    protected String region;
+    private String region;
 
-    protected String pricingTier;
+    private String pricingTier;
 
-    protected String appServicePlanResourceGroup;
+    private String appServicePlanResourceGroup;
 
-    protected String appServicePlanName;
+    private String appServicePlanName;
 
-    protected String deploymentStagingDirectoryPath;
+    private String deploymentStagingDirectoryPath;
 
-    protected AuthConfiguration authentication;
+    private AuthConfiguration authentication;
 
-    protected String deployment;
+    private String deployment;
 
-    protected IntelliJFunctionRuntimeConfiguration runtime;
+    private IntelliJFunctionRuntimeConfiguration runtime;
 
     private Map<String, String> appSettings = new HashMap<>();
 
-    protected Project project;
+    private Project project;
 
-    private String moduleFilePath;
+    private String moduleName;
 
     public IntelliJFunctionContext(Project project) {
         this.project = project;
@@ -147,8 +147,8 @@ public class IntelliJFunctionContext implements IFunctionContext {
         return null;
     }
 
-    public String getModuleFilePath() {
-        return moduleFilePath;
+    public String getModuleName() {
+        return moduleName;
     }
 
     public void setSubscription(String subscription) {
@@ -199,8 +199,8 @@ public class IntelliJFunctionContext implements IFunctionContext {
         this.deploymentStagingDirectoryPath = deploymentStagingDirectoryPath;
     }
 
-    public void setModuleFilePath(String moduleFilePath) {
-        this.moduleFilePath = moduleFilePath;
+    public void setModuleName(String name) {
+        this.moduleName = name;
     }
 
     public void validate() throws ConfigurationException {

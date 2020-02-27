@@ -28,37 +28,41 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 
 public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel>
     implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption {
-
     private JsonObject appSettingsJsonObject;
     private FunctionRunModel functionRunModel;
-
-    private Module module;
 
     protected FunctionRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         this.functionRunModel = new FunctionRunModel(project);
+        this.myModule = new JavaRunConfigurationModule(project, true);
     }
 
     @NotNull
     @Override
     public Module[] getModules() {
-        return ModuleManager.getInstance(getProject()).getModules();
+        final Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
+        return module == null ? Module.EMPTY_ARRAY : new Module[] { module };
+    }
+
+    public Module getModule() {
+        return ReadAction.compute(() -> getConfigurationModule().getModule());
     }
 
     @Override
@@ -93,13 +97,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         return new FunctionRunState(getProject(), this, executor);
     }
 
-    public Module getModule() {
-        if (module == null) {
-            module = FunctionUtils.getFunctionModuleByFilePath(getProject(), getModuleFilePath());
-        }
-        return module;
-    }
-
     public JsonObject getAppSettingsJsonObject() {
         return appSettingsJsonObject;
     }
@@ -124,6 +121,10 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         return functionRunModel.getHostJsonPath();
     }
 
+    public String getModuleName() {
+        return functionRunModel.getModuleName();
+    }
+
     public String getLocalSettingsJsonPath() {
         final String path = functionRunModel.getLocalSettingsJsonPath();
         return StringUtils.isNotEmpty(path) ? path : Paths.get(getProject().getBasePath(), "local.settings.json").toString();
@@ -131,10 +132,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     public Map<String, String> getAppSettings() {
         return functionRunModel.getAppSettings();
-    }
-
-    public String getModuleFilePath() {
-        return functionRunModel.getModuleFilePath();
     }
 
     public FunctionRunModel getFunctionRunModel() {
@@ -149,10 +146,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         functionRunModel.setAppSettings(appSettings);
     }
 
-    public void setModuleFilePath(String moduleName) {
-        functionRunModel.setModuleFilePath(moduleName);
-    }
-
     public void setFunctionRunModel(FunctionRunModel functionRunModel) {
         this.functionRunModel = functionRunModel;
     }
@@ -165,8 +158,34 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         if (module == null) {
             return;
         }
-        this.module = module;
-        this.setModuleFilePath(module.getModuleFilePath());
+        this.functionRunModel.setModuleName(module.getName());
+        this.myModule.setModule(module);
+    }
+
+    public void initializeDefaults(Module module) {
+        if (module == null) {
+            return;
+        }
+        saveModule(module);
+
+        if (StringUtils.isEmpty(this.getFuncPath())) {
+            try {
+                this.setFuncPath(FunctionUtils.getFuncPath());
+            } catch (IOException | InterruptedException ex) {
+                // ignore;
+            }
+        }
+        if (StringUtils.isEmpty(this.getStagingFolder())) {
+            this.setStagingFolder(FunctionUtils.getTargetFolder(module));
+        }
+
+        if (StringUtils.isEmpty(this.getHostJsonPath())) {
+            this.setHostJsonPath(Paths.get(getProject().getBasePath(), "host.json").toString());
+        }
+
+        if (StringUtils.isEmpty(this.getLocalSettingsJsonPath())) {
+            this.setLocalSettingsJsonPath(Paths.get(getProject().getBasePath(), "local.settings.json").toString());
+        }
     }
 
     public void setStagingFolder(String stagingFolder) {
