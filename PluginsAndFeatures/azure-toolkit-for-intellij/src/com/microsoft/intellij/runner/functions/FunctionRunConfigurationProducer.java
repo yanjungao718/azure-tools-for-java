@@ -60,7 +60,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
         final RunnerAndConfigurationSettings template = context.getRunManager().getConfigurationTemplate(getConfigurationFactory());
 
         final Module contextModule = context.getModule();
-        final Module predefinedModule = ((FunctionRunConfiguration) template.getConfiguration()).getConfigurationModule().getModule();
+        final Module predefinedModule = ((FunctionRunConfiguration) template.getConfiguration()).getModule();
         if (predefinedModule != null) {
             runConfiguration.initializeDefaults(predefinedModule);
         } else {
@@ -77,12 +77,15 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
 
     @Override
     public boolean isConfigurationFromContext(AzureRunConfigurationBase appConfiguration, ConfigurationContext context) {
+        if (!(appConfiguration instanceof FunctionRunConfiguration)) {
+            return false;
+        }
         Location<PsiMethod> methodLocation = getAzureFunctionMethods(context.getLocation());
         if (methodLocation == null) {
             return false;
         }
 
-        final Module configurationModule = appConfiguration.getConfigurationModule().getModule();
+        final Module configurationModule = ((FunctionRunConfiguration) appConfiguration).getModule();
         if (Comparing.equal(context.getModule(), configurationModule)) {
             return true;
         }
@@ -100,7 +103,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     }
 
     private Module findModule(FunctionRunConfiguration configuration, Module contextModule) {
-        if (configuration.getConfigurationModule().getModule() == null && contextModule != null) {
+        if (configuration.getModule() == null && contextModule != null) {
             return contextModule;
         }
         return null;
