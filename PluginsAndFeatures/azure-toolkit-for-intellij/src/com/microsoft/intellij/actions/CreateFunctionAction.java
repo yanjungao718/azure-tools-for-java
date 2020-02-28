@@ -148,12 +148,13 @@ public class CreateFunctionAction extends CreateElementActionBase {
         final Project project = CommonDataKeys.PROJECT.getData(dataContext);
         final IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
         ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
-        for (PsiDirectory dir : view.getDirectories()) {
-            if (projectFileIndex.isUnderSourceRootOfType(dir.getVirtualFile(), JavaModuleSourceRootTypes.SOURCES) && doCheckPackageExists(dir)) {
-                return true;
+        if (view != null) {
+            for (PsiDirectory dir : view.getDirectories()) {
+                if (projectFileIndex.isUnderSourceRootOfType(dir.getVirtualFile(), JavaModuleSourceRootTypes.SOURCES) && doCheckPackageExists(dir)) {
+                    return true;
+                }
             }
         }
-
         return false;
     }
 
