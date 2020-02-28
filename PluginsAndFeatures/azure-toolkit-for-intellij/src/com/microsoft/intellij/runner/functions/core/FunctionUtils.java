@@ -108,11 +108,10 @@ public class FunctionUtils {
     }
 
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
-        final Project project = module.getProject();
         final PsiClass functionNameClass = JavaPsiFacade.getInstance(module.getProject())
                 .findClass(AZURE_FUNCTION_ANNOTATION_CLASS, GlobalSearchScope.moduleWithLibrariesScope(module));
         final List<PsiMethod> methods = new ArrayList<>(AnnotatedElementsSearch
-                .searchPsiMethods(functionNameClass, GlobalSearchScope.allScope(project)).findAll());
+                .searchPsiMethods(functionNameClass, GlobalSearchScope.moduleScope(module)).findAll());
         return methods.toArray(new PsiMethod[0]);
     }
 
