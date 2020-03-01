@@ -9,16 +9,13 @@
 
 package com.microsoft.intellij.runner.functions.core;
 
-import com.microsoft.azure.common.function.utils.CommandUtils;
 import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.maven.common.utils.TextUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.intellij.util.CommandUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionCliResolver {
@@ -27,7 +24,7 @@ public class FunctionCliResolver {
 
     public static String resolveFunc() throws IOException, InterruptedException {
         final boolean isWindows = CommandUtils.isWindows();
-        final List<File> funCmdFiles = resolvePathForCommand("func", isWindows);
+        final List<File> funCmdFiles = CommandUtils.resolvePathForCommand("func");
         File result = null;
         for (final File file : funCmdFiles) {
             final File canonicalFile = file.getCanonicalFile();
@@ -82,36 +79,4 @@ public class FunctionCliResolver {
         return null;
     }
 
-    private static List<File> resolvePathForCommand(final String command, final boolean isWindows)
-            throws IOException, InterruptedException {
-        return extractFileFromOutput(executeMultipleLineOutput((isWindows ? "where " : "which ") + command, isWindows));
-    }
-
-    private static List<File> extractFileFromOutput(final String[] outputStrings) {
-        final List<File> list = new ArrayList<>();
-        for (final String outputLine : outputStrings) {
-            if (StringUtils.isBlank(outputLine)) {
-                continue;
-            }
-
-            final File file = new File(outputLine.replaceAll("\\r|\\n", ""));
-            if (!file.exists() || !file.isFile()) {
-                continue;
-            }
-
-            list.add(file);
-        }
-        return list;
-    }
-
-    private static String[] executeMultipleLineOutput(final String cmd, final boolean isWindows)
-            throws IOException, InterruptedException {
-        final String[] cmds = isWindows ? new String[]{"cmd.exe", "/c", cmd} : new String[]{"bash", "-c", cmd};
-        final Process p = Runtime.getRuntime().exec(cmds);
-        final int exitCode = p.waitFor();
-        if (exitCode != 0) {
-            return new String[0];
-        }
-        return StringUtils.split(IOUtils.toString(p.getInputStream(), "utf8"));
-    }
 }

@@ -25,7 +25,6 @@ package com.microsoft.intellij.wizards.functions.facet;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetType;
 import com.intellij.facet.FacetTypeId;
-import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.openapi.module.Module;
 
 public class FunctionsFacet extends Facet<FunctionsFacetConfiguration> {
@@ -33,9 +32,5 @@ public class FunctionsFacet extends Facet<FunctionsFacetConfiguration> {
 
     protected FunctionsFacet(FacetType facetType, Module module, String name, FunctionsFacetConfiguration configuration, Facet underlyingFacet) {
         super(facetType, module, name, configuration, underlyingFacet);
-    }
-
-    public static FacetType<FunctionsFacet, FunctionsFacetConfiguration> getQuarkusFacetType() {
-        return FacetTypeRegistry.getInstance().findFacetType(FACET_TYPE_ID);
     }
 }

@@ -52,6 +52,7 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.maven.common.utils.SneakyThrowUtils;
 import com.sun.tools.sjavac.Log;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -59,15 +60,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class FunctionUtils {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
@@ -357,24 +361,6 @@ public class FunctionUtils {
         } else {
             System.out.println("No StorageAccount annotation found.");
         }
-    }
-
-    private static List<String> executeMultipLineOutput(String cmd) throws IOException, InterruptedException {
-        final List<String> result = new ArrayList<>();
-        final Process process = Runtime.getRuntime().exec(cmd);
-        final StringBuffer ret = new StringBuffer();
-        try (final InputStream inputStream = process.getInputStream();
-             final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             final BufferedReader br = new BufferedReader(inputStreamReader)) {
-            String tmp;
-            while ((tmp = br.readLine()) != null) {
-                result.add(tmp);
-            }
-        }
-        if (process.waitFor() != 0) {
-            throw new IOException("Command execute fail.");
-        }
-        return result;
     }
 
     private static Binding createBinding(BindingEnum bindingEnum, PsiAnnotation annotation) throws AzureExecutionException {

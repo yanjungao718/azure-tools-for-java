@@ -28,18 +28,34 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
+import com.microsoft.azure.common.function.utils.FunctionUtils;
+import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AzureFunctionsUtils {
+    private static final String CLASS_DECLARATION = "class Function {";
+    private static List<FunctionTemplate> functionTemplates;
+
+    public static FunctionTemplate getFunctionTemplate(String trigger) throws AzureExecutionException {
+        if (functionTemplates == null) {
+            functionTemplates = FunctionUtils.loadAllFunctionTemplates();
+        }
+        return functionTemplates.stream()
+                .filter(template -> StringUtils.equalsIgnoreCase(trigger, template.getFunction()))
+                .findFirst().orElseThrow(() -> new AzureExecutionException("No such template"));
+    }
+
     public static void applyKeyValueToLocalSettingFile(File localSettingFile, String key, String value) throws IOException {
         if (!localSettingFile.getParentFile().isDirectory()) {
             throw new IOException("Cannot save file to a non-existing directory: " + localSettingFile.getParent());
@@ -68,10 +84,9 @@ public class AzureFunctionsUtils {
     }
 
     public static File createMavenProjectToTempFolder(final String groupId, final String artifactId,
-            final String version, final String packageName)
+                                                      final String version, final String packageName)
             throws IOException, InterruptedException {
-        final boolean isWindows = CommandUtils.isWindows();
-        final List<File> mvnCmds = resolvePathForCommand(isWindows ? "mvn.cmd" : "mvn");
+        final List<File> mvnCmds = CommandUtils.resolvePathForCommandForCmdOnWindows("mvn");
         if (!mvnCmds.isEmpty()) {
             final File mvnCmd = mvnCmds.get(0);
             final File folder = Files.createTempDir();
@@ -83,11 +98,22 @@ public class AzureFunctionsUtils {
             maps.put("-Dversion", version);
             maps.put("-Dpackage", packageName);
             final String args = maps.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .collect(Collectors.joining(" "));
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining(" "));
             CommandUtils.executeMultipleLineOutput(mvnCmd.getAbsolutePath() + " archetype:generate" + " -B " + args, folder);
 
             return folder;
+        }
+        return null;
+    }
+
+    public static String generateFunctionClassByTrigger(String trigger, String packageName, String className) throws IOException {
+        final File tempFile = StreamUtil.getResourceFile(String.format("/azurefunction/templates/%s.template", trigger));
+        if (tempFile.exists()) {
+            final String templateText = FileUtils.readFileToString(tempFile, Charset.defaultCharset());
+            if (StringUtils.isNotBlank(templateText)) {
+                return StringUtils.replace(StringUtils.replace(templateText, "$packageName$", packageName), "$className$", className);
+            }
         }
         return null;
     }
@@ -104,25 +130,4 @@ public class AzureFunctionsUtils {
         return ret;
     }
 
-    private static List<File> resolvePathForCommand(final String command)
-            throws IOException, InterruptedException {
-        return extractFileFromOutput(CommandUtils.executeMultipleLineOutput((CommandUtils.isWindows() ? "where " : "which ") + command, null));
-    }
-
-    private static List<File> extractFileFromOutput(final String[] outputStrings) {
-        final List<File> list = new ArrayList<>();
-        for (final String outputLine : outputStrings) {
-            if (StringUtils.isBlank(outputLine)) {
-                continue;
-            }
-
-            final File file = new File(outputLine.replaceAll("\\r|\\n", ""));
-            if (!file.exists() || !file.isFile()) {
-                continue;
-            }
-
-            list.add(file);
-        }
-        return list;
-    }
 }

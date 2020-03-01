@@ -32,9 +32,6 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.PagedList;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.common.function.template.FunctionTemplate;
-import com.microsoft.azure.common.function.utils.FunctionUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHub;
@@ -63,7 +60,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     public static final String HTTP_TRIGGER = "HttpTrigger";
     public static final String TIMER_TRIGGER = "TimerTrigger";
     public static final String EVENT_HUB_TRIGGER = "EventHubTrigger";
-    private static List<FunctionTemplate> functionTemplates;
+
     private Map<String, JComponent[]> triggerComponents;
     private JComboBox<String> cbTriggerType;
     private JTextField txtFunctionName;
@@ -222,15 +219,6 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
     public EventHubNamespace getEventHubNamespace() {
         return (EventHubNamespace) this.cbEventHubNamespace.getSelectedItem();
-    }
-
-    public FunctionTemplate getFunctionTemplate(String trigger) throws AzureExecutionException {
-        if (functionTemplates == null) {
-            functionTemplates = FunctionUtils.loadAllFunctionTemplates();
-        }
-        return functionTemplates.stream()
-                .filter(template -> StringUtils.equalsIgnoreCase(trigger, template.getFunction()))
-                .findFirst().orElseThrow(() -> new AzureExecutionException("No such template"));
     }
 
     public Map<String, String> getTemplateParameters() {
