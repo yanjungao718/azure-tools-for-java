@@ -22,11 +22,7 @@
  */
 package com.microsoft.intellij.wizards.functions.module;
 
-import com.intellij.ide.util.projectWizard.JavaModuleBuilder;
-import com.intellij.ide.util.projectWizard.ModuleNameLocationSettings;
-import com.intellij.ide.util.projectWizard.ModuleWizardStep;
-import com.intellij.ide.util.projectWizard.SettingsStep;
-import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbService;
@@ -44,16 +40,15 @@ import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfiguration
 import com.microsoft.intellij.util.AzureFunctionsUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.wizards.functions.AzureFunctionsConstants;
-
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import javax.swing.Icon;
-
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 public class FunctionsModuleBuilder extends JavaModuleBuilder {
@@ -121,6 +116,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
             final String artifactId = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_ARTIFACTID_KEY);
             final String version = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_VERSION_KEY);
             final String packageName = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_PACKAGE_NAME_KEY);
+            final String[] triggers = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_TRIGGERS_KEY);
             File tempFolder = null;
             try {
                 tempFolder = AzureFunctionsUtils.createMavenProjectToTempFolder(groupId, artifactId, version,
@@ -129,10 +125,26 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
                     final File tempProjectFolder = new File(tempFolder, artifactId);
                     if (tempProjectFolder.exists() && tempProjectFolder.isDirectory()) {
                         final File moduleFile = new File(getContentEntryPath());
+
+                        // delete existing source and test files
+                        final File srcFolder = Paths.get(tempProjectFolder.getAbsolutePath(), "src/main/java").toFile();
+                        FileUtils.deleteQuietly(srcFolder);
+                        FileUtils.deleteQuietly(Paths.get(tempProjectFolder.getAbsolutePath(), "src/test/java").toFile());
+
+                        for (final String trigger : triggers) {
+                            // class name like HttpTriggerFunction
+                            final String className = trigger + "Function";
+                            final String fileContent = AzureFunctionsUtils.generateFunctionClassByTrigger(trigger, packageName, className);
+                            final File targetFile = Paths.get(srcFolder.getAbsolutePath(), String.format("%s/%s.java",
+                                    packageName.replace('.', '/'), className)).toFile();
+                            targetFile.getParentFile().mkdirs();
+                            FileUtils.write(targetFile,
+                                    fileContent, "utf-8");
+                        }
                         FileUtils.copyDirectory(tempProjectFolder, moduleFile);
 
                         final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(moduleFile);
-                        RefreshQueue.getInstance().refresh(true, true, (Runnable) null, new VirtualFile[] { vf });
+                        RefreshQueue.getInstance().refresh(true, true, null, new VirtualFile[] { vf });
                         final VirtualFile pomFile = vf.findChild("pom.xml");
                         if (pomFile != null) {
                             final MavenProjectsManager mavenProjectsManager = MavenProjectsManager.getInstance(project);

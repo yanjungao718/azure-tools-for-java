@@ -25,11 +25,9 @@ package com.microsoft.intellij.util;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
-import com.microsoft.azure.management.appservice.implementation.WebSiteManagementClientImpl;
-import com.microsoft.azure.management.graphrbac.ResourceType;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;

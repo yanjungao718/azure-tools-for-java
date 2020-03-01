@@ -31,6 +31,8 @@ import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
+import com.microsoft.azure.maven.common.utils.SneakyThrowUtils;
+import com.microsoft.intellij.util.CommandUtils;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.intellij.wizards.functions.AzureFunctionsConstants;
 
@@ -42,11 +44,14 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
 public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposable {
     private static final Logger LOGGER = LoggerFactory.getLogger(FunctionsModuleInfoStep.class);
+    private static final String MAVEN_TOOL = "Maven";
+    private static final String GRADLE_TOOL = "Gradle";
 
     private JPanel panel;
 
@@ -96,7 +101,7 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
         try {
             final FormBuilder formBuilder = new FormBuilder();
             final CollectionComboBoxModel<String> toolModel = new CollectionComboBoxModel<>(
-                    Arrays.asList("Maven", "Gradle"));
+                    Arrays.asList(MAVEN_TOOL, GRADLE_TOOL));
             toolComboBox = new ComboBox<>(toolModel);
             formBuilder.addLabeledComponent("Tool:", toolComboBox);
             groupIdField = new JBTextField(getCurrentOrDefaultValue(groupId, "com.example"));
@@ -125,6 +130,24 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
 
     @Override
     public boolean validate() throws ConfigurationException {
+        validateProperties("Tool", (String) toolComboBox.getSelectedItem(), tool -> {
+            if (StringUtils.equals(GRADLE_TOOL, tool)) {
+                SneakyThrowUtils.sneakyThrow(new ConfigurationException("Gradle will be supported in future."));
+            }
+            if (StringUtils.equals(MAVEN_TOOL, tool)) {
+                try {
+                    if (CommandUtils.resolvePathForCommandForCmdOnWindows("mvn").isEmpty()) {
+                        SneakyThrowUtils.sneakyThrow(new ConfigurationException(
+                                "Maven is not installed, please follow http://maven.apache.org/install.html to install it."));
+                    }
+                } catch (IOException | InterruptedException e) {
+                    SneakyThrowUtils.sneakyThrow(new ConfigurationException(
+                            "Cannot detect whether maven is available due to error: " + e.getMessage()));
+                }
+
+            }
+            return true;
+        });
         validateProperties("Group id", groupIdField.getText(), ValidationUtils::isValidGroupIdArtifactId);
         validateProperties("Artifact id", artifactIdField.getText(), ValidationUtils::isValidGroupIdArtifactId);
         validateProperties("Version", versionField.getText(), ValidationUtils::isValidVersion);

@@ -87,7 +87,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                 String className = parameters.compute("className", (k, v) -> AzureFunctionsUtils.normalizeClassName(v));
                 PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
                 String newName = packageName.replace('.', '/');
-                bindingTemplate = form.getFunctionTemplate(triggerType);
+                bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
 
                 if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                     if (StringUtils.isBlank(connectionName)) {

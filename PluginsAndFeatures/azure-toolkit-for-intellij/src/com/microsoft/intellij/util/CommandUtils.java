@@ -28,8 +28,19 @@ import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CommandUtils {
+    public static List<File> resolvePathForCommandForCmdOnWindows(final String command) throws IOException, InterruptedException {
+        return resolvePathForCommand(isWindows() ? (command + ".cmd") : command);
+    }
+
+    public static List<File> resolvePathForCommand(final String command)
+            throws IOException, InterruptedException {
+        return extractFileFromOutput(CommandUtils.executeMultipleLineOutput((CommandUtils.isWindows() ? "where " : "which ") + command, null));
+    }
+
     public static String[] executeMultipleLineOutput(final String cmd, File cwd)
             throws IOException, InterruptedException {
         final String[] cmds = isWindows() ? new String[]{"cmd.exe", "/c", cmd} : new String[]{"bash", "-c", cmd};
@@ -39,6 +50,23 @@ public class CommandUtils {
             return new String[0];
         }
         return StringUtils.split(IOUtils.toString(p.getInputStream(), "utf8"));
+    }
+
+    public static List<File> extractFileFromOutput(final String[] outputStrings) {
+        final List<File> list = new ArrayList<>();
+        for (final String outputLine : outputStrings) {
+            if (StringUtils.isBlank(outputLine)) {
+                continue;
+            }
+
+            final File file = new File(outputLine.replaceAll("\\r|\\n", ""));
+            if (!file.exists() || !file.isFile()) {
+                continue;
+            }
+
+            list.add(file);
+        }
+        return list;
     }
 
     public static boolean isWindows() {
