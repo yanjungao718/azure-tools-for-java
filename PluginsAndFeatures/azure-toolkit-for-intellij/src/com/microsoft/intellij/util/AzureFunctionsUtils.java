@@ -44,8 +44,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AzureFunctionsUtils {
-    private static final String CLASS_DECLARATION = "class Function {";
     private static List<FunctionTemplate> functionTemplates;
+    private static final String DOUBLE_QUOTE = "\"";
 
     public static FunctionTemplate getFunctionTemplate(String trigger) throws AzureExecutionException {
         if (functionTemplates == null) {
@@ -100,7 +100,7 @@ public class AzureFunctionsUtils {
             final String args = maps.entrySet().stream()
                     .map(e -> e.getKey() + "=" + e.getValue())
                     .collect(Collectors.joining(" "));
-            CommandUtils.executeMultipleLineOutput(mvnCmd.getAbsolutePath() + " archetype:generate" + " -B " + args, folder);
+            CommandUtils.executeMultipleLineOutput(wrapper(mvnCmd.getAbsolutePath()) + " archetype:generate" + " -B " + args, folder);
 
             return folder;
         }
@@ -130,4 +130,12 @@ public class AzureFunctionsUtils {
         return ret;
     }
 
+    private static String wrapper(String file) {
+        if (file.contains(" ")) {
+            return new StringBuilder().append(DOUBLE_QUOTE).append(file).append(
+                DOUBLE_QUOTE).toString();
+        }
+
+        return file;
+    }
 }

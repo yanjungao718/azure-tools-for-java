@@ -49,7 +49,7 @@ public class CommandUtils {
         if (exitCode != 0) {
             return new String[0];
         }
-        return StringUtils.split(IOUtils.toString(p.getInputStream(), "utf8"));
+        return StringUtils.split(IOUtils.toString(p.getInputStream(), "utf8"), "\n");
     }
 
     public static List<File> extractFileFromOutput(final String[] outputStrings) {
@@ -59,7 +59,7 @@ public class CommandUtils {
                 continue;
             }
 
-            final File file = new File(outputLine.replaceAll("\\r|\\n", ""));
+            final File file = new File(outputLine.replaceAll("\\r|\\n", "").trim());
             if (!file.exists() || !file.isFile()) {
                 continue;
             }
