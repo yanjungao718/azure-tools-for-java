@@ -24,6 +24,7 @@
 package com.microsoft.intellij.forms.function;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -62,6 +63,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     public static final String EVENT_HUB_TRIGGER = "EventHubTrigger";
 
     private Map<String, JComponent[]> triggerComponents;
+    private boolean isSignedIn;
     private JComboBox<String> cbTriggerType;
     private JTextField txtFunctionName;
     private JComboBox<AuthorizationLevel> cbAuthLevel;
@@ -91,7 +93,8 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         setTitle("Create Function Class");
 
         this.project = project;
-        this.triggerComponents = getComponentOfTriggers();
+        this.isSignedIn = AuthMethodManager.getInstance().isSignedIn();
+         initComponentOfTriggers();
 
         cbFunctionModule.setRenderer(new SimpleListCellRenderer<Module>() {
             @Override
@@ -151,8 +154,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 final String trigger = (String) cbTriggerType.getSelectedItem();
-                triggerComponents.values().forEach(components ->
-                        Arrays.stream(components).forEach(jComponent -> jComponent.setVisible(false)));
+                hideDynamicComponents();
                 if (StringUtils.isNotEmpty(trigger)) {
                     Arrays.stream(triggerComponents.get(trigger)).forEach(jComponent -> jComponent.setVisible(true));
                 }
@@ -189,7 +191,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 Object selectedCron = cbCron.getSelectedItem();
                 if (selectedCron instanceof String && StringUtils.equals((CharSequence) selectedCron, "Customized Schedule")) {
-                    addTimer();
+                    ApplicationManager.getApplication().invokeLater(() -> addTimer());
                 }
             }
         });
@@ -261,7 +263,11 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     }
 
     private void initTriggers() {
-        triggerComponents.keySet().forEach(triggerType -> cbTriggerType.addItem(triggerType));
+        triggerComponents.keySet().stream().filter(StringUtils::isNoneBlank).forEach(triggerType -> cbTriggerType.addItem(triggerType));
+        hideDynamicComponents();
+    }
+
+    private void hideDynamicComponents() {
         triggerComponents.values().forEach(components -> Arrays.stream(components).forEach(jComponent -> jComponent.setVisible(false)));
     }
 
@@ -270,6 +276,12 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         List<ValidationInfo> res = new ArrayList<>();
         validateProperties(res, "Package name", txtPackageName, ValidationUtils::isValidJavaPackageName);
         validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidFunctionName);
+
+        final String trigger = (String) cbTriggerType.getSelectedItem();
+        if (StringUtils.equals(trigger, EVENT_HUB_TRIGGER)) {
+            validateProperties(res, "Connection name", this.txtConnection, StringUtils::isNotBlank);
+        }
+
         return res;
     }
 
@@ -287,13 +299,18 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         }
     }
 
-    private Map<String, JComponent[]> getComponentOfTriggers() {
-        Map<String, JComponent[]> result = new HashMap<>();
-        result.put(HTTP_TRIGGER, new JComponent[]{lblAuthLevel, cbAuthLevel});
-        result.put(TIMER_TRIGGER, new JComponent[]{lblCron, cbCron});
-        result.put(EVENT_HUB_TRIGGER, new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
-            cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
-        return result;
+    private void initComponentOfTriggers() {
+        this.triggerComponents = new HashMap<>();
+        triggerComponents.put(HTTP_TRIGGER, new JComponent[]{lblAuthLevel, cbAuthLevel});
+        triggerComponents.put(TIMER_TRIGGER, new JComponent[]{lblCron, cbCron});
+        if (isSignedIn) {
+            triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
+                    cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
+        } else {
+            triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblConnectionName, txtConnection});
+            triggerComponents.put("", new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
+                    cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
+        }
     }
 
     private void fillAuthLevel() {
@@ -357,8 +374,12 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     }
 
     private void addTimer() {
-        String cron = JOptionPane.showInputDialog("Enter a cron expression of the format '{second} {minute} {hour} " +
+        String cron = JOptionPane.showInputDialog(this.cbCron, "Enter a cron expression of the format '{second} {minute} {hour} " +
                 "{day} {month} {day of week}' to specify the schedule");
+
+        if (StringUtils.isBlank(cron)) {
+            return;
+        }
         TimerCron result = new TimerCron(String.format("Customized: %s", cron), cron);
         cbCron.addItem(result);
         cbCron.setSelectedItem(result);

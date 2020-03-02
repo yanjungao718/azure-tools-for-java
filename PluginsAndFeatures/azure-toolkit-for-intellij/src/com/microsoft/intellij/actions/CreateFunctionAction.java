@@ -63,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateFunctionAction extends CreateElementActionBase {
+    private String DEFAULT_EVENT_HUB_CONNECTION_STRING = "Endpoint=sb://<your-envent-hub-namespace>.servicebus.windows.net/;" +
+            "SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-SAS-key>;";
     public CreateFunctionAction() {
         super("Azure Function Class",
                 "newPage.dialog.prompt", IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH,
@@ -91,8 +93,10 @@ public class CreateFunctionAction extends CreateElementActionBase {
 
                 if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                     if (StringUtils.isBlank(connectionName)) {
-                        throw new AzureExecutionException("Required property <connection> is missing");
+                        throw new AzureExecutionException("Required property 'connection' is missing");
                     }
+                    parameters.putIfAbsent("eventHubName", "myeventhub");
+                    parameters.putIfAbsent("consumerGroup", "$Default");
                 }
 
                 final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
@@ -118,7 +122,9 @@ public class CreateFunctionAction extends CreateElementActionBase {
 
                         if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                             try {
-                                String connectionString = getEventHubNamespaceConnectionString(form.getEventHubNamespace());
+                                String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
+                                        getEventHubNamespaceConnectionString(form.getEventHubNamespace());
+
                                 AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
                                         parameters.get("connection"), connectionString);
                             } catch (IOException e) {
