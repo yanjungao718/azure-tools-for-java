@@ -63,8 +63,9 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateFunctionAction extends CreateElementActionBase {
-    private String DEFAULT_EVENT_HUB_CONNECTION_STRING = "Endpoint=sb://<your-envent-hub-namespace>.servicebus.windows.net/;" +
+    private static final String DEFAULT_EVENT_HUB_CONNECTION_STRING = "Endpoint=sb://<your-envent-hub-namespace>.servicebus.windows.net/;" +
             "SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-SAS-key>;";
+
     public CreateFunctionAction() {
         super("Azure Function Class",
                 "newPage.dialog.prompt", IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH,
@@ -115,8 +116,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                             return;
                         }
                         CommandProcessor.getInstance().executeCommand(project, () -> {
-                            PsiFile psiFile = factory.createFileFromText(className
-                                    + ".java", JavaFileType.INSTANCE, functionClassContent);
+                            PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
                             psiElements.add(mkDirs.directory.add(psiFile));
                         }, null, null);
 

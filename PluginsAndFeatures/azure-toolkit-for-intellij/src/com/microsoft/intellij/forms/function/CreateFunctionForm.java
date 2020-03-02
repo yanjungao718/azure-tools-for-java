@@ -94,7 +94,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         this.project = project;
         this.isSignedIn = AuthMethodManager.getInstance().isSignedIn();
-         initComponentOfTriggers();
+        initComponentOfTriggers();
 
         cbFunctionModule.setRenderer(new SimpleListCellRenderer<Module>() {
             @Override
@@ -305,11 +305,11 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         triggerComponents.put(TIMER_TRIGGER, new JComponent[]{lblCron, cbCron});
         if (isSignedIn) {
             triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
-                    cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
+                cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
         } else {
             triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblConnectionName, txtConnection});
             triggerComponents.put("", new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
-                    cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
+                cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
         }
     }
 
