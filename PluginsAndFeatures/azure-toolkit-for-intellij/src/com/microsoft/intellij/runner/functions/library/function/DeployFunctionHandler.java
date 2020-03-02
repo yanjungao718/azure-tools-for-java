@@ -22,13 +22,12 @@ import com.microsoft.azure.common.handlers.ArtifactHandler;
 import com.microsoft.azure.common.handlers.artifact.ArtifactHandlerBase;
 import com.microsoft.azure.common.handlers.artifact.FTPArtifactHandlerImpl;
 import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
-import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
 import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
+import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -69,12 +68,12 @@ public class DeployFunctionHandler {
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private IAppServiceContext ctx;
-    private RunProcessHandler runProcessHandler;
+    private IPrompter prompter;
 
-    public DeployFunctionHandler(IAppServiceContext ctx, RunProcessHandler runProcessHandler) {
+    public DeployFunctionHandler(IAppServiceContext ctx, IPrompter prompter) {
         Preconditions.checkNotNull(ctx);
         this.ctx = ctx;
-        this.runProcessHandler = runProcessHandler;
+        this.prompter = prompter;
     }
 
     public FunctionApp execute() throws Exception {
@@ -226,8 +225,6 @@ public class DeployFunctionHandler {
     }
 
     private void prompt(String promptMessage) {
-        if (runProcessHandler.isProcessRunning()) {
-            runProcessHandler.setText(promptMessage);
-        }
+        prompter.prompt(promptMessage);
     }
 }
