@@ -164,10 +164,13 @@ public class FunctionUtils {
 
     public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods) throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
+        if (stagingFolder.toFile().isDirectory()) {
+            FileUtils.cleanDirectory(stagingFolder.toFile());
+        }
+
         final Path jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
         configMap.values().forEach(config -> config.setScriptFile(scriptFilePath));
-
         for (final Map.Entry<String, FunctionConfiguration> config : configMap.entrySet()) {
             if (StringUtils.isNotBlank(config.getKey())) {
                 final File functionJsonFile = Paths.get(stagingFolder.toString(), config.getKey(), FUNCTION_JSON)
