@@ -81,7 +81,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         // Deploy function to Azure
         final File stagingFolder = new File(functionDeployConfiguration.getDeploymentStagingDirectory());
         prepareStagingFolder(stagingFolder, processHandler);
-        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel);
+        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, processHandler);
         return deployFunctionHandler.execute();
     }
 
