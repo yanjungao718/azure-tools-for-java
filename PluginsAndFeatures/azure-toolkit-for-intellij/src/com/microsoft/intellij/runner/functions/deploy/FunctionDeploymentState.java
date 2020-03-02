@@ -40,6 +40,7 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.runner.functions.library.IPrompter;
 import com.microsoft.intellij.runner.functions.library.function.DeployFunctionHandler;
 import org.codehaus.plexus.util.StringOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +82,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         // Deploy function to Azure
         final File stagingFolder = new File(functionDeployConfiguration.getDeploymentStagingDirectory());
         prepareStagingFolder(stagingFolder, processHandler);
-        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel);
+        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, message -> {
+            if (processHandler.isProcessRunning()) {
+                processHandler.setText(message);
+            }
+        });
         return deployFunctionHandler.execute();
     }
 

@@ -22,12 +22,12 @@ import com.microsoft.azure.common.handlers.ArtifactHandler;
 import com.microsoft.azure.common.handlers.artifact.ArtifactHandlerBase;
 import com.microsoft.azure.common.handlers.artifact.FTPArtifactHandlerImpl;
 import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
-import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
+import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -57,7 +57,7 @@ public class DeployFunctionHandler {
     private static final String DEPLOY_START = "Trying to deploy the function app...";
     private static final String DEPLOY_FINISH = "Successfully deployed the function app at https://%s.azurewebsites.net";
     private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
-    private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app.";
+    private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app %s.";
     private static final String HOST_JAVA_VERSION = "Java version of function host : %s";
     private static final String HOST_JAVA_VERSION_OFF = "Java version of function host is not initiated," +
             " set it to Java 8";
@@ -68,10 +68,12 @@ public class DeployFunctionHandler {
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private IAppServiceContext ctx;
+    private IPrompter prompter;
 
-    public DeployFunctionHandler(IAppServiceContext ctx) {
+    public DeployFunctionHandler(IAppServiceContext ctx, IPrompter prompter) {
         Preconditions.checkNotNull(ctx);
         this.ctx = ctx;
+        this.prompter = prompter;
     }
 
     public FunctionApp execute() throws Exception {
@@ -79,9 +81,9 @@ public class DeployFunctionHandler {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
-        Log.prompt(DEPLOY_START);
+        prompt(DEPLOY_START);
         getArtifactHandler().publish(deployTarget);
-        Log.prompt(String.format(DEPLOY_FINISH, ctx.getAppName()));
+        prompt(String.format(DEPLOY_FINISH, ctx.getAppName()));
         return (FunctionApp) deployTarget.getApp();
     }
 
@@ -89,24 +91,24 @@ public class DeployFunctionHandler {
 
     // region Create or update Azure Functions
     private void updateFunctionAppSettings(final FunctionApp app) throws AzureExecutionException {
-        Log.prompt(FUNCTION_APP_UPDATE);
+        prompt(FUNCTION_APP_UPDATE);
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
         checkHostJavaVersion(app, update); // Check Java Version of Server
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        Log.prompt(FUNCTION_APP_UPDATE_DONE + ctx.getAppName());
+        prompt(String.format(FUNCTION_APP_UPDATE_DONE, ctx.getAppName()));
     }
 
     private void checkHostJavaVersion(final FunctionApp app, final Update update) {
         final JavaVersion serverJavaVersion = app.javaVersion();
         if (serverJavaVersion.toString().matches(VALID_JAVA_VERSION_PATTERN)) {
-            Log.prompt(String.format(HOST_JAVA_VERSION, serverJavaVersion));
+            prompt(String.format(HOST_JAVA_VERSION, serverJavaVersion));
         } else if (serverJavaVersion.equals(JavaVersion.OFF)) {
-            Log.prompt(HOST_JAVA_VERSION_OFF);
+            prompt(HOST_JAVA_VERSION_OFF);
             update.withJavaVersion(DEFAULT_JAVA_VERSION);
         } else {
-            Log.warn(HOST_JAVA_VERSION_INCORRECT);
+            prompt(HOST_JAVA_VERSION_INCORRECT);
             update.withJavaVersion(DEFAULT_JAVA_VERSION);
         }
     }
@@ -173,7 +175,7 @@ public class DeployFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            Log.prompt(settingIsEmptyMessage);
+            prompt(settingIsEmptyMessage);
             result.put(settingName, settingValue);
         }
     }
@@ -183,9 +185,9 @@ public class DeployFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            Log.prompt(settingIsEmptyMessage);
+            prompt(settingIsEmptyMessage);
         } else if (!setting.equals(settingValue)) {
-            Log.warn(String.format(changeSettingMessage, setting));
+            prompt(String.format(changeSettingMessage, setting));
         }
         result.put(settingName, settingValue);
     }
@@ -220,5 +222,9 @@ public class DeployFunctionHandler {
         return builder
                 .stagingDirectoryPath(this.ctx.getDeploymentStagingDirectoryPath())
                 .build();
+    }
+
+    private void prompt(String promptMessage) {
+        prompter.prompt(promptMessage);
     }
 }
