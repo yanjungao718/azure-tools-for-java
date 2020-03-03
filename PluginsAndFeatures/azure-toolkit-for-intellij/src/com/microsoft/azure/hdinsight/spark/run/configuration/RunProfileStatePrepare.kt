@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.openapi.actionSystem.ActionPromoter
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.DataContext
-import com.microsoft.azure.hdinsight.common.logger.ILogger
-import java.lang.reflect.Method
+import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.runners.ProgramRunner
+import rx.Observable
 
-// A bridge class to Scala plugin related Action Promoter
-open class SparkActionPromoterScalaDelegate(sparkScalaPromoterClassName: String) : ActionPromoter, ILogger {
-    private val delegate = SparkScalaPluginDelegate(sparkScalaPromoterClassName)
-
-    private val promoteMethod: Method?
-        get() = delegate.getMethod("promote", List::class.java, DataContext::class.java)
-
-    override fun promote(actions: MutableList<AnAction>?, context: DataContext?): MutableList<AnAction>? {
-        return (promoteMethod?.invoke(delegate.sparkScalaObj, actions, context) as? MutableList<*>)
-                ?.filterIsInstance(AnAction::class.java)?.toMutableList()
-    }
+interface RunProfileStatePrepare<T> {
+    /**
+     * Prepare some internal data which may be heavy cost, such as IO operation, for Run Profile State before
+     * invoking the method [com.intellij.execution.configurations.RunProfile.getState].
+     *
+     * @param runner: The target run profile runner
+     * @return: An Observable of produced internal data
+     */
+    fun prepare(runner: ProgramRunner<RunnerSettings>): Observable<T>
 }
-
-class SparkExecuteInConsoleActionPromoterDelegate : SparkActionPromoterScalaDelegate("com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoter")

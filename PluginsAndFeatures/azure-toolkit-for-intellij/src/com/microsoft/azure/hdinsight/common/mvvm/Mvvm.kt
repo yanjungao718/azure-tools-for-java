@@ -20,11 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+package com.microsoft.azure.hdinsight.common.mvvm
 
-import com.intellij.execution.configurations.RunConfigurationModule
-import com.intellij.openapi.project.Project
+import javax.swing.JComponent
 
-class ArisSparkConfigurationModule(project: Project) : RunConfigurationModule(project) {
-     val model = ArisSparkConfigurableModel(project)
+interface Mvvm {
+    interface Model
+    interface ViewModel
+
+    val model: Model
+    val view: JComponent
+    val viewModel: ViewModel
 }
