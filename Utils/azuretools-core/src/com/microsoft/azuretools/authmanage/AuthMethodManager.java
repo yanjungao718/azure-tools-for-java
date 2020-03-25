@@ -81,11 +81,7 @@ public class AuthMethodManager {
         if (getAzureManager() == null) {
             throw new IOException(CANNOT_GET_AZURE_MANAGER);
         }
-        AppPlatformManager client = getAzureManager().getAzureSpringCloudClient(sid);
-        if (client == null) {
-            throw new IOException(String.format(CANNOT_GET_AZURE_BY_SID, sid));
-        }
-        return client;
+        return getAzureManager().getAzureSpringCloudClient(sid);
     }
 
     public void addSignInEventListener(Runnable l) {

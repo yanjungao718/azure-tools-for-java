@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
@@ -136,7 +137,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
             try {
                 return authSpringCloud(sid, tid);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                return SneakyThrowUtils.sneakyThrow(e);
             }
         });
     }
