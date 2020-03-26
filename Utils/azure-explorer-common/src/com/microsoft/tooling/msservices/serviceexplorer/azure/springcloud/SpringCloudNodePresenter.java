@@ -30,9 +30,9 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SpringCloudNodePresenter<V extends SpringCloudNodeView> extends MvpPresenter<V> {
     public void onRefreshSpringCloudServiceNode(final String subscriptionId, final String clusterId)
@@ -41,7 +41,7 @@ public class SpringCloudNodePresenter<V extends SpringCloudNodeView> extends Mvp
         if (view != null) {
             final List<AppResourceInner> appList = AzureSpringCloudMvpModel.listAppsByClusterId(clusterId);
             final Observable<DeploymentResource> deployList = AzureSpringCloudMvpModel.listAllDeploymentsByClusterId(clusterId);
-            final Map<String, DeploymentResource> activeDeployments = new ConcurrentHashMap<>();
+            final Map<String, DeploymentResource> activeDeployments = new HashMap<>();
             for (final DeploymentResource deployment : deployList.toBlocking().toIterable()) {
                 for (final AppResourceInner app : appList) {
                     if (StringUtils.equals(app.name(), deployment.properties().appName())
