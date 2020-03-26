@@ -74,6 +74,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
@@ -87,16 +88,20 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper.getSubscriptionId;
+
 public class UIHelperImpl implements UIHelper {
     public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
     public static Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
+    public static final Key<String> APP_ID = new Key<>("appId");
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
-    private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
-            Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
-            Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
+    private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key =
+            ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
+                Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
+                Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
     private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
@@ -135,6 +140,19 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
         int optionDialog = JOptionPane.showOptionDialog(null,
+                message,
+                title,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                defaultOption);
+        return (optionDialog == JOptionPane.YES_OPTION);
+    }
+
+    @Override
+    public boolean showConfirmation(@NotNull Component node, @NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
+        int optionDialog = JOptionPane.showOptionDialog(node,
                 message,
                 title,
                 JOptionPane.YES_NO_OPTION,
@@ -203,7 +221,11 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public <T extends StorageServiceTreeItem> void openItem(Object projectObject, ClientStorageAccount clientStorageAccount, T item, String itemType, String itemName, String iconName) {
+    public <T extends StorageServiceTreeItem> void openItem(Object projectObject,
+                                                            ClientStorageAccount clientStorageAccount,
+                                                            T item, String itemType,
+                                                            String itemName,
+                                                            String iconName) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(item.getName() + itemType);
         itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(CLIENT_STORAGE_KEY, clientStorageAccount);
@@ -294,7 +316,9 @@ public class UIHelperImpl implements UIHelper {
             public void run() {
                 VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
                 if (file != null) {
-                    final BlobExplorerFileEditor containerFileEditor = (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                    final BlobExplorerFileEditor containerFileEditor =
+                            (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
+                                    .getEditors(file)[0];
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -386,7 +410,7 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE,
                     RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
         }
-        fileEditorManager.openFile( itemVirtualFile, true, true);
+        fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Override
@@ -408,6 +432,20 @@ public class UIHelperImpl implements UIHelper {
                 ((DeploymentPropertyView) fileEditor).onLoadProperty(node);
             }
         }
+    }
+
+    @Override
+    public void openSpringCloudAppPropertyView(SpringCloudAppNode node) {
+        Project project = (Project) node.getProject();
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return;
+        }
+        final String id = node.getAppId();
+        final String subscription = getSubscriptionId(id);
+        final String appName = node.getAppName();
+        // TODO
     }
 
     @Override
@@ -461,7 +499,7 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile = createVirtualFile(registryName, ContainerRegistryPropertyViewProvider.TYPE,
                     ContainerRegistryNode.ICON_PATH, sid, resId);
         }
-        FileEditor[] editors = fileEditorManager.openFile( itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+        FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
         for (FileEditor editor: editors) {
             if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
                     editor instanceof ContainerRegistryPropertyView) {
@@ -555,8 +593,8 @@ public class UIHelperImpl implements UIHelper {
             T editedItem = editedFile.getUserData((Key<T>) name2Key.get(item.getClass()));
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
             ClientStorageAccount editedClientStorageAccount = editedFile.getUserData(CLIENT_STORAGE_KEY);
-            if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName)) ||
-                    (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
+            if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName))
+                    || (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
                     && editedItem != null
                     && editedItem.getName().equals(item.getName())) {
                 return editedFile;
@@ -569,6 +607,10 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean isDarkTheme() {
         return UIUtil.isUnderDarcula();
+    }
+
+    public void closeSpringCloudAppPropertyView(@NotNull Object projectObject, String appId) {
+       // TODO
     }
 
     @NotNull
@@ -584,7 +626,8 @@ public class UIHelperImpl implements UIHelper {
 
         if (suggestDetail) {
             String separator = headerMessage.matches("^.*\\d$||^.*\\w$") ? ". " : " ";
-            headerMessage = headerMessage + separator + "Click on '" + ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
+            headerMessage = headerMessage + separator + "Click on '" +
+                    ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
         }
 
         return headerMessage;
@@ -632,7 +675,7 @@ public class UIHelperImpl implements UIHelper {
     private LightVirtualFile createVirtualFile(String name, String type, String icon, Map<Key, String> userData) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
         itemVirtualFile.setFileType(getFileType(type, icon));
-        for(final Map.Entry<Key, String> data : userData.entrySet()) {
+        for (final Map.Entry<Key, String> data : userData.entrySet()) {
             itemVirtualFile.putUserData(data.getKey(), data.getValue());
         }
         return itemVirtualFile;
@@ -659,7 +702,9 @@ public class UIHelperImpl implements UIHelper {
     }
 
     public static String readableFileSize(long size) {
-        if (size <= 0) return "0";
+        if (size <= 0) {
+            return "0";
+        }
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];

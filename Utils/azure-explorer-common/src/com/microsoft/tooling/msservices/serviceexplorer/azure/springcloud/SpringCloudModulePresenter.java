@@ -20,37 +20,27 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.concurrent.Callable;
+import java.io.IOException;
 
-public abstract class AzureNodeActionPromptListener extends AzureNodeActionListener {
-    private final String promptMessage;
-    private boolean optionDialog;
+public class SpringCloudModulePresenter<V extends SpringCloudModuleView> extends MvpPresenter<V> {
+    private static final String FAILED_TO_LOAD_CLUSTERS = "Failed to load Spring Cloud Clusters.";
+    private static final String ERROR_LOAD_CLUSTER = "Azure Services Explorer - Error Loading Spring Cloud Clusters";
 
-    public AzureNodeActionPromptListener(@NotNull Node azureNode,
-                                         @NotNull String promptMessage,
-                                         @NotNull String progressMessage) {
-        super(azureNode, progressMessage);
-        this.promptMessage = promptMessage;
+    public void onSpringCloudRefresh() {
+        final SpringCloudModuleView view = getMvpView();
+        if (view != null) {
+            try {
+                view.renderChildren(AzureSpringCloudMvpModel.listAllSpringCloudClusters());
+            } catch (final IOException e) {
+                DefaultLoader.getUIHelper().showException(FAILED_TO_LOAD_CLUSTERS, e, ERROR_LOAD_CLUSTER, false, true);
+            }
+        }
     }
 
-    @NotNull
-    @Override
-    protected Callable<Boolean> beforeAsyncActionPerformed() {
-        return () -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> optionDialog = DefaultLoader.getUIHelper()
-                    .showConfirmation(this.azureNode.getTree().getParent(),
-                            promptMessage,
-                            "Azure Explorer",
-                            new String[]{"Yes", "No"},
-                            null));
-
-            return optionDialog;
-        };
-    }
 }
