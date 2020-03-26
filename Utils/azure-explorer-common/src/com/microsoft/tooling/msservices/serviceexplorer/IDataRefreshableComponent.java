@@ -23,5 +23,5 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 public interface IDataRefreshableComponent<T, U> {
-    void noDataRefresh(T mainData, U additionalData);
+    void notifyDataRefresh(T mainData, U additionalData);
 }

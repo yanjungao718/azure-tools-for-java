@@ -67,7 +67,7 @@ public class DefaultAzureResourceTracker {
                 final List<IDataRefreshableComponent> toNotify = new ArrayList<>(list);
                 DefaultLoader.getIdeHelper().invokeLater(() -> {
                     for (IDataRefreshableComponent<T, U> node : toNotify) {
-                        node.noDataRefresh(data1, data2);
+                        node.notifyDataRefresh(data1, data2);
                     }
                 });
 

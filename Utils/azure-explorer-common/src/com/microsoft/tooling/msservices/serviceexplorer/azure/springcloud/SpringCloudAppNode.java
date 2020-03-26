@@ -97,7 +97,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, 
     }
 
     @Override
-    public void noDataRefresh(AppResourceInner newApp, DeploymentResourceInner deploy) {
+    public void notifyDataRefresh(AppResourceInner newApp, DeploymentResourceInner deploy) {
         fillData(newApp, deploy);
     }
 
