@@ -50,8 +50,8 @@ public interface UIHelper {
     boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption);
 
     default boolean showConfirmation(@NotNull Component component, @NotNull String message, @NotNull String title, @NotNull String[] options,
-                                  String defaultOption) {
-        return true;
+                                     String defaultOption) {
+        return showConfirmation(message, title, options, defaultOption);
     }
 
     void showInfo(@NotNull Node node, @NotNull String message);
