@@ -55,23 +55,10 @@ public class SpringCloudDependencyManager {
         doc = DocumentHelper.parseText(effectivePomXml);
     }
 
-    public Map<String, String> getCurrentVersions(String groupId) {
-        Map<String, String> res = new HashMap<>();
-        List<Node> nodes = doc.selectNodes("//ns:project/ns:dependencies/ns:dependency");
-        for (Node node : nodes) {
-            String thisGroupId = ((Element) node).elementTextTrim("groupId");
-            if (StringUtils.equals(thisGroupId, groupId)) {
-                res.put(((Element) node).elementTextTrim("artifactId"), ((Element) node).elementTextTrim("version"));
-            }
-        }
-
-        nodes = doc.selectNodes("//ns:project/ns:dependencyManagement/ns:dependencies/ns:dependency");
-        for (Node node : nodes) {
-            String thisGroupId = ((Element) node).elementTextTrim("groupId");
-            if (StringUtils.equals(thisGroupId, groupId)) {
-                res.putIfAbsent(((Element) node).elementTextTrim("artifactId"), ((Element) node).elementTextTrim("version"));
-            }
-        }
+    public Map<String, DependencyArtifact> getDependencyVersions() {
+        Map<String, DependencyArtifact> res = new HashMap<>();
+        collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencyManagement/ns:dependencies/ns:dependency"), res);
+        collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencies/ns:dependency"), res);
         return res;
     }
 
@@ -79,7 +66,52 @@ public class SpringCloudDependencyManager {
         new PomXmlUpdater().updateDependencies(file, des);
     }
 
-    public static List<String> getVersions(String groupId, String artifactId) throws IOException, DocumentException {
+    public static List<DependencyArtifact> getCompatibleVersions(List<DependencyArtifact> dependencies, String springBootVer)
+            throws AzureExecutionException, IOException, DocumentException {
+        List<DependencyArtifact> res = new ArrayList<>();
+        for (DependencyArtifact dependency : dependencies) {
+            List<String> latestVersions = getMavenCentralVersions(dependency.getGroupId(), dependency.getArtifactId());
+            String targetVer = "";
+            if (springBootVer.startsWith("2.2.")) {
+                targetVer = getCompatibleVersionWithBootVersion(latestVersions, "2.2.");
+            } else if (springBootVer.startsWith("2.1.")) {
+                targetVer = getCompatibleVersionWithBootVersion(latestVersions, "2.1.");
+            } else {
+                throw new AzureExecutionException("Unsupported spring-boot version: " + springBootVer);
+            }
+            if (StringUtils.isEmpty(targetVer)) {
+                throw new AzureExecutionException(String.format("Cannot get compatible version for %s:%s with Spring Boot with version %s",
+                        dependency.getGroupId(), dependency.getArtifactId(), springBootVer));
+            }
+            dependency.setCompilableVersion(targetVer);
+            if (!StringUtils.equals(dependency.getCurrentVersion(), targetVer)) {
+                res.add(dependency);
+            }
+        }
+        return res;
+    }
+
+    private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) throws AzureExecutionException {
+        String res = null;
+        for (String version : latestVersions) {
+            if (version != null && version.startsWith(bootVersionPrefix)) {
+                res = version;
+            }
+        }
+
+        return res;
+    }
+
+    private static void collectDependencyVersionsFromNodes(List<Node> nodes, Map<String, DependencyArtifact> versionMap) {
+        for (Node node : nodes) {
+            String groupId = ((Element) node).elementTextTrim("groupId");
+            String artifactId = ((Element) node).elementTextTrim("artifactId");
+            DependencyArtifact artifact = new DependencyArtifact(groupId, artifactId, ((Element) node).elementTextTrim("version"));
+            versionMap.put(groupId + ":" + artifactId, artifact);
+        }
+    }
+
+    private static List<String> getMavenCentralVersions(String groupId, String artifactId) throws IOException, DocumentException, AzureExecutionException {
         URLConnection conn = new URL(String.format("https://repo1.maven.org/maven2/%s/%s/maven-metadata.xml",
                 StringUtils.replace(groupId, ".", "/"), artifactId)).openConnection();
         List<String> res = new ArrayList<>();
@@ -94,52 +126,9 @@ public class SpringCloudDependencyManager {
                 }
             }
         }
-        return res;
-    }
-
-    public static List<DependencyArtifact> getCompatibleVersion(List<DependencyArtifact> dependencies, String springBootVer)
-            throws AzureExecutionException, IOException, DocumentException {
-        List<DependencyArtifact> res = new ArrayList<>();
-        for (DependencyArtifact dependency : dependencies) {
-            List<String> latestVersions = getVersions(dependency.getGroupId(), dependency.getArtifactId());
-            if (latestVersions.isEmpty()) {
-                throw new AzureExecutionException((String.format("Cannot get version from maven central for: %s:%s.",
-                        dependency.getGroupId(), dependency.getArtifactId())));
-            }
-            String targetVer = "";
-            if (springBootVer.startsWith("2.2.")) {
-
-                for (String ver2 : latestVersions) {
-                    if (ver2 != null && ver2.startsWith("2.2.")) {
-                        targetVer = ver2;
-                    }
-                }
-                if (StringUtils.isEmpty(targetVer)) {
-                    targetVer = "2.2.0";
-                }
-                dependency.setCompilableVersion(targetVer);
-                if (!StringUtils.equals(dependency.getCurrentVersion(), targetVer)) {
-                    res.add(dependency);
-                }
-
-            } else if (springBootVer.startsWith("2.1.")) {
-                for (String ver2 : latestVersions) {
-                    if (ver2 != null && ver2.startsWith("2.1.")) {
-                        targetVer = ver2;
-                    }
-                }
-                if (StringUtils.isEmpty(targetVer)) {
-                    targetVer = "2.1.1";
-                }
-                dependency.setCompilableVersion(targetVer);
-                if (!StringUtils.equals(dependency.getCurrentVersion(), targetVer)) {
-                    res.add(dependency);
-                }
-            } else {
-                throw new AzureExecutionException("Unsupported spring-boot version: " + springBootVer);
-            }
+        if (res.isEmpty()) {
+            throw new AzureExecutionException((String.format("Cannot get version from maven central for: %s:%s.", groupId, artifactId)));
         }
-
         return res;
     }
 }

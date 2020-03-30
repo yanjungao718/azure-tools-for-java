@@ -58,7 +58,6 @@ import org.jetbrains.idea.maven.server.MavenEmbedderWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,13 +66,6 @@ public class AddAzureDependencyAction extends AzureAnAction {
     private static final String ARTIFACT_ID = "spring-cloud-starter-azure-spring-cloud-client";
     public static final String SPRING_CLOUD_GROUP_ID = "org.springframework.cloud";
     public static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
-
-    private static DependencyArtifact getDependencyArtifact(String groupId, String artifactId, Map<String, Map<String, String>> versionMap) {
-        if (versionMap.containsKey(groupId)) {
-            return new DependencyArtifact(groupId, artifactId, versionMap.get(groupId).get(artifactId));
-        }
-        return new DependencyArtifact(groupId, artifactId);
-    }
 
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
@@ -103,18 +95,13 @@ public class AddAzureDependencyAction extends AzureAnAction {
                 try {
                     SpringCloudDependencyManager manager = new SpringCloudDependencyManager(evaluateEffectivePom);
 
-                    Map<String, String> versionMap = manager.getCurrentVersions(GROUP_ID);
-                    Map<String, String> springBootVersionMap = manager.getCurrentVersions(SPRING_BOOT_GROUP_ID);
-                    Map<String, String> springCloudVersionMap = manager.getCurrentVersions(SPRING_CLOUD_GROUP_ID);
-                    Map<String, Map<String, String>> versionMaps = new HashMap<>();
-                    versionMaps.put(GROUP_ID, versionMap);
-                    versionMaps.put(SPRING_BOOT_GROUP_ID, springBootVersionMap);
-                    versionMaps.put(SPRING_CLOUD_GROUP_ID, springCloudVersionMap);
+                    Map<String, DependencyArtifact> versionMaps = manager.getDependencyVersions();
                     ProgressManager.checkCanceled();
-                    String springBootVer = springBootVersionMap.get("spring-boot-autoconfigure");
-                    if (StringUtils.isEmpty(springBootVer)) {
+                    DependencyArtifact springBootArtifact = versionMaps.get(SPRING_BOOT_GROUP_ID + ":spring-boot-autoconfigure");
+                    if (springBootArtifact == null || StringUtils.isEmpty(springBootArtifact.getCurrentVersion())) {
                         throw new AzureExecutionException(String.format("Module %s is not a spring-boot application.", module.getName()));
                     }
+                    final String springBootVer = springBootArtifact.getCurrentVersion();
                     ProgressManager.checkCanceled();
 
                     progressIndicator.setText("Get latest versions ...");
@@ -126,7 +113,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
                     dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
                     ProgressManager.checkCanceled();
-                    List<DependencyArtifact> versionChanges = manager.getCompatibleVersion(dep, springBootVer);
+                    List<DependencyArtifact> versionChanges = manager.getCompatibleVersions(dep, springBootVer);
                     if (versionChanges.isEmpty()) {
                         PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
                                 "No updates are needed.");
@@ -196,10 +183,14 @@ public class AddAzureDependencyAction extends AzureAnAction {
         StringBuilder builder = new StringBuilder();
         for (DependencyArtifact change : changes) {
             boolean isUpdate = StringUtils.isNotEmpty(change.getCurrentVersion());
-            builder.append(String.format("%s Group: %s, Artifact: %s, Version: %s%s \n",
-                    isUpdate ? "Update" : "Add", change.getGroupId(), change.getArtifactId(),
+            builder.append(String.format("%s dependency: Group: %s, Artifact: %s, Version: %s%s \n",
+                    isUpdate ? "Update" : "Add ", change.getGroupId(), change.getArtifactId(),
                     isUpdate ? (change.getCurrentVersion() + " -> ") : "", change.getCompilableVersion()));
         }
         return builder.toString();
+    }
+
+    private static DependencyArtifact getDependencyArtifact(String groupId, String artifactId, Map<String, DependencyArtifact> versionMap) {
+        return versionMap.computeIfAbsent(groupId + ":" + artifactId, key -> new DependencyArtifact(groupId, artifactId));
     }
 }
