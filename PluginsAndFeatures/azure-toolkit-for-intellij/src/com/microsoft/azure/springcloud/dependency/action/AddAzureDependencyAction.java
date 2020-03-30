@@ -120,25 +120,20 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     progressIndicator.setText("Get latest versions ...");
                     List<DependencyArtifact> dep = new ArrayList<>();
                     dep.add(getDependencyArtifact(GROUP_ID, ARTIFACT_ID, versionMaps));
-                    ProgressManager.checkCanceled();
                     dep.add(getDependencyArtifact(SPRING_BOOT_GROUP_ID, "spring-boot-starter-actuator", versionMaps));
-                    ProgressManager.checkCanceled();
                     dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-config-client", versionMaps));
-                    ProgressManager.checkCanceled();
                     dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-netflix-eureka-client", versionMaps));
-                    ProgressManager.checkCanceled();
                     dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
-                    ProgressManager.checkCanceled();
                     dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
                     ProgressManager.checkCanceled();
                     List<DependencyArtifact> versionChanges = manager.getCompatibleVersion(dep, springBootVer);
                     if (versionChanges.isEmpty()) {
                         PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
-                                "No update are needed.");
+                                "No updates are needed.");
                         return;
                     }
-                    progressIndicator.setText("Applying versions ...");
                     ProgressManager.checkCanceled();
+                    progressIndicator.setText("Applying versions ...");
                     File pomFile = new File(mavenProject.getFile().getCanonicalPath());
                     manager.update(pomFile, versionChanges);
 

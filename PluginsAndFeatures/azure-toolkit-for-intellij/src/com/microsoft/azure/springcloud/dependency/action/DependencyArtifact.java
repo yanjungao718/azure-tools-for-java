@@ -23,6 +23,11 @@
 package com.microsoft.azure.springcloud.dependency.action;
 
 public class DependencyArtifact {
+    private String groupId;
+    private String artifactId;
+    private String compilableVersion;
+    private String currentVersion;
+
     public DependencyArtifact(String groupId, String artifactId) {
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -65,9 +70,4 @@ public class DependencyArtifact {
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
     }
-
-    private String groupId;
-    private String artifactId;
-    private String compilableVersion;
-    private String currentVersion;
 }
