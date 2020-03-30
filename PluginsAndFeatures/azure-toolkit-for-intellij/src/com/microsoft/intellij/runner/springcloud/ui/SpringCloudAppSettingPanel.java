@@ -40,7 +40,7 @@ import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfigu
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -223,7 +223,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
                 boolean existed = false;
                 for (int i = 0; i < count; i++) {
                     AzureResourceWrapper option = (AzureResourceWrapper) cbSpringApps.getItemAt(i);
-                    if (!option.isFixedOption() && org.apache.commons.lang3.StringUtils.equals(option.getName(), newApp.getName())) {
+                    if (!option.isFixedOption() && StringUtils.equals(option.getName(), newApp.getName())) {
                         existed = true;
                         newApp = option;
                         break;
