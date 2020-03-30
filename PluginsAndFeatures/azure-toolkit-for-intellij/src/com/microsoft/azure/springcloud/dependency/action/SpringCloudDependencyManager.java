@@ -92,8 +92,8 @@ public class SpringCloudDependencyManager {
         return res;
     }
 
-    private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) throws AzureExecutionException {
-        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions),version -> version != null && version.startsWith(bootVersionPrefix));
+    private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) {
+        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions), version -> version != null && version.startsWith(bootVersionPrefix));
     }
 
     private static void collectDependencyVersionsFromNodes(List<Node> nodes, Map<String, DependencyArtifact> versionMap) {

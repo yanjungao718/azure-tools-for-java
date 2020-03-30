@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.springcloud.deploy;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;

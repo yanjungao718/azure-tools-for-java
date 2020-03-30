@@ -99,7 +99,7 @@ public class ValidationUtils {
         }
     }
 
-    public static void validateAppServicePlanName(String appServicePlan){
+    public static void validateAppServicePlanName(String appServicePlan) {
         if (StringUtils.isEmpty(appServicePlan)) {
             throw new IllegalArgumentException("App Service Plan name is required");
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
