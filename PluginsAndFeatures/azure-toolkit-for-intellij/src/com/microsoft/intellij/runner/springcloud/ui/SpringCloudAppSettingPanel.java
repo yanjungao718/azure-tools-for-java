@@ -1,0 +1,503 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+package com.microsoft.intellij.runner.springcloud.ui;
+
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.ui.PopupMenuListenerAdapter;
+import com.intellij.ui.SimpleListCellRenderer;
+import com.microsoft.azure.ProxyResource;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper;
+import com.microsoft.intellij.common.AzureResourceWrapper;
+import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
+import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
+import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
+
+import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import java.util.*;
+import java.util.function.Function;
+
+public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDeployConfiguration> implements SpringCloudDeploySettingMvpView {
+    private final SpringCloudDeployConfiguration configuration;
+    private static final String CREATE_APP = "Create app ...";
+    private JPanel panelRoot;
+    private JComboBox cbMavenProject;
+    private JLabel lblMavenProject;
+    private JComboBox cbSpringApps;
+    private JRadioButton java8RadioButton;
+    private JComboBox cbCPU;
+    private JComboBox cbMemory;
+    private JTextField textJvmOptions;
+    private JComboBox cbInstanceCount;
+    private JPanel pnlJavaRadio;
+    private JRadioButton java11RadioButton;
+    private JPanel pnlPersistentRadio;
+    private JRadioButton radioEnablePersistent;
+    private JRadioButton radioDisablePersistent;
+    private JLabel lblCpu;
+    private JLabel lblMemory;
+    private JLabel lblInstanceCount;
+    private JLabel lblJvmOptions;
+    private JLabel lblPersistent;
+    private JComboBox cbSubscription;
+    private JComboBox cbClusters;
+    private JPanel pnPublicRadio;
+    private JRadioButton radioPublic;
+    private JRadioButton radioNonPublic;
+    private JComboBox cbArtifact;
+    private JLabel lblArtifact;
+
+    private SpringCloudDeploySettingPresenter presenter = null;
+
+    private String lastSelectedSubsId;
+    private String lastSelectedClusterId;
+
+    public SpringCloudAppSettingPanel(@NotNull Project project, @NotNull SpringCloudDeployConfiguration configuration) {
+        super(project);
+        this.configuration = configuration;
+        this.presenter = new SpringCloudDeploySettingPresenter();
+        this.presenter.onAttachView(this);
+        cbSubscription.setRenderer(new SimpleListCellRenderer<Object>() {
+            @Override
+            public void customize(JList list, Object subscription, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (subscription instanceof Subscription) {
+                    setText(((Subscription) subscription).displayName());
+                } else {
+                    setText(Objects.toString(subscription, ""));
+                }
+            }
+        });
+        cbClusters.setRenderer(new SimpleListCellRenderer<Object>() {
+            @Override
+            public void customize(JList list, Object cluster, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (cluster instanceof ServiceResourceInner) {
+                    setText(((ServiceResourceInner) cluster).name());
+                } else {
+                    setText(Objects.toString(cluster, ""));
+                }
+            }
+        });
+
+        cbSpringApps.setRenderer(new SimpleListCellRenderer<Object>() {
+            @Override
+            public void customize(JList list, Object app, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                setText(Objects.toString(app, ""));
+            }
+        });
+
+        cbSubscription.addActionListener(e -> {
+            if (!(cbSubscription.getSelectedItem() instanceof Subscription)) {
+                return;
+            }
+            Subscription subscription = (Subscription) cbSubscription.getSelectedItem();
+            if (subscription == null) {
+                return;
+            }
+            String selectedSid = subscription.subscriptionId();
+            if (!Comparing.equal(lastSelectedSubsId, selectedSid)) {
+                cbClusters.setEnabled(false);
+                presenter.onLoadClusters(selectedSid);
+                lastSelectedSubsId = selectedSid;
+            }
+        });
+
+        cbClusters.addActionListener(e -> {
+            if (cbClusters.getSelectedItem() instanceof String) {
+                return;
+            }
+            ServiceResourceInner cluster = (ServiceResourceInner) cbClusters.getSelectedItem();
+            if (cluster == null) {
+                return;
+            }
+            String selectedCid = cluster.id();
+            if (!Comparing.equal(lastSelectedClusterId, selectedCid)) {
+                cbSpringApps.setEnabled(false);
+                presenter.onLoadApps(selectedCid);
+                lastSelectedClusterId = selectedCid;
+            }
+        });
+        final ButtonGroup javaButtonGroup = new ButtonGroup();
+        javaButtonGroup.add(java8RadioButton);
+        javaButtonGroup.add(java11RadioButton);
+
+        final ButtonGroup persistentButtonGroup = new ButtonGroup();
+        persistentButtonGroup.add(radioEnablePersistent);
+        persistentButtonGroup.add(radioDisablePersistent);
+
+        final ButtonGroup publicButtonGroup = new ButtonGroup();
+        publicButtonGroup.add(radioPublic);
+        publicButtonGroup.add(radioNonPublic);
+
+        init();
+        initCluster(configuration.getClusterName());
+        initApp(configuration.getAppName(), configuration.isCreateNewApp());
+    }
+
+    private void init() {
+        presenter.onLoadSubscription();
+        cbSubscription.addItem(CommonConst.REFRESH_TEXT);
+    }
+
+    private void initCluster(String initialValue) {
+        cbClusters.removeAllItems();
+        if (StringUtils.isNotEmpty(initialValue)) {
+            cbClusters.addItem(initialValue + " ...");
+        } else {
+            cbClusters.addItem(CommonConst.REFRESH_TEXT);
+            cbClusters.setSelectedItem(CommonConst.REFRESH_TEXT);
+        }
+        cbClusters.setEnabled(false);
+    }
+
+    private void initApp(String initialValue, boolean isCreate) {
+        cbSpringApps.removeAllItems();
+        cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
+
+        if (StringUtils.isNotEmpty(initialValue)) {
+            AzureResourceWrapper cacheOne = new AzureResourceWrapper(initialValue, false, isCreate);
+            cbSpringApps.addItem(cacheOne);
+            cbSpringApps.setSelectedItem(cacheOne);
+        } else {
+            cbSpringApps.setSelectedIndex(-1);
+        }
+        cbSpringApps.addPopupMenuListener(new PopupMenuListenerAdapter() {
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                onSelectApp();
+            }
+        });
+        cbSpringApps.setEnabled(false);
+    }
+
+    private void onSelectApp() {
+        final AzureResourceWrapper selectedObject = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
+        if (selectedObject != null && selectedObject.isFixedOption() && selectedObject.getName().equals(CREATE_APP)) {
+            ApplicationManager.getApplication().invokeLater(() -> createNewAppWizard());
+        }
+    }
+
+    private void createNewAppWizard() {
+        cbSpringApps.setSelectedItem(null);
+        final CreateSpringCloudAppDialog dialog = new CreateSpringCloudAppDialog(null, cbSpringApps, "Create Azure Spring Cloud app");
+        dialog.pack();
+        if (dialog.showAndGet()) {
+            AzureResourceWrapper newApp = dialog.getNewAppWrapper();
+            if (newApp != null) {
+                int count = cbSpringApps.getItemCount();
+                boolean existed = false;
+                for (int i = 0; i < count; i++) {
+                    AzureResourceWrapper option = (AzureResourceWrapper) cbSpringApps.getItemAt(i);
+                    if (!option.isFixedOption() && org.apache.commons.lang3.StringUtils.equals(option.getName(), newApp.getName())) {
+                        existed = true;
+                        newApp = option;
+                        break;
+                    }
+                }
+                if (!existed) {
+                    cbSpringApps.addItem(newApp);
+                    count = cbSpringApps.getItemCount();
+                    List<Object> toRemove = new ArrayList<>();
+                    for (int i = 0; i < count; i++) {
+                        final AzureResourceWrapper resource = (AzureResourceWrapper) cbSpringApps.getItemAt(i);
+                        if (resource.isFixedOption() && !resource.getName().equals(CREATE_APP)) {
+                            toRemove.add(resource);
+                        }
+                    }
+                    for (Object rem : toRemove) {
+                        cbSpringApps.removeItem(rem);
+                    }
+                }
+                cbSpringApps.setSelectedItem(newApp);
+            }
+        } else {
+            int count = cbSpringApps.getItemCount();
+            for (int i = 0; i < count; i++) {
+                final AzureResourceWrapper resource = (AzureResourceWrapper) cbSpringApps.getItemAt(i);
+                if (resource.isFixedOption() && resource.getName().equals(CREATE_APP)) {
+                    continue;
+                }
+                cbSpringApps.setSelectedItem(resource);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void fillSubscription(@NotNull List<Subscription> subscriptions) {
+        cbSubscription.removeAllItems();
+        for (Subscription subscription : subscriptions) {
+            cbSubscription.addItem(subscription);
+            if (Comparing.equal(subscription.subscriptionId(), configuration.getSubscriptionId())) {
+                cbSubscription.setSelectedItem(subscription);
+            }
+        }
+    }
+
+    @Override
+    public void fillClusters(@NotNull List<ServiceResourceInner> clusters) {
+        boolean selected = cbClusters.getSelectedItem() != null;
+        cbClusters.removeAllItems();
+        clusters.sort(Comparator.comparing(ProxyResource::name));
+        boolean first = true;
+
+        for (ServiceResourceInner cluster : clusters) {
+            // https://stackoverflow.com/questions/15549568/jcombobox-selects-the-first-item-by-iteself
+            if (first && selected) {
+                cbClusters.insertItemAt(cluster, 0);
+            } else {
+                cbClusters.addItem(cluster);
+            }
+            first = false;
+            if (Comparing.equal(cluster.name(), configuration.getClusterName())) {
+                cbClusters.setSelectedItem(cluster);
+            }
+        }
+        // select first if there are clusters
+        if (cbClusters.getSelectedItem() == null && !clusters.isEmpty()) {
+            cbClusters.setSelectedItem(clusters.get(0));
+        }
+        cbClusters.setEnabled(true);
+    }
+
+    @Override
+    public void fillApps(@NotNull List<AppResourceInner> apps) {
+        // cbSpringApps.removeAllItems();
+        AzureResourceWrapper currentSel = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
+        cbSpringApps.removeAllItems();
+        cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
+        apps.sort(Comparator.comparing(ProxyResource::name));
+        AzureResourceWrapper firstItem = null;
+        for (AppResourceInner app : apps) {
+            AzureResourceWrapper wrapper = new AzureResourceWrapper(app);
+            cbSpringApps.addItem(wrapper);
+            if (firstItem == null) {
+                firstItem = wrapper;
+            }
+            if (currentSel != null && StringUtils.equals(currentSel.getName(), app.name())) {
+                cbSpringApps.setSelectedItem(wrapper);
+                currentSel = null;
+            }
+        }
+        if (currentSel != null && currentSel.isFixedOption()) {
+            cbSpringApps.setSelectedItem(null);
+        }
+
+        if (currentSel != null && currentSel.isNewCreate()) {
+            cbSpringApps.addItem(currentSel);
+            cbSpringApps.setSelectedItem(currentSel);
+        } else {
+            AzureResourceWrapper select2 = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
+            if (select2 != null && select2.isFixedOption()) {
+                // avoid select createApp by default
+                if (apps.isEmpty()) {
+                    AzureResourceWrapper emptyOption = new AzureResourceWrapper("<Empty>", true);
+                    cbSpringApps.addItem(emptyOption);
+                    cbSpringApps.setSelectedItem(emptyOption);
+                } else {
+                    cbSpringApps.setSelectedItem(firstItem);
+                }
+            }
+        }
+        cbSpringApps.setEnabled(true);
+    }
+
+    @NotNull
+    @Override
+    public String getPanelName() {
+        return "Deploy to Azure Spring Cloud";
+    }
+
+    @Override
+    public void disposeEditor() {
+        this.presenter.onDetachView();
+    }
+
+    @Override
+    protected void resetFromConfig(@NotNull SpringCloudDeployConfiguration configuration) {
+        this.cbCPU.setSelectedItem(intToString(configuration.getCpu(), 1));
+        this.cbMemory.setSelectedItem(intToString(configuration.getMemoryInGB(), 1));
+        this.cbInstanceCount.setSelectedItem(intToString(configuration.getInstanceCount(), 1));
+        this.textJvmOptions.setText(configuration.getJvmOptions());
+
+        RuntimeVersion javaVer = configuration.getRuntimeVersion();
+        if (javaVer == RuntimeVersion.JAVA_11) {
+            this.java11RadioButton.setSelected(true);
+        } else {
+            this.java8RadioButton.setSelected(true);
+        }
+
+        boolean persistence = configuration.isEnablePersistentStorage();
+        if (persistence) {
+            this.radioEnablePersistent.setSelected(true);
+        } else {
+            this.radioDisablePersistent.setSelected(true);
+        }
+
+        boolean isPublic = configuration.isPublic();
+        this.radioPublic.setSelected(isPublic);
+        this.radioNonPublic.setSelected(!isPublic);
+        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+        setupMavenProjectCombo(mavenProjects, this.configuration.getModuleName());
+        // if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
+        //     this.envTable.setEnvs(configuration.getEnvironment());
+        // }
+    }
+
+    private static String intToString(Integer i, int defaultValue) {
+        if (i != null) {
+            return i.toString();
+        }
+        return Integer.toString(defaultValue);
+    }
+
+    @Override
+    protected void apply(@NotNull SpringCloudDeployConfiguration configuration) {
+        configuration.setSubscriptionId(getValueFromComboBox(this.cbSubscription, Subscription::subscriptionId, Subscription.class));
+
+        if (cbClusters.getSelectedItem() instanceof String) {
+            configuration.setClusterName((String) cbClusters.getSelectedItem());
+        } else {
+            configuration.setClusterName(getValueFromComboBox(this.cbClusters, ServiceResourceInner::name, ServiceResourceInner.class));
+            ServiceResourceInner cls = (ServiceResourceInner) this.cbClusters.getSelectedItem();
+            if (cls != null) {
+                configuration.setResourceGroup(IdHelper.getResourceGroup(cls.id()));
+            }
+        }
+
+        AzureResourceWrapper ar = getValueFromComboBox(this.cbSpringApps, t -> t, AzureResourceWrapper.class);
+        if (ar != null) {
+            configuration.setAppName(ar.getName());
+            configuration.setCreateNewApp(ar.isNewCreate());
+        }
+        configuration.setAppName(getValueFromComboBox(this.cbSpringApps, AzureResourceWrapper::getName, AzureResourceWrapper.class));
+
+        configuration.setCpu(getValueFromComboBox(this.cbCPU, Integer::parseInt, String.class));
+
+        configuration.setMemoryInGB(getValueFromComboBox(this.cbMemory, Integer::parseInt, String.class));
+        configuration.setInstanceCount(getValueFromComboBox(this.cbInstanceCount, Integer::parseInt, String.class));
+        if (this.java8RadioButton.isSelected()) {
+            configuration.setRuntimeVersion(RuntimeVersion.JAVA_8);
+        } else if (this.java11RadioButton.isSelected()) {
+            configuration.setRuntimeVersion(RuntimeVersion.JAVA_11);
+        }
+        if (StringUtils.isNotEmpty(this.textJvmOptions.getText())) {
+            configuration.setJvmOptions(this.textJvmOptions.getText());
+        } else {
+            configuration.setJvmOptions("");
+        }
+        configuration.setEnablePersistentStorage(this.radioEnablePersistent.isSelected());
+        configuration.setPublic(radioPublic.isSelected());
+        configuration.setModuleName(getTargetName());
+        configuration.setArtifactPath(getArtifactPath());
+        // configuration.setEnvironment(this.envTable.getEnvs());
+    }
+
+    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetName) {
+        cbMavenProject.removeAllItems();
+        if (null != mvnprjs) {
+            for (MavenProject prj : mvnprjs) {
+                cbMavenProject.addItem(prj);
+                if (MavenRunTaskUtil.getTargetName(prj).equals(targetName)) {
+                    cbMavenProject.setSelectedItem(prj);
+                }
+            }
+        }
+        cbMavenProject.setVisible(true);
+        getLblMavenProject().setVisible(true);
+    }
+
+    protected String getTargetName() {
+        String targetName = "";
+        MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
+        if (mavenProject != null) {
+            targetName = MavenRunTaskUtil.getTargetName(mavenProject);
+        }
+        return targetName;
+    }
+
+    protected String getArtifactPath() {
+        String targetName = "";
+        MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
+        if (mavenProject != null) {
+            targetName = MavenRunTaskUtil.getTargetPath(mavenProject);
+        }
+        return targetName;
+    }
+
+    private static <T, Q> T getValueFromComboBox(JComboBox comboBox, Function<Q, T> selectFunc, @NotNull Class<Q> clz) {
+        if (comboBox == null || comboBox.getSelectedItem() == null) {
+            return null;
+        }
+        Object s = comboBox.getSelectedItem();
+        if (clz.isAssignableFrom(s.getClass())) {
+            return selectFunc.apply((Q) s);
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public JPanel getMainPanel() {
+        return this.panelRoot;
+    }
+
+    @NotNull
+    @Override
+    protected JComboBox<Artifact> getCbArtifact() {
+        return cbArtifact;
+    }
+
+    @NotNull
+    @Override
+    protected JLabel getLblArtifact() {
+        return lblArtifact;
+    }
+
+    @NotNull
+    @Override
+    protected JComboBox<MavenProject> getCbMavenProject() {
+        return cbMavenProject;
+    }
+
+    @NotNull
+    @Override
+    protected JLabel getLblMavenProject() {
+        return lblMavenProject;
+    }
+}
