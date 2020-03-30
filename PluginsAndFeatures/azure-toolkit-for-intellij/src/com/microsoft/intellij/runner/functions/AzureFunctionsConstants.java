@@ -32,7 +32,6 @@ public class AzureFunctionsConstants {
     public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
     public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
 
-
     public static final Map<String, String> HINT = new HashMap<String, String>() {{
             put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
                     "string for all functions except for HTTP triggered functions.");
