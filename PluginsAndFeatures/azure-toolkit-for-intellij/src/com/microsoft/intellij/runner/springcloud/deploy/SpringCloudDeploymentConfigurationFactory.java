@@ -20,25 +20,33 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.intellij.runner.springcloud.deploy;
 
-import org.apache.commons.lang3.StringUtils;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.project.Project;
+import com.microsoft.intellij.runner.springcloud.SpringCloudConstants;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+public class SpringCloudDeploymentConfigurationFactory extends ConfigurationFactory {
+    public SpringCloudDeploymentConfigurationFactory(@NotNull ConfigurationType type) {
+        super(type);
+    }
 
-public class AzureFunctionsConstants {
-    public static final String DISPLAY_NAME = "Azure Functions";
-    public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
-    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
+    @NotNull
+    @Override
+    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
+        return new SpringCloudDeployConfiguration(project, this, project.getName());
+    }
 
-    public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
-                    "string for all functions except for HTTP triggered functions.");
-            put("FUNCTIONS_WORKER_RUNTIME", "The language worker runtime to load in the function app.");
-        }};
+    @Override
+    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
+        return new SpringCloudDeployConfiguration(template.getProject(), this, name);
+    }
 
-    public static String getAppSettingHint(String appSettingKey) {
-        return HINT.containsKey(appSettingKey) ? HINT.get(appSettingKey) : StringUtils.EMPTY;
+    @Override
+    public String getName() {
+        return SpringCloudConstants.FACTORY_NAME;
     }
 }

@@ -20,25 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.intellij.runner.springcloud;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
-public class AzureFunctionsConstants {
-    public static final String DISPLAY_NAME = "Azure Functions";
-    public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
-    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
-
-    public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
-                    "string for all functions except for HTTP triggered functions.");
-            put("FUNCTIONS_WORKER_RUNTIME", "The language worker runtime to load in the function app.");
-        }};
-
-    public static String getAppSettingHint(String appSettingKey) {
-        return HINT.containsKey(appSettingKey) ? HINT.get(appSettingKey) : StringUtils.EMPTY;
-    }
+public class SpringCloudConstants {
+    public static final String DISPLAY_NAME = "Azure Spring Cloud Services";
+    public static final String FACTORY_NAME = "Deploy Spring Cloud Services";
+    public static final int DEFAULT_PERSISTENT_DISK_SIZE = 50;
+    public static final String DEFAULT_DEPLOYMENT_NAME = "default";
+    public static final String DEFAULT_PERSISTENT_DISK_MOUNT_PATH = "/persistent";
+    public static final String AZURE_SPRING_CLOUD_ICON = "azure-springcloud-small.png";
 }

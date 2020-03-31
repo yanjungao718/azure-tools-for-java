@@ -19,26 +19,50 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.intellij.common;
 
-package com.microsoft.intellij.runner.functions;
 
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.azure.ProxyResource;
 
-import java.util.HashMap;
-import java.util.Map;
+public class AzureResourceWrapper {
 
-public class AzureFunctionsConstants {
-    public static final String DISPLAY_NAME = "Azure Functions";
-    public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
-    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
+    private static final String NEW_CREATED_PATTERN = "%s (New Created)";
 
-    public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
-                    "string for all functions except for HTTP triggered functions.");
-            put("FUNCTIONS_WORKER_RUNTIME", "The language worker runtime to load in the function app.");
-        }};
+    private final boolean isNewCreate;
+    private final boolean fixedOption;
+    private final String name;
 
-    public static String getAppSettingHint(String appSettingKey) {
-        return HINT.containsKey(appSettingKey) ? HINT.get(appSettingKey) : StringUtils.EMPTY;
+    public AzureResourceWrapper(String name, boolean fixedOption, boolean isNewCreate) {
+        this.fixedOption = fixedOption;
+        this.isNewCreate = isNewCreate;
+        this.name = name;
+    }
+    public AzureResourceWrapper(String name, boolean fixedOption) {
+        this.fixedOption = fixedOption;
+        this.isNewCreate = !fixedOption;
+        this.name = name;
+    }
+
+    public AzureResourceWrapper(ProxyResource app) {
+        this.fixedOption = false;
+        this.isNewCreate = false;
+        this.name = app.name();
+    }
+
+    public boolean isNewCreate() {
+        return isNewCreate;
+    }
+
+    public boolean isFixedOption() {
+        return fixedOption;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return isNewCreate ? String.format(NEW_CREATED_PATTERN, name) : name;
     }
 }

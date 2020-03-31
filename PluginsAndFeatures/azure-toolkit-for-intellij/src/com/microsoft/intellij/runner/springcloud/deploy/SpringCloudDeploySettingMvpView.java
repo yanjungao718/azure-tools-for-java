@@ -20,25 +20,20 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.intellij.runner.springcloud.deploy;
 
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-public class AzureFunctionsConstants {
-    public static final String DISPLAY_NAME = "Azure Functions";
-    public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
-    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
+public interface SpringCloudDeploySettingMvpView extends MvpView {
+    void fillSubscription(@NotNull List<Subscription> subscriptions);
 
-    public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
-                    "string for all functions except for HTTP triggered functions.");
-            put("FUNCTIONS_WORKER_RUNTIME", "The language worker runtime to load in the function app.");
-        }};
+    void fillClusters(@NotNull List<ServiceResourceInner> clusters);
 
-    public static String getAppSettingHint(String appSettingKey) {
-        return HINT.containsKey(appSettingKey) ? HINT.get(appSettingKey) : StringUtils.EMPTY;
-    }
+    void fillApps(@NotNull List<AppResourceInner> apps);
 }

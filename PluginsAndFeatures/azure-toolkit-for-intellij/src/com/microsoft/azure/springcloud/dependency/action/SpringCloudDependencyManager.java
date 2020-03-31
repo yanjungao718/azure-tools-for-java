@@ -24,6 +24,7 @@ package com.microsoft.azure.springcloud.dependency.action;
 
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.intellij.util.PomXmlUpdater;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -91,15 +92,8 @@ public class SpringCloudDependencyManager {
         return res;
     }
 
-    private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) throws AzureExecutionException {
-        String res = null;
-        for (String version : latestVersions) {
-            if (version != null && version.startsWith(bootVersionPrefix)) {
-                res = version;
-            }
-        }
-
-        return res;
+    private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) {
+        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions), version -> version != null && version.startsWith(bootVersionPrefix));
     }
 
     private static void collectDependencyVersionsFromNodes(List<Node> nodes, Map<String, DependencyArtifact> versionMap) {
