@@ -10,7 +10,7 @@ page at https://checkstyle.org/config.html -->
 
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
-
+    <property name="fileExtensions" value="java, properties, xml"/>
     <module name="SuppressionFilter">
         <property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
     </module>
@@ -19,7 +19,6 @@ page at https://checkstyle.org/config.html -->
         <property name="headerFile" value="${config_loc}/java.header"/>
         <property name="fileExtensions" value="java"/>
     </module>
-
     <module name="FileTabCharacter">
         <!-- Checks that there are no tab characters in the file.
         -->
@@ -37,7 +36,6 @@ page at https://checkstyle.org/config.html -->
         <property name="message"
                   value='TODO is preferred to FIXME.  e.g. "TODO(johndoe): Refactor when v2 is released."'/>
     </module>
-
 
     <!-- No trailing spaces allowed -->
     <module name="RegexpSingleline">
@@ -63,7 +61,7 @@ page at https://checkstyle.org/config.html -->
     <module name="LineLengthCheck">
         <property name="fileExtensions" value="java" />
         <!-- Checks if a line is too long, default value of 120 is too short -->
-        <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="160"/>
+        <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="120"/>
         <property name="severity" value="error"/>
 
         <!--
@@ -74,7 +72,7 @@ page at https://checkstyle.org/config.html -->
 
         <property name="ignorePattern"
                     value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.ignorePattern}"
-                    default="^(package .*;\s*)|(import .*;\s*)|( *\* *https?://.*)$"/>
+                    default="^(package .*;\s*)|(import .*;\s*)|( *\* *\w+?://.*)$"/>
     </module>
 
     <!-- All Java AST specific tests live under TreeWalker module. -->
@@ -136,18 +134,6 @@ page at https://checkstyle.org/config.html -->
             <property name="severity" value="warning"/>
         </module>
 
-        <module name="StaticVariableNameCheck">
-            <!-- Validates static, non-final fields against the supplied
-            expression "^[a-z][a-zA-Z0-9]*_?$". -->
-            <metadata name="altname" value="StaticVariableName"/>
-            <property name="applyToPublic" value="true"/>
-            <property name="applyToProtected" value="true"/>
-            <property name="applyToPackage" value="true"/>
-            <property name="applyToPrivate" value="true"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*_?$"/>
-            <property name="severity" value="warning"/>
-        </module>
-
         <module name="MemberNameCheck">
             <!-- Validates non-static members against the supplied expression. -->
             <metadata name="altname" value="MemberName"/>
@@ -171,9 +157,6 @@ page at https://checkstyle.org/config.html -->
               expression "^[a-z][a-zA-Z0-9]*$". -->
             <property name="severity" value="warning"/>
         </module>
-
-
-
 
         <!--
 
@@ -228,7 +211,6 @@ page at https://checkstyle.org/config.html -->
             <property name="severity" value="error"/>
         </module>
 
-
         <!--
 
         MODIFIERS CHECKS
@@ -242,7 +224,6 @@ page at https://checkstyle.org/config.html -->
                  synchronized, native, strictfp
               -->
         </module>
-
 
         <!--
 
@@ -259,7 +240,7 @@ page at https://checkstyle.org/config.html -->
             <message key="ws.notFollowed"
                      value="WhitespaceAround: ''{0}'' is not followed by whitespace. Empty blocks may only be represented as '{}' when not part of a multi-block statement (4.1.3)"/>
             <message key="ws.notPreceded"
-                     value="WhitespaceAround: ''{0}'' is not preceded with whitespace."/>            
+                     value="WhitespaceAround: ''{0}'' is not preceded with whitespace."/>
         </module>
 
         <module name="WhitespaceAfter">
@@ -294,12 +275,6 @@ page at https://checkstyle.org/config.html -->
             -->
             <property name="severity" value="warning"/>
         </module>
-        <module name="OperatorWrap">
-            <property name="option" value="EOL"/>
-            <property name="tokens"
-                      value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR "/>
-        </module>
-        
         <module name="PackageName">
             <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
             <message key="name.invalidPattern"
