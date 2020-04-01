@@ -27,8 +27,7 @@ import java.util.Map;
 public class SpringCloudModel {
     private boolean isCreateNewApp;
 
-    private String moduleName;
-    private String artifactPath;
+    private String projectName;
     // app
     private boolean isPublic;
     private String subscriptionId;
@@ -47,10 +46,6 @@ public class SpringCloudModel {
 
     public boolean isCreateNewApp() {
         return isCreateNewApp;
-    }
-
-    public String getArtifactPath() {
-        return artifactPath;
     }
 
     public boolean isPublic() {
@@ -93,8 +88,8 @@ public class SpringCloudModel {
         return jvmOptions;
     }
 
-    public String getModuleName() {
-        return moduleName;
+    public String getProjectName() {
+        return projectName;
     }
 
     public boolean isEnablePersistentStorage() {
@@ -103,10 +98,6 @@ public class SpringCloudModel {
 
     public Map<String, String> getEnvironment() {
         return environment;
-    }
-
-    public void setArtifactPath(String artifactPath) {
-        this.artifactPath = artifactPath;
     }
 
     public void setPublic(boolean isPublic) {
@@ -153,8 +144,8 @@ public class SpringCloudModel {
         this.enablePersistentStorage = enablePersistentStorage;
     }
 
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
     public void setEnvironment(Map<String, String> environment) {

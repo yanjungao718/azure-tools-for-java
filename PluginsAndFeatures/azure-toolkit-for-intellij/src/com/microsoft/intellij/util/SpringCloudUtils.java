@@ -89,13 +89,13 @@ public class SpringCloudUtils {
                         configuration.getAppName(), appResourceProperties);
     }
 
-    public static UserSourceInfo deployArtifact(SpringCloudDeployConfiguration configuration)
+    public static UserSourceInfo deployArtifact(SpringCloudDeployConfiguration configuration, String artifactPath)
             throws IOException, URISyntaxException, StorageException {
         // Upload artifact to correspond url
         final AppPlatformManager appPlatformManager = getAppPlatformManager(configuration.getSubscriptionId());
         final ResourceUploadDefinitionInner resourceUploadDefinition = appPlatformManager.apps().inner()
                 .getResourceUploadUrl(configuration.getResourceGroup(), configuration.getClusterName(), configuration.getAppName());
-        uploadFileToStorage(new File(configuration.getArtifactPath()), resourceUploadDefinition.uploadUrl());
+        uploadFileToStorage(new File(artifactPath), resourceUploadDefinition.uploadUrl());
         final UserSourceInfo userSourceInfo = new UserSourceInfo();
         // There are some issues with server side resourceUpload logic
         // Use uploadUrl instead of relativePath

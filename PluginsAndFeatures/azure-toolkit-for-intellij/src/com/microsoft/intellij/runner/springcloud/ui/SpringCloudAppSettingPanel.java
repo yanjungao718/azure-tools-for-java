@@ -39,7 +39,6 @@ import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -373,7 +372,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         this.radioPublic.setSelected(isPublic);
         this.radioNonPublic.setSelected(!isPublic);
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        setupMavenProjectCombo(mavenProjects, this.configuration.getModuleName());
+        setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
         // if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
         //     this.envTable.setEnvs(configuration.getEnvironment());
         // }
@@ -423,8 +422,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         }
         configuration.setEnablePersistentStorage(this.radioEnablePersistent.isSelected());
         configuration.setPublic(radioPublic.isSelected());
-        configuration.setModuleName(getTargetName());
-        configuration.setArtifactPath(getArtifactPath());
+        configuration.setProjectName(getProjectName());
         // configuration.setEnvironment(this.envTable.getEnvs());
     }
 
@@ -433,7 +431,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         if (null != mvnprjs) {
             for (MavenProject prj : mvnprjs) {
                 cbMavenProject.addItem(prj);
-                if (MavenRunTaskUtil.getTargetName(prj).equals(targetName)) {
+                if (StringUtils.equals(prj.getName(), targetName)) {
                     cbMavenProject.setSelectedItem(prj);
                 }
             }
@@ -442,22 +440,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         getLblMavenProject().setVisible(true);
     }
 
-    protected String getTargetName() {
-        String targetName = "";
+    private String getProjectName() {
         MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
-        if (mavenProject != null) {
-            targetName = MavenRunTaskUtil.getTargetName(mavenProject);
-        }
-        return targetName;
-    }
-
-    protected String getArtifactPath() {
-        String targetName = "";
-        MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
-        if (mavenProject != null) {
-            targetName = MavenRunTaskUtil.getTargetPath(mavenProject);
-        }
-        return targetName;
+        return mavenProject != null ? mavenProject.getName() : "";
     }
 
     private static <T, Q> T getValueFromComboBox(JComboBox comboBox, Function<Q, T> selectFunc, @NotNull Class<Q> clz) {
