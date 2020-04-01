@@ -20,34 +20,37 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.plugins.tasks
+package com.microsoft.azuretools.core.mvp.model.springcloud;
 
-import com.microsoft.azuretools.plugins.configs.JdkUrlConfigurable
-import groovy.json.JsonSlurper
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.TaskAction
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
-class FetchAdoptOpenJdkAndSetJdkUrlTask extends DefaultTask {
-    boolean setOnlyForEmpty = true
+public class SpringCloudIdHelper {
+    public static String getSubscriptionId(String serviceId) {
+        return getSegment(serviceId, "subscriptions");
+    }
 
-    JdkUrlConfigurable conf
+    public static String getResourceGroup(String serviceId) {
+        return getSegment(serviceId, "resourceGroups");
+    }
 
-    String adoptOpenJdkApi
+    public static String getClusterName(String serviceId) {
+        return getSegment(serviceId, "Spring");
+    }
 
-    @TaskAction
-    def fetchAndSet() {
-        if (conf == null) {
-            return
+    public static String getAppName(String serviceId) {
+        return getSegment(serviceId, "apps");
+    }
+
+    private static String getSegment(String id, String segment) {
+        if (StringUtils.isEmpty(id)) {
+            return null;
         }
-
-        if (setOnlyForEmpty && conf.jdkUrl != null && !conf.jdkUrl.isEmpty()) {
-            return
+        final String[] attributes = id.split("/");
+        int pos = ArrayUtils.indexOf(attributes, segment);
+        if (pos >= 0) {
+            return attributes[pos + 1];
         }
-
-        def httpcon = new URL(adoptOpenJdkApi).openConnection()
-        httpcon.addRequestProperty("User-Agent", "Mozilla")
-        def adoptOpenJdk = new JsonSlurper().parseText(httpcon.getInputStream().getText())
-
-        conf.jdkUrl = adoptOpenJdk["binaries"][0]["binary_link"]
+        return null;
     }
 }
