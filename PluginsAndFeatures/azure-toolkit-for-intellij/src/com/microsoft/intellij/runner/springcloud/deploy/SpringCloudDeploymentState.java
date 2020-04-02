@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.springcloud.deploy;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.UserSourceInfo;
@@ -35,6 +36,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.SpringCloudUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -42,8 +44,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -73,13 +79,32 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     @Override
     public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
+        // prepare the jar to be deployed
+        if (StringUtils.isEmpty(springCloudDeployConfiguration.getProjectName())) {
+            throw new AzureExecutionException("You must specify a maven project.");
+        }
+        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+        MavenProject targetProject = mavenProjects
+                .stream()
+                .filter(t -> StringUtils.equals(t.getName(), springCloudDeployConfiguration.getProjectName()))
+                .findFirst()
+                .orElse(null);
+        if (targetProject == null) {
+            throw new AzureExecutionException(String.format("Project '%s' cannot be found.",
+                                                            springCloudDeployConfiguration.getProjectName()));
+        }
+        String finalJarName = MavenUtils.getSpringBootFinalJarPath(project, targetProject, 60);
+        if (!Files.exists(Paths.get(finalJarName))) {
+            throw new AzureExecutionException(String.format("File '%s' cannot be found.",
+                                                            finalJarName));
+        }
         // get or create spring cloud app
         processHandler.setText("Creating/Updating spring cloud app...");
         final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudDeployConfiguration);
         processHandler.setText("Create/Update spring cloud app succeed.");
         // upload artifact to correspond storage
         processHandler.setText("Uploading artifact to storage...");
-        final UserSourceInfo userSourceInfo = SpringCloudUtils.deployArtifact(springCloudDeployConfiguration);
+        final UserSourceInfo userSourceInfo = SpringCloudUtils.deployArtifact(springCloudDeployConfiguration, finalJarName);
         processHandler.setText("Upload artifact succeed.");
         // get or create active deployment
         processHandler.setText("Creating/Updating deployment...");
