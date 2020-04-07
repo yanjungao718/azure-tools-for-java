@@ -153,6 +153,11 @@ public class AzureSpringCloudMvpModel {
                 getClusterName(appId), getAppName(appId), new AppResourceProperties().withPublicProperty(isPublic));
     }
 
+    public static AppResourceInner updateAppProperties(String appId, AppResourceProperties update) throws IOException {
+        return getSpringManager(getSubscriptionId(appId)).apps().inner().update(getResourceGroup(appId),
+                getClusterName(appId), getAppName(appId), update);
+    }
+
     public static DeploymentResourceInner updateProperties(String appId, String activeDeploymentName,
             DeploymentResourceProperties pr) throws IOException {
         String sid = getSubscriptionId(appId);

@@ -89,6 +89,8 @@ public class TelemetryConstants {
     public static final String START_SPRING_CLOUD_APP = "start-springcloud-app";
     public static final String STOP_SPRING_CLOUD_APP = "stop-springcloud-app";
     public static final String RESTART_SPRING_CLOUD_APP = "restart-springcloud-app";
+    public static final String SAVE_SPRING_CLOUD_APP = "save-springcloud-app";
+    public static final String REFRESH_SPRING_CLOUD_APP = "refresh-springcloud-app";
     public static final String SHOWPROP_SPRING_CLOUD_APP = "showprop-springcloud-app";
     public static final String OPEN_IN_BROWSER_SPRING_CLOUD_APP = "open-inbrowser-springcloud-app";
     public static final String OPEN_IN_PORTAL_SPRING_CLOUD_APP = "open-inportal-springcloud-app";
