@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
+    private static final LineBorder HIGH_LIGHT_BORDER = new LineBorder(Color.decode("0x8a2da5"), 1);
     private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: '%s'.\n" +
             "Are you sure you want to continue?";
     private static final String DELETE_APP_DIRTY_PROMPT_MESSAGE = "This operation will discard your changes and delete the Spring Cloud App: '%s'.\n" +
@@ -87,6 +88,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private static final String JAVA_VERSION_KEY = "javaVersion";
     private static final String ENABLE_TEXT = "Enable";
     private static final String DISABLE_TEXT = "Disable";
+    private static final String DISABLED_TEXT = "Disabled";
     private static final String EMPTY_TEXT = "Empty";
     private static final String DELETING_ACTION = "Deleting";
     private static final String SAVING_ACTION = "Saving";
@@ -171,7 +173,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     monitorStatus(appId, deploymentResourceInner);
                 } catch (IOException | InterruptedException ex) {
                     PluginUtil.showErrorNotificationProject(project,
-                        String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
+                            String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
                 }
             });
 
@@ -282,7 +284,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private static void monitorStatus(String appId, DeploymentResourceInner deploymentResourceInner) throws IOException, InterruptedException {
         SpringCloudAppNodePresenter.awaitAndMonitoringStatus(appId,
-            deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
+                deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
     }
 
     private void wrapperOperations(String operation, String actionName, Project project,
@@ -304,15 +306,14 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         } else {
             promptMessage = changes.isEmpty() ? "" : String.format(OPERATE_APP_PROMPT_MESSAGE, actionName, this.appName);
         }
-        if (promptMessage.isEmpty() || StringUtils.equals(actionName, SAVING_ACTION) || DefaultLoader.getUIHelper()
-                                                                                                     .showConfirmation(this.mainPanel,
-                               promptMessage,
-                               "Azure Explorer",
-                               new String[]{"Yes", "No"},
-                               null)) {
+        if (promptMessage.isEmpty() || StringUtils.equals(actionName, SAVING_ACTION)
+            || DefaultLoader.getUIHelper().showConfirmation(this.mainPanel,
+                promptMessage,
+                "Azure Explorer",
+                new String[]{"Yes", "No"},
+                null)) {
             freezeUI();
-            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
-                                                         true, String.format("%s app '%s'", actionName, this.appName),
+            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false, true, String.format("%s app '%s'", actionName, this.appName),
                 () -> {
                     action.accept(changes);
                     refreshData();
@@ -343,6 +344,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             }
             borderMap.clear();
         }
+        resetNormalText(this.persistentLabel);
+        resetNormalText(this.publicUrlHyperLink);
     }
 
     private void restoreUI() {
@@ -368,6 +371,16 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             updateBorder(this.jvmOpsTextField, map.containsKey(JVM_OPTIONS_KEY));
             updateBorder(this.javaVersionCombo, map.containsKey(JAVA_VERSION_KEY));
             updateBorder(this.envTable.getTextField(), map.containsKey(ENV_TABLE_KEY));
+            if (map.containsKey(ENABLE_PERSISTENT_STORAGE_KEY)) {
+                setItalicText(this.persistentLabel);
+            } else {
+                resetNormalText(this.persistentLabel);
+            }
+            if (map.containsKey(ENABLE_PUBLIC_URL_KEY)) {
+                setItalicText(this.publicUrlHyperLink);
+            } else {
+                resetNormalText(this.publicUrlHyperLink);
+            }
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
         }
@@ -394,7 +407,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         synchronized (borderMap) {
             if (!borderMap.containsKey(component)) {
                 borderMap.put(component, component.getBorder());
-                component.setBorder(new LineBorder(Color.MAGENTA, 1));
+                component.setBorder(HIGH_LIGHT_BORDER);
             }
         }
     }
@@ -404,15 +417,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
         boolean enablePersist = StringUtils.equalsIgnoreCase(text, ENABLE_TEXT);
         if (enablePersist) {
-            Font font = publicUrlHyperLink.getFont();
             if (viewModel.isEnablePersistentStorage()) {
                 renderPersistent(this.viewModel);
             } else {
-                this.persistentLabel.setText("Persistent storage is not available before you save the settings.");
-                persistentLabel.setFont(new Font(font.getName(), Font.ITALIC, font.getSize()));
+                this.persistentLabel.setText("Persistent storage will be updated after you save the settings.");
             }
         } else {
-            this.persistentLabel.setText(NOT_AVAILABLE);
+            this.persistentLabel.setText(DISABLED_TEXT);
         }
 
         this.triggerPersistentButton.setText(enablePersist ? DISABLE_TEXT : ENABLE_TEXT);
@@ -421,7 +432,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private void triggerPublicUrl() {
         final String text = this.triggerPublicButton.getText();
         boolean updatePublicTrue = StringUtils.equalsIgnoreCase(text, ENABLE_TEXT);
-        setPublicUrl(updatePublicTrue, this.viewModel.getPublicUrl(), "URL is not available before you save the settings.");
+        setPublicUrl(updatePublicTrue, this.viewModel.getPublicUrl(), "URL will be updated after you save the"
+                + " settings.");
     }
 
     private void refreshData() {
@@ -460,11 +472,12 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             map.put(ENABLE_PERSISTENT_STORAGE_KEY, currentEnablePersist);
         }
 
-         Map<String, String> oldEnvironment = viewModel.getEnvironment();
-         Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
-         if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
-             map.put(ENV_TABLE_KEY, newEnvironment);
-         }
+        Map<String, String> oldEnvironment = viewModel.getEnvironment();
+        Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
+        // Maps.difference cannot handling null
+        if ((oldEnvironment == null && MapUtils.isNotEmpty(newEnvironment)) || !Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
+            map.put(ENV_TABLE_KEY, newEnvironment);
+        }
         return map;
     }
 
@@ -517,7 +530,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
             ApplicationManager.getApplication().invokeLater(() ->
-                PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration successfully"));
+                PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
+                      + "successfully"));
             refreshData();
 
         } catch (Exception e) {
@@ -560,23 +574,32 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (StringUtils.isNotEmpty(publicUrl)) {
                 publicUrlHyperLink.setHyperlinkText(publicUrl);
                 publicUrlHyperLink.setHyperlinkTarget(publicUrl);
-                Font font = publicUrlHyperLink.getFont();
-                publicUrlHyperLink.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
             } else if (StringUtils.isNotEmpty(hintMessage)) {
                 publicUrlHyperLink.setText(hintMessage);
                 publicUrlHyperLink.setHyperlinkTarget("");
-                Font font = publicUrlHyperLink.getFont();
-                publicUrlHyperLink.setFont(new Font(font.getName(), Font.ITALIC, font.getSize()));
             }
         } else {
-            publicUrlHyperLink.setText(NOT_AVAILABLE);
+            publicUrlHyperLink.setText(DISABLED_TEXT);
             publicUrlHyperLink.setHyperlinkTarget("");
+        }
+
+    }
+
+    private static void resetNormalText(Component comp) {
+        if (comp != null && comp.getFont() != null) {
+            Font font = comp.getFont();
+            comp.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
+        }
+    }
+
+    private static void setItalicText(Component comp) {
+        if (comp != null && comp.getFont() != null) {
+            Font font = comp.getFont();
+            comp.setFont(new Font(font.getName(), Font.ITALIC, font.getSize()));
         }
     }
 
     private void renderPersistent(SpringAppViewModel model) {
-        Font font = persistentLabel.getFont();
-        persistentLabel.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
         this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
                                                    model.getPersistentMountPath(), model.getUsedStorageInGB(), model.getTotalStorageInGB()));
     }
@@ -601,7 +624,6 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private void prepareViewModel(AppResourceInner app, DeploymentResourceInner deploy, String testUrl) {
         try {
-
             if (app == null) {
                 updateModel(null);
                 return;
@@ -702,7 +724,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (newModel.isEnablePersistentStorage()) {
                 renderPersistent(newModel);
             } else {
-                this.persistentLabel.setText(NOT_AVAILABLE);
+                this.persistentLabel.setText(DISABLED_TEXT);
             }
             String statusLineText = newModel.getStatus();
             if (newModel.getUpInstanceCount().intValue() + newModel.getDownInstanceCount().intValue() > 0) {
