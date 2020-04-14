@@ -277,112 +277,37 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                         return;
                     }
 
-<<<<<<< HEAD
-                            // Set the debug connection to localhost and local forwarded port to the state
-                            forkState.setRemoteConnection(
-                                    new RemoteConnection(true, "localhost", Integer.toString(localPort), false));
-
-                            // Prepare the debug tab console view UI
-                            SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
-                            // Get YARN container log URL port
-                            int containerLogUrlPort =
-                                    ((SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob())
-                                            .getYarnContainerLogUrlPort()
-                                            .toBlocking()
-                                            .single();
-                            // Parse container ID and host URL from driver console view
-                            jobOutputView.getSecondaryConsoleView().addMessageFilter((line, entireLength) -> {
-                                Matcher matcher = Pattern.compile(
-                                        "Launching container (\\w+).* on host ([a-zA-Z_0-9-.]+)",
-                                        Pattern.CASE_INSENSITIVE)
-                                        .matcher(line);
-                                while (matcher.find()) {
-                                    String containerId = matcher.group(1);
-                                    // TODO: get port from somewhere else rather than hard code here
-                                    URI hostUri = URI.create(String.format("http://%s:%d", matcher.group(2), containerLogUrlPort));
-                                    debugEventSubject.onNext(new SparkBatchJobExecutorCreatedEvent(hostUri, containerId));
-                                }
-                                return null;
-                            });
-                            jobOutputView.attachToProcess(handlerReadyEvent.getDebugProcessHandler());
-
-                            ExecutionResult result = new DefaultExecutionResult(
-                                    jobOutputView, handlerReadyEvent.getDebugProcessHandler());
-                            forkState.setExecutionResult(result);
-                            forkState.setConsoleView(jobOutputView.getSecondaryConsoleView());
-                            forkState.setRemoteProcessCtrlLogHandler(handlerReadyEvent.getDebugProcessHandler());
-
-                            if (jdbReadyEvent.isDriver()) {
-                                // Let the debug console view to handle the control log
-                                jobSubscription.unsubscribe();
-
-                                // Resolve job driver promise, handle the driver VM attaching separately
-                                jobDriverEnvReady.setResult(forkEnv);
-                            } else {
-                                // Start Executor debugging
-                                executionManager.startRunProfile(forkEnv, () ->
-                                        toIdeaPromise(attachAndDebug(forkEnv, forkState)));
-                            }
-                        } else if (debugEvent instanceof SparkBatchJobExecutorCreatedEvent) {
-                            SparkBatchJobExecutorCreatedEvent executorCreatedEvent =
-                                    (SparkBatchJobExecutorCreatedEvent) debugEvent;
-
-                            final String containerId = executorCreatedEvent.getContainerId();
-                            final SparkBatchRemoteDebugJob debugJob =
-                                    (SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob();
-
-                            URI internalHostUri = executorCreatedEvent.getHostUri();
-                            URI executorLogUrl = debugJob.convertToPublicLogUri(internalHostUri)
-                                    .map(uri -> uri.resolve(String.format("node/containerlogs/%s/livy", containerId)))
-                                    .toBlocking().singleOrDefault(internalHostUri);
-
-                            // Create an Executor Debug Process
-                            SparkBatchJobRemoteDebugExecutorProcess executorDebugProcess =
-                                    new SparkBatchJobRemoteDebugExecutorProcess(
-                                            schedulers,
-                                            debugJob,
-                                            internalHostUri.getHost(),
-                                            driverDebugProcess.getDebugSession(),
-                                            executorLogUrl.toString());
-
-                            SparkBatchJobDebugProcessHandler executorDebugHandler =
-                                    new SparkBatchJobDebugProcessHandler(project, executorDebugProcess, debugEventSubject);
-
-                            executorDebugHandler.getRemoteDebugProcess().start();
-=======
                     // Set the debug connection to localhost and local forwarded port to the state
                     forkState.setRemoteConnection(
                             new RemoteConnection(true, "localhost", Integer.toString(localPort), false));
 
                     // Prepare the debug tab console view UI
-                    final SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
+                    SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
                     // Get YARN container log URL port
-                    final int containerLogUrlPort = ((SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob())
-                            .getYarnContainerLogUrlPort()
-                            .toBlocking()
-                            .single();
-
+                    int containerLogUrlPort =
+                            ((SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob())
+                                    .getYarnContainerLogUrlPort()
+                                    .toBlocking()
+                                    .single();
                     // Parse container ID and host URL from driver console view
                     jobOutputView.getSecondaryConsoleView().addMessageFilter((line, entireLength) -> {
-                        final Matcher matcher =
-                                Pattern.compile("Launching container (\\w+).* on host ([a-zA-Z_0-9-.]+)",
-                                                Pattern.CASE_INSENSITIVE)
-                                       .matcher(line);
-
+                        Matcher matcher = Pattern.compile(
+                                "Launching container (\\w+).* on host ([a-zA-Z_0-9-.]+)",
+                                Pattern.CASE_INSENSITIVE)
+                                                 .matcher(line);
                         while (matcher.find()) {
-                            final String containerId = matcher.group(1);
+                            String containerId = matcher.group(1);
                             // TODO: get port from somewhere else rather than hard code here
-                            final URI hostUri = URI.create(String.format("http://%s:%d",
-                                                                         matcher.group(2),
-                                                                         containerLogUrlPort));
+                            URI hostUri = URI.create(String.format("http://%s:%d",
+                                                                   matcher.group(2),
+                                                                   containerLogUrlPort));
                             debugEventSubject.onNext(new SparkBatchJobExecutorCreatedEvent(hostUri, containerId));
->>>>>>> develop
                         }
                         return null;
                     });
                     jobOutputView.attachToProcess(handlerReadyEvent.getDebugProcessHandler());
 
-                    final ExecutionResult result = new DefaultExecutionResult(
+                    ExecutionResult result = new DefaultExecutionResult(
                             jobOutputView, handlerReadyEvent.getDebugProcessHandler());
                     forkState.setExecutionResult(result);
                     forkState.setConsoleView(jobOutputView.getSecondaryConsoleView());
@@ -395,33 +320,34 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                         // Resolve job driver promise, handle the driver VM attaching separately
                         jobDriverEnvReady.setResult(forkEnv);
                     } else {
-                        // Call supper class method to attach Java virtual machine
-                        super.execute(forkEnv, null, forkState);
+                        // Start Executor debugging
+                        executionManager.startRunProfile(forkEnv, () ->
+                                toIdeaPromise(attachAndDebug(forkEnv, forkState)));
                     }
                 } else if (debugEvent instanceof SparkBatchJobExecutorCreatedEvent) {
-                    final SparkBatchJobExecutorCreatedEvent executorCreatedEvent =
+                    SparkBatchJobExecutorCreatedEvent executorCreatedEvent =
                             (SparkBatchJobExecutorCreatedEvent) debugEvent;
 
                     final String containerId = executorCreatedEvent.getContainerId();
                     final SparkBatchRemoteDebugJob debugJob =
                             (SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob();
 
-                    final URI internalHostUri = executorCreatedEvent.getHostUri();
-                    final URI executorLogUrl = debugJob.convertToPublicLogUri(internalHostUri)
-                                                       .map(uri -> uri.resolve(String.format(
-                                                               "node/containerlogs/%s/livy", containerId)))
-                                                       .toBlocking()
-                                                       .singleOrDefault(internalHostUri);
+                    URI internalHostUri = executorCreatedEvent.getHostUri();
+                    URI executorLogUrl = debugJob.convertToPublicLogUri(internalHostUri)
+                                                 .map(uri -> uri.resolve(String.format("node/containerlogs/%s/livy",
+                                                                                       containerId)))
+                                                 .toBlocking().singleOrDefault(internalHostUri);
 
                     // Create an Executor Debug Process
-                    final SparkBatchJobRemoteDebugExecutorProcess executorDebugProcess =
-                            new SparkBatchJobRemoteDebugExecutorProcess(schedulers,
-                                                                        debugJob,
-                                                                        internalHostUri.getHost(),
-                                                                        driverDebugProcess.getDebugSession(),
-                                                                        executorLogUrl.toString());
+                    SparkBatchJobRemoteDebugExecutorProcess executorDebugProcess =
+                            new SparkBatchJobRemoteDebugExecutorProcess(
+                                    schedulers,
+                                    debugJob,
+                                    internalHostUri.getHost(),
+                                    driverDebugProcess.getDebugSession(),
+                                    executorLogUrl.toString());
 
-                    final SparkBatchJobDebugProcessHandler executorDebugHandler =
+                    SparkBatchJobDebugProcessHandler executorDebugHandler =
                             new SparkBatchJobDebugProcessHandler(project, executorDebugProcess, debugEventSubject);
 
                     executorDebugHandler.getRemoteDebugProcess().start();
@@ -436,40 +362,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         driverDebugHandler.getRemoteDebugProcess().start();
 
         // Driver side execute, leverage Intellij Async Promise, to wait for the Spark app deployed
-<<<<<<< HEAD
         executionManager.startRunProfile(environment, () -> jobDriverEnvReady.thenAsync(driverEnv ->
                 toIdeaPromise(attachAndDebug(driverEnv, state))));
     }
-=======
-        ExecutionManager.getInstance(project).startRunProfile(new RunProfileStarter() {
-            @Override
-            public Promise<RunContentDescriptor> executeAsync(@NotNull final RunProfileState state,
-                                                              @NotNull final ExecutionEnvironment env)
-                    throws ExecutionException {
-                driverDebugHandler.getRemoteDebugProcess().start();
-
-                return jobDriverEnvReady
-                        .then(forkEnv -> Observable
-                                .fromCallable(() -> doExecute(state, forkEnv))
-                                .subscribeOn(schedulers.dispatchUIThread(ModalityState.defaultModalityState()))
-                                .toBlocking()
-                                .singleOrDefault(null))
-                        .then(descriptor -> {
-                            // Borrow BaseProgramRunner.postProcess() codes since it's only package public accessible.
-                            if (descriptor != null) {
-                                descriptor.setExecutionId(env.getExecutionId());
-                                final RunnerAndConfigurationSettings settings = env.getRunnerAndConfigurationSettings();
-                                if (settings != null) {
-                                    descriptor.setContentToolWindowId(
-                                            ExecutionManager
-                                                    .getInstance(env.getProject())
-                                                    .getContentManager()
-                                                    .getContentDescriptorToolWindowId(settings.getConfiguration()));
-
-                                    descriptor.setActivateToolWindowWhenAdded(settings.isActivateToolWindowBeforeRun());
-                                }
-                            }
->>>>>>> develop
 
     private Observable<RunContentDescriptor> attachAndDebug(final ExecutionEnvironment environment,
                                                             final RunProfileState state) {
