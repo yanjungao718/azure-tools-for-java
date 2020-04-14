@@ -1,7 +1,23 @@
-/**
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for
- * license information.
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.intellij.runner.functions.library.function;
@@ -9,12 +25,10 @@ package com.microsoft.intellij.runner.functions.library.function;
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.appservice.OperatingSystemEnum;
-import com.microsoft.azure.common.docker.IDockerCredentialProvider;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.ElasticPremiumPricingTier;
 import com.microsoft.azure.common.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.function.handlers.runtime.DockerFunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.FunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.LinuxFunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRuntimeHandler;
@@ -30,6 +44,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -88,7 +103,7 @@ public class CreateFunctionHandler {
 
     // region Create or update Azure Functions
 
-    private void createOrUpdateFunctionApp() throws AzureExecutionException {
+    private void createOrUpdateFunctionApp() throws IOException, AzureExecutionException {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
             createFunctionApp();
@@ -97,7 +112,7 @@ public class CreateFunctionHandler {
         }
     }
 
-    private void createFunctionApp() throws AzureExecutionException {
+    private void createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_CREATE_START);
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
@@ -106,7 +121,7 @@ public class CreateFunctionHandler {
         Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
     }
 
-    private void updateFunctionApp(final FunctionApp app) throws AzureExecutionException {
+    private void updateFunctionApp(final FunctionApp app) throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_UPDATE);
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         app.inner().withTags(null);
@@ -140,7 +155,7 @@ public class CreateFunctionHandler {
 
     // endregion
 
-    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws AzureExecutionException {
+    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws IOException, AzureExecutionException {
         final FunctionRuntimeHandler.Builder<?> builder;
         final OperatingSystemEnum os = getOsEnum();
         switch (os) {

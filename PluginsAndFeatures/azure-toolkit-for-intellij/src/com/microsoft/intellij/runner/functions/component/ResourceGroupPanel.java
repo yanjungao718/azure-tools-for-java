@@ -31,10 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.Window;
 import java.awt.event.ItemListener;
@@ -91,15 +88,21 @@ public class ResourceGroupPanel extends JPanel {
     }
 
     public void loadResourceGroup(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-        beforeLoadSubscription();
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(this::fillResourceGroup);
+        if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
+            this.subscriptionId = subscriptionId;
+            beforeLoadSubscription();
+            Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
+                      .subscribeOn(Schedulers.newThread())
+                      .subscribe(this::fillResourceGroup);
+        }
     }
 
     public void addItemListener(ItemListener actionListener) {
         cbResourceGroup.addItemListener(actionListener);
+    }
+
+    public JComponent getComboComponent() {
+        return cbResourceGroup;
     }
 
     private void createResourceGroup() {
@@ -124,7 +127,7 @@ public class ResourceGroupPanel extends JPanel {
     private ResourceGroupWrapper getResourceGroupWrapperWithName(String name) {
         for (int i = 0; i < cbResourceGroup.getItemCount(); i++) {
             final Object selectedItem = cbResourceGroup.getItemAt(i);
-            if (selectedItem instanceof ResourceGroupWrapper &&  StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
+            if (selectedItem instanceof ResourceGroupWrapper && StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
                 return (ResourceGroupWrapper) cbResourceGroup.getItemAt(i);
             }
         }

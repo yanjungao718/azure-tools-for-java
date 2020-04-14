@@ -35,10 +35,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.utils.AppServiceUtils;
-import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
@@ -49,7 +46,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEED_SIGN_IN;
+import static com.microsoft.intellij.common.CommonConst.NEED_SIGN_IN;
 
 public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
     implements RunProfileWithCompileBeforeLaunchOption {

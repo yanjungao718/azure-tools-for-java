@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.util;
@@ -38,6 +37,7 @@ public class ValidationUtils {
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
     private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
+    private static final String AZURE_SPRING_CLOUD_APP_NAME_REGEX = "[a-z]([a-z0-9\\-_])*[a-z0-9]";
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -49,6 +49,11 @@ public class ValidationUtils {
 
     public static boolean isValidFunctionName(String name) {
         return name != null && name.matches(AZURE_FUNCTION_NAME_REGEX);
+    }
+
+    public static boolean isValidSpringCloudAppName(String name) {
+        int len = name.trim().length();
+        return name != null && name.matches(AZURE_SPRING_CLOUD_APP_NAME_REGEX) && len >= 4 && len <= 32;
     }
 
     public static boolean isValidVersion(String version) {
@@ -94,7 +99,7 @@ public class ValidationUtils {
         }
     }
 
-    public static void validateAppServicePlanName(String appServicePlan){
+    public static void validateAppServicePlanName(String appServicePlan) {
         if (StringUtils.isEmpty(appServicePlan)) {
             throw new IllegalArgumentException("App Service Plan name is required");
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
