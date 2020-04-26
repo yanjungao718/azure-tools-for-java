@@ -42,10 +42,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionAdvancedConfigPanel;
@@ -66,7 +66,6 @@ import rx.subjects.PublishSubject;
 import javax.swing.*;
 import java.io.IOException;
 import java.net.URI;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -169,8 +168,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         final IdeaSchedulers schedulers = new IdeaSchedulers(project);
         final PublishSubject<SparkBatchJobSubmissionEvent> debugEventSubject = PublishSubject.create();
         final ISparkBatchDebugJob sparkDebugBatch = (ISparkBatchDebugJob) submissionState.getSparkBatch().clone();
-        final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject =
-                (PublishSubject<SimpleImmutableEntry<MessageInfoType, String>>) sparkDebugBatch.getCtrlSubject();
+        final PublishSubject<SparkLogLine> ctrlSubject =
+                (PublishSubject<SparkLogLine>) sparkDebugBatch.getCtrlSubject();
         final SparkBatchJobRemoteDebugProcess driverDebugProcess = new SparkBatchJobRemoteDebugProcess(
                 schedulers,
                 session,
@@ -199,9 +198,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
         // Use the submission console to display the deployment ctrl message
         final Subscription jobSubscription = ctrlSubject.subscribe(typedMessage -> {
-            final String line = typedMessage.getValue() + "\n";
+            final String line = typedMessage.getRawLog() + "\n";
 
-            switch (typedMessage.getKey()) {
+            switch (typedMessage.getMessageInfoType()) {
                 case Error:
                     submissionConsole.print(line, ConsoleViewContentType.ERROR_OUTPUT);
                     break;
@@ -237,10 +236,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
             }
         });
 
-        debugEventSubject.subscribeOn(Schedulers.io()).doAfterTerminate(() -> {
-            // Call after completed or error
-            session.close();
-        }).subscribe(debugEvent -> {
+        // Call after completed or error
+        debugEventSubject.subscribeOn(Schedulers.io()).doAfterTerminate(session::close).subscribe(debugEvent -> {
             try {
                 if (debugEvent instanceof SparkBatchRemoteDebugHandlerReadyEvent) {
                     final SparkBatchRemoteDebugHandlerReadyEvent handlerReadyEvent =

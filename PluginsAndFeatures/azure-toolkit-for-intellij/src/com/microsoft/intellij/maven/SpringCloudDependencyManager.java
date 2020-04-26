@@ -70,19 +70,27 @@ public class SpringCloudDependencyManager {
 
     public Map<String, DependencyArtifact> getDependencyVersions() {
         Map<String, DependencyArtifact> res = new HashMap<>();
-        collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencyManagement/ns:dependencies/ns:dependency"), res);
         collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencies/ns:dependency"), res);
         return res;
     }
 
-    public void update(File file, List<DependencyArtifact> des) throws IOException, DocumentException {
-        new PomXmlUpdater().updateDependencies(file, des);
+    public Map<String, DependencyArtifact> getDependencyManagementVersions() {
+        Map<String, DependencyArtifact> res = new HashMap<>();
+        collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencyManagement/ns:dependencies/ns:dependency"), res);
+        return res;
+    }
+
+    public boolean update(File file, List<DependencyArtifact> des) throws IOException, DocumentException {
+        return new PomXmlUpdater().updateDependencies(file, des);
     }
 
     public static List<DependencyArtifact> getCompatibleVersions(List<DependencyArtifact> dependencies, String springBootVer)
             throws AzureExecutionException, IOException, DocumentException {
         List<DependencyArtifact> res = new ArrayList<>();
         for (DependencyArtifact dependency : dependencies) {
+            if (StringUtils.isNotEmpty(dependency.getCurrentVersion()) && isCompatibleVersion(dependency.getCurrentVersion(), springBootVer)) {
+                continue;
+            }
             List<String> latestVersions = getMavenCentralVersions(dependency.getGroupId(), dependency.getArtifactId());
             String targetVer = "";
             if (springBootVer.startsWith("2.2.")) {
@@ -96,7 +104,7 @@ public class SpringCloudDependencyManager {
                 throw new AzureExecutionException(String.format("Cannot get compatible version for %s:%s with Spring Boot with version %s",
                         dependency.getGroupId(), dependency.getArtifactId(), springBootVer));
             }
-            dependency.setCompilableVersion(targetVer);
+            dependency.setCompatibleVersion(targetVer);
             if (!StringUtils.equals(dependency.getCurrentVersion(), targetVer)) {
                 res.add(dependency);
             }
@@ -104,8 +112,23 @@ public class SpringCloudDependencyManager {
         return res;
     }
 
+    public static boolean isCompatibleVersion(String version, String springBootVer) {
+        if (StringUtils.isNotEmpty(springBootVer)) {
+            if (springBootVer.startsWith("2.2.")) {
+                return isCompatibleVersionWithBootVersion(version, "2.2.");
+            } else if (springBootVer.startsWith("2.1.")) {
+                return isCompatibleVersionWithBootVersion(version, "2.1.");
+            }
+        }
+        return false;
+    }
+
     private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) {
-        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions), version -> version != null && version.startsWith(bootVersionPrefix));
+        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions), version -> isCompatibleVersionWithBootVersion(version, bootVersionPrefix));
+    }
+
+    private static boolean isCompatibleVersionWithBootVersion(String version, String bootVersionPrefix) {
+        return version != null && version.startsWith(bootVersionPrefix);
     }
 
     private static void collectDependencyVersionsFromNodes(List<Node> nodes, Map<String, DependencyArtifact> versionMap) {
@@ -113,7 +136,7 @@ public class SpringCloudDependencyManager {
             String groupId = ((Element) node).elementTextTrim("groupId");
             String artifactId = ((Element) node).elementTextTrim("artifactId");
             DependencyArtifact artifact = new DependencyArtifact(groupId, artifactId, ((Element) node).elementTextTrim("version"));
-            versionMap.put(groupId + ":" + artifactId, artifact);
+            versionMap.put(artifact.getKey(), artifact);
         }
     }
 

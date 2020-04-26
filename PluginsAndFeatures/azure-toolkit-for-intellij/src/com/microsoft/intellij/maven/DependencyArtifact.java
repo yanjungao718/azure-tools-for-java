@@ -25,8 +25,9 @@ package com.microsoft.intellij.maven;
 public class DependencyArtifact {
     private String groupId;
     private String artifactId;
-    private String compilableVersion;
+    private String compatibleVersion;
     private String currentVersion;
+    private String managementVersion;
 
     public DependencyArtifact(String groupId, String artifactId) {
         this.groupId = groupId;
@@ -55,12 +56,12 @@ public class DependencyArtifact {
         this.artifactId = artifactId;
     }
 
-    public String getCompilableVersion() {
-        return compilableVersion;
+    public String getCompatibleVersion() {
+        return compatibleVersion;
     }
 
-    public void setCompilableVersion(String compilableVersion) {
-        this.compilableVersion = compilableVersion;
+    public void setCompatibleVersion(String compatibleVersion) {
+        this.compatibleVersion = compatibleVersion;
     }
 
     public String getCurrentVersion() {
@@ -69,5 +70,17 @@ public class DependencyArtifact {
 
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
+    }
+
+    public String getKey() {
+        return groupId + ":" + artifactId;
+    }
+
+    public void setManagementVersion(final String managementVersion) {
+        this.managementVersion = managementVersion;
+    }
+
+    public String getManagementVersion() {
+        return managementVersion;
     }
 }

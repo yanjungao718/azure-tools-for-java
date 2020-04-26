@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run
+package com.microsoft.intellij.helpers;
 
-import com.intellij.openapi.util.UserDataHolder
-import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
-import rx.subjects.PublishSubject
-
-interface SparkBatchJobProcessCtrlLogOut: UserDataHolder {
-    fun getCtrlSubject() : PublishSubject<SparkLogLine>
-
-    fun getEventSubject(): PublishSubject<SparkBatchJobSubmissionEvent>
+public enum ConsoleViewStatus {
+    STARTING,
+    ACTIVE,
+    STOPPING,
+    STOPPED
 }

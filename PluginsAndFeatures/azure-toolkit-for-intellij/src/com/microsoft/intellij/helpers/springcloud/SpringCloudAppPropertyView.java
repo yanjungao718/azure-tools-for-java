@@ -25,9 +25,12 @@ package com.microsoft.intellij.helpers.springcloud;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.JBMenuItem;
+import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
@@ -39,6 +42,7 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
@@ -59,8 +63,11 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -341,6 +348,64 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             Dimension size = lblInstances.getPreferredSize();
             size.setSize(lblPersistentStorage.getWidth(), size.getHeight());
             lblInstances.setPreferredSize(size);
+        });
+
+        final JBPopupMenu instanceTablePopupMenu = new JBPopupMenu();
+        final JBMenuItem startStreamingLogsItem = new JBMenuItem("Start Streaming Logs");
+        startStreamingLogsItem.addActionListener(event -> {
+            final int row = instanceTable.getSelectedRow();
+            if (row >= 0) {
+                final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
+                EventUtil.executeWithLog(
+                        TelemetryConstants.SPRING_CLOUD,
+                        TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                        SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, instanceName);
+                    });
+            }
+        });
+        final JBMenuItem stopStreamingLogsItem = new JBMenuItem("Stop Streaming Logs");
+        stopStreamingLogsItem.addActionListener(event -> {
+            final int row = instanceTable.getSelectedRow();
+            if (row >= 0) {
+                final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
+                EventUtil.executeWithLog(
+                        TelemetryConstants.SPRING_CLOUD,
+                        TelemetryConstants.STOP_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                        SpringCloudStreamingLogManager.getInstance().closeStreamingLog(instanceName);
+                    });
+            }
+        });
+        instanceTablePopupMenu.add(startStreamingLogsItem);
+        instanceTablePopupMenu.add(stopStreamingLogsItem);
+        instanceTablePopupMenu.addPopupMenuListener(new PopupMenuListenerAdapter() {
+            @Override
+            public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
+                final int row = instanceTable.getSelectedRow();
+                if (row >= 0) {
+                    final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
+                    final ConsoleViewStatus status =
+                            SpringCloudStreamingLogManager.getInstance().getConsoleViewStatus(instanceName);
+                    stopStreamingLogsItem.setEnabled(status == ConsoleViewStatus.ACTIVE);
+                    startStreamingLogsItem.setEnabled(status == ConsoleViewStatus.STOPPED);
+                } else {
+                    DefaultLoader.getIdeHelper().invokeLater(() -> instanceTablePopupMenu.setVisible(false));
+                }
+            }
+        });
+
+        // Select row with right click
+        instanceTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(final MouseEvent mouseEvent) {
+                if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+                    final int row = instanceTable.rowAtPoint(mouseEvent.getPoint());
+                    if (row >= 0) {
+                        instanceTable.clearSelection();
+                        instanceTable.addRowSelectionInterval(row, row);
+                        instanceTablePopupMenu.show(instanceTable, mouseEvent.getX(), mouseEvent.getY());
+                    }
+                }
+            }
         });
     }
 
