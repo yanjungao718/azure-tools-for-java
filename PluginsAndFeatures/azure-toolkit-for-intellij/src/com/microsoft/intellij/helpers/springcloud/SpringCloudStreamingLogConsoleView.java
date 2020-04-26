@@ -26,6 +26,7 @@ import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,11 +37,11 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
 
-    private AtomicBoolean enable;
+    private ConsoleViewStatus status;
     private ExecutorService executorService;
 
     private String resourceId;
@@ -48,23 +49,41 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
 
     public SpringCloudStreamingLogConsoleView(@NotNull Project project, String resourceId) {
         super(project, true);
-        this.enable = new AtomicBoolean();
+        this.status = ConsoleViewStatus.STOPPED;
         this.resourceId = resourceId;
     }
 
-    public boolean isEnable() {
-        return enable.get();
+    public ConsoleViewStatus getStatus() {
+        return status;
     }
 
-    public void startLog(InputStream inputStream) {
-        enable.set(true);
-        this.logInputStream = inputStream;
+    private void setStatus(ConsoleViewStatus status) {
+        this.status = status;
+    }
 
+    public void startLog(Supplier<InputStream> inputStreamSupplier) throws IOException {
+        synchronized (this) {
+            if (getStatus() != ConsoleViewStatus.STOPPED) {
+                return;
+            }
+            setStatus(ConsoleViewStatus.STARTING);
+        }
+        logInputStream = inputStreamSupplier.get();
+        if (logInputStream == null) {
+            shutdown();
+            throw new IOException("Failed to get log streaming content");
+        }
+        synchronized (this) {
+            if (getStatus() != ConsoleViewStatus.STARTING) {
+                return;
+            }
+            setStatus(ConsoleViewStatus.ACTIVE);
+        }
         this.print("Streaming Log Start.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
             try (final Scanner scanner = new Scanner(new InputStreamReader(logInputStream))) {
-                while (enable.get() && scanner.hasNext()) {
+                while (getStatus() == ConsoleViewStatus.ACTIVE && scanner.hasNext()) {
                     final String log = scanner.nextLine();
                     SpringCloudStreamingLogConsoleView.this.print(log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
                     Thread.sleep(50);
@@ -77,15 +96,20 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
                 }
             } finally {
                 print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
-                enable.set(false);
+                setStatus(ConsoleViewStatus.STOPPED);
             }
         });
     }
 
     public void shutdown() {
-        if (enable.get()) {
-            enable.set(false);
-            DefaultLoader.getIdeHelper().runInBackground(getProject(), "Closing Streaming Log", false, true, "Closing Streaming Log", () -> {
+        synchronized (this) {
+            if (getStatus() != ConsoleViewStatus.ACTIVE && getStatus() != ConsoleViewStatus.STARTING) {
+                return;
+            }
+            setStatus(ConsoleViewStatus.STOPPING);
+        }
+        DefaultLoader.getIdeHelper().runInBackground(getProject(), "Closing Streaming Log", false, true, "Closing Streaming Log", () -> {
+            try {
                 if (logInputStream != null) {
                     try {
                         logInputStream.close();
@@ -96,8 +120,10 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
                 if (executorService != null) {
                     ThreadPoolUtils.stop(executorService, 100, TimeUnit.MICROSECONDS);
                 }
-            });
-        }
+            } finally {
+                setStatus(ConsoleViewStatus.STOPPED);
+            }
+        });
     }
 
     @Override

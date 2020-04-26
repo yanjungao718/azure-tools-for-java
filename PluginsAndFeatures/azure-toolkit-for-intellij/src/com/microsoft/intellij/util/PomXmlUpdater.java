@@ -45,12 +45,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.common.utils.TextUtils.splitLines;
+
 public class PomXmlUpdater {
     private static String formatElements(String originalXml, LocationAwareElement parent, List<Element> newNodes) {
         if (newNodes.isEmpty()) {
             return originalXml;
         }
-        final String[] originXmlLines = com.microsoft.azure.common.utils.TextUtils.splitLines(originalXml);
+        final String[] originXmlLines = splitLines(originalXml);
         final String baseIndent = IndentUtil.calcXmlIndent(originXmlLines, parent.getLineNumber() - 1,
                 parent.getColumnNumber() - 2);
         final String placeHolder = String.format("@PLACEHOLDER_RANDOM_%s@", RandomUtils.nextLong());
@@ -64,9 +66,9 @@ public class PomXmlUpdater {
         final String xmlWithPlaceholder = parent.getDocument().asXML();
 
         final List<String> newXmlLines = new ArrayList(
-                Arrays.asList(com.microsoft.azure.common.utils.TextUtils.splitLines(XmlUtils.prettyPrintElementNoNamespace(newNode))));
+                Arrays.asList(splitLines(XmlUtils.prettyPrintElementNoNamespace(newNode))));
         for (int i = 1; i < newNodes.size(); i++) {
-            newXmlLines.addAll(Arrays.asList(com.microsoft.azure.common.utils.TextUtils.splitLines(XmlUtils.prettyPrintElementNoNamespace(newNodes.get(i)))));
+            newXmlLines.addAll(Arrays.asList(splitLines(XmlUtils.prettyPrintElementNoNamespace(newNodes.get(i)))));
         }
 
         final String replacement = newXmlLines.stream().map(t -> baseIndent + "    " + t)
@@ -92,18 +94,25 @@ public class PomXmlUpdater {
 
         if (targetNode != null) {
             final String thisVersion = XmlUtils.getChildValue(targetNode, "version");
-            if (StringUtils.equals(thisVersion, version)) {
+            if (StringUtils.equals(thisVersion, version) || (StringUtils.isEmpty(thisVersion) && StringUtils.isEmpty(version))) {
                 // no need to update
                 return null;
             }
-            updateText(targetNode, "version", version);
+            if (StringUtils.isNotEmpty(version)) {
+                updateText(targetNode, "version", version);
+            } else {
+                Element versionEle = targetNode.element("version");
+                if (versionEle != null) {
+                    targetNode.remove(versionEle);
+                }
+            }
         } else {
             targetNode = addDependency(dependenciesNode, groupId, artifactId, version);
         }
         return targetNode;
     }
 
-    public void updateDependencies(final File pom, List<DependencyArtifact> apply)
+    public boolean updateDependencies(final File pom, List<DependencyArtifact> apply)
             throws DocumentException, IOException {
         final SAXReader reader = new CustomSAXReader();
         reader.setDocumentFactory(new LocatorAwareDocumentFactory());
@@ -112,13 +121,13 @@ public class PomXmlUpdater {
         List<Element> newNodes = new ArrayList<>();
         for (DependencyArtifact da : apply) {
             Element newNode = createOrUpdateDependency(dependenciesNode, da.getGroupId(), da.getArtifactId(),
-                    da.getCompilableVersion());
+                    da.getCompatibleVersion());
             if (newNode != null) {
                 newNodes.add(newNode);
             }
         }
         if (newNodes.isEmpty()) {
-            return;
+            return false;
         }
         if (dependenciesNode instanceof LocationAwareElement) {
             for (int i = 1; i < newNodes.size(); i++) {
@@ -130,6 +139,7 @@ public class PomXmlUpdater {
             FileUtils.writeStringToFile(pom, formatElement(FileUtils.readFileToString(pom, "utf-8"),
                     (LocationAwareElement) dependenciesNode.getParent(), dependenciesNode), "utf-8");
         }
+        return true;
     }
 
     private static void updateText(Element node, String key, String text) {
@@ -144,7 +154,9 @@ public class PomXmlUpdater {
         final Element result = new DOMElement("dependency");
         addDomWithKeyValue(result, "groupId", groupId);
         addDomWithKeyValue(result, "artifactId", artifactId);
-        addDomWithKeyValue(result, "version", version);
+        if (StringUtils.isNotEmpty(version)) {
+            addDomWithKeyValue(result, "version", version);
+        }
         rootNode.add(result);
         return result;
     }
@@ -158,15 +170,16 @@ public class PomXmlUpdater {
     }
 
     private static Element createToPath(Element node, String... paths) {
+        Element target = node;
         for (final String path : paths) {
-            Element newNode = node.element(path);
+            Element newNode = target.element(path);
             if (newNode == null) {
                 newNode = new DOMElement(path);
-                node.add(newNode);
+                target.add(newNode);
             }
-            node = newNode;
+            target = newNode;
         }
-        return node;
+        return target;
     }
 
 
