@@ -125,7 +125,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 copyPluginComponents();
                 initializeTelemetry();
                 clearTempDirectory();
-                loadWebappsSettings();
+                loadWebappsSettings(project);
             } catch (ProcessCanceledException e) {
                 throw e;
             } catch (Exception e) {
