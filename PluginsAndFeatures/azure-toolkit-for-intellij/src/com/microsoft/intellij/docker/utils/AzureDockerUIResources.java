@@ -182,14 +182,8 @@ public class AzureDockerUIResources {
       options = new String[]{"Cancel", "Delete"};
     }
 
-    int dialogReturn = JOptionPane.showOptionDialog(null,
-        promptMessage,
-        "Delete Docker Host",
-        JOptionPane.YES_NO_OPTION,
-        JOptionPane.QUESTION_MESSAGE,
-        PluginUtil.getIcon("/icons/logwarn.png"),
-        options,
-        null);
+    int dialogReturn = DefaultLoader.getUIHelper().showConfirmDialog(null, promptMessage, "Delete Docker Host", options
+            , "Cancel", PluginUtil.getIcon("/icons/logwarn.png"));
 
     switch (dialogReturn) {
       case 0:
@@ -367,15 +361,15 @@ public class AzureDockerUIResources {
     }
   }
 
-  private static int displayWarningOnCreateKeyVaultCancelAction(){
-    return JOptionPane.showOptionDialog(null,
-        "This action can leave the Docker virtual machine host in an partial setup state and which can cause publishing to a Docker container to fail!\n\n Are you sure you want this?",
-        "Stop Create Azure Key Vault",
-        JOptionPane.YES_NO_OPTION,
-        JOptionPane.QUESTION_MESSAGE,
-        PluginUtil.getIcon("/icons/logwarn.png"),
-        new String[]{"Cancel", "OK"},
-        null);
+  private static int displayWarningOnCreateKeyVaultCancelAction() {
+    return DefaultLoader.getUIHelper().showConfirmDialog(
+            null,
+            "This action can leave the Docker virtual machine host in an partial setup state and which can cause "
+                    + "publishing to a Docker container to fail!\n\n Are you sure you want this?",
+            "Stop Create Azure Key Vault",
+            new String[]{"Cancel", "OK"},
+            null,
+            PluginUtil.getIcon("/icons/logwarn.png"));
   }
 
   public static void updateDockerHost(Project project, EditableDockerHost editableDockerHost, AzureDockerHostsManager dockerManager, boolean doReset) {

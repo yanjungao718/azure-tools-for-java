@@ -238,7 +238,9 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
 
                 @Override
                 public void onFailure(Throwable throwable) {
-                    JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error occurred when creating Redis Cache: " + redisCacheNameValue, JOptionPane.ERROR_MESSAGE, null);
+                    DefaultLoader.getUIHelper().showError(throwable.getMessage(),
+                                                          "Error occurred when creating Redis Cache: "
+                                                                  + redisCacheNameValue);
                     EventUtil.logError(operation, ErrorType.userError, new Exception(throwable), null, null);
                     operation.complete();
                     try {

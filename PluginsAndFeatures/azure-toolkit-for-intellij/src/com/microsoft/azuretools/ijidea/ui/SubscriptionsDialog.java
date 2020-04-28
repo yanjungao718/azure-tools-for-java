@@ -39,6 +39,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -206,10 +207,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         }
 
         if (unselectedCount == rc) {
-            JOptionPane.showMessageDialog(contentPane,
-                    "Please select at least one subscription",
-                    "Subscription dialog info",
-                    JOptionPane.INFORMATION_MESSAGE);
+            DefaultLoader.getUIHelper().showMessageDialog(
+                    contentPane, "Please select at least one subscription",
+                    "Subscription dialog info", null);
             return;
         }
 

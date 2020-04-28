@@ -33,6 +33,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import java.util.List;
@@ -99,9 +100,8 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
                     for (BlobContainer blobContainer : blobs) {
                         if (blobContainer.getName().equals(name)) {
                             ApplicationManager.getApplication().invokeLater(() -> {
-                                JOptionPane.showMessageDialog(null,
-                                    "A blob container with the specified name already exists.",
-                                    "Azure Explorer", JOptionPane.ERROR_MESSAGE);
+                                DefaultLoader.getUIHelper().showError(
+                                        "A blob container with the specified name already exists.", "Azure Explorer");
                             });
                             return;
                         }

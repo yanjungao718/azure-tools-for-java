@@ -518,7 +518,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile blobItem = getFileSelection();
 
         if (blobItem != null) {
-            if (JOptionPane.showConfirmDialog(mainPanel, "Are you sure you want to delete this blob?", "Delete Blob", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
+            boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(mainPanel, "Are you sure you want to "
+                    + "delete this blob?", "Delete Blob", null);
+            if (isConfirm) {
                 setUIState(true);
 
                 ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting blob...", false) {

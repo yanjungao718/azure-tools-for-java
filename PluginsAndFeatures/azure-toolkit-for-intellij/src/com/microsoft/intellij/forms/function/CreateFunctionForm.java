@@ -28,6 +28,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
@@ -63,6 +64,9 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     public static final String HTTP_TRIGGER = "HttpTrigger";
     public static final String TIMER_TRIGGER = "TimerTrigger";
     public static final String EVENT_HUB_TRIGGER = "EventHubTrigger";
+    public static final String CUSTOMIZED_TIMER_CRON_MESSAGE =
+            "Enter a cron expression of the format '{second} {minute} {hour} {day} {month} {day of week}' to specify the schedule";
+    public static final String CUSTOMIZED_TIMER_CRON = "Customized Timer Cron";
 
     private Map<String, JComponent[]> triggerComponents;
     private boolean isSignedIn;
@@ -371,8 +375,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     }
 
     private void addTimer() {
-        String cron = JOptionPane.showInputDialog(this.cbCron, "Enter a cron expression of the format '{second} {minute} {hour} " +
-                "{day} {month} {day of week}' to specify the schedule");
+        String cron = Messages.showInputDialog(project, CUSTOMIZED_TIMER_CRON_MESSAGE, CUSTOMIZED_TIMER_CRON, null);
 
         if (StringUtils.isBlank(cron)) {
             return;

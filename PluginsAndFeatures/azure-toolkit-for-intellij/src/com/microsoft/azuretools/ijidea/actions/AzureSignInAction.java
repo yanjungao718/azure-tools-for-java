@@ -26,6 +26,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.AuthMethod;
@@ -38,6 +39,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,12 +121,11 @@ public class AzureSignInAction extends AzureAnAction {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
             boolean isSignIn = authMethodManager.isSignedIn();
             if (isSignIn) {
-                int res = JOptionPane.showConfirmDialog(frame,
-                    getSignOutWarningMessage(authMethodManager),
-                    "Azure Sign Out",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    new ImageIcon("icons/azure.png"));
-                if (res == JOptionPane.OK_OPTION) {
+                boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(),
+                                                                          getSignOutWarningMessage(authMethodManager),
+                                                                          "Azure Sign Out",
+                                                                          new ImageIcon("icons/azure.png"));
+                if (res) {
                     EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
                         authMethodManager.signOut();
                     });

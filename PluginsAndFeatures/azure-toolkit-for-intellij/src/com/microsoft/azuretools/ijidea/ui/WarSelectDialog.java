@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -88,10 +89,8 @@ public class WarSelectDialog extends AzureDialogWrapper {
         DefaultTableModel tableModel = (DefaultTableModel)table.getModel();
         int i = table.getSelectedRow();
         if (i < 0) {
-            JOptionPane.showMessageDialog(contentPane,
-                    "Please select an artifact",
-                    "Select Artifact Status",
-                    JOptionPane.INFORMATION_MESSAGE);
+            DefaultLoader.getUIHelper().showMessageDialog(contentPane, "Please select an artifact", "Select Artifact "
+                    + "Status", null);
             return;
         }
         selectedArtifact = artifactList.get(i);

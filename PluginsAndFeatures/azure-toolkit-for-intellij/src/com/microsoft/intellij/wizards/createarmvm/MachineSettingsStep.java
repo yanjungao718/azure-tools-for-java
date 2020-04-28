@@ -263,14 +263,16 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         String name = vmNameTextField.getText();
 
         if (name.length() > 15 || name.length() < 3) {
-            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must be between 3 and 15 character long.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            DefaultLoader.getUIHelper().showError("Invalid virtual machine name. The name must be between 3 and 15 "
+                                                          + "character long.", "Error creating the virtual machine");
             return this;
         }
 
         if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
-            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must start with a letter, \n" +
-                    "contain only letters, numbers, and hyphens, " +
-                    "and end with a letter or number.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            DefaultLoader.getUIHelper().showError(
+                    "Invalid virtual machine name. The name must start with a letter, \ncontain only letters, " +
+                            "numbers, and hyphens, and end with a letter or number.",
+                    "Error creating the virtual machine");
             return this;
         }
 
@@ -280,13 +282,16 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
             String conf = new String(confirmPasswordField.getPassword());
 
             if (!password.equals(conf)) {
-                JOptionPane.showMessageDialog(null, "Password confirmation should match password", "Error creating the service", JOptionPane.ERROR_MESSAGE);
+                DefaultLoader.getUIHelper().showError("Password confirmation should match password", "Error creating "
+                        + "the service");
                 return this;
             }
 
             if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
-                JOptionPane.showMessageDialog(null, "The password does not conform to complexity requirements.\n" +
-                        "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+                DefaultLoader.getUIHelper().showError(
+                        "The password does not conform to complexity requirements.\nIt should be at least eight "
+                                + "characters long and contain a mixture of upper case, lower case, digits and "
+                                + "symbols.", "Error creating the virtual machine");
                 return this;
             }
         }

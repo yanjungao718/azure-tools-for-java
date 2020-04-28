@@ -46,6 +46,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -239,13 +240,13 @@ public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizar
   }
 
   private int displayWarningOnCreateHostCancelAction(){
-    return JOptionPane.showOptionDialog(null,
-        "This action can leave the Docker virtual machine host in an partial setup state and which can cause publishing to a Docker container to fail!\n\n Are you sure you want this?",
-        "Stop Create Docker Host",
-        JOptionPane.YES_NO_OPTION,
-        JOptionPane.QUESTION_MESSAGE,
-        PluginUtil.getIcon("/icons/logwarn.png"),
-        new String[]{"Cancel", "OK"},
-        null);
+    return DefaultLoader.getUIHelper().showConfirmDialog(
+            null,
+            "This action can leave the Docker virtual machine host in an partial setup state and which can cause "
+                    + "publishing to a Docker container to fail!\n\n Are you sure you want this?",
+            "Stop Create Docker Host",
+            new String[]{"Cancel", "OK"},
+            null,
+            PluginUtil.getIcon("/icons/logwarn.png"));
   }
 }

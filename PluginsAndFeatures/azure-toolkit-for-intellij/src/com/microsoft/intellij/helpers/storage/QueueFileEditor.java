@@ -32,10 +32,12 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.QueueMessage;
@@ -219,16 +221,15 @@ public class QueueFileEditor implements FileEditor {
         fileEditorVirtualNode.addAction(CLEAR_QUEUE, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                int optionDialog = JOptionPane.showOptionDialog(null,
+                int optionDialog = DefaultLoader.getUIHelper().showConfirmDialog(
+                        null,
                         "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
                         "Azure Explorer",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
                         new String[]{"Yes", "No"},
+                        null,
                         null);
 
-                if (optionDialog == JOptionPane.YES_OPTION) {
+                if (optionDialog == 0) {
                     ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
                         @Override
                         public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -313,11 +314,9 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private void dequeueFirstMessage() {
-        if (JOptionPane.showConfirmDialog(mainPanel,
-                "Are you sure you want to dequeue the first message in the queue?",
-                "Azure Explorer",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION) {
+        final boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(
+                mainPanel, "Are you sure you want to dequeue the first message in the queue?", "Azure Explorer", null);
+        if (isConfirm) {
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {

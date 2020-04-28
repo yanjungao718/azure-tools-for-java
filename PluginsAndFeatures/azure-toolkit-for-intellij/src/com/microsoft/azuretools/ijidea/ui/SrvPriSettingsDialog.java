@@ -29,6 +29,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -145,10 +146,8 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         }
 
         if (unselectedCount == rc) {
-            JOptionPane.showMessageDialog(contentPane,
-                    "Please select at least one subscription",
-                    "Subscription Dialog Status",
-                    JOptionPane.INFORMATION_MESSAGE);
+            DefaultLoader.getUIHelper().showMessageDialog(contentPane, "Please select at least one subscription",
+                                                          "Subscription Dialog Status", null);
             return;
         }
 
