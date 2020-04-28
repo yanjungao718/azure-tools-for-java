@@ -227,7 +227,7 @@
     <action class="com.microsoft.azuretools.ijidea.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
     <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback" />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Deploy to Azure" description="Deploy to Azure"
+            text="Deploy to Azure Web Apps" description="Deploy to Azure Web Apps"
             icon="/icons/PublishWebApp_16.png">
     </action>
     <!-- Functions Start -->
