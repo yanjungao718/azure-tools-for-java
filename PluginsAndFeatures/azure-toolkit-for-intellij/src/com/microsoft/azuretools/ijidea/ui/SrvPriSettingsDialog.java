@@ -25,6 +25,7 @@ package com.microsoft.azuretools.ijidea.ui;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -147,7 +148,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
 
         if (unselectedCount == rc) {
             DefaultLoader.getUIHelper().showMessageDialog(contentPane, "Please select at least one subscription",
-                                                          "Subscription Dialog Status", null);
+                                                          "Subscription Dialog Status", Messages.getInformationIcon());
             return;
         }
 

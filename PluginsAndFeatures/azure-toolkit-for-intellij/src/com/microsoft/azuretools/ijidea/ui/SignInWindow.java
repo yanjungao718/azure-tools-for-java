@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -343,7 +342,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 DefaultLoader.getUIHelper().showMessageDialog(contentPane,
                                                               "Select authentication file",
                                                               "Sign in dialog info",
-                                                              AllIcons.General.Information);
+                                                              Messages.getInformationIcon());
                 return;
             }
 

@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -90,7 +91,7 @@ public class WarSelectDialog extends AzureDialogWrapper {
         int i = table.getSelectedRow();
         if (i < 0) {
             DefaultLoader.getUIHelper().showMessageDialog(contentPane, "Please select an artifact", "Select Artifact "
-                    + "Status", null);
+                    + "Status", Messages.getInformationIcon());
             return;
         }
         selectedArtifact = artifactList.get(i);

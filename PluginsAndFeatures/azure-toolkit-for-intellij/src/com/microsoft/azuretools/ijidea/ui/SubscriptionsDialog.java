@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -209,7 +210,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         if (unselectedCount == rc) {
             DefaultLoader.getUIHelper().showMessageDialog(
                     contentPane, "Please select at least one subscription",
-                    "Subscription dialog info", null);
+                    "Subscription dialog info", Messages.getInformationIcon());
             return;
         }
 
