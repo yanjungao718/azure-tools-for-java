@@ -308,7 +308,8 @@ public class SignInWindow extends AzureDialogWrapper {
             }
 
             authFileTextField.setText(path);
-            PluginUtil.displayInfoDialog("Authentication File Created", String.format("Your credentials have been exported to %s, please keep the authentication file safe", path));
+            PluginUtil.displayInfoDialog("Authentication File Created", String.format(
+                    "Your credentials have been exported to %s, please keep the authentication file safe", path));
         } catch (Exception ex) {
             ex.printStackTrace();
             //LOGGER.error("doCreateServicePrincipal", ex);

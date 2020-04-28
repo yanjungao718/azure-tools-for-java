@@ -77,10 +77,12 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
         if (name.isEmpty()) {
             return new ValidationInfo("Name cannot be empty", nameTextField);
         } else if (name.length() < NAME_MIN || name.length() > NAME_MAX || !name.matches(NAME_REGEX)) {
-            return new ValidationInfo("Container names must start with a letter or number, and can contain only letters, numbers, and the dash (-) character.\n" +
-                    "Every dash (-) character must be immediately preceded and followed by a letter or number; consecutive dashes are not permitted in container names.\n" +
-                    "All letters in a container name must be lowercase.\n" +
-                    "Container names must be from 3 through 63 characters long.", nameTextField);
+            return new ValidationInfo(
+                    "Container names must start with a letter or number, and can contain only letters, numbers,"
+                            + " and the dash (-) character.\nEvery dash (-) character must be immediately preceded "
+                            + "and followed by a letter or number; consecutive dashes are not permitted in container "
+                            + "names.\nAll letters in a container name must be lowercase.\nContainer names must be "
+                            + "from 3 through 63 characters long.", nameTextField);
         }
 
         return null;
@@ -115,10 +117,10 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
                         ApplicationManager.getApplication().invokeLater(onCreate);
                     }
                 }, (e) -> {
-                    String msg = "An error occurred while attempting to create blob container."
-                        + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                });
+                        String msg = "An error occurred while attempting to create blob container."
+                                + "\n" + String.format(message("webappExpMsg"), e.getMessage());
+                        PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
+                    });
             }
         });
 

@@ -83,13 +83,13 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
     private Azure azure;
 
-    public MachineSettingsStep(VMWizardModel mModel, Project project) {
+    public MachineSettingsStep(VMWizardModel model, Project project) {
         super("Virtual Machine Basic Settings", null, null);
 
         this.project = project;
-        this.model = mModel;
+        this.model = model;
 
-        model.configStepList(createVmStepsList, 2);
+        this.model.configStepList(createVmStepsList, 2);
 
         DocumentListener documentListener = new DocumentListener() {
             @Override
@@ -217,7 +217,8 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     progressIndicator.setIndeterminate(true);
 
-                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
+                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes =
+                            azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
                     Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
                         @Override
                         public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
@@ -258,7 +259,6 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
     @Override
     public WizardStep onNext(VMWizardModel model) {
-        WizardStep wizardStep = super.onNext(model);
 
         String name = vmNameTextField.getText();
 
@@ -287,7 +287,9 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                 return this;
             }
 
-            if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+            if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])"
+                                          + "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|"
+                                          + "(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
                 DefaultLoader.getUIHelper().showError(
                         "The password does not conform to complexity requirements.\nIt should be at least eight "
                                 + "characters long and contain a mixture of upper case, lower case, digits and "
@@ -299,11 +301,12 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         String certificate = certificateCheckBox.isSelected() ? certificateField.getText() : "";
 
         model.setName(name);
-        model.setSize((String)vmSizeComboBox.getSelectedItem());
+        model.setSize((String) vmSizeComboBox.getSelectedItem());
         model.setUserName(vmUserTextField.getText());
         model.setPassword(password);
         model.setCertificate(certificate);
 
+        WizardStep wizardStep = super.onNext(model);
         return wizardStep;
     }
 
@@ -311,17 +314,17 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
-//                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
-//                        ? "Small"
-//                        : model.getVirtualMachineImage().getRecommendedVMSize();
-//
-//                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
-//                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
-//                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
-//                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
-//                        break;
-//                    }
-//                }
+            //                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
+            //                        ? "Small"
+            //                        : model.getVirtualMachineImage().getRecommendedVMSize();
+            //
+            //                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
+            //                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
+            //                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
+            //                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
+            //                        break;
+            //                    }
+            //                }
             }
         }, ModalityState.any());
     }

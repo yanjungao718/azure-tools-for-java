@@ -87,7 +87,7 @@ public class WarSelectDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-        DefaultTableModel tableModel = (DefaultTableModel)table.getModel();
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         int i = table.getSelectedRow();
         if (i < 0) {
             DefaultLoader.getUIHelper().showMessageDialog(contentPane, "Please select an artifact", "Select Artifact "

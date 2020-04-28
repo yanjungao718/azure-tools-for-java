@@ -40,10 +40,6 @@ public class NotificationWindow implements INotification {
             public void run() {
                 JPanel panel = new JPanel();
                 Messages.showMessageDialog(panel, message, subject, AllIcons.General.Information);
-//                JOptionPane.showMessageDialog(panel,
-//                        message,
-//                        subject,
-//                        JOptionPane.INFORMATION_MESSAGE);
             }
         });
 

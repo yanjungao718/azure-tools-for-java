@@ -56,8 +56,8 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     }
 
     DefaultTableModel model = new DefaultTableModel() {
-        final Class[] columnClass = new Class[] {
-                Boolean.class, String.class, String.class
+        final Class[] columnClass = new Class[]{
+            Boolean.class, String.class, String.class
         };
         @Override
         public boolean isCellEditable(int row, int col) {
@@ -65,8 +65,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         }
 
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             return columnClass[columnIndex];
         }
     };
@@ -142,8 +141,10 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         int rc = model.getRowCount();
         int unselectedCount = 0;
         for (int ri = 0; ri < rc; ++ri) {
-            boolean selected = (boolean)model.getValueAt(ri, 0);
-            if (!selected) unselectedCount++;
+            boolean selected = (boolean) model.getValueAt(ri, 0);
+            if (!selected) {
+                unselectedCount++;
+            }
         }
 
         if (unselectedCount == rc) {
@@ -153,7 +154,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         }
 
         for (int ri = 0; ri < rc; ++ri) {
-            boolean selected = (boolean)model.getValueAt(ri, 0);
+            boolean selected = (boolean) model.getValueAt(ri, 0);
             this.sdl.get(ri).setSelected(selected);
         }
 

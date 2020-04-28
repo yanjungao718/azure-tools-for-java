@@ -122,10 +122,10 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             subscriptionManager.setSubscriptionDetails(sdl);
 
         }, (ex) -> {
-            ex.printStackTrace();
-            //LOGGER.error("refreshSubscriptions", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
-        });
+                ex.printStackTrace();
+                //LOGGER.error("refreshSubscriptions", ex);
+                ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
+            });
     }
 
     private void setSubscriptions() {
@@ -229,7 +229,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     private class SubscriptionTableModel extends DefaultTableModel {
         final Class[] columnClass = new Class[]{
-                Boolean.class, String.class, String.class
+            Boolean.class, String.class, String.class
         };
 
         @Override

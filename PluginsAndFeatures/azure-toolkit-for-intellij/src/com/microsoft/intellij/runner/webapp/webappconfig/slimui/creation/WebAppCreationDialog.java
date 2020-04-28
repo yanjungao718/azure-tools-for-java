@@ -458,10 +458,10 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                     });
                     dispose();
                 }, (ex) -> {
-                    DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
-                                                          "Create WebApp Failed");
-                    sendTelemetry(false, ex.getMessage());
-                });
+                        DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
+                                                              "Create WebApp Failed");
+                        sendTelemetry(false, ex.getMessage());
+                    });
             }
         });
     }
@@ -491,7 +491,8 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         }
     }
 
-    private boolean isJarApplication(){
-        return MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()).equalsIgnoreCase(MavenConstants.TYPE_JAR);
+    private boolean isJarApplication() {
+        return MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName())
+                               .equalsIgnoreCase(MavenConstants.TYPE_JAR);
     }
 }

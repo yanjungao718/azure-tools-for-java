@@ -104,7 +104,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbFunctionModule.setRenderer(new SimpleListCellRenderer<Module>() {
             @Override
-            public void customize(JList jList, Module module, int i, boolean b, boolean b1) {
+            public void customize(JList list, Module module, int i, boolean b, boolean b1) {
                 if (module != null) {
                     setText(module.getName());
                     setIcon(AllIcons.Nodes.Module);
@@ -114,7 +114,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbEventHubNamespace.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object object, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof EventHubNamespace) {
                     setText(((EventHubNamespace) object).name());
                 } else if (object instanceof String) {
@@ -125,7 +125,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbEventHubName.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof EventHub) {
                     setText(((EventHub) o).name());
                 } else if (o instanceof String) {
@@ -136,7 +136,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbConsumerGroup.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof EventHubConsumerGroup) {
                     setText(((EventHubConsumerGroup) o).name());
                 } else if (o instanceof String) {
@@ -147,7 +147,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbCron.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof TimerCron) {
                     setText(((TimerCron) o).getDisplay());
                 } else if (o instanceof String) {
@@ -326,22 +326,22 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         return result;
     }
 
-    private void fillJComboBox(JComboBox jComboBox, Supplier<List<?>> listFunction) {
-        fillJComboBox(jComboBox, listFunction, null);
+    private void fillJComboBox(JComboBox comboBox, Supplier<List<?>> listFunction) {
+        fillJComboBox(comboBox, listFunction, null);
     }
 
-    private void fillJComboBox(JComboBox jComboBox, Supplier<List<?>> listFunction, Runnable callback) {
-        jComboBox.removeAllItems();
-        jComboBox.addItem("Refreshing");
-        jComboBox.setEnabled(false);
+    private void fillJComboBox(JComboBox comboBox, Supplier<List<?>> listFunction, Runnable callback) {
+        comboBox.removeAllItems();
+        comboBox.addItem("Refreshing");
+        comboBox.setEnabled(false);
 
         Observable.fromCallable(() -> listFunction.get()).subscribeOn(Schedulers.newThread())
                 .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     final List list = listFunction.get();
-                    jComboBox.removeAllItems();
-                    jComboBox.setEnabled(true);
-                    jComboBox.setSelectedItem(null);
-                    list.forEach(item -> jComboBox.addItem(item));
+                    comboBox.removeAllItems();
+                    comboBox.setEnabled(true);
+                    comboBox.setSelectedItem(null);
+                    list.forEach(item -> comboBox.addItem(item));
                     if (callback != null) {
                         callback.run();
                     }

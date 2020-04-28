@@ -140,7 +140,9 @@ public class AzureSignInAction extends AzureAnAction {
 
     public static boolean doSignIn(AuthMethodManager authMethodManager, Project project) throws Exception {
         boolean isSignIn = authMethodManager.isSignedIn();
-        if (isSignIn) return true;
+        if (isSignIn) {
+            return true;
+        }
         SignInWindow w = SignInWindow.go(authMethodManager.getAuthMethodDetails(), project);
         if (w != null) {
             AuthMethodDetails authMethodDetailsUpdated = w.getAuthMethodDetails();
