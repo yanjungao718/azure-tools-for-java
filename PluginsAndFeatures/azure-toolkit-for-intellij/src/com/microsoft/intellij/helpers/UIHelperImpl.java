@@ -155,11 +155,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
                               String defaultOption) {
-        return runFromDispatchThread(() -> 0 == Messages.showDialog(message,
-                                                                    title,
-                                                                    options,
-                                                                    ArrayUtils.indexOf(options, defaultOption),
-                                                                    null));
+        return showConfirmation(null, message, title, options, defaultOption);
     }
 
     @Override
