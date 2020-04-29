@@ -40,7 +40,6 @@ import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.ui.AnimatedIcon;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -97,7 +96,6 @@ import java.util.function.Supplier;
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
-import static rx.Observable.fromCallable;
 
 
 public class UIHelperImpl implements UIHelper {
