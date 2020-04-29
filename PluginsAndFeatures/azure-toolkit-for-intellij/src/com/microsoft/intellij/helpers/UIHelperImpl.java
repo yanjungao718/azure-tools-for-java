@@ -40,6 +40,7 @@ import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.ui.AnimatedIcon;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -88,10 +89,15 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
+import static rx.Observable.fromCallable;
 
 
 public class UIHelperImpl implements UIHelper {
@@ -151,13 +157,22 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
                               String defaultOption) {
-        return Messages.showDialog(message, title, options, ArrayUtils.indexOf(options, defaultOption), null) == 0;
+        return getValueFromDispatchThread(() -> Messages.showDialog(message,
+                                                                    title,
+                                                                    options,
+                                                                    ArrayUtils.indexOf(options, defaultOption),
+                                                                    null) == 0);
     }
 
     @Override
     public boolean showConfirmation(@NotNull Component node, @NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
-        return Messages.showDialog(node, message, title, options, ArrayUtils.indexOf(options, defaultOption), null)
-                == 0;
+        return getValueFromDispatchThread(() -> Messages.showDialog(node,
+                                                                    message,
+                                                                    title,
+                                                                    options,
+                                                                    ArrayUtils.indexOf(options, defaultOption),
+                                                                    null)
+                == 0);
     }
 
     @Override
@@ -719,27 +734,41 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void showMessageDialog(Component component, String message, String title, Icon icon) {
-        Messages.showMessageDialog(component, message, title, icon);
+        DefaultLoader.getIdeHelper().invokeLater(() -> Messages.showMessageDialog(component, message, title, icon));
     }
 
     @Override
     public int showConfirmDialog(Component component, String message, String title, String[] options,
                                String defaultOption, Icon icon) {
-        return Messages.showDialog(component,
-                                   message,
-                                   title,
-                                   options,
-                                   ArrayUtils.indexOf(options, defaultOption),
-                                   icon);
+        return getValueFromDispatchThread(() -> Messages.showDialog(component,
+                                                                    message,
+                                                                    title,
+                                                                    options,
+                                                                    ArrayUtils.indexOf(options, defaultOption),
+                                                                    icon));
     }
 
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
-        return Messages.showYesNoDialog(component, message, title, icon) == Messages.YES;
+        return getValueFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
+                == Messages.YES);
     }
 
     @Override
     public String showInputDialog(Component component, String message, String title, Icon icon) {
-        return Messages.showInputDialog(component, message, title, icon);
+        return getValueFromDispatchThread(() -> Messages.showInputDialog(component, message, title, icon));
+    }
+
+    private static <T> T getValueFromDispatchThread(Supplier<T> supplier) {
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            return supplier.get();
+        }
+        RunnableFuture<T> runnableFuture = new FutureTask<>(() -> supplier.get());
+        ApplicationManager.getApplication().invokeLater(runnableFuture);
+        try {
+            return runnableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return null;
+        }
     }
 }
