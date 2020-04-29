@@ -93,6 +93,16 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
     }
 
     @Override
+    public void triggerFunction(String s, Object o) {
+        getFunctionApp().triggerFunction(s, o);
+    }
+
+    @Override
+    public Completable triggerFunctionAsync(String s, Object o) {
+        return getFunctionApp().triggerFunctionAsync(s, o);
+    }
+
+    @Override
     public void syncTriggers() {
         getFunctionApp().syncTriggers();
     }
