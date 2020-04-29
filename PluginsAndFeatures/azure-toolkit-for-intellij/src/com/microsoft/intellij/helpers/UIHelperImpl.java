@@ -155,22 +155,21 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
                               String defaultOption) {
-        return getValueFromDispatchThread(() -> Messages.showDialog(message,
+        return runFromDispatchThread(() -> 0 == Messages.showDialog(message,
                                                                     title,
                                                                     options,
                                                                     ArrayUtils.indexOf(options, defaultOption),
-                                                                    null) == 0);
+                                                                    null));
     }
 
     @Override
     public boolean showConfirmation(@NotNull Component node, @NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
-        return getValueFromDispatchThread(() -> Messages.showDialog(node,
+        return runFromDispatchThread(() -> 0 == Messages.showDialog(node,
                                                                     message,
                                                                     title,
                                                                     options,
                                                                     ArrayUtils.indexOf(options, defaultOption),
-                                                                    null)
-                == 0);
+                                                                    null));
     }
 
     @Override
@@ -738,26 +737,26 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public int showConfirmDialog(Component component, String message, String title, String[] options,
                                String defaultOption, Icon icon) {
-        return getValueFromDispatchThread(() -> Messages.showDialog(component,
-                                                                    message,
-                                                                    title,
-                                                                    options,
-                                                                    ArrayUtils.indexOf(options, defaultOption),
-                                                                    icon));
+        return runFromDispatchThread(() -> Messages.showDialog(component,
+                                                               message,
+                                                               title,
+                                                               options,
+                                                               ArrayUtils.indexOf(options, defaultOption),
+                                                               icon));
     }
 
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
-        return getValueFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
+        return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
                 == Messages.YES);
     }
 
     @Override
     public String showInputDialog(Component component, String message, String title, Icon icon) {
-        return getValueFromDispatchThread(() -> Messages.showInputDialog(component, message, title, icon));
+        return runFromDispatchThread(() -> Messages.showInputDialog(component, message, title, icon));
     }
 
-    private static <T> T getValueFromDispatchThread(Supplier<T> supplier) {
+    private static <T> T runFromDispatchThread(Supplier<T> supplier) {
         if (ApplicationManager.getApplication().isDispatchThread()) {
             return supplier.get();
         }
