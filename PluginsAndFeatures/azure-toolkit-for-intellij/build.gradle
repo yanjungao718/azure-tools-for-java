@@ -2,6 +2,7 @@ plugins {
     id "org.jetbrains.intellij" version "0.4.18"
     id "org.jetbrains.kotlin.jvm" version "1.3.41"
     id "de.undercouch.download" version "4.0.4"
+    id "com.github.ben-manes.versions" version "0.28.0"
 }
 
 import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
@@ -176,8 +177,8 @@ test.dependsOn cucumber
 
 defaultTasks 'buildPlugin'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.8'
+wrapper() {
+    gradleVersion = '5.0'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
