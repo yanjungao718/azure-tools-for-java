@@ -88,6 +88,10 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
@@ -151,13 +155,17 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
                               String defaultOption) {
-        return Messages.showDialog(message, title, options, ArrayUtils.indexOf(options, defaultOption), null) == 0;
+        return showConfirmation(null, message, title, options, defaultOption);
     }
 
     @Override
     public boolean showConfirmation(@NotNull Component node, @NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
-        return Messages.showDialog(node, message, title, options, ArrayUtils.indexOf(options, defaultOption), null)
-                == 0;
+        return runFromDispatchThread(() -> 0 == Messages.showDialog(node,
+                                                                    message,
+                                                                    title,
+                                                                    options,
+                                                                    ArrayUtils.indexOf(options, defaultOption),
+                                                                    null));
     }
 
     @Override
@@ -719,27 +727,41 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void showMessageDialog(Component component, String message, String title, Icon icon) {
-        Messages.showMessageDialog(component, message, title, icon);
+        DefaultLoader.getIdeHelper().invokeLater(() -> Messages.showMessageDialog(component, message, title, icon));
     }
 
     @Override
     public int showConfirmDialog(Component component, String message, String title, String[] options,
                                String defaultOption, Icon icon) {
-        return Messages.showDialog(component,
-                                   message,
-                                   title,
-                                   options,
-                                   ArrayUtils.indexOf(options, defaultOption),
-                                   icon);
+        return runFromDispatchThread(() -> Messages.showDialog(component,
+                                                               message,
+                                                               title,
+                                                               options,
+                                                               ArrayUtils.indexOf(options, defaultOption),
+                                                               icon));
     }
 
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
-        return Messages.showYesNoDialog(component, message, title, icon) == Messages.YES;
+        return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
+                == Messages.YES);
     }
 
     @Override
     public String showInputDialog(Component component, String message, String title, Icon icon) {
-        return Messages.showInputDialog(component, message, title, icon);
+        return runFromDispatchThread(() -> Messages.showInputDialog(component, message, title, icon));
+    }
+
+    private static <T> T runFromDispatchThread(Supplier<T> supplier) {
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            return supplier.get();
+        }
+        RunnableFuture<T> runnableFuture = new FutureTask<>(() -> supplier.get());
+        ApplicationManager.getApplication().invokeLater(runnableFuture);
+        try {
+            return runnableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return null;
+        }
     }
 }
