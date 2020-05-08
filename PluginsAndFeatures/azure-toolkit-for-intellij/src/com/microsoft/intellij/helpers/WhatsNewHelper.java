@@ -50,9 +50,6 @@ public enum WhatsNewHelper {
 
     private static final String AZURE_TOOLKIT_FOR_JAVA = "Azure Toolkit for Java";
     private static final String AZURE_TOOLKIT_WHATS_NEW = "AzureToolkit.WhatsNew";
-    private static final String FAILED_TO_GET_CONTENT = "Failed to get whats new content";
-    private static final String FAILED_TO_GET_CONTENT_TITLE = "Failed to get content";
-    private static final String LAST_POP_UP_VERSION_KEY = "com.microsoft.intellij.whatsnew.last";
     private static final String VERSION_PATTERN = "<!-- Version: (.*) -->";
     private static final String WHAT_S_NEW_CONSTANT = "WHAT_S_NEW";
     private static final String WHAT_S_NEW_CONTENT_PATH = "/whatsnew/whatsnew.md";
