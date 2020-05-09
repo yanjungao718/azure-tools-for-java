@@ -44,6 +44,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -699,6 +700,9 @@ public class AzureWebAppMvpModel {
     }
 
     public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) throws IOException {
+        if (StringUtils.isEmpty(subscriptionId)) {
+            return Collections.emptyList();
+        }
         final SkuName skuName = SkuName.fromString(pricingTier.toSkuDescription().tier());
         final List<GeoRegionInner> geoRegionInnerList = AuthMethodManager.getInstance()
                 .getAzureClient(subscriptionId).appServices().inner().listGeoRegions(skuName, false, false, false);
