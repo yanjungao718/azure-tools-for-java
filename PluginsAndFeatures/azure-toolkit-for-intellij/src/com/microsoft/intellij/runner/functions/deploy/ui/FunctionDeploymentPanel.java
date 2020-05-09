@@ -262,8 +262,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 // We need to reload the app settings as new created function will generate some required properties as well
                 presenter.loadFunctionApps(true, true);
             } else {
+                // In case created failed
                 presenter.loadFunctionApps(false, false);
             }
+        } else {
+            presenter.loadFunctionApps(false, false);
         }
     }
 

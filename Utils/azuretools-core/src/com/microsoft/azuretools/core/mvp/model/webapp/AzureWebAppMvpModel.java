@@ -30,10 +30,12 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.SkuName;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -694,6 +696,15 @@ public class AzureWebAppMvpModel {
 
     public void clearWebAppsCache() {
         subscriptionIdToWebApps.clear();
+    }
+
+    public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) throws IOException {
+        final SkuName skuName = SkuName.fromString(pricingTier.toSkuDescription().tier());
+        final List<GeoRegionInner> geoRegionInnerList = AuthMethodManager.getInstance()
+                .getAzureClient(subscriptionId).appServices().inner().listGeoRegions(skuName, false, false, false);
+        return geoRegionInnerList.stream()
+                .map(regionInner -> Region.fromName(regionInner.displayName()))
+                .collect(Collectors.toList());
     }
 
     /**

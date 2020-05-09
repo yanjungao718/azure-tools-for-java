@@ -31,7 +31,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -46,6 +45,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -61,6 +61,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
@@ -96,7 +97,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private JLabel lblPricing;
     private JRadioButton rdoCreateAppServicePlan;
     private JTextField txtCreateAppServicePlan;
-    private JComboBox cbLocation;
+    private JComboBox cbRegion;
     private JComboBox cbPricing;
     private JLabel lblJavaVersion;
     private JComboBox cbJdkVersion;
@@ -130,6 +131,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         cbSubscription.addActionListener(e -> selectSubscription());
         cbExistAppServicePlan.addActionListener(e -> selectAppServicePlan());
         cbJdkVersion.addItemListener((itemEvent) -> loadWebContainers());
+        cbPricing.addItemListener(e -> loadRegionsBySku());
 
         rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlan(true));
         rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlan(false));
@@ -178,12 +180,12 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
             }
         });
 
-        cbLocation.setRenderer(new ListCellRendererWrapper<Location>() {
+        cbRegion.setRenderer(new ListCellRendererWrapper<Region>() {
             @Override
-            public void customize(JList list, Location location, int
+            public void customize(JList list, Region region, int
                 index, boolean isSelected, boolean cellHasFocus) {
-                if (location != null) {
-                    setText(location.displayName());
+                if (region != null) {
+                    setText(region.label());
                 }
             }
         });
@@ -208,6 +210,14 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
         addValidationListener(contentPanel, e -> validateConfiguration());
         init();
+    }
+
+    private void loadRegionsBySku() {
+        final String subscriptionId = getValueFromComboBox(cbSubscription, Subscription::subscriptionId);
+        if (StringUtils.isEmpty(subscriptionId)) {
+            return;
+        }
+        presenter.onLoadRegion(subscriptionId, (PricingTier) cbPricing.getSelectedItem());
     }
 
     public WebApp getCreatedWebApp() {
@@ -238,14 +248,14 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     }
 
     @Override
-    public void fillLocation(@NotNull List<Location> locations) {
-        cbLocation.removeAllItems();
-        locations.stream()
-            .sorted(Comparator.comparing(Location::displayName))
-            .forEach((location) -> {
-                cbLocation.addItem(location);
-                if (Comparing.equal(location.name(), DEFAULT_REGION.name())) {
-                    cbLocation.setSelectedItem(location);
+    public void fillRegion(@NotNull List<Region> regions) {
+        cbRegion.removeAllItems();
+        regions.stream()
+            .sorted(Comparator.comparing(Region::label))
+            .forEach((region) -> {
+                cbRegion.addItem(region);
+                if (Comparing.equal(region.name(), DEFAULT_REGION.name())) {
+                    cbRegion.setSelectedItem(region);
                 }
             });
         pack();
@@ -336,9 +346,9 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
     private void selectSubscription() {
         Subscription subscription = (Subscription) cbSubscription.getSelectedItem();
-        presenter.onLoadLocation(subscription.subscriptionId());
         presenter.onLoadResourceGroups(subscription.subscriptionId());
         presenter.onLoadAppServicePlan(subscription.subscriptionId());
+        presenter.onLoadRegion(subscription.subscriptionId(), getValueFromComboBox(cbPricing, (PricingTier p) -> p));
     }
 
     private void toggleResourceGroup(boolean isCreateNew) {
@@ -379,48 +389,51 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
     private void updateConfiguration() {
         webAppConfiguration.setWebAppName(txtWebAppName.getText());
-        webAppConfiguration.setSubscriptionId(cbSubscription.getSelectedItem() == null ? "" :
-            ((Subscription) cbSubscription.getSelectedItem()).subscriptionId());
+        webAppConfiguration.setSubscriptionId(getValueFromComboBox(cbSubscription, Subscription::subscriptionId));
         // resource group
         if (rdoCreateResGrp.isSelected()) {
             webAppConfiguration.setCreatingResGrp(true);
             webAppConfiguration.setResourceGroup(txtNewResGrp.getText());
         } else {
             webAppConfiguration.setCreatingResGrp(false);
-            webAppConfiguration.setResourceGroup(cbExistResGrp.getSelectedItem() == null ? "" :
-                ((ResourceGroup) cbExistResGrp.getSelectedItem()).name());
+            webAppConfiguration.setResourceGroup(getValueFromComboBox(cbExistResGrp, ResourceGroup::name));
         }
         // app service plan
         if (rdoCreateAppServicePlan.isSelected()) {
             webAppConfiguration.setCreatingAppServicePlan(true);
             webAppConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
-            webAppConfiguration.setRegion(cbLocation.getSelectedItem() == null ? DEFAULT_REGION.name() :
-                ((Location) cbLocation.getSelectedItem()).region().name());
-            webAppConfiguration.setPricing(cbPricing.getSelectedItem() == null ? DEFAULT_PRICINGTIER.toString() :
-                cbPricing.getSelectedItem().toString());
+            webAppConfiguration.setRegion(getValueFromComboBox(cbRegion, Region::name, DEFAULT_REGION.name()));
+            webAppConfiguration.setPricing(getValueFromComboBox(cbPricing, PricingTier::toString,
+                                                                DEFAULT_PRICINGTIER.toString()));
         } else {
             webAppConfiguration.setCreatingAppServicePlan(false);
-            webAppConfiguration.setAppServicePlanId(cbExistAppServicePlan.getSelectedItem() == null ? null :
-                ((AppServicePlan) cbExistAppServicePlan.getSelectedItem()).id());
+            webAppConfiguration.setAppServicePlanId(getValueFromComboBox(cbExistAppServicePlan, AppServicePlan::id));
         }
         // runtime
         if (rdoLinuxOS.isSelected()) {
             webAppConfiguration.setOS(OperatingSystem.LINUX);
             RuntimeStack linuxRuntime = cbRuntimeStack.getSelectedItem() == null ? null :
-                (RuntimeStack) cbRuntimeStack.getSelectedItem();
+                                        (RuntimeStack) cbRuntimeStack.getSelectedItem();
             if (linuxRuntime != null) {
                 webAppConfiguration.setStack(linuxRuntime.stack());
                 webAppConfiguration.setVersion(linuxRuntime.version());
             }
-        }
-        if (rdoWindowsOS.isSelected()) {
+        } else if (rdoWindowsOS.isSelected()) {
             webAppConfiguration.setOS(OperatingSystem.WINDOWS);
-            webAppConfiguration.setJdkVersion(cbJdkVersion.getSelectedItem() == null ? null :
-                ((JdkModel) cbJdkVersion.getSelectedItem()).getJavaVersion());
-            webAppConfiguration.setWebContainer(cbWebContainer.getSelectedItem() == null ? null :
-                ((WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem()).getValue());
+            webAppConfiguration.setJdkVersion(getValueFromComboBox(cbJdkVersion, JdkModel::getJavaVersion));
+            webAppConfiguration.setWebContainer(getValueFromComboBox(cbWebContainer,
+                                                                     WebAppUtils.WebContainerMod::getValue));
         }
         webAppConfiguration.setCreatingNew(true);
+    }
+
+    private <T, R> R getValueFromComboBox(JComboBox comboBox, Function<T, R> function) {
+        return getValueFromComboBox(comboBox, function, null);
+    }
+
+    private <T, R> R getValueFromComboBox(JComboBox comboBox, Function<T, R> function, R defaultValue) {
+        final T selectedItem = (T) comboBox.getSelectedItem();
+        return selectedItem == null ? defaultValue : function.apply(selectedItem);
     }
 
     private void validateConfiguration() {
