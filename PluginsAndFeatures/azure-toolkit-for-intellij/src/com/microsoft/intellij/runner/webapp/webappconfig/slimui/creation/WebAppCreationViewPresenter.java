@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
@@ -79,18 +80,15 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
             }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
     }
 
-    /**
-     * Load locations from model.
-     */
-    public void onLoadLocation(String sid) {
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().fillLocation(locations);
-            }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
+    public void onLoadRegion(String sid, PricingTier pricingTier) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().getAvailableRegions(sid, pricingTier))
+                  .subscribeOn(getSchedulerProvider().io())
+                  .subscribe(regions -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                      if (isViewDetached()) {
+                          return;
+                      }
+                      getMvpView().fillRegion(regions);
+                  }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
     }
 
     /**

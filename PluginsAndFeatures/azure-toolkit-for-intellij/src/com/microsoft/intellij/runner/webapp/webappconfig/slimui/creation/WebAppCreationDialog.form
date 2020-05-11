@@ -267,26 +267,9 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="8619d" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Pricing Tier"/>
-                </properties>
-              </component>
-              <component id="6a7c2" class="javax.swing.JLabel" binding="lblPricing">
-                <constraints>
-                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <enabled value="true"/>
-                  <text value="N/A"/>
-                </properties>
-              </component>
               <component id="fe753" class="javax.swing.JLabel">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Location"/>
@@ -294,7 +277,7 @@
               </component>
               <component id="17d22" class="javax.swing.JLabel" binding="lblLocation">
                 <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <enabled value="true"/>
@@ -320,6 +303,23 @@
                   <text value="ServicePlan        "/>
                 </properties>
               </component>
+              <component id="8619d" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Pricing Tier"/>
+                </properties>
+              </component>
+              <component id="6a7c2" class="javax.swing.JLabel" binding="lblPricing">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="true"/>
+                  <text value="N/A"/>
+                </properties>
+              </component>
             </children>
           </grid>
           <grid id="28526" binding="pnlNewAppServicePlan" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -332,26 +332,9 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="3b4f0" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <labelFor value="72d80"/>
-                  <text value="Pricing Tier"/>
-                </properties>
-              </component>
-              <component id="72d80" class="javax.swing.JComboBox" binding="cbPricing">
+              <component id="8a6b9" class="javax.swing.JComboBox" binding="cbRegion">
                 <constraints>
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <enabled value="true"/>
-                </properties>
-              </component>
-              <component id="8a6b9" class="javax.swing.JComboBox" binding="cbLocation">
-                <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <editable value="false"/>
@@ -368,7 +351,7 @@
               </component>
               <component id="22aaf" class="javax.swing.JLabel">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <labelFor value="8a6b9"/>
@@ -382,6 +365,23 @@
                 <properties>
                   <labelFor value="bc0d5"/>
                   <text value="ServicePlan        "/>
+                </properties>
+              </component>
+              <component id="3b4f0" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="72d80"/>
+                  <text value="Pricing Tier"/>
+                </properties>
+              </component>
+              <component id="72d80" class="javax.swing.JComboBox" binding="cbPricing">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="true"/>
                 </properties>
               </component>
             </children>

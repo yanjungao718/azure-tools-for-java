@@ -25,9 +25,9 @@ package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -43,7 +43,7 @@ public interface WebAppCreationMvpView extends MvpView {
 
     void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans);
 
-    void fillLocation(@NotNull List<Location> locations);
+    void fillRegion(@NotNull List<Region> locations);
 
     void fillPricingTier(@NotNull List<PricingTier> prices);
 
