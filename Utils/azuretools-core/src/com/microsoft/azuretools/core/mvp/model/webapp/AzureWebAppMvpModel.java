@@ -700,7 +700,7 @@ public class AzureWebAppMvpModel {
     }
 
     public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) throws IOException {
-        if (StringUtils.isEmpty(subscriptionId)) {
+        if (StringUtils.isEmpty(subscriptionId) || pricingTier == null || pricingTier.toSkuDescription() == null) {
             return Collections.emptyList();
         }
         final SkuName skuName = SkuName.fromString(pricingTier.toSkuDescription().tier());
