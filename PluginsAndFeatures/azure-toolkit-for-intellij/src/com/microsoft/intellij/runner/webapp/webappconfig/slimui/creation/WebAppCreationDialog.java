@@ -212,14 +212,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         init();
     }
 
-    private void loadRegionsBySku() {
-        final String subscriptionId = getValueFromComboBox(cbSubscription, Subscription::subscriptionId);
-        if (StringUtils.isEmpty(subscriptionId)) {
-            return;
-        }
-        presenter.onLoadRegion(subscriptionId, (PricingTier) cbPricing.getSelectedItem());
-    }
-
     public WebApp getCreatedWebApp() {
         return this.result;
     }
@@ -279,6 +271,14 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     @Override
     public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
         fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
+    }
+
+    private void loadRegionsBySku() {
+        final String subscriptionId = getValueFromComboBox(cbSubscription, Subscription::subscriptionId);
+        if (StringUtils.isEmpty(subscriptionId)) {
+            return;
+        }
+        presenter.onLoadRegion(subscriptionId, (PricingTier) cbPricing.getSelectedItem());
     }
 
     private void addValidationListener(Container parent, ActionListener actionListener) {
@@ -427,15 +427,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         webAppConfiguration.setCreatingNew(true);
     }
 
-    private <T, R> R getValueFromComboBox(JComboBox comboBox, Function<T, R> function) {
-        return getValueFromComboBox(comboBox, function, null);
-    }
-
-    private <T, R> R getValueFromComboBox(JComboBox comboBox, Function<T, R> function, R defaultValue) {
-        final T selectedItem = (T) comboBox.getSelectedItem();
-        return selectedItem == null ? defaultValue : function.apply(selectedItem);
-    }
-
     private void validateConfiguration() {
         updateConfiguration();
         try {
@@ -507,5 +498,14 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private boolean isJarApplication() {
         return MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName())
                                .equalsIgnoreCase(MavenConstants.TYPE_JAR);
+    }
+
+    private static <T, R> R getValueFromComboBox(JComboBox comboBox, Function<T, R> function) {
+        return getValueFromComboBox(comboBox, function, null);
+    }
+
+    private static <T, R> R getValueFromComboBox(JComboBox comboBox, Function<T, R> function, R defaultValue) {
+        final T selectedItem = (T) comboBox.getSelectedItem();
+        return selectedItem == null ? defaultValue : function.apply(selectedItem);
     }
 }
