@@ -28,7 +28,6 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +37,7 @@ import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -230,10 +229,10 @@ public class AppServicePlanPanel extends JPanel {
             this.resourceGroup = appServicePlan.resourceGroupName();
         }
 
-        public AppServicePlanWrapper(String name, Location location, PricingTier pricingTier) {
+        public AppServicePlanWrapper(String name, Region region, PricingTier pricingTier) {
             this.isNewCreate = true;
             this.name = name;
-            this.region = location.region();
+            this.region = region;
             this.pricingTier = pricingTier;
         }
 
