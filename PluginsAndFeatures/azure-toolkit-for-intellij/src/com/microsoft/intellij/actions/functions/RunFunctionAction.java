@@ -61,7 +61,9 @@ public class RunFunctionAction extends AzureAnAction {
 
     @Override
     public void update(AnActionEvent event) {
-        event.getPresentation().setEnabledAndVisible(FunctionUtils.isFunctionProject(event.getProject()));
+        final Project project = event.getProject();
+        event.getPresentation().setEnabledAndVisible(
+                project == null ? false : FunctionUtils.isFunctionProject(project));
     }
 
     private void runConfiguration(Module module) {
