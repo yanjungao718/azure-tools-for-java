@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.intellij.plugins.markdown.ui.preview.MarkdownSplitEditor;
 import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public enum WhatsNewHelper {
     private static final String WHAT_S_NEW_CONTENT_PATH = "/whatsnew/whatsnew.md";
     private static final Key<String> WHAT_S_NEW_ID = new Key<>(WHAT_S_NEW_CONSTANT);
 
-    public synchronized void showWhatsNew(boolean force, Project project) throws IOException {
+    public synchronized void showWhatsNew(boolean force, @NotNull Project project) throws IOException {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final VirtualFile existingWhatsNewFile = searchExistingFile(fileEditorManager);
         if (existingWhatsNewFile != null) {
@@ -73,12 +74,12 @@ public enum WhatsNewHelper {
         }
     }
 
-    private void createAndShowWhatsNew(Project project, FileEditorManager fileEditorManager, String content)
-            throws IOException {
+    private void createAndShowWhatsNew(Project project, FileEditorManager fileEditorManager, String content) {
         final LightVirtualFile virtualFile = new LightVirtualFile(AZURE_TOOLKIT_FOR_JAVA);
         virtualFile.setLanguage(Language.findLanguageByID("Markdown"));
-        virtualFile.setBinaryContent(content.getBytes());
+        virtualFile.setContent(null, content, true);
         virtualFile.putUserData(WHAT_S_NEW_ID, WHAT_S_NEW_CONSTANT);
+        virtualFile.setWritable(false);
         final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
             if (fileEditor instanceof MarkdownSplitEditor) {
