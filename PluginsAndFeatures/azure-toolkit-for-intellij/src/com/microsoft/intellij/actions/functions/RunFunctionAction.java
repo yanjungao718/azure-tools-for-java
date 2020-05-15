@@ -40,7 +40,6 @@ import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,9 +60,7 @@ public class RunFunctionAction extends AzureAnAction {
 
     @Override
     public void update(AnActionEvent event) {
-        final Project project = event.getProject();
-        event.getPresentation().setEnabledAndVisible(
-                project == null ? false : FunctionUtils.isFunctionProject(project));
+        event.getPresentation().setEnabledAndVisible(FunctionUtils.isFunctionProject(event.getProject()));
     }
 
     private void runConfiguration(Module module) {

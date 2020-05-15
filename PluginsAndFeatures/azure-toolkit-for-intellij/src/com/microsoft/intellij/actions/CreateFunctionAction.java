@@ -91,7 +91,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
     @Override
     protected PsiElement[] invokeDialog(Project project, PsiDirectory psiDirectory) {
         final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_TRIGGER);
-        try{
+        try {
             operation.start();
             PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(psiDirectory);
             // get existing package from current directory
@@ -111,8 +111,8 @@ public class CreateFunctionAction extends CreateElementActionBase {
                     String newName = packageName.replace('.', '/');
                     bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
                     EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_TRIGGER, new HashMap<String, String>() {{
-                        put("triggerType", triggerType);
-                    }});
+                            put("triggerType", triggerType);
+                        }});
                     if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                         if (StringUtils.isBlank(connectionName)) {
                             throw new AzureExecutionException("Required property 'connection' is missing");

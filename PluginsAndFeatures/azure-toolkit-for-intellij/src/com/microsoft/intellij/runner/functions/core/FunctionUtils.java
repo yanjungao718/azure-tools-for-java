@@ -119,6 +119,9 @@ public class FunctionUtils {
     }
 
     public static boolean isFunctionProject(Project project) {
+        if (project == null) {
+            return false;
+        }
         final List<Library> libraries = new ArrayList<>();
         OrderEnumerator.orderEntries(project).productionOnly().forEachLibrary(library -> {
             if (StringUtils.contains(library.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
