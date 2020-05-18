@@ -86,7 +86,7 @@ public class FunctionUtils {
             "{ \"FUNCTIONS_WORKER_RUNTIME\": \"java\" } }";
 
     public static boolean isValidStagingFolderPath(String stagingFolderPath) {
-        if(StringUtils.isEmpty(stagingFolderPath)){
+        if (StringUtils.isEmpty(stagingFolderPath)) {
             return false;
         }
         final File target = new File(stagingFolderPath);
@@ -269,10 +269,8 @@ public class FunctionUtils {
 
     private static String stripExtraCharacters(String fileName) {
         // TODO-dp this is not robust enough (eliminated !/ at the end of the jar)
-        if (fileName.endsWith("!/")) {
-            fileName = fileName.substring(0, fileName.length() - 2);
-        }
-        return fileName;
+        return (fileName != null && fileName.endsWith("!/")) ?
+               fileName.substring(0, fileName.length() - 2) : fileName;
     }
 
     private static Map<String, FunctionConfiguration> generateConfigurations(final PsiMethod[] methods)
