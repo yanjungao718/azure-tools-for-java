@@ -66,7 +66,7 @@ public enum WhatsNewManager {
             final String content = getWhatsNewContent();
             // Get whats new version
             final DefaultArtifactVersion whatsNewVersion = readWhatsNewVersion(content);
-            final DefaultArtifactVersion shownVersion = getShownVersion();
+            final DefaultArtifactVersion shownVersion = getShownWhatsNewVersion();
             if (force || !isDocumentShownBefore(whatsNewVersion, shownVersion)) {
                 saveWhatsNewVersion(whatsNewVersion);
                 createAndShowWhatsNew(project, fileEditorManager, content);
@@ -100,7 +100,7 @@ public enum WhatsNewManager {
         return documentVersion == null || (shownVersion != null && shownVersion.compareTo(documentVersion) >= 0);
     }
 
-    private DefaultArtifactVersion getShownVersion() {
+    private DefaultArtifactVersion getShownWhatsNewVersion() {
         final String shownVersionValue = PropertiesComponent.getInstance().getValue(AZURE_TOOLKIT_WHATS_NEW);
         return StringUtils.isEmpty(shownVersionValue) ? null : new DefaultArtifactVersion(shownVersionValue);
     }
