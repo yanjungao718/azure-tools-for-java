@@ -46,7 +46,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public enum WhatsNewHelper {
+public enum WhatsNewManager {
     INSTANCE;
 
     private static final String AZURE_TOOLKIT_FOR_JAVA = "Azure Toolkit for Java";
@@ -58,17 +58,17 @@ public enum WhatsNewHelper {
 
     public synchronized void showWhatsNew(boolean force, @NotNull Project project) throws IOException {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        final VirtualFile existingWhatsNewFile = searchExistingFile(fileEditorManager);
+        final VirtualFile existingWhatsNewFile = getExistingWhatsNewFile(fileEditorManager);
         if (existingWhatsNewFile != null) {
             fileEditorManager.openFile(existingWhatsNewFile, true, true);
         } else {
             // Get whats new file
             final String content = getWhatsNewContent();
             // Get whats new version
-            final DefaultArtifactVersion whatsNewVersion = getWhatsNewVersion(content);
+            final DefaultArtifactVersion whatsNewVersion = readWhatsNewVersion(content);
             final DefaultArtifactVersion shownVersion = getShownVersion();
             if (force || !isDocumentShownBefore(whatsNewVersion, shownVersion)) {
-                saveShownVersion(whatsNewVersion);
+                saveWhatsNewVersion(whatsNewVersion);
                 createAndShowWhatsNew(project, fileEditorManager, content);
             }
         }
@@ -105,17 +105,17 @@ public enum WhatsNewHelper {
         return StringUtils.isEmpty(shownVersionValue) ? null : new DefaultArtifactVersion(shownVersionValue);
     }
 
-    private void saveShownVersion(DefaultArtifactVersion version) {
+    private void saveWhatsNewVersion(DefaultArtifactVersion version) {
         PropertiesComponent.getInstance().setValue(AZURE_TOOLKIT_WHATS_NEW, version.toString());
     }
 
-    private VirtualFile searchExistingFile(FileEditorManager fileEditorManager) {
+    private VirtualFile getExistingWhatsNewFile(FileEditorManager fileEditorManager) {
         return Arrays.stream(fileEditorManager.getOpenFiles())
                      .filter(file -> StringUtils.equals(file.getUserData(WHAT_S_NEW_ID), WHAT_S_NEW_CONSTANT))
                      .findFirst().orElse(null);
     }
 
-    private DefaultArtifactVersion getWhatsNewVersion(String content) {
+    private DefaultArtifactVersion readWhatsNewVersion(String content) {
         try (Scanner scanner = new Scanner(content)) {
             // Read the first comment line to get the whats new version
             String versionLine = scanner.nextLine();

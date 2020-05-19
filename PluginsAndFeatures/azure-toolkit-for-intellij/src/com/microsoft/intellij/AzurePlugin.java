@@ -82,7 +82,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
-import com.microsoft.intellij.helpers.WhatsNewHelper;
+import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -139,7 +139,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private void initializeWhatsNew() {
         try {
-            WhatsNewHelper.INSTANCE.showWhatsNew(false, myProject);
+            WhatsNewManager.INSTANCE.showWhatsNew(false, myProject);
         } catch (IOException e) {
             // swallow this exception as shown whats new in startup should not block users
         }
