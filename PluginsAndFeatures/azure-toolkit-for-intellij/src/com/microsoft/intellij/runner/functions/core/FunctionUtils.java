@@ -86,7 +86,7 @@ public class FunctionUtils {
             "{ \"FUNCTIONS_WORKER_RUNTIME\": \"java\" } }";
 
     public static boolean isValidStagingFolderPath(String stagingFolderPath) {
-        if(StringUtils.isEmpty(stagingFolderPath)){
+        if (StringUtils.isEmpty(stagingFolderPath)) {
             return false;
         }
         final File target = new File(stagingFolderPath);
@@ -119,6 +119,9 @@ public class FunctionUtils {
     }
 
     public static boolean isFunctionProject(Project project) {
+        if (project == null) {
+            return false;
+        }
         final List<Library> libraries = new ArrayList<>();
         OrderEnumerator.orderEntries(project).productionOnly().forEachLibrary(library -> {
             if (StringUtils.contains(library.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
@@ -266,10 +269,8 @@ public class FunctionUtils {
 
     private static String stripExtraCharacters(String fileName) {
         // TODO-dp this is not robust enough (eliminated !/ at the end of the jar)
-        if (fileName.endsWith("!/")) {
-            fileName = fileName.substring(0, fileName.length() - 2);
-        }
-        return fileName;
+        return StringUtils.endsWith(fileName, "!/") ?
+               fileName.substring(0, fileName.length() - 2) : fileName;
     }
 
     private static Map<String, FunctionConfiguration> generateConfigurations(final PsiMethod[] methods)
