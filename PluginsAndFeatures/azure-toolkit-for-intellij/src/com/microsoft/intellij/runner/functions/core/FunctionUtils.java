@@ -269,7 +269,7 @@ public class FunctionUtils {
 
     private static String stripExtraCharacters(String fileName) {
         // TODO-dp this is not robust enough (eliminated !/ at the end of the jar)
-        return (fileName != null && fileName.endsWith("!/")) ?
+        return StringUtils.endsWith(fileName, "!/") ?
                fileName.substring(0, fileName.length() - 2) : fileName;
     }
 
