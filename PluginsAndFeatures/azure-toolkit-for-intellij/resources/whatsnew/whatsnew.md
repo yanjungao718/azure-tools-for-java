@@ -1,7 +1,12 @@
 <!-- Version: 3.37.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
-## 3.37.0 - Current Release
+- [New Features](#)
+  - [App Service Log Streaming](#3360)
+  - [Azure Spring Cloud Support](#3350)
+  - [Azure Function Support](#3340)
+
+## 3.37.0(Current Release)
 
 ### Added
 - Add what's new document in Azure menu
