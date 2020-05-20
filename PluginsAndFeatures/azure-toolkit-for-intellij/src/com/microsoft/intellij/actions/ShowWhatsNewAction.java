@@ -35,7 +35,7 @@ import java.io.IOException;
 
 public class ShowWhatsNewAction extends AzureAnAction {
 
-    private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load whats new";
+    private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
 
     @Override
     public boolean onActionPerformed(@NotNull final AnActionEvent anActionEvent, @Nullable final Operation operation) {

@@ -142,6 +142,7 @@ public class AzurePlugin extends AbstractProjectComponent {
             WhatsNewManager.INSTANCE.showWhatsNew(false, myProject);
         } catch (IOException e) {
             // swallow this exception as shown whats new in startup should not block users
+            LOG.error(e.getMessage(), e);
         }
     }
 
