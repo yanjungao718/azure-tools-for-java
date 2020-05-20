@@ -22,6 +22,9 @@
 
 package com.microsoft.intellij.runner.springcloud.deploy;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -34,6 +37,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.Provisioni
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
@@ -44,9 +48,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
     private static final String NEED_SPECIFY_PROJECT = "Please select a maven project";
@@ -57,7 +62,15 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     private static final String TARGET_CLUSTER_DOES_NOT_EXISTS = "Target cluster does not exists.";
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
-    private final Map<String, ServiceResource> serviceResourceMap = new HashMap<>();
+    private static LoadingCache<String, ServiceResource> clusterStatusCache = CacheBuilder
+            .newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, ServiceResource>() {
+                public ServiceResource load(String clusterId) throws IOException {
+                    final String subscriptionId = AzureMvpModel.getSegment(clusterId, "subscriptions");
+                    return AzureSpringCloudMvpModel.getClusterById(subscriptionId, clusterId);
+                }
+            });
 
     private final SpringCloudModel springCloudModel;
 
@@ -222,23 +235,22 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         if (StringUtils.isEmpty(getAppName())) {
             throw new ConfigurationException(NEED_SPECIFY_APP_NAME);
         }
-        final ServiceResource serviceResource = serviceResourceMap.computeIfAbsent(getClusterId(), id -> {
-            try {
-                return AzureSpringCloudMvpModel.getClusterById(getSubscriptionId(), getClusterId());
-            } catch (IOException e) {
-                return null;
+        final ServiceResource serviceResource;
+        try {
+            serviceResource = clusterStatusCache.get(getClusterId());
+            if (serviceResource == null) {
+                throw new ConfigurationException(TARGET_CLUSTER_DOES_NOT_EXISTS);
             }
-        });
-        if (serviceResource == null) {
-            throw new ConfigurationException(TARGET_CLUSTER_DOES_NOT_EXISTS);
-        }
-        // SDK will return null inner service object if cluster exists in other subscription
-        if (serviceResource.inner() == null) {
-            throw new ConfigurationException(TARGET_CLUSTER_IS_NOT_AVAILABLE);
-        }
-        final ProvisioningState provisioningState = serviceResource.properties().provisioningState();
-        if (provisioningState != ProvisioningState.SUCCEEDED) {
-            throw new ConfigurationException(SERVICE_IS_NOT_READY + provisioningState.toString());
+            // SDK will return null inner service object if cluster exists in other subscription
+            if (serviceResource.inner() == null) {
+                throw new ConfigurationException(TARGET_CLUSTER_IS_NOT_AVAILABLE);
+            }
+            final ProvisioningState provisioningState = serviceResource.properties().provisioningState();
+            if (provisioningState != ProvisioningState.SUCCEEDED) {
+                throw new ConfigurationException(SERVICE_IS_NOT_READY + provisioningState.toString());
+            }
+        } catch (ExecutionException e) {
+            // swallow validation exceptions
         }
     }
 
