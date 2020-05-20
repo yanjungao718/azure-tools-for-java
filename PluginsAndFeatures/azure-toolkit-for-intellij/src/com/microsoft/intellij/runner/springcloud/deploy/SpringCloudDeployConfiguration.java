@@ -62,7 +62,6 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     private static final String TARGET_CLUSTER_DOES_NOT_EXISTS = "Target cluster does not exists.";
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
-
     private static LoadingCache<String, ServiceResource> clusterStatusCache = CacheBuilder
             .newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -72,7 +71,6 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
                     return AzureSpringCloudMvpModel.getClusterById(subscriptionId, clusterId);
                 }
             });
-
 
     private final SpringCloudModel springCloudModel;
 
