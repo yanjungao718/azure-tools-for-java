@@ -30,15 +30,12 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import rx.Observable;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,49 +61,31 @@ public class SharedKeyHttpObservable extends HttpObservable {
         }
     }
 
-    public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs) {
-        String key = cred.generateSharedKey(req, getDefaultHeaderGroup(), pairs);
-        getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
-        return this;
-    }
-
-    public SharedKeyHttpObservable setContentLength(@NotNull String len) {
-        getDefaultHeaderGroup().updateHeader(new BasicHeader("Content-Length", len));
-        return this;
-    }
-
-    public SharedKeyHttpObservable removeContentLength() {
-        getDefaultHeaderGroup().removeHeader(getDefaultHeaderGroup().getFirstHeader("Content-Length"));
-        return this;
-    }
-
     public SharedKeyHttpObservable setContentType(@NotNull String type) {
         getDefaultHeaderGroup().updateHeader(new BasicHeader("Content-Type", type));
         return this;
     }
 
     @Override
-    public Observable<CloseableHttpResponse> request(@NotNull final HttpRequestBase httpRequest,
+    public Observable<CloseableHttpResponse> request(final HttpRequestBase httpRequest,
                                                      @Nullable final HttpEntity entity,
-                                                     @Nullable final List<NameValuePair> parameters,
-                                                     @Nullable final List<Header> addOrReplaceHeaders) {
-        HttpEntity entityFromRequest = httpRequest instanceof HttpEntityEnclosingRequestBase
-                ? ((HttpEntityEnclosingRequestBase) httpRequest).getEntity()
-                : null;
-
-        if (entityFromRequest != null) {
-            // Job deployment needs to set content-length to generate shared key
-            // httpclient auto adds this header and calculates length when executing
-            // so remove this header after key generation otherwise header already exists exp happens
-            // MUST follow the order when content length is needed to generate key
-            setContentLength(String.valueOf(entityFromRequest.getContentLength()));
-            this.setAuthorization(httpRequest, parameters);
-            this.removeContentLength();
-        } else {
-            this.setAuthorization(httpRequest, parameters);
+                                                     final List<NameValuePair> parameters,
+                                                     final List<Header> addOrReplaceHeaders) {
+        // We add necessary information to a temporary header group which is used to generate shared keys
+        final HeaderGroup headerGroup = new HeaderGroup();
+        headerGroup.setHeaders(getDefaultHeaderGroup().getAllHeaders());
+        if (entity != null) {
+            // We need to set content-length to generate shared key. What need to be point out is that the
+            // HttpObservable auto adds this header and calculates length when executing, so the content-length header
+            // cannot be added to default header group in case of duplication.
+            headerGroup.addHeader(new BasicHeader("Content-Length", String.valueOf(entity.getContentLength())));
         }
+        addOrReplaceHeaders.stream().forEach(header -> headerGroup.addHeader(header));
+        String key = cred.generateSharedKey(httpRequest, headerGroup, parameters);
 
-        return super.request(httpRequest, entityFromRequest, parameters, null);
+        getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
+
+        return super.request(httpRequest, entity, parameters, addOrReplaceHeaders);
     }
 
     @Override

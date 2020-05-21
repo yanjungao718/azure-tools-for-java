@@ -55,6 +55,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
+import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -116,6 +117,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         initializeAIRegistry(project);
         // Showing dialog needs to be run in UI thread
         initializeFeedbackNotification(project);
+        initializeWhatsNew(project);
 
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
@@ -133,6 +135,15 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                    So user should not get any exception prompt.*/
                 LOG.error(AzureBundle.message("expErlStrtUp"), e);
             }
+        }
+    }
+
+    private void initializeWhatsNew(Project project) {
+        try {
+            WhatsNewManager.INSTANCE.showWhatsNew(false, project);
+        } catch (IOException e) {
+            // swallow this exception as shown whats new in startup should not block users
+            LOG.error(e.getMessage(), e);
         }
     }
 

@@ -693,8 +693,10 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     }
 
     private void renderPersistent(SpringAppViewModel model) {
-        this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
-                                                   model.getPersistentMountPath(), model.getUsedStorageInGB(), model.getTotalStorageInGB()));
+        this.persistentLabel.setText(String.format("%s (%sG of %dG used)",
+                                                   model.getPersistentMountPath(),
+                                                   Objects.toString(model.getUsedStorageInGB(), "0"),
+                                                   model.getTotalStorageInGB()));
     }
 
     private void handleTextComboBinding(Object model, String propertyName, JComboBox comboBox)

@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.37.0](#3370)
   - [3.36.0](#3360)
   - [3.35.0](#3350)
   - [3.34.0](#3340)
@@ -48,6 +49,23 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.37.0
+
+### Added
+- Add what's new document in Azure menu
+- Filter unsupported regions when creating new app service plan
+
+#### Changed
+- Sort Spark on Cosmos Serverless jobs in descending order by job submission time
+
+#### Fixed
+- Fixed Spark batch job submission skipped after uploading artifact to SQL Server big data cluster issue
+- Fixed no permission issue after submitting Spark batch job to ESP HDInsight cluster with ADLS Gen2 as default storage account type
+- [#4370](https://github.com/microsoft/azure-tools-for-java/issues/4370) Fixes NPE while loading Function deployment panel
+- [#4347](https://github.com/microsoft/azure-tools-for-java/issues/4347) Fixes NPE while getting action status
+- [#4380](https://github.com/microsoft/azure-tools-for-java/pull/4380) Fixes validation may freeze UI in spring cloud deployment panel
+- [#4350](https://github.com/microsoft/azure-tools-for-java/issues/4350) Fixes null value in spring cloud property view
 
 ## 3.36.0
 

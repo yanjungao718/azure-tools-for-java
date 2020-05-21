@@ -20,21 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.common;
+package com.microsoft.intellij.actions;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.apache.http.message.BasicNameValuePair;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.intellij.helpers.WhatsNewManager;
+import com.microsoft.intellij.util.PluginUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class ODataParam extends BasicNameValuePair {
-    public static ODataParam filter(@NotNull String value) {
-        return new ODataParam("$filter", value);
-    }
+import java.io.IOException;
 
-    public static ODataParam orderby(String value) {
-        return new ODataParam("$orderby", value);
-    }
+public class ShowWhatsNewAction extends AzureAnAction {
 
-    private ODataParam(@NotNull String name, @NotNull String value) {
-        super(name, value);
+    private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
+
+    @Override
+    public boolean onActionPerformed(@NotNull final AnActionEvent anActionEvent, @Nullable final Operation operation) {
+        final Project project = anActionEvent.getProject();
+        try {
+            WhatsNewManager.INSTANCE.showWhatsNew(true, project);
+        } catch (IOException e) {
+            PluginUtil.showInfoNotificationProject(project, FAILED_TO_LOAD_WHATS_NEW, e.getMessage());
+        }
+        return true;
     }
 }
