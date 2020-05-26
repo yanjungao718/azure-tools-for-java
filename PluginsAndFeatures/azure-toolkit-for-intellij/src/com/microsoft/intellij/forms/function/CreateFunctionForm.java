@@ -94,7 +94,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private Project project;
 
     public CreateFunctionForm(@Nullable Project project, String packageName) {
-        super(project, false);
+        super(project, true);
         setModal(true);
         setTitle("Create Function Class");
 
