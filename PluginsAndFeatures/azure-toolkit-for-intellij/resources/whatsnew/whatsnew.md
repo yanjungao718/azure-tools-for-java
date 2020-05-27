@@ -10,10 +10,10 @@
 - Add what's new document in Azure menu
 - Filter unsupported regions when creating new app service plan
 
-#### Changed
+### Changed
 - Sort Spark on Cosmos Serverless jobs in descending order by job submission time
 
-#### Fixed
+### Fixed
 - Fixed Spark batch job submission skipped after uploading artifact to SQL Server big data cluster issue
 - Fixed no permission issue after submitting Spark batch job to ESP HDInsight cluster with ADLS Gen2 as default storage account type
 - [#4370](https://github.com/microsoft/azure-tools-for-java/issues/4370) Fixes NPE while loading Function deployment panel
