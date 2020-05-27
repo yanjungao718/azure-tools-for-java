@@ -29,8 +29,8 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementa
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +43,6 @@ import java.util.logging.Logger;
 public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> extends MvpPresenter<V> {
     private static final Logger LOGGER = Logger.getLogger(SpringCloudAppNodePresenter.class.getName());
     private static final String FAILED_TO_STOP_APP = "Failed to refresh Spring Cloud App: %s";
-    private static final int RETRY_COUNT = 5;
 
     public void onStartSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) throws IOException {
         AzureSpringCloudMvpModel.startApp(appId, activeDeploymentName).await();
@@ -66,6 +65,7 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
     }
 
     public static void awaitAndMonitoringStatus(String appId, DeploymentResourceStatus originalStatus) throws IOException, InterruptedException {
+        String clusterId = getParentSegment(appId);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future future = executor.submit(() -> {
             DeploymentResourceStatus status = null;
@@ -73,17 +73,17 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
                 try {
                     AppResourceInner app = AzureSpringCloudMvpModel.getAppById(appId);
                     if (app == null) {
-                        DefaultAzureResourceTracker.getInstance().handleDataChanges(appId, null, null);
+                        SpringCloudStateManager.INSTANCE.notifySpringAppDelete(clusterId, appId);
                         return;
                     }
                     DeploymentResourceInner deployment = AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId);
-                    DefaultAzureResourceTracker.getInstance().handleDataChanges(appId, app, deployment);
+                    SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, app, deployment);
                     if (deployment == null) {
                         return;
                     }
 
                     status = deployment.properties().status();
-                    DefaultAzureResourceTracker.getInstance().handleDataChanges(appId, app, deployment);
+                    SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, app, deployment);
                     Thread.sleep(1000 * 5);
                 } catch (IOException | InterruptedException e) {
                     SneakyThrowUtils.sneakyThrow(e);
@@ -100,12 +100,18 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
     }
 
     private void waitUntilStatusChanged(String appId, DeploymentResourceStatus originalStatus) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            try {
-                awaitAndMonitoringStatus(appId, originalStatus);
-            } catch (IOException | InterruptedException e) {
-                LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_APP, SpringCloudIdHelper.getAppName(appId)), e);
-            }
-        });
+        try {
+            awaitAndMonitoringStatus(appId, originalStatus);
+        } catch (IOException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_APP, SpringCloudIdHelper.getAppName(appId)), e);
+        }
+    }
+
+    private static String getParentSegment(String id) {
+        if (StringUtils.isEmpty(id)) {
+            return id;
+        }
+        final String[] attributes = id.split("/");
+        return StringUtils.join(ArrayUtils.subarray(attributes, 0, attributes.length - 2), "/");
     }
 }

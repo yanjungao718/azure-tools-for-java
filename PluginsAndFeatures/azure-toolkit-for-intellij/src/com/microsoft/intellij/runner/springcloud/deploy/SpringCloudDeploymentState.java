@@ -41,7 +41,7 @@ import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.SpringCloudUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -129,9 +129,8 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         // get or create spring cloud app
         setText(processHandler, "Creating/Updating spring cloud app...");
         final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudDeployConfiguration);
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(appResourceInner.id(), appResourceInner, null);
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(springCloudDeployConfiguration.getClusterId(), appResourceInner
-                , null);
+        String clusterId = springCloudDeployConfiguration.getClusterId();
+        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, appResourceInner, null);
         setText(processHandler, "Create/Update spring cloud app succeed.");
         // upload artifact to correspond storage
         setText(processHandler, "Uploading artifact to storage...");
@@ -143,22 +142,19 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
                 springCloudDeployConfiguration,
                 userSourceInfo);
         setText(processHandler, "Create/Update deployment succeed.");
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(appResourceInner.id(), appResourceInner, deploymentResourceInner);
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(springCloudDeployConfiguration.getClusterId(), appResourceInner
+        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, appResourceInner
                 , deploymentResourceInner);
         // update spring cloud properties (enable public access)
         setText(processHandler, "Activating deployment...");
         AppResourceInner newApps = SpringCloudUtils.activeDeployment(appResourceInner,
                                                                      deploymentResourceInner,
                                                                      springCloudDeployConfiguration);
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(newApps.id(), newApps, deploymentResourceInner);
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(springCloudDeployConfiguration.getClusterId(), newApps, deploymentResourceInner);
+        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, newApps, deploymentResourceInner);
         AzureSpringCloudMvpModel.startApp(newApps.id(), newApps.properties().activeDeploymentName()).await();
         // Waiting until instances start
         DeploymentResourceInner newDeploymentResourceInner = getDeploymentStatus(newApps.id(), processHandler);
 
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(newApps.id(), newApps, newDeploymentResourceInner);
-        DefaultAzureResourceTracker.getInstance().handleDataChanges(springCloudDeployConfiguration.getClusterId(), newApps, newDeploymentResourceInner);
+        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, newApps, newDeploymentResourceInner);
 
         if (newApps.properties().publicProperty()) {
             getUrl(newApps.id(), processHandler);

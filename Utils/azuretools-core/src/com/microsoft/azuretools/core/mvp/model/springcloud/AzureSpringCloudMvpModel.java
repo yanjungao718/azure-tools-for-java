@@ -179,6 +179,23 @@ public class AzureSpringCloudMvpModel {
         }
     }
 
+    public static String getTestEndpointForApp(String primaryTestEndpoint, String appName) {
+        return StringUtils.isNotEmpty(primaryTestEndpoint) && StringUtils.isNotEmpty(appName) ?
+               String.format("%s/%s/default/", primaryTestEndpoint, appName) : null;
+    }
+
+    public static String getPrimaryTestEndpoint(String clusterId) throws IOException {
+        String sid = getSubscriptionId(clusterId);
+        String rid = getResourceGroup(clusterId);
+        String cid = getClusterName(clusterId);
+        final TestKeys testKeys = getSpringManager(sid).services().listTestKeysAsync(rid, cid).toBlocking().first();
+        if (testKeys == null) {
+            return null;
+        } else {
+            return testKeys.primaryTestEndpoint();
+        }
+    }
+
     public static Map<String, InputStream> getLogStreamReaderList(String appId) throws IOException, HttpException {
         final Map<String, InputStream> result = new HashMap<>();
         final DeploymentResourceInner activeDeployment = getActiveDeploymentForApp(appId);

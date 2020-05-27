@@ -37,6 +37,7 @@
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
         <jackson.version>2.11.0</jackson.version>
         <azure.version>1.33.0</azure.version>
+        <docker.client.version>8.16.0</docker.client.version>
     </properties>
     <modules>
         <module>./check-tools</module>
@@ -139,6 +140,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-client</artifactId>
+                <version>${docker.client.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
