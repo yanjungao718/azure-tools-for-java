@@ -43,8 +43,9 @@ public class SpringCloudAppPropertyViewProvider implements FileEditorProvider, D
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        final String clusterId = virtualFile.getUserData(UIHelperImpl.CLUSTER_ID);
         final String appId = virtualFile.getUserData(UIHelperImpl.APP_ID);
-        return new SpringCloudAppPropertyView(project, appId);
+        return new SpringCloudAppPropertyView(project, clusterId, appId);
     }
 
     @NotNull

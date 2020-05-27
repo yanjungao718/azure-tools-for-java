@@ -22,6 +22,9 @@
 
 package com.microsoft.intellij.helpers.springcloud;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -48,13 +51,13 @@ import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
-import com.microsoft.tooling.msservices.serviceexplorer.IDataRefreshableComponent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNodePresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
+import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -74,18 +77,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
+public class SpringCloudAppPropertyView extends BaseEditor {
     private static final LineBorder HIGH_LIGHT_BORDER = new LineBorder(Color.decode("0x8a2da5"), 1);
     private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: '%s'.\n" +
             "Are you sure you want to continue?";
     private static final String DELETE_APP_DIRTY_PROMPT_MESSAGE = "This operation will discard your changes and delete the Spring Cloud App: '%s'.\n" +
             "Are you sure you want to continue?";
     private static final String OPERATE_APP_PROMPT_MESSAGE = "This operation will discard your changes.\nAre you sure you want to continue?";
-    private static final String NOT_AVAILABLE = " - ";
 
     private static final String ENABLE_PUBLIC_URL_KEY = "enablePublicUrl";
     private static final String ENABLE_PERSISTENT_STORAGE_KEY = "enablePersistentStorage";
@@ -142,14 +146,25 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private Project project;
     private AppResourceInner appResourceInner;
     private DeploymentResourceInner deploymentResourceInner;
+    private String clusterId;
     private String appId;
     private String appName;
     private DefaultTableModel instancesTableModel;
     private final Map<JComponent, Border> borderMap = new HashMap<>();
+    private final Disposable rxSubscription;
+    private static LoadingCache<String, String> testKeyCache = CacheBuilder.newBuilder()
+                                                                           .expireAfterWrite(10, TimeUnit.MINUTES)
+                                                                           .build(new CacheLoader<String, String>() {
+                                                                               public String load(String key) throws IOException {
+                                                                                   return AzureSpringCloudMvpModel.getPrimaryTestEndpoint(key);
+                                                                               }
+                                                                           });
 
-    public SpringCloudAppPropertyView(Project project, String appId) {
+    public SpringCloudAppPropertyView(Project project, String clusterId, String appId) {
         this.project = project;
+        this.clusterId = clusterId;
         this.appId = appId;
+
         this.appName = SpringCloudIdHelper.getAppName(appId);
         instancesTableModel = new DefaultTableModel() {
             public boolean isCellEditable(int var1, int var2) {
@@ -187,7 +202,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     monitorStatus(appId, deploymentResourceInner);
                 } catch (IOException | InterruptedException ex) {
                     PluginUtil.showErrorNotificationProject(project,
-                            String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
+                                                            String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
                 }
             });
 
@@ -224,8 +239,6 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             });
         });
         this.restartButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-restart.png"));
-        refreshData();
-
         jvmOpsTextField.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent documentEvent) {
@@ -276,6 +289,14 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.javaVersionCombo.setEditable(false);
 
         initUI();
+
+        this.rxSubscription = SpringCloudStateManager.INSTANCE.subscribeSpringAppEvent(event -> {
+            if (event.isUpdate()) {
+                this.prepareViewModel(event.getAppInner(), event.getDeploymentInner());
+            } else if (event.isDelete() && StringUtils.equals(event.getId(), this.appId)) {
+                closeEditor();
+            }
+        }, appId, clusterId);
     }
 
     @NotNull
@@ -291,18 +312,19 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     }
 
     @Override
-    public void notifyDataRefresh(AppResourceInner appInner, DeploymentResourceInner deploymentResourceInner) {
-        this.prepareViewModel(appInner, deploymentResourceInner, this.viewModel == null ? null : this.viewModel.getTestUrl());
+    public void dispose() {
+        closeRxSubscription(rxSubscription);
     }
 
-    @Override
-    public void dispose() {
-        DefaultAzureResourceTracker.getInstance().unregisterNode(appId, SpringCloudAppPropertyView.this);
+    private static void closeRxSubscription(final Disposable disposable) {
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
     }
 
     private static void monitorStatus(String appId, DeploymentResourceInner deploymentResourceInner) throws IOException, InterruptedException {
         SpringCloudAppNodePresenter.awaitAndMonitoringStatus(appId,
-                deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
+                                                             deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
     }
 
     private void wrapperOperations(String operation, String actionName, Project project,
@@ -325,11 +347,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             promptMessage = changes.isEmpty() ? "" : String.format(OPERATE_APP_PROMPT_MESSAGE, actionName, this.appName);
         }
         if (promptMessage.isEmpty() || StringUtils.equals(actionName, SAVING_ACTION)
-            || DefaultLoader.getUIHelper().showConfirmation(this.mainPanel,
-                promptMessage,
-                "Azure Explorer",
-                new String[]{"Yes", "No"},
-                null)) {
+                || DefaultLoader.getUIHelper().showConfirmation(this.mainPanel,
+                                                                promptMessage,
+                                                                "Azure Explorer",
+                                                                new String[]{"Yes", "No"},
+                                                                null)) {
             freezeUI();
             DefaultLoader.getIdeHelper().runInBackground(null, actionName, false, true, String.format("%s app '%s'", actionName, this.appName),
                 () -> {
@@ -357,8 +379,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (row >= 0) {
                 final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
                 EventUtil.executeWithLog(
-                        TelemetryConstants.SPRING_CLOUD,
-                        TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                    TelemetryConstants.SPRING_CLOUD,
+                    TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
                         SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, instanceName);
                     });
             }
@@ -369,8 +391,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (row >= 0) {
                 final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
                 EventUtil.executeWithLog(
-                        TelemetryConstants.SPRING_CLOUD,
-                        TelemetryConstants.STOP_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                    TelemetryConstants.SPRING_CLOUD,
+                    TelemetryConstants.STOP_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
                         SpringCloudStreamingLogManager.getInstance().closeStreamingLog(instanceName);
                     });
             }
@@ -528,14 +550,15 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         Observable.fromCallable(() -> {
             AppResourceInner app = AzureSpringCloudMvpModel.getAppById(appId);
             if (app == null) {
-                return Triple.of(app, (DeploymentResourceInner) null, (String) null);
+                closeEditor();
+                return Pair.of((AppResourceInner) null, (DeploymentResourceInner) null);
             }
             DeploymentResourceInner deploy = StringUtils.isNotEmpty(app.properties().activeDeploymentName())
                                              ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
-            String testUrl = AzureSpringCloudMvpModel.getTestEndpoint(appId);
-            return Triple.of(app, deploy, testUrl);
-        }).subscribeOn(Schedulers.io()).subscribe(tuple -> ApplicationManager.getApplication().invokeLater(
-            () -> this.prepareViewModel(tuple.getLeft(), tuple.getMiddle(), tuple.getRight())));
+            testKeyCache.refresh(clusterId);
+            return Pair.of(app, deploy);
+        }).subscribeOn(Schedulers.io()).subscribe(pair -> ApplicationManager.getApplication().invokeLater(
+            () -> this.prepareViewModel(pair.getLeft(), pair.getRight())));
     }
 
     private Map<String, Object> getModifiedDataMap() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -617,13 +640,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
             ApplicationManager.getApplication().invokeLater(() ->
-                PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
-                      + "successfully"));
+                    PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
+                            + "successfully"));
             refreshData();
 
         } catch (Exception e) {
             ApplicationManager.getApplication().invokeLater(() ->
-                 PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
+                                                                    PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
         }
     }
 
@@ -648,7 +671,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private void compareModel(Object model, String propertyName, JTextField textField, Map<String, Object> deltaMap)
             throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        String text = Objects.toString(PropertyUtils.getSimpleProperty(model, propertyName), null);
+        String text = Objects.toString(PropertyUtils.getSimpleProperty(model, propertyName), "");
         if (StringUtils.equals(text, textField.getText())) {
             return;
         }
@@ -711,16 +734,20 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         textField.setText(text);
     }
 
-    private void prepareViewModel(AppResourceInner app, DeploymentResourceInner deploy, String testUrl) {
+    private void prepareViewModel(AppResourceInner app, DeploymentResourceInner deploy) {
         try {
             if (app == null) {
-                updateModel(null);
                 return;
             }
             this.appResourceInner = app;
             this.deploymentResourceInner = deploy;
             SpringAppViewModel targetViewModel = new SpringAppViewModel();
-            targetViewModel.setTestUrl(testUrl);
+            try {
+                String clusterKey = testKeyCache.get(clusterId);
+                targetViewModel.setTestUrl(AzureSpringCloudMvpModel.getTestEndpointForApp(clusterKey, app.name()));
+            } catch (ExecutionException e) {
+                targetViewModel.setTestUrl(e.getMessage());
+            }
 
             // persistent storage
             if (app.properties().persistentDisk() != null && app.properties().persistentDisk().sizeInGB().intValue() > 0) {
@@ -737,8 +764,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             targetViewModel.setResourceGroup(SpringCloudIdHelper.getResourceGroup(this.appId));
             if (deploy != null) {
                 DeploymentSettings settings = deploy.properties().deploymentSettings();
-                targetViewModel.setJavaVersion(settings.runtimeVersion().toString());
-                targetViewModel.setJvmOptions(settings.jvmOptions());
+                targetViewModel.setJavaVersion(Objects.toString(settings.runtimeVersion(), ""));
+                targetViewModel.setJvmOptions(Objects.toString(settings.jvmOptions(), ""));
                 targetViewModel.setCpu(settings.cpu());
                 targetViewModel.setMemoryInGB(settings.memoryInGB());
                 if (deploy.properties().instances() != null) {
@@ -790,12 +817,6 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     }
 
     private void updateModel(SpringAppViewModel newModel) throws AzureExecutionException {
-        if (newModel == null) {
-            DefaultLoader.getUIHelper().closeSpringCloudAppPropertyView(project, appId);
-            PluginUtil.showInfoNotificationProject(project,
-                                                   String.format("The editor for app %s is closed.", this.appName), "The app " + this.appName + " is deleted.");
-            return;
-        }
         try {
             this.viewModel = null;
             this.subsLabel.setText(newModel.getSubscriptionName());
@@ -807,8 +828,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             handleNumberComboBinding(newModel, CPU, this.cpuCombo);
             handleNumberComboBinding(newModel, MEMORY_IN_GB_KEY, this.memCombo);
             handleTextComboBinding(newModel, JAVA_VERSION_KEY, this.javaVersionCombo);
-            this.testUrlLink.setHyperlinkText(newModel.getTestUrl());
-            this.testUrlLink.setHyperlinkTarget(newModel.getTestUrl());
+            if (newModel.getTestUrl().startsWith("http")) {
+                this.testUrlLink.setHyperlinkText(newModel.getTestUrl());
+                this.testUrlLink.setHyperlinkTarget(newModel.getTestUrl());
+            } else {
+                this.testUrlLink.setHyperlinkTarget(null);
+                this.testUrlLink.setText(newModel.getTestUrl());
+            }
             this.triggerPersistentButton.setText(newModel.isEnablePersistentStorage() ? DISABLE_TEXT : ENABLE_TEXT);
             if (newModel.isEnablePersistentStorage()) {
                 renderPersistent(newModel);
@@ -851,5 +877,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         } catch (Exception ex) {
             throw new AzureExecutionException("Cannot render property view due to error", ex);
         }
+    }
+
+    private void closeEditor() {
+        DefaultLoader.getUIHelper().closeSpringCloudAppPropertyView(project, appId);
+        PluginUtil.showInfoNotificationProject(project,
+                                               String.format("The editor for app %s is closed.", this.appName), "The app " + this.appName + " is deleted.");
     }
 }

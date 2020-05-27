@@ -105,6 +105,7 @@ public class UIHelperImpl implements UIHelper {
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
     public static final Key<String> APP_ID = new Key<>("appId");
+    public static final Key<String> CLUSTER_ID = new Key<>("clusterId");
     public static final Key<AppResourceInner> SPRING_CLOUD_APP = new Key<>("springCloudApp");
 
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
@@ -459,6 +460,7 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile = createVirtualFile(appName, SPRING_CLOUD_APP_PROPERTY_TYPE,
                     DeploymentNode.ICON_PATH, subscription, id);
         }
+        itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
         itemVirtualFile.putUserData(APP_ID, id);
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }

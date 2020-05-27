@@ -32,8 +32,10 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +49,7 @@ import static com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud
 /**
  * SpringCloudNode
  */
-public class SpringCloudNode extends RefreshableNode implements TelemetryProperties, SpringCloudNodeView,
-                                                                IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
+public class SpringCloudNode extends RefreshableNode implements TelemetryProperties, SpringCloudNodeView {
     private static final Logger LOGGER = Logger.getLogger(SpringCloudNode.class.getName());
     private static final String FAILED_TO_LOAD_APPS = "Failed to load apps in: %s";
     private static final String ERROR_LOAD_APP = "Azure Services Explorer - Error Loading Spring Cloud Apps";
@@ -59,7 +60,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     private String clusterId;
     private String clusterName;
     private SpringCloudNodePresenter springCloudNodePresenter;
-    private boolean springCloudAppListed = false;
+    private Disposable rxSubscription;
 
     public SpringCloudNode(AzureRefreshableNode parent, String subscriptionId, ServiceResourceInner serviceInner) {
         super(serviceInner.id(), serviceInner.name(), parent, ICON_FILE, true);
@@ -70,35 +71,37 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         springCloudNodePresenter = new SpringCloudNodePresenter<>();
         springCloudNodePresenter.onAttachView(this);
         loadActions();
-        DefaultAzureResourceTracker.getInstance().registerNode(this.clusterId, this);
     }
 
-    @Override
-    public void notifyDataRefresh(final AppResourceInner app, final DeploymentResourceInner deploymentResourceInner) {
-        if (!springCloudAppListed || app == null) {
-            return;
-        }
-        for (Node child : childNodes) {
-            if (((SpringCloudAppNode) child).getAppId().equals(app.id())) {
-                // we have this node
-                return;
+    private void notifyDataRefresh(SpringCloudAppEvent event) {
+        if (event.isDelete()) {
+            SpringCloudAppNode matchedNode =
+                    Arrays.stream(childNodes.toArray(new SpringCloudAppNode[0])).filter(node -> event.getId().equals(node.getAppId())).findFirst().orElse(null);
+            if (matchedNode != null) {
+                matchedNode.unsubscribe();
+                this.removeDirectChildNode(matchedNode);
             }
+            if (this.childNodes.isEmpty()) {
+                this.setName(this.clusterName + EMPTY_POSTFIX);
+            }
+        } else {
+            if (Arrays.stream(childNodes.toArray(new SpringCloudAppNode[0])).noneMatch(node -> event.getId().equals(node.getAppId()))) {
+                addChildNode(new SpringCloudAppNode(event.getAppInner(), event.getDeploymentInner(), this));
+            }
+            this.setName(this.clusterName);
         }
-        addChildNode(new SpringCloudAppNode(app, deploymentResourceInner, this));
-        // remove the empty postfix
-        this.setName(this.clusterName);
     }
 
     @Override
     protected void loadActions() {
         super.loadActions();
         addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
-                new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        openResourcesInPortal(subscriptionId, clusterId);
-                    }
-                }));
+            new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                    openResourcesInPortal(subscriptionId, clusterId);
+                }
+            }));
     }
 
     @Override
@@ -108,7 +111,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, String.format(FAILED_TO_LOAD_APPS, this.clusterName), e);
             DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_LOAD_APPS, this.clusterName),
-                    e, ERROR_LOAD_APP, false, true);
+                                                      e, ERROR_LOAD_APP, false, true);
         }
     }
 
@@ -116,8 +119,8 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     public void removeAllChildNodes() {
         SpringCloudAppNode[] childNodes = getChildNodes().toArray(new SpringCloudAppNode[0]);
         super.removeAllChildNodes();
-        for (SpringCloudAppNode child : childNodes) {
-            DefaultAzureResourceTracker.getInstance().unregisterNode(child.getAppId(), child);
+        for (final SpringCloudAppNode child : childNodes) {
+            child.unsubscribe();
         }
     }
 
@@ -136,6 +139,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
 
     @Override
     public void removeNode(String sid, String id, Node node) {
+        ((SpringCloudAppNode) node).unsubscribe();
         removeDirectChildNode(node);
     }
 
@@ -149,10 +153,12 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         for (AppResourceInner app : apps) {
             DeploymentResource deploy = map.get(app.name());
             DeploymentResourceInner deploymentResourceInner = deploy != null ? deploy.inner() : null;
-            DefaultAzureResourceTracker.getInstance().handleDataChanges(app.id(), app, deploymentResourceInner);
+            SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(this.clusterId, app, deploymentResourceInner);
             addChildNode(new SpringCloudAppNode(app, deploymentResourceInner, this));
         }
-        this.springCloudAppListed = true;
+        rxSubscription = SpringCloudStateManager.INSTANCE.subscribeSpringAppEvent(event -> {
+            notifyDataRefresh(event);
+        }, this.clusterId);
     }
 
     public String getClusterId() {
@@ -171,5 +177,11 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     @Override
     public Object getProjectObject() {
         return this.getProject();
+    }
+
+    public void unsubscribe() {
+        if (rxSubscription != null && !rxSubscription.isDisposed()) {
+            rxSubscription.dispose();
+        }
     }
 }
