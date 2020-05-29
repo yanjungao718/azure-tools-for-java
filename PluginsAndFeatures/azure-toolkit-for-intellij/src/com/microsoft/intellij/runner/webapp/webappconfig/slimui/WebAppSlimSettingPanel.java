@@ -271,17 +271,18 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             lblCreateWebApp.setVisible(false);
             cbxWebApp.setVisible(true);
             cbxWebApp.addItem(CREATE_NEW_WEBAPP);
-            sortedWebAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
-            // Find webapp which id equals to selected web app(when cancel creation) or configuration
-            // Use the first one as fallback
-            final String targetId = selectedWebApp == null ? webAppConfiguration.getWebAppId() :
-                                    selectedWebApp.getResource().id();
-            final ResourceEx<WebApp> selectWebApp = sortedWebAppLists
-                    .stream()
-                    .filter(webAppResourceEx -> StringUtils.equals(webAppResourceEx.getResource().id(), targetId))
-                    .findFirst()
-                    .orElse(sortedWebAppLists.get(0));
-            cbxWebApp.setSelectedItem(selectWebApp);
+            String targetId = webAppConfiguration.getWebAppId();
+            if (StringUtils.isEmpty(targetId) && selectedWebApp != null) {
+                // Use when user cancel create app service
+                targetId = selectedWebApp.getResource().id();
+            }
+            for (int i = 0; i < sortedWebAppLists.size(); i++) {
+                final ResourceEx<WebApp> webAppResourceEx = sortedWebAppLists.get(i);
+                cbxWebApp.addItem(webAppResourceEx);
+                if (i == 0 || StringUtils.equals(webAppResourceEx.getResource().id(), targetId)) {
+                    cbxWebApp.setSelectedItem(webAppResourceEx);
+                }
+            }
         }
         selectWebApp();
         cbxWebApp.setEnabled(true);
