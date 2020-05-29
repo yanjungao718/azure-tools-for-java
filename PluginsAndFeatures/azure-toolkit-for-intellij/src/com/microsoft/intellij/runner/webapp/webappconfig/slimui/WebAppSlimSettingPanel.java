@@ -271,9 +271,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             lblCreateWebApp.setVisible(false);
             cbxWebApp.setVisible(true);
             cbxWebApp.addItem(CREATE_NEW_WEBAPP);
+            // Need calculated target id first or fill combo box will trigger event to change selectedWebApp
             final String configurationWebAppId = webAppConfiguration.getWebAppId();
             final String targetId = (StringUtils.isEmpty(configurationWebAppId) && selectedWebApp != null) ?
                                     selectedWebApp.getResource().id() : configurationWebAppId;
+            sortedWebAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
             final ResourceEx<WebApp> selectWebApp = sortedWebAppLists
                     .stream()
                     .filter(webAppResourceEx -> StringUtils.equals(webAppResourceEx.getResource().id(), targetId))
