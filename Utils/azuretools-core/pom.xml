@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.39.0</version>
+        <version>3.40.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -96,6 +96,10 @@
         </resources>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-auth-helper</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
             <artifactId>azure-mgmt-insights</artifactId>
