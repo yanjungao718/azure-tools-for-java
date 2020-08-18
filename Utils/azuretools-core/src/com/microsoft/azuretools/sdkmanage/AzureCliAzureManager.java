@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
@@ -47,6 +46,7 @@ import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.rest.credentials.ServiceClientCredentials;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -66,6 +66,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     private Azure.Authenticated authenticated;
     private AzureCliCredentials azureCliCredentials;
     private SubscriptionManager subscriptionManager;
+    private Environment environment;
 
     static {
         settings = new Settings();
@@ -159,6 +160,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     public void drop() throws IOException {
         authenticated = null;
         azureCliCredentials = null;
+        environment = null;
         subscriptionManager.cleanSubscriptions();
     }
 
@@ -202,14 +204,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public Environment getEnvironment() {
-        if (!isSignedIn()) {
-            return null;
-        }
-        final AzureEnvironment azureEnvironment = azureCliCredentials.environment();
-        return ENVIRONMENT_LIST.stream()
-                .filter(environment -> azureEnvironment == environment.getAzureEnvironment())
-                .findAny()
-                .orElse(Environment.GLOBAL);
+        return isSignedIn() ? environment : null;
     }
 
     public boolean isSignedIn() {
@@ -225,6 +220,11 @@ public class AzureCliAzureManager extends AzureManagerBase {
             azureCliCredentials = (AzureCliCredentials) azureTokenWrapper.getAzureTokenCredentials();
             authenticated = Azure.configure().authenticate(azureCliCredentials);
             subscriptionManager = new SubscriptionManagerPersist(this);
+            environment = ENVIRONMENT_LIST.stream()
+                    .filter(environment -> ObjectUtils.equals(azureCliCredentials.environment(), environment.getAzureEnvironment()))
+                    .findAny()
+                    .orElse(Environment.GLOBAL);
+            CommonSettings.setUpEnvironment(environment);
 
             final AuthMethodDetails authResult = new AuthMethodDetails();
             authResult.setAuthMethod(AuthMethod.AZ);
