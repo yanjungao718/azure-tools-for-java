@@ -132,6 +132,7 @@ public class TelemetryConstants {
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";
     public static final String SIGNOUT = "signout";
+    public static final String RESIGNIN = "re-signin";
     public static final String SELECT_SUBSCRIPTIONS = "select-subscriptions";
     public static final String GET_SUBSCRIPTIONS = "get-subscriptions";
     public static final String REPORT_ISSUES = "report-issues";
@@ -206,6 +207,7 @@ public class TelemetryConstants {
     public static final String ARTIFACT_UPLOAD_COUNT = "artifactUploadCount";
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
+    public static final String AZURE_ENVIRONMENT = "azureEnvironment";
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();
