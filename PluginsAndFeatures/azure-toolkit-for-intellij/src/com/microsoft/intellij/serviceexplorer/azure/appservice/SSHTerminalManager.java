@@ -102,17 +102,20 @@ public enum SSHTerminalManager {
         connectionInfo.setSuccess(commendExecOutput.isSuccess());
         if (commendExecOutput.isSuccess()) {
             String username = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "username: ");
-            if (StringUtils.isNotBlank(username)) {
-                connectionInfo.setUsername(username);
+            if (StringUtils.isBlank(username)) {
+                username = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getErrorMessage(), PatternUtils.PATTERN_WHOLE_WORD, "username: ");
             }
             String port = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_NUMBER_PORT, "port: ");
-            if (StringUtils.isNotBlank(port)) {
-                connectionInfo.setPort(port);
+            if (StringUtils.isBlank(port)) {
+                port = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getErrorMessage(), PatternUtils.PATTERN_WHOLE_NUMBER_PORT, "port: ");
             }
             String password = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "password: ");
-            if (StringUtils.isNotBlank(password)) {
-                connectionInfo.setPassword(password);
+            if (StringUtils.isBlank(password)) {
+                password = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getErrorMessage(), PatternUtils.PATTERN_WHOLE_WORD, "password: ");
             }
+            connectionInfo.setUsername(username);
+            connectionInfo.setPort(port);
+            connectionInfo.setPassword(password);
         }
         return connectionInfo;
     }

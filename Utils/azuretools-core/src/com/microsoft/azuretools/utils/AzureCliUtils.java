@@ -111,25 +111,33 @@ public class AzureCliUtils {
      */
     public static CommandUtils.CommandExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
             , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
-        OutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
+        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
         CommandUtils.CommandExecOutput commendExecOutput = new CommandUtils.CommandExecOutput();
         if (ArrayUtils.isEmpty(sucessKeyWords) && ArrayUtils.isEmpty(failedKeyWords)) {
             commendExecOutput.setSuccess(true);
-            commendExecOutput.setOutputMessage(outputStream.toString());
+            if (executionOutput.getOutputStream() != null) {
+                commendExecOutput.setOutputMessage(executionOutput.getOutputStream().toString());
+            }
+            if (executionOutput.getErrorStream() != null) {
+                commendExecOutput.setErrorMessage(executionOutput.getErrorStream().toString());
+            }
             return commendExecOutput;
         }
         int interval = 100;
         int maxCount = CMD_EXEC_CONNECT_TIMEOUT / interval;
         int count = 0;
         while (count++ <= maxCount) {
-            String currentOutputMessage = outputStream.toString();
-            if (ArrayUtils.isNotEmpty(sucessKeyWords) && checkCommendExecComplete(currentOutputMessage, sucessKeyWords)) {
+            String currentOutputMessage = executionOutput.getOutputStream() != null ? executionOutput.getOutputStream().toString() : null;
+            String currentErrorMessage = executionOutput.getErrorStream() != null ? executionOutput.getErrorStream().toString() : null;
+            if (ArrayUtils.isNotEmpty(sucessKeyWords) && checkCommendExecComplete(currentOutputMessage, currentErrorMessage, sucessKeyWords)) {
                 commendExecOutput.setOutputMessage(currentOutputMessage);
+                commendExecOutput.setErrorMessage(currentErrorMessage);
                 commendExecOutput.setSuccess(true);
                 break;
             }
-            if (ArrayUtils.isNotEmpty(failedKeyWords) && checkCommendExecComplete(currentOutputMessage, failedKeyWords)) {
+            if (ArrayUtils.isNotEmpty(failedKeyWords) && checkCommendExecComplete(currentOutputMessage, currentErrorMessage, failedKeyWords)) {
                 commendExecOutput.setOutputMessage(currentOutputMessage);
+                commendExecOutput.setErrorMessage(currentErrorMessage);
                 commendExecOutput.setSuccess(false);
                 break;
             }
@@ -160,15 +168,18 @@ public class AzureCliUtils {
         return null;
     }
 
-    private static boolean checkCommendExecComplete(String outputMessage, String[] completeKeyWords) {
+    private static boolean checkCommendExecComplete(String outputMessage, String errorMessage, String[] completeKeyWords) {
         if (completeKeyWords == null || completeKeyWords.length == 0) {
             return true;
         }
-        if (StringUtils.isBlank(outputMessage)) {
+        if (StringUtils.isBlank(outputMessage) && StringUtils.isBlank(errorMessage)) {
             return false;
         }
         for (String completeKeyWord : completeKeyWords) {
-            if (outputMessage.contains(completeKeyWord)) {
+            if (StringUtils.isNotBlank(outputMessage) && outputMessage.contains(completeKeyWord)) {
+                return true;
+            }
+            if (StringUtils.isNotBlank(errorMessage) && errorMessage.contains(completeKeyWord)) {
                 return true;
             }
         }

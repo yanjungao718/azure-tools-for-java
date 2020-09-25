@@ -192,6 +192,7 @@ public class CommandUtils {
     public static class CommandExecOutput {
         private boolean success;
         private String outputMessage;
+        private String errorMessage;
 
         public boolean isSuccess() {
             return success;
@@ -207,6 +208,14 @@ public class CommandUtils {
 
         public void setOutputMessage(String outputMessage) {
             this.outputMessage = outputMessage;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public void setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
         }
     }
 
