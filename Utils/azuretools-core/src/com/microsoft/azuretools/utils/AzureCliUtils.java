@@ -29,7 +29,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -127,8 +126,8 @@ public class AzureCliUtils {
         int maxCount = CMD_EXEC_CONNECT_TIMEOUT / interval;
         int count = 0;
         while (count++ <= maxCount) {
-            String currentOutputMessage = executionOutput.getOutputStream() != null ? executionOutput.getOutputStream().toString() : null;
-            String currentErrorMessage = executionOutput.getErrorStream() != null ? executionOutput.getErrorStream().toString() : null;
+            String currentOutputMessage = StreamUtils.toString(executionOutput.getOutputStream());
+            String currentErrorMessage = StreamUtils.toString(executionOutput.getErrorStream());
             if (ArrayUtils.isNotEmpty(sucessKeyWords) && checkCommendExecComplete(currentOutputMessage, currentErrorMessage, sucessKeyWords)) {
                 commandExecOutput.setOutputMessage(currentOutputMessage);
                 commandExecOutput.setErrorMessage(currentErrorMessage);
