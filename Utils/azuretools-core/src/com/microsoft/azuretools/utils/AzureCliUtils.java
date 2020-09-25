@@ -112,16 +112,16 @@ public class AzureCliUtils {
     public static CommandUtils.CommandExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
             , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
         CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
-        CommandUtils.CommandExecOutput commendExecOutput = new CommandUtils.CommandExecOutput();
+        CommandUtils.CommandExecOutput commandExecOutput = new CommandUtils.CommandExecOutput();
         if (ArrayUtils.isEmpty(sucessKeyWords) && ArrayUtils.isEmpty(failedKeyWords)) {
-            commendExecOutput.setSuccess(true);
+            commandExecOutput.setSuccess(true);
             if (executionOutput.getOutputStream() != null) {
-                commendExecOutput.setOutputMessage(executionOutput.getOutputStream().toString());
+                commandExecOutput.setOutputMessage(executionOutput.getOutputStream().toString());
             }
             if (executionOutput.getErrorStream() != null) {
-                commendExecOutput.setErrorMessage(executionOutput.getErrorStream().toString());
+                commandExecOutput.setErrorMessage(executionOutput.getErrorStream().toString());
             }
-            return commendExecOutput;
+            return commandExecOutput;
         }
         int interval = 100;
         int maxCount = CMD_EXEC_CONNECT_TIMEOUT / interval;
@@ -130,20 +130,20 @@ public class AzureCliUtils {
             String currentOutputMessage = executionOutput.getOutputStream() != null ? executionOutput.getOutputStream().toString() : null;
             String currentErrorMessage = executionOutput.getErrorStream() != null ? executionOutput.getErrorStream().toString() : null;
             if (ArrayUtils.isNotEmpty(sucessKeyWords) && checkCommendExecComplete(currentOutputMessage, currentErrorMessage, sucessKeyWords)) {
-                commendExecOutput.setOutputMessage(currentOutputMessage);
-                commendExecOutput.setErrorMessage(currentErrorMessage);
-                commendExecOutput.setSuccess(true);
+                commandExecOutput.setOutputMessage(currentOutputMessage);
+                commandExecOutput.setErrorMessage(currentErrorMessage);
+                commandExecOutput.setSuccess(true);
                 break;
             }
             if (ArrayUtils.isNotEmpty(failedKeyWords) && checkCommendExecComplete(currentOutputMessage, currentErrorMessage, failedKeyWords)) {
-                commendExecOutput.setOutputMessage(currentOutputMessage);
-                commendExecOutput.setErrorMessage(currentErrorMessage);
-                commendExecOutput.setSuccess(false);
+                commandExecOutput.setOutputMessage(currentOutputMessage);
+                commandExecOutput.setErrorMessage(currentErrorMessage);
+                commandExecOutput.setSuccess(false);
                 break;
             }
             Thread.sleep(interval);
         }
-        return commendExecOutput;
+        return commandExecOutput;
     }
 
     private static boolean isCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
