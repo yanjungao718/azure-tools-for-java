@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.google.common.base.Throwables;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
@@ -30,11 +31,10 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
+import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureRuntimeException;
+import com.microsoft.azuretools.entity.RpcResponse;
+import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
@@ -42,10 +42,8 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.net.UnknownHostException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -249,14 +247,33 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
-        return authentication.tenants().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-                    return Observable.empty();
-                })
+        RpcResponse<List<Tenant>> rpcResponse = new RpcResponse<>();
+        rpcResponse.setData(Collections.emptyList());
+        RpcResponse<List<Tenant>> response = authentication.tenants().listAsync()
                 .toList()
+                .map(data -> {
+                    rpcResponse.setData(data);
+                    return rpcResponse;
+                })
+                .onErrorReturn(err -> handleErrorForGetTenants(err, rpcResponse))
                 .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+                .singleOrDefault(rpcResponse);
+        if (response.getErrorCode() != 0) {
+            throw new AzureRuntimeException(response.getErrorCode(), response.getErrorMessage());
+        }
+        return response.getData();
+    }
+
+    private RpcResponse<List<Tenant>> handleErrorForGetTenants(Throwable err, RpcResponse<List<Tenant>> rpcResponse) {
+        LOGGER.warning(Throwables.getStackTraceAsString(err));
+        if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof UnknownHostException).count() > 0) {
+            rpcResponse.setErrorCode(ErrorEnum.UNKNOWN_HOST_EXCEPTION.getErrorCode());
+            rpcResponse.setErrorMessage(err.getMessage());
+        } else if (err instanceof AzureRuntimeException) {
+            rpcResponse.setErrorCode(((AzureRuntimeException) err).getCode());
+            rpcResponse.setErrorMessage(err.getMessage());
+        }
+        return rpcResponse;
     }
 
     protected Azure.Authenticated authTenant(String tenantId) {
