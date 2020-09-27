@@ -25,10 +25,10 @@ package com.microsoft.intellij.serviceexplorer.azure.appservice;
 import com.jediterm.terminal.TerminalDataStream;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
-import com.microsoft.azuretools.utils.ReflectionUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 
 import java.io.IOException;
@@ -145,15 +145,14 @@ public enum SSHTerminalManager {
             shellTerminalWidget.executeCommand(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getUsername(), connectionInfo.getPort()));
             waitForInputPassword(shellTerminalWidget, 30000);
             shellTerminalWidget.executeCommand(connectionInfo.getPassword());
-        } catch (IOException | InterruptedException | NoSuchFieldException | IllegalAccessException e) {
+        } catch (IOException | InterruptedException | IllegalAccessException e) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
         }
     }
 
-    private void waitForInputPassword(ShellTerminalWidget shellTerminalWidget, int timeout) throws NoSuchFieldException, IllegalAccessException {
-        TerminalDataStream terminalDataStream = ReflectionUtils.getDeclaredFieldValue(
-                shellTerminalWidget.getTerminalStarter(), "myDataStream", TerminalDataStream.class);
-        char[] myBuf = ReflectionUtils.getDeclaredFieldValue(terminalDataStream, "myBuf", char[].class);
+    private void waitForInputPassword(ShellTerminalWidget shellTerminalWidget, int timeout) throws IllegalAccessException {
+        TerminalDataStream terminalDataStream = (TerminalDataStream) FieldUtils.readField(shellTerminalWidget.getTerminalStarter(), "myDataStream", true);
+        char[] myBuf = (char[]) FieldUtils.readField(terminalDataStream, "myBuf", true);
         int count = 0;
         int interval = 100;
         int countMax = timeout / interval;
