@@ -158,7 +158,7 @@ public enum SSHTerminalManager {
         int countMax = timeout / interval;
         try {
             while (count++ < countMax) {
-                if (String.valueOf(myBuf).contains("password:")) {
+                if (myBuf != null && String.valueOf(myBuf).contains("password:")) {
                     logger.info("It's ready to input password before the coming of timeout. myBuf: " + String.valueOf(myBuf));
                     return;
                 }
