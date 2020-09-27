@@ -139,13 +139,15 @@ public class CommandUtils {
         commandLine.addArgument(command + StringUtils.SPACE + String.join(StringUtils.SPACE, parameters), false);
         final DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, errorStream);
         final DefaultExecutor executor = new DefaultExecutor();
         executor.setStreamHandler(streamHandler);
         executor.setExitValues(null);
         executor.execute(commandLine, resultHandler);
         CommandExecutionOutput execution = new CommandExecutionOutput();
         execution.setOutputStream(outputStream);
+        execution.setErrorStream(errorStream);
         execution.setResultHandler(resultHandler);
         return execution;
     }
@@ -190,6 +192,7 @@ public class CommandUtils {
     public static class CommandExecOutput {
         private boolean success;
         private String outputMessage;
+        private String errorMessage;
 
         public boolean isSuccess() {
             return success;
@@ -206,11 +209,20 @@ public class CommandUtils {
         public void setOutputMessage(String outputMessage) {
             this.outputMessage = outputMessage;
         }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public void setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
     }
 
     public static class CommandExecutionOutput {
 
         private OutputStream outputStream;
+        private OutputStream errorStream;
         private DefaultExecuteResultHandler resultHandler;
 
         public OutputStream getOutputStream() {
@@ -219,6 +231,14 @@ public class CommandUtils {
 
         public void setOutputStream(OutputStream outputStream) {
             this.outputStream = outputStream;
+        }
+
+        public OutputStream getErrorStream() {
+            return errorStream;
+        }
+
+        public void setErrorStream(OutputStream errorStream) {
+            this.errorStream = errorStream;
         }
 
         public DefaultExecuteResultHandler getResultHandler() {

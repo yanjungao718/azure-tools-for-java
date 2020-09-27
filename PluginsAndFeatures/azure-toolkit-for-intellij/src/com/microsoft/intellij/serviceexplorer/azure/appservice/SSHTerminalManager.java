@@ -90,29 +90,32 @@ public enum SSHTerminalManager {
      */
     public CreateRemoteConnectionOutput executeAzCreateRemoteConnectionAndGetOutput(final String[] parameters) {
         CreateRemoteConnectionOutput connectionInfo = new CreateRemoteConnectionOutput();
-        CommandUtils.CommandExecOutput commendExecOutput = null;
+        CommandUtils.CommandExecOutput commandExecOutput = null;
         try {
-            commendExecOutput = AzureCliUtils.executeCommandAndGetOutputWithCompleteKeyWord(parameters,
+            commandExecOutput = AzureCliUtils.executeCommandAndGetOutputWithCompleteKeyWord(parameters,
                     AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORDS, AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORDS);
         } catch (IOException | InterruptedException e) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return connectionInfo;
         }
-        connectionInfo.setOutputMessage(commendExecOutput.getOutputMessage());
-        connectionInfo.setSuccess(commendExecOutput.isSuccess());
-        if (commendExecOutput.isSuccess()) {
-            String username = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "username: ");
-            if (StringUtils.isNotBlank(username)) {
-                connectionInfo.setUsername(username);
+        connectionInfo.setOutputMessage(commandExecOutput.getOutputMessage());
+        connectionInfo.setSuccess(commandExecOutput.isSuccess());
+        if (commandExecOutput.isSuccess()) {
+            String username = PatternUtils.parseWordByPatternAndPrefix(commandExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "username: ");
+            if (StringUtils.isBlank(username)) {
+                username = PatternUtils.parseWordByPatternAndPrefix(commandExecOutput.getErrorMessage(), PatternUtils.PATTERN_WHOLE_WORD, "username: ");
             }
-            String port = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_NUMBER_PORT, "port: ");
-            if (StringUtils.isNotBlank(port)) {
-                connectionInfo.setPort(port);
+            String port = PatternUtils.parseWordByPatternAndPrefix(commandExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_NUMBER_PORT, "port: ");
+            if (StringUtils.isBlank(port)) {
+                port = PatternUtils.parseWordByPatternAndPrefix(commandExecOutput.getErrorMessage(), PatternUtils.PATTERN_WHOLE_NUMBER_PORT, "port: ");
             }
-            String password = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "password: ");
-            if (StringUtils.isNotBlank(password)) {
-                connectionInfo.setPassword(password);
+            String password = PatternUtils.parseWordByPatternAndPrefix(commandExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "password: ");
+            if (StringUtils.isBlank(password)) {
+                password = PatternUtils.parseWordByPatternAndPrefix(commandExecOutput.getErrorMessage(), PatternUtils.PATTERN_WHOLE_WORD, "password: ");
             }
+            connectionInfo.setUsername(username);
+            connectionInfo.setPort(port);
+            connectionInfo.setPassword(password);
         }
         return connectionInfo;
     }
