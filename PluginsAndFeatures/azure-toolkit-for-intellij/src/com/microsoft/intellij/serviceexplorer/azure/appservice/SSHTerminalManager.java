@@ -22,17 +22,22 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
+import com.jediterm.terminal.TerminalDataStream;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public enum SSHTerminalManager {
     INSTANCE;
+
+    private static final Logger logger = Logger.getLogger(SSHTerminalManager.class.getName());
 
     private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "Failed to SSH into Web App. Please try again.";
@@ -138,11 +143,30 @@ public enum SSHTerminalManager {
                 Thread.sleep(100);
             }
             shellTerminalWidget.executeCommand(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getUsername(), connectionInfo.getPort()));
-            Thread.sleep(5000);
+            waitForInputPassword(shellTerminalWidget, 30000);
             shellTerminalWidget.executeCommand(connectionInfo.getPassword());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | IllegalAccessException e) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
         }
+    }
+
+    private void waitForInputPassword(ShellTerminalWidget shellTerminalWidget, int timeout) throws IllegalAccessException {
+        TerminalDataStream terminalDataStream = (TerminalDataStream) FieldUtils.readField(shellTerminalWidget.getTerminalStarter(), "myDataStream", true);
+        char[] myBuf = (char[]) FieldUtils.readField(terminalDataStream, "myBuf", true);
+        int count = 0;
+        int interval = 100;
+        int countMax = timeout / interval;
+        try {
+            while (count++ < countMax) {
+                if (myBuf != null && String.valueOf(myBuf).contains("password:")) {
+                    logger.info("It's ready to input password before the coming of timeout. myBuf: " + String.valueOf(myBuf));
+                    return;
+                }
+                Thread.sleep(interval);
+            }
+        } catch (InterruptedException e) {
+        }
+        logger.info("password input is not ready. ready processing is stopped because of timeout.");
     }
 
     public static class CreateRemoteConnectionOutput extends CommandUtils.CommandExecOutput {
