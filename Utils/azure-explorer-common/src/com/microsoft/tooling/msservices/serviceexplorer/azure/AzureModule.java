@@ -30,7 +30,7 @@ import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureRuntimeExcepti
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.enums.ErrorViewEnum;
+import com.microsoft.azuretools.enums.ErrorUIMapEnum;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
@@ -126,7 +126,7 @@ public class AzureModule extends AzureRefreshableNode {
         } catch (Exception e) {
             if (e instanceof AzureRuntimeException) {
                 DefaultLoader.getUIHelper().showInfoNotification(ERROR_GETTING_SUBSCRIPTIONS_TITLE
-                        , ErrorViewEnum.getDisplayMessageByCode(((AzureRuntimeException) e).getCode()));
+                        , ErrorUIMapEnum.getViewMessageByCode(((AzureRuntimeException) e).getCode()));
             } else {
                 final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
                 DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);

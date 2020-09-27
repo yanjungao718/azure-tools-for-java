@@ -22,46 +22,26 @@
 
 package com.microsoft.azuretools.enums;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
- * Error info enums with view display names for azure tools.
+ * Enums of UI messages.
  *
  * @author qianjinshen
  * @date 2020-09-24 16:34:00
  */
-public enum ErrorViewEnum {
-    UNKNOWN_HOST_EXCEPTION(ErrorEnum.UNKNOWN_HOST_EXCEPTION, "Please check to confirm your network works well."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN_BY_CLI, "Please check to confirm your network works well."),
+public enum ErrorUIMessageEnum {
+
+    UNKNOWN_HOST_EXCEPTION("Please check to confirm your network works well."),
+    SOCKET_TIMEOUT_EXCEPTION("Failed to access remote azure, please try your operation again."),
+    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI("Please check to confirm your network works well."),
     ;
 
-    private ErrorEnum error;
-    private String displayMessage;
+    private String text;
 
-    ErrorViewEnum(ErrorEnum error) {
-        this.error = error;
-        this.displayMessage = error.getErrorMessage();
+    public String getText() {
+        return text;
     }
 
-    ErrorViewEnum(ErrorEnum error, String displayMessage) {
-        this.error = error;
-        this.displayMessage = displayMessage;
-    }
-
-    public ErrorEnum getError() {
-        return error;
-    }
-
-    public String getDisplayMessage() {
-        return displayMessage;
-    }
-
-    public static String getDisplayMessageByCode(int code) {
-        for (ErrorViewEnum e : ErrorViewEnum.values()) {
-            if (e.getError() != null && e.getError().getErrorCode() == code) {
-                return e.getDisplayMessage();
-            }
-        }
-        return StringUtils.EMPTY;
+    ErrorUIMessageEnum(String text) {
+        this.text = text;
     }
 }

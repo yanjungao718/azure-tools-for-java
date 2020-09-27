@@ -23,31 +23,20 @@
 package com.microsoft.azuretools.enums;
 
 /**
- * Enums of backend errors for azure tools.
+ * Enums of UI titles.
  *
  * @author qianjinshen
- * @date 2020-09-24 15:05:00
+ * @date 2020-09-24 16:34:00
  */
-public enum ErrorEnum {
-    UNKNOWN_HOST_EXCEPTION(100000, "Encountered an unknown host exception."),
-    SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by azure cli command."),
+public enum ErrorUITitleEnum {
+
+    FAILED_TO_GET_SUBSCRIPTIONS("Error Getting Subscriptions"),
+    FAILED_TO_GET_WEB_APPS("Error Getting Web Apps"),
     ;
 
-    private int errorCode;
-    private String errorMessage;
+    private String text;
 
-    ErrorEnum(int errorCode, String errorMessage) {
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
+    ErrorUITitleEnum(String text) {
+        this.text = text;
     }
-
-    public int getErrorCode() {
-        return errorCode;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
 }
