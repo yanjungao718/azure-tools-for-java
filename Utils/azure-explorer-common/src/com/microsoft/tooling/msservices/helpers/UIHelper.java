@@ -156,6 +156,6 @@ public interface UIHelper {
     }
 
     default void showInfoNotification(String tile, String message) {
-        
+
     }
 }
