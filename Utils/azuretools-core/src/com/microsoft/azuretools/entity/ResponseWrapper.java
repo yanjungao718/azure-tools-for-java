@@ -28,7 +28,7 @@ package com.microsoft.azuretools.entity;
  * @author qianjinshen
  * @date 2020-09-24 14:45:55
  */
-public class RpcResponse<T> extends BaseEntity {
+public class ResponseWrapper<T> extends BaseEntity {
 
     private T data;
     private int errorCode;

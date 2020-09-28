@@ -33,7 +33,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureRuntimeException;
-import com.microsoft.azuretools.entity.RpcResponse;
+import com.microsoft.azuretools.entity.ResponseWrapper;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
@@ -247,33 +247,33 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
-        RpcResponse<List<Tenant>> rpcResponse = new RpcResponse<>();
-        rpcResponse.setData(Collections.emptyList());
-        RpcResponse<List<Tenant>> response = authentication.tenants().listAsync()
+        ResponseWrapper<List<Tenant>> responseWrapper = new ResponseWrapper<>();
+        responseWrapper.setData(Collections.emptyList());
+        ResponseWrapper<List<Tenant>> response = authentication.tenants().listAsync()
                 .toList()
                 .map(data -> {
-                    rpcResponse.setData(data);
-                    return rpcResponse;
+                    responseWrapper.setData(data);
+                    return responseWrapper;
                 })
-                .onErrorReturn(err -> handleErrorForGetTenants(err, rpcResponse))
+                .onErrorReturn(err -> handleErrorForGetTenants(err, responseWrapper))
                 .toBlocking()
-                .singleOrDefault(rpcResponse);
+                .singleOrDefault(responseWrapper);
         if (response.getErrorCode() != 0) {
             throw new AzureRuntimeException(response.getErrorCode(), response.getErrorMessage());
         }
         return response.getData();
     }
 
-    private RpcResponse<List<Tenant>> handleErrorForGetTenants(Throwable err, RpcResponse<List<Tenant>> rpcResponse) {
+    private ResponseWrapper<List<Tenant>> handleErrorForGetTenants(Throwable err, ResponseWrapper<List<Tenant>> responseWrapper) {
         LOGGER.warning(Throwables.getStackTraceAsString(err));
         if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof UnknownHostException).count() > 0) {
-            rpcResponse.setErrorCode(ErrorEnum.UNKNOWN_HOST_EXCEPTION.getErrorCode());
-            rpcResponse.setErrorMessage(err.getMessage());
+            responseWrapper.setErrorCode(ErrorEnum.UNKNOWN_HOST_EXCEPTION.getErrorCode());
+            responseWrapper.setErrorMessage(err.getMessage());
         } else if (err instanceof AzureRuntimeException) {
-            rpcResponse.setErrorCode(((AzureRuntimeException) err).getCode());
-            rpcResponse.setErrorMessage(err.getMessage());
+            responseWrapper.setErrorCode(((AzureRuntimeException) err).getCode());
+            responseWrapper.setErrorMessage(err.getMessage());
         }
-        return rpcResponse;
+        return responseWrapper;
     }
 
     protected Azure.Authenticated authTenant(String tenantId) {
