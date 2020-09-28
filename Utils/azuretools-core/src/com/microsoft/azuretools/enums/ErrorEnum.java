@@ -24,14 +24,11 @@ package com.microsoft.azuretools.enums;
 
 /**
  * Enums of backend errors for azure tools.
- *
- * @author qianjinshen
- * @date 2020-09-24 15:05:00
  */
 public enum ErrorEnum {
     UNKNOWN_HOST_EXCEPTION(100000, "Encountered an unknown host exception."),
     SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by azure cli command."),
+    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by Azure CLI command."),
     ;
 
     private int errorCode;

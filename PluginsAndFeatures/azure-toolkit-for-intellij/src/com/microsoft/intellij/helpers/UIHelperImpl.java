@@ -760,8 +760,8 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void showInfoNotification(String s, String s1) {
-        PluginUtil.showInfoNotification(s, s1);
+    public void showInfoNotification(String title, String message) {
+        PluginUtil.showInfoNotification(title, message);
     }
 
     private static <T> T runFromDispatchThread(Supplier<T> supplier) {

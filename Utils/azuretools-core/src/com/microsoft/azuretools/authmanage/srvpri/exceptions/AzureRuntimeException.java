@@ -26,9 +26,6 @@ import com.microsoft.azuretools.enums.ErrorEnum;
 
 /**
  * RuntinmeException for azure tools.
- *
- * @author qianjinshen
- * @date 2020-09-24 14:56:30
  */
 public class AzureRuntimeException extends RuntimeException {
 

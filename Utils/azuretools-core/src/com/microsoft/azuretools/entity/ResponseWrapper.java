@@ -23,10 +23,7 @@
 package com.microsoft.azuretools.entity;
 
 /**
- * Common Entify for RPC response.
- *
- * @author qianjinshen
- * @date 2020-09-24 14:45:55
+ * Wrapper Entify for remote procedure call response.
  */
 public class ResponseWrapper<T> extends BaseEntity {
 

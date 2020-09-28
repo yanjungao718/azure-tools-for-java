@@ -27,9 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Enums of the Map of backend errors to UI messages for azure tools.
  * All reminder, dialog, etc will use these contents of this class to show whatever.
- *
- * @author qianjinshen
- * @date 2020-09-24 16:34:00
  */
 public enum ErrorUIMapEnum {
     UNKNOWN_HOST_EXCEPTION(ErrorEnum.UNKNOWN_HOST_EXCEPTION, ErrorUIMessageEnum.UNKNOWN_HOST_EXCEPTION),

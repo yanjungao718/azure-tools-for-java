@@ -23,10 +23,7 @@
 package com.microsoft.azuretools.enums;
 
 /**
- * Enums of UI titles.
- *
- * @author qianjinshen
- * @date 2020-09-24 16:34:00
+ * Enums of UI titles for users.
  */
 public enum ErrorUITitleEnum {
 

@@ -30,8 +30,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.io.Serializable;
 
 /**
- * @author qianjinshen
- * @date 2020-09-24 14:45:34
+ * Base entity to implement hashCode & equals & toString with reflection for its sub classes.
  */
 public abstract class BaseEntity implements Serializable {
 
