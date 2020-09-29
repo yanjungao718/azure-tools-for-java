@@ -24,10 +24,14 @@ package com.microsoft.azuretools.entity;
 
 /**
  * Wrapper Entify for remote procedure call response.
+ * @TODOs try to seperate data and error into different classes.
  */
 public class ResponseWrapper<T> extends BaseEntity {
 
     private T data;
+    /**
+     * default is 0, and 0 means no error.
+     */
     private int errorCode;
     private String errorMessage;
     private String originalMessage;

@@ -56,7 +56,7 @@ public enum ErrorUIMapEnum {
                 return e.getViewMessage();
             }
         }
-        return null;
+        throw new IllegalArgumentException(String.format("Not found enum for code: %s", code));
     }
 
     public static String getViewMessageByCode(int code) {

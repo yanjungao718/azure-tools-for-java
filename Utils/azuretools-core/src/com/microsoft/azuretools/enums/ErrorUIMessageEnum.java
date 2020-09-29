@@ -29,7 +29,7 @@ public enum ErrorUIMessageEnum {
 
     UNKNOWN_HOST_EXCEPTION("It seems you have an unstable network at the moment, please try again when network is available."),
     SOCKET_TIMEOUT_EXCEPTION("Timeout when accessing azure, please try your operation again."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI("Failed to get access token, please try to login azure cli using 'az login' and try again."),
+    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI("Failed to get access token, please try to login Azure CLI using 'az login' and try again."),
     ;
 
     private String text;

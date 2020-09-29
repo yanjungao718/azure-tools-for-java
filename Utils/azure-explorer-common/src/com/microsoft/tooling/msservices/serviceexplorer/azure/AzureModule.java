@@ -125,8 +125,8 @@ public class AzureModule extends AzureRefreshableNode {
 
         } catch (Exception e) {
             if (e instanceof AzureRuntimeException) {
-                DefaultLoader.getUIHelper().showInfoNotification(ERROR_GETTING_SUBSCRIPTIONS_TITLE
-                        , ErrorUIMapEnum.getViewMessageByCode(((AzureRuntimeException) e).getCode()));
+                DefaultLoader.getUIHelper().showInfoNotification(
+                        ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorUIMapEnum.getViewMessageByCode(((AzureRuntimeException) e).getCode()));
             } else {
                 final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
                 DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
