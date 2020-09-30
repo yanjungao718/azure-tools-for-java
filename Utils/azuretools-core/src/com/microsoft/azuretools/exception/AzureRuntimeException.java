@@ -20,25 +20,37 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.enums;
+package com.microsoft.azuretools.exception;
+
+import com.microsoft.azuretools.enums.ErrorEnum;
 
 /**
- * Enums of UI messages.
+ * RuntinmeException for azure tools.
  */
-public enum ErrorUIMessageEnum {
+public class AzureRuntimeException extends RuntimeException {
 
-    UNKNOWN_HOST_EXCEPTION("It seems you have an unstable network at the moment, please try again when network is available."),
-    SOCKET_TIMEOUT_EXCEPTION("Timeout when accessing azure, please try your operation again."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI("Failed to get access token, please try to login Azure CLI using 'az login' and try again."),
-    ;
+    private int code;
 
-    private String text;
-
-    public String getText() {
-        return text;
+    public AzureRuntimeException(ErrorEnum errorEnum) {
+        super(errorEnum.getErrorMessage());
+        this.code = errorEnum.getErrorCode();
     }
 
-    ErrorUIMessageEnum(String text) {
-        this.text = text;
+    public AzureRuntimeException(int code) {
+        this.code = code;
+    }
+
+    public AzureRuntimeException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
+
+    public AzureRuntimeException(int code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = code;
+    }
+
+    public int getCode() {
+        return code;
     }
 }

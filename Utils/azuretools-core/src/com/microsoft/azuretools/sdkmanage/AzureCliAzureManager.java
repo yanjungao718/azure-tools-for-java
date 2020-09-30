@@ -34,7 +34,7 @@ import com.microsoft.azuretools.authmanage.AzureManagerFactory;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureRuntimeException;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.utils.CommandUtils;

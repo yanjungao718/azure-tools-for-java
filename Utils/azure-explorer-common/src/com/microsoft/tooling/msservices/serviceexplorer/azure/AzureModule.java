@@ -26,11 +26,11 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureRuntimeException;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.enums.ErrorUIMapEnum;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
@@ -123,14 +123,12 @@ public class AzureModule extends AzureRefreshableNode {
                     .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
             return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
 
+        } catch (AzureRuntimeException e) {
+            DefaultLoader.getUIHelper().showInfoNotification(
+                    ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorEnum.getDisplayMessageByCode(e.getCode()));
         } catch (Exception e) {
-            if (e instanceof AzureRuntimeException) {
-                DefaultLoader.getUIHelper().showInfoNotification(
-                        ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorUIMapEnum.getViewMessageByCode(((AzureRuntimeException) e).getCode()));
-            } else {
-                final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
-                DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
-            }
+            final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
+            DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
         }
         return BASE_MODULE_NAME;
     }

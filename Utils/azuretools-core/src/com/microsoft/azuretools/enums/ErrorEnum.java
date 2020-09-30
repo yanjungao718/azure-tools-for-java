@@ -26,17 +26,22 @@ package com.microsoft.azuretools.enums;
  * Enums of backend errors for azure tools.
  */
 public enum ErrorEnum {
-    UNKNOWN_HOST_EXCEPTION(100000, "Encountered an unknown host exception."),
-    SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by Azure CLI command."),
+    UNKNOWN_HOST_EXCEPTION(100000, "Encountered an unknown host exception.",
+            "It seems you have an unstable network at the moment, please try again when network is available."),
+    SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception.",
+            "Timeout when accessing azure, please try your operation again."),
+    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by Azure CLI command.",
+            "Failed to get access token, please try to login Azure CLI using 'az login' and try again."),
     ;
 
     private int errorCode;
     private String errorMessage;
+    private String displyMessage;
 
-    ErrorEnum(int errorCode, String errorMessage) {
+    ErrorEnum(int errorCode, String errorMessage, String displayMessage) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
+        this.displyMessage = displayMessage;
     }
 
     public int getErrorCode() {
@@ -45,6 +50,19 @@ public enum ErrorEnum {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    public String getDisplyMessage() {
+        return displyMessage;
+    }
+
+    public static String getDisplayMessageByCode(int code) {
+        for (ErrorEnum e : ErrorEnum.values()) {
+            if (e.getErrorCode() == code) {
+                return e.getDisplyMessage();
+            }
+        }
+        throw new IllegalArgumentException(String.format("Not found enum for code: %s", code));
     }
 
 }
