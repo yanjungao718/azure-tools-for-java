@@ -20,37 +20,34 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.component.input;
+package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+@Getter
+public class AppServiceComboBoxModel<T extends WebAppBase> {
+    protected boolean isNewCreateResource;
+    protected String subscriptionId;
+    protected String resourceGroup;
+    protected String appName;
+    protected String os;
+    protected String resourceId;
+    protected T resource;
 
-public class AzureComboBoxSimple<T> extends AzureComboBox<T> {
+    public AppServiceComboBoxModel() {
 
-    private DataProvider<? extends List<? extends T>> provider;
-
-    public AzureComboBoxSimple() {
-        super();
     }
 
-    public AzureComboBoxSimple(final DataProvider<? extends List<? extends T>> provider) {
-        this();
-        this.provider = provider;
-    }
-
-    @NotNull
-    protected List<? extends T> loadItems() throws Exception {
-        if (Objects.nonNull(this.provider)) {
-            return this.provider.loadData();
-        }
-        return Collections.emptyList();
-    }
-
-    @FunctionalInterface
-    public interface DataProvider<T> {
-        T loadData() throws Exception;
+    public AppServiceComboBoxModel(ResourceEx<T> resourceEx) {
+        this.resource = resourceEx.getResource();
+        this.resourceId = resource.id();
+        this.appName = resource.name();
+        this.resourceGroup = resource.resourceGroupName();
+        this.os = StringUtils.capitalize(resource.operatingSystem().toString());
+        this.subscriptionId = resourceEx.getSubscriptionId();
+        this.isNewCreateResource = false;
     }
 }
