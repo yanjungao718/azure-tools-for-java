@@ -62,9 +62,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private boolean required;
 
     public AzureComboBox() {
+        this(true);
+    }
+
+    public AzureComboBox(boolean refresh) {
         super();
         this.init();
-        DefaultLoader.getIdeHelper().invokeLater(this::refreshItems);
+        if (refresh) {
+            DefaultLoader.getIdeHelper().invokeLater(this::refreshItems);
+        }
     }
 
     @Override
@@ -97,9 +103,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 setItems(items);
                 this.setLoading(false);
             }), (e) -> {
-                this.handleLoadingError(e);
-                this.setLoading(false);
-            });
+                    this.handleLoadingError(e);
+                    this.setLoading(false);
+                });
     }
 
     protected void setLoading(final boolean loading) {
@@ -143,7 +149,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    private Observable<? extends List<? extends T>> loadItemsAsync() {
+    protected Observable<? extends List<? extends T>> loadItemsAsync() {
         return Observable.fromCallable(this::loadItems).subscribeOn(getSchedulerProvider().io());
     }
 
@@ -183,7 +189,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         public void setItem(Object item) {
             this.item = item;
             if (!AzureComboBox.this.isPopupVisible()) {
-                super.setItem(item);
                 this.editor.setText(getItemText(item));
             }
         }
@@ -228,7 +233,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     class AzureComboBoxPopupMenuListener extends PopupMenuListenerAdapter {
         List<T> itemList;
-        ComboFilterListener listener;
+        ComboFilterListener comboFilterListener;
 
         @Override
         public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
@@ -236,16 +241,16 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             getEditorComponent().setText(StringUtils.EMPTY);
             itemList = UIUtils.listComboBoxItems(AzureComboBox.this);
             // todo: support customized combo box filter
-            listener = new ComboFilterListener(itemList,
-                                               (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
-            getEditorComponent().getDocument().addDocumentListener(listener);
+            comboFilterListener = new ComboFilterListener(itemList,
+                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+            getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 
         @Override
         public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
             getEditorComponent().setEditable(false);
-            if (listener != null) {
-                getEditorComponent().getDocument().removeDocumentListener(listener);
+            if (comboFilterListener != null) {
+                getEditorComponent().getDocument().removeDocumentListener(comboFilterListener);
             }
             final Object selectedItem = AzureComboBox.this.getSelectedItem();
             AzureComboBox.this.removeAllItems();
