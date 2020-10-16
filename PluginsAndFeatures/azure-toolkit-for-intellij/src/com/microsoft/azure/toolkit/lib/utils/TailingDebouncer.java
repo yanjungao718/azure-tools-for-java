@@ -49,7 +49,7 @@ public class TailingDebouncer implements Debouncer {
                                .subscribe(ignore -> {
                                    this.debounced.run();
                                    this.timer = null;
-                               });
+                               }, (e) -> this.timer = null);
     }
 
     public synchronized boolean isPending() {
