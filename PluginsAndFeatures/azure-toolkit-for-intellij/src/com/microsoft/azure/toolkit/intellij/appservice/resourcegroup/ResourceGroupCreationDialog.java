@@ -52,7 +52,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         super();
         this.init();
         this.subscription = subscription;
-        this.labelDescription.setText("<html><body><p>" + DESCRIPTION + "</p></body></html");
+        this.labelDescription.setText("<html><body><p>" + DESCRIPTION + "</p></body></html>");
         this.textName.setValidator(() -> validateName(subscription));
         this.pack();
     }

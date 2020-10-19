@@ -56,12 +56,6 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
         this.repaint();
     }
 
-    public void setDeploymentVisible(boolean visible) {
-        this.getBasicFormPanel().setDeploymentVisible(visible);
-        this.getAdvancedFormPanel().setDeploymentVisible(visible);
-        this.pack();
-    }
-
     protected abstract AzureFormPanel<T> getAdvancedFormPanel();
 
     protected abstract AzureFormPanel<T> getBasicFormPanel();

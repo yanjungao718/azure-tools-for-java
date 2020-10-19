@@ -58,7 +58,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         this.subscription = subscription;
         this.os = os;
         this.region = region;
-        this.labelDescription.setText("<html><body><p>" + DESCRIPTION + "</p></body></html");
+        this.labelDescription.setText("<html><body><p>" + DESCRIPTION + "</p></body></html>");
         this.textName.setValidator(this::validateName);
         this.pack();
     }

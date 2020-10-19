@@ -65,7 +65,6 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
             this.selectorApplication
         };
         return Arrays.asList(inputs);
-
     }
 
     @Override
@@ -74,7 +73,6 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         super.setVisible(visible);
     }
 
-    @Override
     public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
         this.deploymentLabel.setVisible(visible);

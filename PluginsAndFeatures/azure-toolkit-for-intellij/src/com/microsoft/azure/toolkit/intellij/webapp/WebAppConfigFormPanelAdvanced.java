@@ -115,7 +115,6 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         super.setVisible(visible);
     }
 
-    @Override
     public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
         this.deploymentLabel.setVisible(visible);

@@ -30,6 +30,4 @@ public interface AzureFormPanel<T> extends AzureForm<T> {
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     default void $$$setupUI$$$() {
     }
-
-    void setDeploymentVisible(boolean visible);
 }
