@@ -20,28 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common;
+package com.microsoft.azure.toolkit.lib.common.form;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.ObjectUtils;
 
-public interface AzureFormInput<T> {
+public interface AzureFormInput<T> extends Validatable {
 
     String MSG_REQUIRED = "this field is required";
 
     T getValue();
 
     @NotNull
-    default AzureValidationInfo validateValue() {
+    default AzureValidationInfo doValidate() {
         final T value = this.getValue();
         if (this.isRequired() && ObjectUtils.isEmpty(value)) {
-            return AzureValidationInfo.builder()
-                                      .message(MSG_REQUIRED)
-                                      .input(this)
-                                      .type(AzureValidationInfo.Type.ERROR)
-                                      .build();
+            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.message(MSG_REQUIRED).input(this).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return Validatable.super.doValidate();
     }
 
     default boolean isRequired() {

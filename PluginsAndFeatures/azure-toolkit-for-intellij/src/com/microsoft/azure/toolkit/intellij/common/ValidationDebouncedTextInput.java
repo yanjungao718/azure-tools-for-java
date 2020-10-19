@@ -22,10 +22,39 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 
-import javax.swing.*;
+public class ValidationDebouncedTextInput extends AzureTextInput {
+    protected static final int DEBOUNCE_DELAY = 500;
+    protected AzureValidationInfo validationInfo;
+    private final Debouncer validator;
 
-public interface AzureFormInputComponent<T> extends AzureFormInput<T> {
-    JComponent getInputComponent();
+    public ValidationDebouncedTextInput() {
+        super();
+        this.validator = new TailingDebouncer(() -> this.validationInfo = this.doValidateValue(), DEBOUNCE_DELAY);
+    }
+
+    protected AzureValidationInfo doValidateValue() {
+        return super.doValidate();
+    }
+
+    @Override
+    public AzureValidationInfo doValidate() {
+        if (this.validator.isPending()) {
+            return AzureValidationInfo.PENDING;
+        } else if (this.validationInfo == null) {
+            this.validationInfo = this.doValidateValue();
+        }
+        return this.validationInfo;
+    }
+
+    protected void revalidateValue() {
+        this.validator.debounce();
+    }
+
+    public void onDocumentChanged() {
+        this.revalidateValue();
+    }
 }

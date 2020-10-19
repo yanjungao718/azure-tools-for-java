@@ -20,17 +20,35 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common;
+package com.microsoft.azure.toolkit.intellij.common;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.intellij.ui.components.fields.ExtendableTextField;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface AzureForm<T> {
-    T getData();
+import javax.swing.*;
 
-    List<AzureFormInput<?>> getInputs();
+public class AzureTextInput extends ExtendableTextField
+    implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
+    @Getter
+    @Setter
+    private boolean required;
+    @Getter
+    @Setter
+    private Validator validator;
 
-    default List<AzureValidationInfo> validateData() {
-        return this.getInputs().stream().map(AzureFormInput::validateValue).collect(Collectors.toList());
+    public AzureTextInput() {
+        super();
+        this.getDocument().addDocumentListener(this);
+    }
+
+    @Override
+    public String getValue() {
+        return this.getText();
+    }
+
+    @Override
+    public JComponent getInputComponent() {
+        return this;
     }
 }

@@ -20,12 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.lib.common.form;
 
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.swing.*;
+public interface AzureForm<T> {
+    T getData();
 
-public interface AzureFormInputComponent<T> extends AzureFormInput<T> {
-    JComponent getInputComponent();
+    List<AzureFormInput<?>> getInputs();
+
+    default List<AzureValidationInfo> validateData() {
+        return this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
+    }
 }

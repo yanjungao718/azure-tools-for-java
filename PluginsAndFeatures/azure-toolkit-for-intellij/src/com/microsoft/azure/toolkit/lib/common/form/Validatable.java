@@ -20,24 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common;
+package com.microsoft.azure.toolkit.lib.common.form;
 
-import lombok.Builder;
-import lombok.Getter;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-@Getter
-@Builder
-public class AzureValidationInfo {
-    public static final AzureValidationInfo PENDING =
-        AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
-    public static final AzureValidationInfo OK =
-        AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
-    private final AzureFormInput<?> input;
-    private final String message;
-    @Builder.Default
-    private final Type type = Type.ERROR;
+import java.util.Objects;
 
-    public enum Type {
-        ERROR, WARNING, INFO, PENDING
+public interface Validatable {
+    default AzureValidationInfo doValidate() {
+        final Validator validator = this.getValidator();
+        if (Objects.nonNull(validator)) {
+            return validator.doValidate();
+        }
+        return AzureValidationInfo.OK;
+    }
+
+    @Nullable
+    default Validator getValidator() {
+        return null;
+    }
+
+    @FunctionalInterface
+    interface Validator {
+        AzureValidationInfo doValidate();
     }
 }

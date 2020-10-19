@@ -20,30 +20,21 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
-import javax.swing.*;
+import java.util.List;
 
-public class AzureTextField extends JTextField implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
-    @Getter
-    @Setter
-    private boolean required;
+public class PricingTierComboBox extends AzureComboBox<PricingTier> {
+    public static PricingTier DEFAULT_TIER = PricingTier.BASIC_B2;
 
-    public AzureTextField() {
-        super();
-        this.getDocument().addDocumentListener(this);
-    }
-
+    @NotNull
     @Override
-    public String getValue() {
-        return this.getText();
-    }
-
-    @Override
-    public JComponent getInputComponent() {
-        return this;
+    protected List<? extends PricingTier> loadItems() throws Exception {
+        return AzureMvpModel.getInstance().listPricingTier();
     }
 }

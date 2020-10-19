@@ -20,12 +20,8 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.lib.appservice;
 
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-
-import javax.swing.*;
-
-public interface AzureFormInputComponent<T> extends AzureFormInput<T> {
-    JComponent getInputComponent();
+public interface Draft {
+    // marker interface
 }

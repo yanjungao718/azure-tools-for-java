@@ -19,68 +19,35 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.toolkit.intellij.common.AzureTextField;
-import com.microsoft.azure.toolkit.lib.common.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
-import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
+import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.ValidationUtils;
 
 import java.util.Objects;
 
-public class AppNameInput extends AzureTextField {
-
-    public static final int DEBOUNCE_DELAY = 500;
-    private final Debouncer validator;
+public class AppNameInput extends ValidationDebouncedTextInput {
     private Subscription subscription;
-    private AzureValidationInfo validationInfo;
-
-    public AppNameInput() {
-        super();
-        this.validator = new TailingDebouncer(this::revalidateValue, DEBOUNCE_DELAY);
-    }
-
-    @Override
-    public AzureValidationInfo validateValue() {
-        if (this.validator.isPending()) {
-            return AzureValidationInfo.PENDING;
-        } else if (this.validationInfo == null) {
-            this.validationInfo = this.doValidate();
-        }
-        return this.validationInfo;
-    }
-
-    private void revalidateValue() {
-        this.validationInfo = this.doValidate();
-    }
 
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
             this.subscription = subscription;
-            this.validator.debounce();
+            this.revalidateValue();
         }
     }
 
-    public void onDocumentChanged() {
-        this.validator.debounce();
-    }
-
     @NotNull
-    private AzureValidationInfo doValidate() {
-        final AzureValidationInfo info = super.validateValue();
+    public AzureValidationInfo doValidateValue() {
+        final AzureValidationInfo info = super.doValidateValue();
         if (info == AzureValidationInfo.OK) {
             try {
                 ValidationUtils.validateAppServiceName(this.subscription.subscriptionId(), this.getValue());
             } catch (final IllegalArgumentException e) {
-                return AzureValidationInfo.builder()
-                                          .input(this)
-                                          .message(e.getMessage())
-                                          .type(AzureValidationInfo.Type.ERROR)
-                                          .build();
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
             }
         }
         return info;

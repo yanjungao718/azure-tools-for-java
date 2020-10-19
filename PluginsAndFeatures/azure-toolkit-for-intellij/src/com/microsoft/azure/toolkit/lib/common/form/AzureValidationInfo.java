@@ -20,12 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.lib.common.form;
 
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
 
-import javax.swing.*;
+@Getter
+@Builder
+@Data
+public class AzureValidationInfo {
+    public static final AzureValidationInfo PENDING =
+        AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
+    public static final AzureValidationInfo OK =
+        AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
+    private final AzureFormInput<?> input;
+    private final String message;
+    @Builder.Default
+    private final Type type = Type.ERROR;
 
-public interface AzureFormInputComponent<T> extends AzureFormInput<T> {
-    JComponent getInputComponent();
+    public enum Type {
+        ERROR, WARNING, INFO, PENDING
+    }
 }
