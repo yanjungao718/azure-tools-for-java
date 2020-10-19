@@ -20,28 +20,16 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig;
+package com.microsoft.intellij.runner.springcloud.deploy;
 
-import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.runner.AzureSettingPanel;
-import com.microsoft.intellij.runner.AzureSettingsEditor;
-import com.microsoft.intellij.runner.webapp.webappconfig.slimui.WebAppSlimSettingPanel;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 
-public class WebAppSettingEditor extends AzureSettingsEditor<WebAppConfiguration> {
-
-    private final AzureSettingPanel mainPanel;
-    private final WebAppConfiguration webAppConfiguration;
-
-    public WebAppSettingEditor(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
-        super(project);
-        mainPanel = new WebAppSlimSettingPanel(project, webAppConfiguration);
-        this.webAppConfiguration = webAppConfiguration;
+public class SpringCloudValidationException extends AzureExecutionException {
+    public SpringCloudValidationException(final String errorMessage, final Throwable err) {
+        super(errorMessage, err);
     }
 
-    @Override
-    @NotNull
-    protected AzureSettingPanel getPanel() {
-        return this.mainPanel;
+    public SpringCloudValidationException(final String errorMessage) {
+        super(errorMessage);
     }
 }

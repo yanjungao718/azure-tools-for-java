@@ -20,28 +20,29 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig;
+package com.microsoft.azuretools.utils;
 
-import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.runner.AzureSettingPanel;
-import com.microsoft.intellij.runner.AzureSettingsEditor;
-import com.microsoft.intellij.runner.webapp.webappconfig.slimui.WebAppSlimSettingPanel;
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.lang3.StringUtils;
 
-public class WebAppSettingEditor extends AzureSettingsEditor<WebAppConfiguration> {
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-    private final AzureSettingPanel mainPanel;
-    private final WebAppConfiguration webAppConfiguration;
+public class StreamUtils {
 
-    public WebAppSettingEditor(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
-        super(project);
-        mainPanel = new WebAppSlimSettingPanel(project, webAppConfiguration);
-        this.webAppConfiguration = webAppConfiguration;
+    public static String toString(OutputStream outputStream, Charset charset) throws UnsupportedEncodingException {
+        if (outputStream == null) {
+            return StringUtils.EMPTY;
+        }
+        if (charset != null) {
+            return new String(outputStream.toString().getBytes(), charset.name());
+        } else {
+            return new String(outputStream.toString().getBytes(), StandardCharsets.UTF_8.name());
+        }
     }
 
-    @Override
-    @NotNull
-    protected AzureSettingPanel getPanel() {
-        return this.mainPanel;
+    public static String toString(OutputStream outputStream) throws UnsupportedEncodingException {
+        return StreamUtils.toString(outputStream, StandardCharsets.UTF_8);
     }
 }
