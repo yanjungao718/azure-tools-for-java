@@ -23,12 +23,12 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.ui.TitledSeparator;
+import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
+import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 
 import javax.swing.*;
@@ -75,7 +75,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     }
 
     @Override
-    public void setDeploymentVisible(boolean visible){
+    public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
         this.deploymentLabel.setVisible(visible);
         this.selectorApplication.setVisible(visible);

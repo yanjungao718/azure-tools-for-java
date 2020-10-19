@@ -116,7 +116,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     }
 
     @Override
-    public void setDeploymentVisible(boolean visible){
+    public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
         this.deploymentLabel.setVisible(visible);
         this.selectorApplication.setVisible(visible);

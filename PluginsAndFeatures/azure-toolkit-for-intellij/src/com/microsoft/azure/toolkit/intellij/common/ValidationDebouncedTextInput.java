@@ -51,7 +51,8 @@ public class ValidationDebouncedTextInput extends AzureTextInput {
         if (this.validator.isPending()) {
             info = AzureValidationInfo.PENDING;
         } else if (this.validationInfo == null) {
-            info = this.validationInfo = this.doValidateValue();
+            this.validationInfo = this.doValidateValue();
+            info = this.validationInfo;
         }
         if (info == AzureValidationInfo.PENDING) {
             this.setExtensions(spinner);
