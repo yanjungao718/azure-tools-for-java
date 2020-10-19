@@ -36,9 +36,8 @@ import java.nio.file.Path;
 @Data
 @SuperBuilder
 public class AppServiceConfig {
-    public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
-    public static final PricingTier DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2");
+    public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
 
     private String name;
     private Path application;
@@ -48,6 +47,5 @@ public class AppServiceConfig {
     private Subscription subscription;
     private ResourceGroup resourceGroup;
     private AppServicePlan servicePlan;
-    @Builder.Default
-    private Region region = DEFAULT_REGION;
+    private Region region;
 }

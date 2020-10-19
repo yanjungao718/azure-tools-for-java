@@ -30,6 +30,7 @@ import com.microsoft.azure.management.appservice.implementation.AppServicePlanIn
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,6 +48,11 @@ public class DraftServicePlan implements AppServicePlan, Draft {
     private Region region;
     private OperatingSystem os;
     private PricingTier tier;
+
+    @Override
+    public @Nullable String id() {
+        return null;
+    }
 
     @Override
     public String name() {
@@ -110,11 +116,6 @@ public class DraftServicePlan implements AppServicePlan, Draft {
 
     @Override
     public Map<String, String> tags() {
-        throw new OperationNotSupportedException();
-    }
-
-    @Override
-    public String id() {
         throw new OperationNotSupportedException();
     }
 

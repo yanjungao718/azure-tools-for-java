@@ -44,7 +44,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     public static final String DESCRIPTION =
             "A resource group is a container that holds related resources for an Azure solution.";
     public static final String DIALOG_TITLE = "New Resource Group";
-    private final Subscription subscription;
+    private Subscription subscription;
     private JBLabel labelDescription;
     private JPanel contentPanel;
     private ValidationDebouncedTextInput textName;
@@ -53,14 +53,14 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         super();
         this.init();
         this.subscription = subscription;
-        this.textName.setValidator(() -> validateName(subscription));
+        this.textName.setValidator(this::validateName);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
         this.pack();
     }
 
-    private AzureValidationInfo validateName(final Subscription subscription) {
+    private AzureValidationInfo validateName() {
         try {
-            ValidationUtils.validateResourceGroupName(subscription.subscriptionId(), this.textName.getValue());
+            ValidationUtils.validateResourceGroupName(this.subscription.subscriptionId(), this.textName.getValue());
         } catch (final IllegalArgumentException e) {
             final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
@@ -90,6 +90,12 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         builder.subscription(this.subscription)
                .name(this.textName.getValue());
         return builder.build();
+    }
+
+    @Override
+    public void setData(final DraftResourceGroup data) {
+        this.subscription = data.getSubscription();
+        this.textName.setValue(data.name());
     }
 
     @Override
