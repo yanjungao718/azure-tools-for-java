@@ -138,8 +138,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
 
     private void init() {
         final String date = DATE_FORMAT.format(new Date());
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
-        final String defaultWebAppName = String.format("app-%s-%s", project.getName(), date);
+        final String defaultWebAppName = String.format("app-%s-%s", this.project.getName(), date);
         this.textName.setValue(defaultWebAppName);
         this.textSku.setBorder(new EmptyBorder(0, 5, 0, 0));
         this.textSku.setText(NOT_APPLICABLE);
