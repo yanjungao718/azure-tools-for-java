@@ -32,12 +32,15 @@ import javax.swing.*;
 
 public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
+    private Project project;
     private JPanel panel;
     private WebAppConfigFormPanelAdvanced advancedForm;
     private WebAppConfigFormPanelBasic basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);
+        this.project = project;
+
         this.init();
         this.toggleAdvancedMode(false);
     }
@@ -66,5 +69,11 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
 
     protected String getDialogTitle() {
         return TITLE_CREATE_WEBAPP_DIALOG;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        advancedForm = new WebAppConfigFormPanelAdvanced(project);
+        basicForm = new WebAppConfigFormPanelBasic(project);
     }
 }

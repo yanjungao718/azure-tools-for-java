@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -29,12 +30,12 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
-import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -44,11 +45,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ItemEvent;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
     private static final String NOT_APPLICABLE = "N/A";
+    private Project project;
 
     private JPanel contentPanel;
 
@@ -60,13 +63,14 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     private RegionComboBox selectorRegion;
 
     private JLabel textSku;
-    private ArtifactComboBox selectorApplication;
+    private AzureArtifactComboBox selectorApplication;
     private ServicePlanComboBox selectorServicePlan;
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
-    public WebAppConfigFormPanelAdvanced() {
+    public WebAppConfigFormPanelAdvanced(final Project project) {
         super();
+        this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
@@ -82,7 +86,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
 
         final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
 
-        final Path path = this.selectorApplication.getValue();
+        final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
 
         return WebAppConfig.builder()
                            .subscription(subscription)
@@ -164,5 +168,10 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);
         }
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        this.selectorApplication = new AzureArtifactComboBox(project);
     }
 }

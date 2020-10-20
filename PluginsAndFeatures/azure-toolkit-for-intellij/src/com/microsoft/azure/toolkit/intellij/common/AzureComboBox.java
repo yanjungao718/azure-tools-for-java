@@ -270,8 +270,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = UIUtils.listComboBoxItems(AzureComboBox.this);
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(
-                                                              item), input));
+                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 

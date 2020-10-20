@@ -22,10 +22,11 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
-import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -33,23 +34,30 @@ import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel<WebAppConfig> {
+    private Project project;
     private JPanel contentPanel;
 
     private AppNameInput textName;
     private PlatformComboBox selectorPlatform;
-    private ArtifactComboBox selectorApplication;
+    private AzureArtifactComboBox selectorApplication;
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
+
+    public WebAppConfigFormPanelBasic(final Project project) {
+        super();
+        this.project = project;
+    }
 
     @Override
     public WebAppConfig getData() {
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
-        final Path path = this.selectorApplication.getValue();
+        final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
         return WebAppConfig.builder()
                            .name(name)
                            .platform(platform)
@@ -71,6 +79,11 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     public void setVisible(final boolean visible) {
         this.contentPanel.setVisible(visible);
         super.setVisible(visible);
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        this.selectorApplication = new AzureArtifactComboBox(project);
     }
 
     public void setDeploymentVisible(boolean visible) {
