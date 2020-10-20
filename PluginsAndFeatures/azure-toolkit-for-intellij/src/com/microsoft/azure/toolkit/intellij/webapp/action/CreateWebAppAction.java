@@ -104,10 +104,6 @@ public class CreateWebAppAction extends NodeActionListener {
                 indicator.setIndeterminate(true);
                 try {
                     final RunProcessHandler processHandler = new RunProcessHandler();
-                    processHandler.addDefaultListener();
-                    final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-                    processHandler.startNotify();
-                    consoleView.attachToProcess(processHandler);
                     WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
                 } catch (final Exception ex) {
                     // FIXME: @wangmi show error with balloon notification instead of dialog
