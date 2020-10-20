@@ -22,26 +22,32 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.action;
 
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+
+import java.nio.file.Path;
 
 @Name("Create Web App")
 public class CreateWebAppAction extends NodeActionListener {
@@ -60,7 +66,7 @@ public class CreateWebAppAction extends NodeActionListener {
         final Project project = (Project) webappModule.getProject();
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                    !AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_SIGNING_IN)) {
+                !AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_SIGNING_IN)) {
                 return;
             }
         } catch (final Exception ex) {
@@ -68,11 +74,11 @@ public class CreateWebAppAction extends NodeActionListener {
             DefaultLoader.getUIHelper().showException(ERROR_SIGNING_IN, ex, ERROR_SIGNING_IN, false, true);
         }
         final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
-        dialog.setOkActionListener((data) -> this.createWebApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close)));
+        dialog.setOkActionListener((data) -> this.createWebApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
         dialog.show();
     }
 
-    private void createWebApp(final WebAppConfig config, Runnable callback) {
+    private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
         final Task.Modal task = new Task.Modal(null, "Creating New Web App...", true) {
             @Override
             public void run(ProgressIndicator indicator) {
@@ -81,8 +87,31 @@ public class CreateWebAppAction extends NodeActionListener {
                     final WebApp webapp = webappService.createWebApp(config);
                     callback.run();
                     refreshAzureExplorer();
+                    deploy(webapp, config.getApplication(), project);
                 } catch (final Exception ex) {
-                    DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(), "Create WebApp Failed");
+                    // FIXME: @wangmi show error with balloon notification instead of dialog
+                    DefaultLoader.getUIHelper().showError("Create WebApp Failed: " + ex.getMessage(), "Create WebApp Failed");
+                }
+            }
+        };
+        ProgressManager.getInstance().run(task);
+    }
+
+    private void deploy(final WebApp webapp, final Path application, final Project project) {
+        final Task.Modal task = new Task.Modal(null, "Deploying Artifact to Web App...", true) {
+            @Override
+            public void run(ProgressIndicator indicator) {
+                indicator.setIndeterminate(true);
+                try {
+                    final RunProcessHandler processHandler = new RunProcessHandler();
+                    processHandler.addDefaultListener();
+                    final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+                    processHandler.startNotify();
+                    consoleView.attachToProcess(processHandler);
+                    WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
+                } catch (final Exception ex) {
+                    // FIXME: @wangmi show error with balloon notification instead of dialog
+                    DefaultLoader.getUIHelper().showError("Error occurred on deploying: " + ex.getMessage(), "Create WebApp Failed");
                 }
             }
         };
