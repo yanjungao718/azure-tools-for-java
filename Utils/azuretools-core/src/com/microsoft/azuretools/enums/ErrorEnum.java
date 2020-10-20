@@ -36,12 +36,12 @@ public enum ErrorEnum {
 
     private int errorCode;
     private String errorMessage;
-    private String displyMessage;
+    private String displayMessage;
 
     ErrorEnum(int errorCode, String errorMessage, String displayMessage) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
-        this.displyMessage = displayMessage;
+        this.displayMessage = displayMessage;
     }
 
     public int getErrorCode() {
@@ -52,14 +52,14 @@ public enum ErrorEnum {
         return errorMessage;
     }
 
-    public String getDisplyMessage() {
-        return displyMessage;
+    public String getDisplayMessage() {
+        return displayMessage;
     }
 
     public static String getDisplayMessageByCode(int code) {
         for (ErrorEnum e : ErrorEnum.values()) {
             if (e.getErrorCode() == code) {
-                return e.getDisplyMessage();
+                return e.getDisplayMessage();
             }
         }
         throw new IllegalArgumentException(String.format("Not found enum for code: %s", code));
