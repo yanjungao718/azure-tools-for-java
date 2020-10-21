@@ -23,22 +23,11 @@
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.intellij.ui.components.AzureArtifactType;
 
 public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
-    private AzureArtifactType azureArtifactType;
     private boolean openBrowserAfterDeployment = true;
     private boolean slotPanelVisible = false;
-    private String artifactIdentifier;
-
-    public String getArtifactIdentifier() {
-        return artifactIdentifier;
-    }
-
-    public void setArtifactIdentifier(final String artifactIdentifier) {
-        this.artifactIdentifier = artifactIdentifier;
-    }
 
     public boolean isOpenBrowserAfterDeployment() {
         return openBrowserAfterDeployment;
@@ -54,13 +43,5 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
     public void setSlotPanelVisible(boolean slotPanelVisible) {
         this.slotPanelVisible = slotPanelVisible;
-    }
-
-    public AzureArtifactType getAzureArtifactType() {
-        return azureArtifactType;
-    }
-
-    public void setAzureArtifactType(final AzureArtifactType azureArtifactType) {
-        this.azureArtifactType = azureArtifactType;
     }
 }

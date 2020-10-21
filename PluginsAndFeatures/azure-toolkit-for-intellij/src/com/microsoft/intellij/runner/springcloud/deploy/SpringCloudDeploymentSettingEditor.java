@@ -26,6 +26,8 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.AzureSettingsEditor;
 import com.microsoft.intellij.runner.springcloud.ui.SpringCloudAppSettingPanel;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.MavenUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class SpringCloudDeploymentSettingEditor extends AzureSettingsEditor<SpringCloudDeployConfiguration> {
@@ -50,6 +52,12 @@ public class SpringCloudDeploymentSettingEditor extends AzureSettingsEditor<Spri
 
     @Override
     protected void resetEditorFrom(@NotNull SpringCloudDeployConfiguration conf) {
+        if (conf.isFirstTimeCreated()) {
+            if (MavenUtils.isMavenProject(project)) {
+                MavenRunTaskUtil.addMavenPackageBeforeRunTask(conf);
+            }
+        }
+        conf.setFirstTimeCreated(false);
         this.getPanel().reset(conf);
     }
 }
