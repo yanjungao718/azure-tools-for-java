@@ -26,6 +26,6 @@ import javax.swing.*;
 
 public class SwingUtils {
     public static void setTextAndEnableAutoWrap(JLabel label, String text) {
-        label.setText("<html><body><p>" + text + "</p></body></html>");
+        label.setText("<html><body>" + text + "</body></html>");
     }
 }
