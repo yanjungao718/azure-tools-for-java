@@ -25,6 +25,7 @@ package com.microsoft.azure.toolkit.lib.webapp;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -63,7 +64,7 @@ public class WebAppService {
         final WebAppSettingModel settings = new WebAppSettingModel();
         settings.setSubscriptionId(config.getSubscription().subscriptionId());
         // creating if id is empty
-        settings.setCreatingResGrp(StringUtils.isEmpty(config.getResourceGroup().id()));
+        settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().id()));
         settings.setResourceGroup(config.getResourceGroup().name());
         settings.setWebAppName(config.getName());
         settings.setOS(config.getPlatform().getOs());
@@ -76,8 +77,12 @@ public class WebAppService {
             settings.setJdkVersion(JavaVersion.fromString(config.getPlatform().getStackVersionOrJavaVersion()));
         }
         // creating if id is empty
-        settings.setCreatingAppServicePlan(StringUtils.isEmpty(config.getServicePlan().id()));
-        settings.setAppServicePlanId(config.getServicePlan().id());
+        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().id()));
+        if (settings.isCreatingAppServicePlan()) {
+            settings.setAppServicePlanName(config.getServicePlan().name());
+        } else {
+            settings.setAppServicePlanId(config.getServicePlan().id());
+        }
         settings.setPricing(config.getServicePlan().pricingTier().toString());
         return settings;
     }

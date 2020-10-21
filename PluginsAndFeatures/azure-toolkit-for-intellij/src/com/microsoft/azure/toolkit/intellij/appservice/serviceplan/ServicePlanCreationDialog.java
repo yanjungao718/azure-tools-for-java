@@ -42,13 +42,13 @@ import java.util.Collections;
 import java.util.List;
 
 public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
-    implements AzureForm<DraftServicePlan> {
+        implements AzureForm<DraftServicePlan> {
     public static final String DESCRIPTION =
-        "App Service plan pricing tier determines the location, features, cost and compute resources associated with your app.";
+            "App Service plan pricing tier determines the location, features, cost and compute resources associated with your app.";
     public static final String DIALOG_TITLE = "New App Service Plan";
-    private final Subscription subscription;
-    private final OperatingSystem os;
-    private final Region region;
+    private Subscription subscription;
+    private OperatingSystem os;
+    private Region region;
     private JPanel contentPanel;
     private JBLabel labelDescription;
     private ValidationDebouncedTextInput textName;
@@ -100,6 +100,14 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
                .region(this.region)
                .tier(this.comboBoxPricingTier.getValue());
         return builder.build();
+    }
+
+    @Override
+    public void setData(final DraftServicePlan data) {
+        this.subscription = data.getSubscription();
+        this.os = data.operatingSystem();
+        this.region = data.region();
+        this.textName.setValue(data.name());
     }
 
     @Override

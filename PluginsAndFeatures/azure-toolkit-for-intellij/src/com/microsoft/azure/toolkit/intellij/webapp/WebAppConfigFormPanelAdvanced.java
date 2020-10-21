@@ -46,12 +46,15 @@ import javax.swing.border.EmptyBorder;
 import java.awt.event.ItemEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final String NOT_APPLICABLE = "N/A";
-    private Project project;
+    private final Project project;
 
     private JPanel contentPanel;
 
@@ -79,24 +82,31 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     public WebAppConfig getData() {
         final Subscription subscription = this.selectorSubscription.getValue();
         final ResourceGroup resourceGroup = this.selectorGroup.getValue();
-
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
         final Region region = this.selectorRegion.getValue();
-
         final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
-
         final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
 
-        return WebAppConfig.builder()
-                           .subscription(subscription)
-                           .resourceGroup(resourceGroup)
-                           .name(name)
-                           .platform(platform)
-                           .region(region)
-                           .servicePlan(servicePlan)
-                           .application(path)
-                           .build();
+        final WebAppConfig config = WebAppConfig.builder().build();
+        config.setSubscription(subscription);
+        config.setResourceGroup(resourceGroup);
+        config.setName(name);
+        config.setPlatform(platform);
+        config.setRegion(region);
+        config.setServicePlan(servicePlan);
+        config.setApplication(path);
+        return config;
+    }
+
+    @Override
+    public void setData(final WebAppConfig config) {
+        this.selectorSubscription.setValue(config.getSubscription());
+        this.selectorGroup.setValue(config.getResourceGroup());
+        this.textName.setValue(config.getName());
+        this.selectorPlatform.setValue(config.getPlatform());
+        this.selectorRegion.setValue(config.getRegion());
+        this.selectorServicePlan.setValue(config.getServicePlan());
     }
 
     @Override
@@ -126,12 +136,20 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     }
 
     private void init() {
+        final String date = DATE_FORMAT.format(new Date());
+        final String defaultWebAppName = String.format("app-%s-%s", this.project.getName(), date);
+        this.textName.setValue(defaultWebAppName);
         this.textSku.setBorder(new EmptyBorder(0, 5, 0, 0));
         this.textSku.setText(NOT_APPLICABLE);
         this.selectorServicePlan.addItemListener(this::onServicePlanChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
         this.selectorPlatform.addItemListener(this::onPlatformChanged);
         this.selectorRegion.addItemListener(this::onRegionChanged);
+        this.textName.setRequired(true);
+        this.selectorServicePlan.setRequired(true);
+        this.selectorSubscription.setRequired(true);
+        this.selectorPlatform.setRequired(true);
+        this.selectorRegion.setRequired(true);
     }
 
     private void onRegionChanged(final ItemEvent e) {

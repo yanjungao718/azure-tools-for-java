@@ -29,6 +29,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.implementation.ResourceGroupInner;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.rest.ServiceCallback;
 import com.microsoft.rest.ServiceFuture;
 import lombok.Builder;
@@ -44,6 +45,11 @@ public class DraftResourceGroup implements ResourceGroup, Draft {
     @Getter
     private Subscription subscription;
     private String name;
+
+    @Override
+    public @Nullable String id() {
+        return null;
+    }
 
     @Override
     public String name() {
@@ -88,11 +94,6 @@ public class DraftResourceGroup implements ResourceGroup, Draft {
 
     @Override
     public Map<String, String> tags() {
-        throw new OperationNotSupportedException();
-    }
-
-    @Override
-    public String id() {
         throw new OperationNotSupportedException();
     }
 
