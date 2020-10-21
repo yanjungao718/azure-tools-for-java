@@ -63,11 +63,6 @@ public abstract class AzureDialog<T> extends AzureDialogWrapper {
     }
 
     @Override
-    protected boolean postponeValidation() {
-        return false;
-    }
-
-    @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().validateData();
         this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR));
