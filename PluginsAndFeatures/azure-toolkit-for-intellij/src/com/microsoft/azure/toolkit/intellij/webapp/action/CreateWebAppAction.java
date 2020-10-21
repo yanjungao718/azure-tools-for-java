@@ -48,6 +48,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 @Name("Create Web App")
 public class CreateWebAppAction extends NodeActionListener {
@@ -87,10 +88,13 @@ public class CreateWebAppAction extends NodeActionListener {
                     final WebApp webapp = webappService.createWebApp(config);
                     callback.run();
                     refreshAzureExplorer();
-                    deploy(webapp, config.getApplication(), project);
+                    final Path application = config.getApplication();
+                    if (Objects.nonNull(application) && application.toFile().exists()) {
+                        deploy(webapp, application, project);
+                    }
                 } catch (final Exception ex) {
-                    // FIXME: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError("Create WebApp Failed: " + ex.getMessage(), "Create WebApp Failed");
+                    // TODO: @wangmi show error with balloon notification instead of dialog
+                    DefaultLoader.getUIHelper().showError("Error occurred on creating Web App: " + ex.getMessage(), "Create WebApp Failed");
                 }
             }
         };
@@ -104,10 +108,14 @@ public class CreateWebAppAction extends NodeActionListener {
                 indicator.setIndeterminate(true);
                 try {
                     final RunProcessHandler processHandler = new RunProcessHandler();
+                    processHandler.addDefaultListener();
+                    final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+                    processHandler.startNotify();
+                    consoleView.attachToProcess(processHandler);
                     WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
                 } catch (final Exception ex) {
-                    // FIXME: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError("Error occurred on deploying: " + ex.getMessage(), "Create WebApp Failed");
+                    // TODO: @wangmi show error with balloon notification instead of dialog
+                    DefaultLoader.getUIHelper().showError("Error occurred on deploying artifact to Web App: " + ex.getMessage(), "Deployment Failed");
                 }
             }
         };
