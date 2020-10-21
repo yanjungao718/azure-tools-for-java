@@ -148,7 +148,12 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     @NotNull
     private WebAppBase getDeployTargetByConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
         if (webAppSettingModel.isCreatingNew()) {
-            return createWebApp(processHandler);
+            final WebApp webapp = AzureWebAppMvpModel.getInstance().getWebAppByName(webAppSettingModel.getSubscriptionId(),
+                                                                                    webAppSettingModel.getResourceGroup(),
+                                                                                    webAppSettingModel.getWebAppName());
+            if (webapp == null) {
+                return createWebApp(processHandler);
+            }
         }
 
         final WebApp webApp = AzureWebAppMvpModel.getInstance()

@@ -34,9 +34,15 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.intellij.ui.components.AzureArtifactType;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,12 +59,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
+    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar|.ear) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
         + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
         + "the digits '0' through '9', '.', '-' and '_'.";
 
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
+    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar|ear)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
@@ -340,5 +346,55 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setSlotPanelVisible(boolean slotPanelVisible) {
         webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
+    }
+
+    public AzureArtifactType getAzureArtifactType() {
+        return webAppSettingModel.getAzureArtifactType();
+    }
+
+    public void setAzureArtifactType(final AzureArtifactType azureArtifactType) {
+        webAppSettingModel.setAzureArtifactType(azureArtifactType);
+    }
+
+    public String getArtifactIdentifier() {
+        return webAppSettingModel.getArtifactIdentifier();
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        webAppSettingModel.setArtifactIdentifier(artifactIdentifier);
+    }
+
+    public void saveArtifact(AzureArtifact azureArtifact) {
+        final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
+        webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
+        webAppSettingModel.setTargetPath(azureArtifact == null ? null : azureArtifactManager.getFileForDeployment(azureArtifact));
+        webAppSettingModel.setTargetName(azureArtifact == null ? null : FilenameUtils.getName(getTargetPath()));
+        webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
+    }
+
+    public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {
+        setWebAppId(webAppComboBoxModel.getResourceId());
+        setWebAppName(webAppComboBoxModel.getAppName());
+        setResourceGroup(webAppComboBoxModel.getResourceGroup());
+        setSubscriptionId(webAppComboBoxModel.getSubscriptionId());
+        if (webAppComboBoxModel.isNewCreateResource()) {
+            setCreatingNew(true);
+            final WebAppSettingModel settingModel = webAppComboBoxModel.getWebAppSettingModel();
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+            setAppServicePlanName(settingModel.getAppServicePlanName());
+            setRegion(settingModel.getRegion());
+            setPricing(settingModel.getPricing());
+            setAppServicePlanId(settingModel.getAppServicePlanId());
+            setOS(settingModel.getOS());
+            setStack(settingModel.getStack());
+            setVersion(settingModel.getVersion());
+            setJdkVersion(settingModel.getJdkVersion());
+            setWebContainer(settingModel.getWebContainer());
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+        } else {
+            setCreatingNew(false);
+        }
     }
 }
