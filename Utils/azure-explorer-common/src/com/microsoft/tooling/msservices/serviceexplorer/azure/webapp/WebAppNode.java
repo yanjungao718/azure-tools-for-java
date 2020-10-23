@@ -30,6 +30,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceFileRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
@@ -68,6 +69,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp));
+        addChildNode(new AppServiceFileRootNode(this, this.subscriptionId, this.webapp));
     }
 
     @Override
