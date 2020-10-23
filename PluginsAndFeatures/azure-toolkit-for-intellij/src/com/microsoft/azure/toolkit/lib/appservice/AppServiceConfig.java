@@ -20,46 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.ui;
+package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
-import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-import org.jetbrains.annotations.NotNull;
+import java.nio.file.Path;
 
-import java.util.List;
+@Data
+@SuperBuilder
+public class AppServiceConfig {
+    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
+    public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
 
-public interface WebAppDeployMvpView extends MvpView {
+    private String name;
+    private Path application;
+    @Builder.Default
+    private Platform platform = DEFAULT_PLATFORM;
 
-    void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
-
-    void enableDeploymentSlotPanel();
-
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots);
-
-    void fillSubscription(@NotNull List<Subscription> subscriptions);
-
-    void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups);
-
-    void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans);
-
-    void fillLocation(@NotNull List<Location> locations);
-
-    void fillPricingTier(@NotNull List<PricingTier> prices);
-
-    void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers);
-
-    void fillJdkVersion(@NotNull List<JdkModel> jdks);
-
-    void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes);
+    private Subscription subscription;
+    private ResourceGroup resourceGroup;
+    private AppServicePlan servicePlan;
+    private Region region;
 }
