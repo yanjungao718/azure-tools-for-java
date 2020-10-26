@@ -25,20 +25,22 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
+import javax.swing.*;
+
 public class AppServiceFileNode extends AzureRefreshableNode implements IAppServiceFileNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
-    private static final String ICON_PATH = "Slot_16.png";
-
     private final AppServiceFileService fileService;
     private final IAppServiceFileNode parentNode;
     private final AppServiceFile file;
 
     public AppServiceFileNode(final AppServiceFile file, final IAppServiceFileNode parent, AppServiceFileService service) {
-        super(file.getName(), file.getName(), (Node) parent, AppServiceFile.getIcon(file));
+        super(file.getName(), file.getName(), (Node) parent, null);
         this.file = file;
         this.parentNode = parent;
         this.fileService = service;
@@ -61,5 +63,10 @@ public class AppServiceFileNode extends AzureRefreshableNode implements IAppServ
     @Override
     public String getPath() {
         return this.parentNode.getPath() + "/" + this.file.getName();
+    }
+
+    @Override
+    public @Nullable Icon getIcon() {
+        return DefaultLoader.getUIHelper().getFileTypeIcon(this.file.getName(), this.file.getType() == AppServiceFile.Type.DIRECTORY);
     }
 }

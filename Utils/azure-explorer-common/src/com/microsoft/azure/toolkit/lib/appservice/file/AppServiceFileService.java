@@ -31,6 +31,7 @@ import lombok.SneakyThrows;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class AppServiceFileService {
 
@@ -48,7 +49,9 @@ public class AppServiceFileService {
     }
 
     public List<? extends AppServiceFile> getFilesInDirectory(String path) {
-        return ((KuduFileClient) this.client).getFilesInDirectory(path).toBlocking().first();
+        return this.client.getFilesInDirectory(path).toBlocking().first().stream()
+                          .filter(file -> !"text/xml".equals(file.getMime()) || !file.getName().contains("LogFiles-kudu-trace_pending.xml"))
+                          .collect(Collectors.toList());
     }
 
     private static AppServiceFileClient getClient(WebAppBase webAppBase) {
@@ -77,5 +80,4 @@ public class AppServiceFileService {
         method.setAccessible(true);
         return (RestClient) method.invoke(manager);
     }
-
 }

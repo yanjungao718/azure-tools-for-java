@@ -23,29 +23,29 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
-import java.util.List;
+import javax.swing.*;
+import java.util.Objects;
 
 public class AppServiceFileRootNode extends AzureRefreshableNode implements IAppServiceFileNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
-    private static final String ICON_PATH = "Slot_16.png";
     private static final String MODULE_NAME = "Files";
 
     protected final String subscriptionId;
     protected final WebApp webapp;
-    private final AppServiceFileService fileService;
+    private AppServiceFileService fileService;
 
     public AppServiceFileRootNode(final Node parent, final String subscriptionId, final WebApp webapp) {
-        super(MODULE_ID, MODULE_NAME, parent, ICON_PATH);
+        super(MODULE_ID, MODULE_NAME, parent, null);
         this.subscriptionId = subscriptionId;
         this.webapp = webapp;
-        this.fileService = AppServiceFileService.forApp(webapp);
     }
 
     @Override
@@ -54,16 +54,26 @@ public class AppServiceFileRootNode extends AzureRefreshableNode implements IApp
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        final List<? extends AppServiceFile> files = this.fileService.getFilesInDirectory(this.getPath());
-        files.stream().map(this::toFileNode).forEach(this::addChildNode);
+        final AppServiceFileService service = this.getFileService();
+        service.getFilesInDirectory(this.getPath()).stream()
+               .map(file -> new AppServiceFileNode(file, this, service))
+               .forEach(this::addChildNode);
     }
 
-    private Node toFileNode(final AppServiceFile file) {
-        return new AppServiceFileNode(file, this, fileService);
+    public AppServiceFileService getFileService() {
+        if (Objects.isNull(this.fileService)) {
+            this.fileService = AppServiceFileService.forApp(webapp);
+        }
+        return this.fileService;
     }
 
     @Override
     public String getPath() {
         return "/site/wwwroot";
+    }
+
+    @Override
+    public @Nullable Icon getIcon() {
+        return DefaultLoader.getUIHelper().getFileTypeIcon("/", true);
     }
 }

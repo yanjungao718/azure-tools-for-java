@@ -24,15 +24,13 @@ package com.microsoft.azure.toolkit.lib.appservice.file;
 
 public interface AppServiceFile {
 
-    static String getIcon(final AppServiceFile file) {
-        return null;
-    }
-
     String getName();
+
+    String getMime();
 
     Type getType();
 
-    enum Type{
+    enum Type {
         DIRECTORY, FILE
     }
 }

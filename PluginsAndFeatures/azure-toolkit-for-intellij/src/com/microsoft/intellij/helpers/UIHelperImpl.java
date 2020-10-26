@@ -23,6 +23,7 @@
 package com.microsoft.intellij.helpers;
 
 import com.google.common.collect.ImmutableMap;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.FileSaverDescriptor;
@@ -78,6 +79,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
@@ -89,6 +91,7 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
@@ -111,9 +114,9 @@ public class UIHelperImpl implements UIHelper {
 
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key =
-            ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
-                Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
-                Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
+        ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
+                        Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
+                        Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
     private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
@@ -156,7 +159,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
-                              String defaultOption) {
+                                    String defaultOption) {
         return runFromDispatchThread(() -> 0 == Messages.showDialog(message,
                                                                     title,
                                                                     options,
@@ -328,8 +331,8 @@ public class UIHelperImpl implements UIHelper {
                 VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
                 if (file != null) {
                     final BlobExplorerFileEditor containerFileEditor =
-                            (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
-                                    .getEditors(file)[0];
+                        (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
+                                                                  .getEditors(file)[0];
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -387,10 +390,10 @@ public class UIHelperImpl implements UIHelper {
                 return;
             }
             LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                RedisCachePropertyViewProvider.TYPE, resId);
+                                                                  RedisCachePropertyViewProvider.TYPE, resId);
             if (itemVirtualFile == null) {
                 itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
-                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+                                                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
@@ -419,7 +422,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE,
-                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+                                                RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }
@@ -435,7 +438,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, TYPE, node.getId());
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(node.getName(), TYPE,
-                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -459,7 +462,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(appName, SPRING_CLOUD_APP_PROPERTY_TYPE,
-                    DeploymentNode.ICON_PATH, subscription, id);
+                                                DeploymentNode.ICON_PATH, subscription, id);
         }
         itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
         itemVirtualFile.putUserData(APP_ID, id);
@@ -475,10 +478,10 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, ResourceTemplateViewProvider.TYPE,
-            node.getId());
+                                                              node.getId());
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(node.getName(), ResourceTemplateViewProvider.TYPE,
-                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -512,15 +515,15 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                ContainerRegistryPropertyViewProvider.TYPE, resId);
+                                                              ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, ContainerRegistryPropertyViewProvider.TYPE,
-                    ContainerRegistryNode.ICON_PATH, sid, resId);
+                                                ContainerRegistryNode.ICON_PATH, sid, resId);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
-        for (FileEditor editor: editors) {
+        for (FileEditor editor : editors) {
             if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
-                    editor instanceof ContainerRegistryPropertyView) {
+                editor instanceof ContainerRegistryPropertyView) {
                 ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
             }
         }
@@ -551,7 +554,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
             final String iconPath = node.getParent() == null ? node.getIconPath()
-                : node.getParent().getIconPath();
+                                                             : node.getParent().getIconPath();
             itemVirtualFile = createVirtualFile(node.getWebAppName(), type, iconPath, sid, webAppId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
@@ -570,14 +573,14 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, resourceId);
         if (itemVirtualFile == null) {
             final String iconPath = node.getParent() == null ? node.getIconPath()
-                : node.getParent().getIconPath();
+                                                             : node.getParent().getIconPath();
             final Map<Key, String> userData = new HashMap<>();
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
             userData.put(WEBAPP_ID, node.getWebAppId());
             userData.put(SLOT_NAME, node.getName());
             itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
-                type, iconPath, userData);
+                                                type, iconPath, userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -594,7 +597,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, functionApId);
         if (itemVirtualFile == null) {
             final String iconPath = functionNode.getParent() == null ? functionNode.getIconPath()
-                    : functionNode.getParent().getIconPath();
+                                                                     : functionNode.getParent().getIconPath();
             itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), type, iconPath, subscriptionId, functionApId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
@@ -612,9 +615,9 @@ public class UIHelperImpl implements UIHelper {
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
             ClientStorageAccount editedClientStorageAccount = editedFile.getUserData(CLIENT_STORAGE_KEY);
             if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName))
-                    || (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
-                    && editedItem != null
-                    && editedItem.getName().equals(item.getName())) {
+                || (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
+                && editedItem != null
+                && editedItem.getName().equals(item.getName())) {
                 return editedFile;
             }
         }
@@ -649,7 +652,7 @@ public class UIHelperImpl implements UIHelper {
         if (suggestDetail) {
             String separator = headerMessage.matches("^.*\\d$||^.*\\w$") ? ". " : " ";
             headerMessage = headerMessage + separator + "Click on '" +
-                    ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
+                ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
         }
 
         return headerMessage;
@@ -686,7 +689,7 @@ public class UIHelperImpl implements UIHelper {
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
             String fileResourceId = editedFile.getUserData(RESOURCE_ID);
             if (fileResourceId != null && fileResourceId.equals(resourceId) &&
-                    editedFile.getFileType().getName().equals(fileType)) {
+                editedFile.getFileType().getName().equals(fileType)) {
                 virtualFile = (LightVirtualFile) editedFile;
                 break;
             }
@@ -739,7 +742,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public int showConfirmDialog(Component component, String message, String title, String[] options,
-                               String defaultOption, Icon icon) {
+                                 String defaultOption, Icon icon) {
         return runFromDispatchThread(() -> Messages.showDialog(component,
                                                                message,
                                                                title,
@@ -751,7 +754,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
         return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
-                == Messages.YES);
+            == Messages.YES);
     }
 
     @Override
@@ -774,6 +777,57 @@ public class UIHelperImpl implements UIHelper {
             return runnableFuture.get();
         } catch (InterruptedException | ExecutionException e) {
             return null;
+        }
+    }
+
+    @Override
+    public @Nullable Icon getFileTypeIcon(String name, boolean isDirectory) {
+        String ext = FileNameUtils.getExtension(name);
+        ext = ext == null ? null : ext.toLowerCase();
+        if (isDirectory) {
+            if (Objects.equals(name, "/")) {
+                return AllIcons.Nodes.CopyOfFolder;
+            }
+            return AllIcons.Nodes.Folder;
+        }
+        switch (ext) {
+            case "jar":
+            case "war":
+            case "ear":
+            case "zip":
+            case "rar":
+            case "tar":
+            case "7z":
+            case "tz":
+                return AllIcons.FileTypes.Archive;
+            case "java":
+                return AllIcons.FileTypes.Java;
+            case "js":
+                return AllIcons.FileTypes.JavaScript;
+            case "html":
+                return AllIcons.FileTypes.Html;
+            case "xhtml":
+                return AllIcons.FileTypes.Xhtml;
+            case "xml":
+                return AllIcons.FileTypes.Xml;
+            case "jsp":
+                return AllIcons.FileTypes.Jsp;
+            case "json":
+                return AllIcons.FileTypes.Json;
+            case "mf":
+                return AllIcons.FileTypes.Manifest;
+            case "css":
+                return AllIcons.FileTypes.Css;
+            case "txt":
+                return AllIcons.FileTypes.Text;
+            case "yml":
+                return AllIcons.FileTypes.Yaml;
+            case "properties":
+                return AllIcons.FileTypes.Properties;
+            case "class":
+                return AllIcons.FileTypes.JavaClass;
+            default:
+                return AllIcons.FileTypes.Unknown;
         }
     }
 }

@@ -28,6 +28,7 @@ import com.google.common.collect.Iterators;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -198,6 +199,14 @@ public class Node implements MvpView, BasicTelemetryProperty {
         String oldValue = this.iconPath;
         this.iconPath = iconPath;
         propertyChangeSupport.firePropertyChange("iconPath", oldValue, iconPath);
+    }
+
+    /**
+     * higher priority than iconPath
+     */
+    @Nullable
+    public Icon getIcon() {
+        return null;
     }
 
     public void addChildNode(Node child) {
