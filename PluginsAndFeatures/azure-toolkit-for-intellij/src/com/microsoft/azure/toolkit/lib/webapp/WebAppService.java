@@ -22,12 +22,10 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -53,7 +51,6 @@ public class WebAppService {
         try {
             operation.start();
             EventUtil.logEvent(EventType.info, operation, properties);
-            final Azure azure = AuthMethodManager.getInstance().getAzureClient("");
             return AzureWebAppMvpModel.getInstance().createWebApp(settings);
         } catch (final Exception e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);

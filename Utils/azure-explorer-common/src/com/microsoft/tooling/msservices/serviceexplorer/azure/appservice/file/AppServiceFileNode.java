@@ -24,25 +24,22 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import javax.swing.*;
+import java.util.Objects;
 
-public class AppServiceFileNode extends AzureRefreshableNode implements IAppServiceFileNode {
+public class AppServiceFileNode extends AzureRefreshableNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private final AppServiceFileService fileService;
-    private final IAppServiceFileNode parentNode;
     private final AppServiceFile file;
 
-    public AppServiceFileNode(final AppServiceFile file, final IAppServiceFileNode parent, AppServiceFileService service) {
-        super(file.getName(), file.getName(), (Node) parent, null);
+    public AppServiceFileNode(final AppServiceFile file, final Node parent, AppServiceFileService service) {
+        super(file.getName(), file.getName(), parent, null);
         this.file = file;
-        this.parentNode = parent;
         this.fileService = service;
     }
 
@@ -51,22 +48,26 @@ public class AppServiceFileNode extends AzureRefreshableNode implements IAppServ
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             return;
         }
-        this.fileService.getFilesInDirectory(this.getPath()).stream()
+        this.fileService.getFilesInDirectory(this.file.getPath()).stream()
                         .map(file -> new AppServiceFileNode(file, this, fileService))
                         .forEach(this::addChildNode);
     }
 
     @Override
-    public String getPath() {
-        return this.parentNode.getPath() + "/" + this.file.getName();
+    public void onNodeDblClicked(Object context) {
+        if (Objects.isNull(this.file.getContent())) {
+            final byte[] content = this.fileService.getFileContent(this.file);
+            this.file.setContent(content);
+        }
+        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
     }
 
     @Override
-    public @Nullable Icon getIcon() {
-        return DefaultLoader.getUIHelper().getFileTypeIcon(this.file.getName(), this.file.getType() == AppServiceFile.Type.DIRECTORY);
+    public Icon getIcon() {
+        return DefaultLoader.getIdeHelper().getFileTypeIcon(this.file.getName(), this.file.getType() == AppServiceFile.Type.DIRECTORY);
     }
 }

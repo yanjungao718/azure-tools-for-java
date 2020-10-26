@@ -158,9 +158,4 @@ public interface UIHelper {
     default void showInfoNotification(String title, String message) {
 
     }
-
-    @Nullable
-    default Icon getFileTypeIcon(String name, boolean isDirectory){
-        return null;
-    }
 }

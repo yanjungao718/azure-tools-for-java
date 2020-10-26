@@ -22,15 +22,36 @@
 
 package com.microsoft.azure.toolkit.lib.appservice.file;
 
-public interface AppServiceFile {
+import com.microsoft.azure.management.appservice.WebAppBase;
+import lombok.Data;
 
-    String getName();
+import java.util.Objects;
 
-    String getMime();
+@Data
+public class AppServiceFile {
+    private String name;
+    private long size;
+    private String mtime;
+    private String crtime;
+    private String mime;
+    private String href;
+    private String path;
+    private byte[] content;
+    private WebAppBase app;
 
-    Type getType();
+    public String getId() {
+        return String.format("<%s>/%s", this.getApp().id(), this.getPath());
+    }
 
-    enum Type {
+    public String getFullName() {
+        return String.format("<%s>/%s", this.getApp().name(), this.getName());
+    }
+
+    public Type getType() {
+        return Objects.equals("inode/directory", this.mime) ? Type.DIRECTORY : Type.FILE;
+    }
+
+    public enum Type {
         DIRECTORY, FILE
     }
 }

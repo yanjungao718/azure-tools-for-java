@@ -320,6 +320,9 @@ public class Node implements MvpView, BasicTelemetryProperty {
     protected void onNodeClick(NodeActionEvent e) {
     }
 
+    public void onNodeDblClicked(Object context) {
+    }
+
     public List<NodeAction> getNodeActions() {
         return nodeActions;
     }

@@ -22,11 +22,8 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.*;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -36,16 +33,21 @@ import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
 import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
+import com.intellij.testFramework.LightVirtualFile;
+import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -56,15 +58,14 @@ import com.microsoft.intellij.helpers.tasks.CancellableTaskHandleImpl;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
+import org.apache.commons.lang.StringUtils;
 
-import java.awt.*;
+import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -145,7 +146,7 @@ public class IDEHelperImpl implements IDEHelper {
             @Override
             public void run() {
                 ProgressManager.getInstance().run(new Task.Backgroundable((Project) project,
-                        name, canBeCancelled) {
+                                                                          name, canBeCancelled) {
                     @Override
                     public void run(@NotNull ProgressIndicator indicator) {
                         if (isIndeterminate) {
@@ -169,7 +170,7 @@ public class IDEHelperImpl implements IDEHelper {
                                                                  @NotNull final String name,
                                                                  @Nullable final String indicatorText,
                                                                  @NotNull final CancellableTask cancellableTask)
-            throws AzureCmdException {
+        throws AzureCmdException {
         final CancellableTaskHandleImpl handle = new CancellableTaskHandleImpl();
         final Project project = findOpenProject(projectDescriptor);
 
@@ -189,7 +190,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public String getProperty(@NotNull String name) {
         return AzureSettings.getSafeInstance(PluginUtil.getSelectedProject()).getProperty(name);
-//        return PropertiesComponent.getInstance().getValue(name);
     }
 
     public String getProperty(@NotNull String name, Object projectObject) {
@@ -205,13 +205,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void setProperty(@NotNull String name, @NotNull String value) {
         AzureSettings.getSafeInstance(PluginUtil.getSelectedProject()).setProperty(name, value);
-//        PropertiesComponent.getInstance().setValue(name, value);
-//        ApplicationManager.getApplication().invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                ApplicationManager.getApplication().saveSettings();
-//            }
-//        }, ModalityState.any());
     }
 
     @Override
@@ -222,13 +215,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void unsetProperty(@NotNull String name) {
         AzureSettings.getSafeInstance(PluginUtil.getSelectedProject()).unsetProperty(name);
-//        PropertiesComponent.getInstance().unsetValue(name);
-//        ApplicationManager.getApplication().invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                ApplicationManager.getApplication().saveSettings();
-//            }
-//        }, ModalityState.any());
     }
 
     @Override
@@ -239,7 +225,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public boolean isPropertySet(@NotNull String name) {
         return AzureSettings.getSafeInstance(PluginUtil.getSelectedProject()).isPropertySet(name);
-//        return PropertiesComponent.getInstance().isValueSet(name);
     }
 
     @Nullable
@@ -257,14 +242,12 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void setProperties(@NotNull String name, @NotNull String[] value) {
         AzureSettings.getSafeInstance(PluginUtil.getSelectedProject()).setProperties(name, value);
-//        PropertiesComponent.getInstance().setValues(name, value);
-//        ApplicationManager.getApplication().saveSettings();
     }
 
     @NotNull
     @Override
     public List<ArtifactDescriptor> getArtifacts(@NotNull ProjectDescriptor projectDescriptor)
-            throws AzureCmdException {
+        throws AzureCmdException {
         Project project = findOpenProject(projectDescriptor);
 
         List<ArtifactDescriptor> artifactDescriptors = new ArrayList<ArtifactDescriptor>();
@@ -301,10 +284,10 @@ public class IDEHelperImpl implements IDEHelper {
                 public void onFailure(Throwable throwable) {
                     if (throwable instanceof ExecutionException) {
                         future.setException(new AzureCmdException("An error occurred while building the artifact",
-                                throwable.getCause()));
+                                                                  throwable.getCause()));
                     } else {
                         future.setException(new AzureCmdException("An error occurred while building the artifact",
-                                throwable));
+                                                                  throwable));
                     }
                 }
             }, MoreExecutors.directExecutor());
@@ -324,11 +307,11 @@ public class IDEHelperImpl implements IDEHelper {
     private static byte[] getArray(@NotNull InputStream is) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        int nRead;
+        int readCount;
         byte[] data = new byte[16384];
 
-        while ((nRead = is.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
+        while ((readCount = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, readCount);
         }
 
         buffer.flush();
@@ -356,12 +339,12 @@ public class IDEHelperImpl implements IDEHelper {
 
     @NotNull
     private static Project findOpenProject(@NotNull ProjectDescriptor projectDescriptor)
-            throws AzureCmdException {
+        throws AzureCmdException {
         Project project = null;
 
         for (Project openProject : ProjectManager.getInstance().getOpenProjects()) {
             if (projectDescriptor.getName().equals(openProject.getName())
-                    && projectDescriptor.getPath().equals(openProject.getBasePath())) {
+                && projectDescriptor.getPath().equals(openProject.getBasePath())) {
                 project = openProject;
                 break;
             }
@@ -376,12 +359,12 @@ public class IDEHelperImpl implements IDEHelper {
 
     @NotNull
     private static Artifact findProjectArtifact(@NotNull Project project, @NotNull ArtifactDescriptor artifactDescriptor)
-            throws AzureCmdException {
+        throws AzureCmdException {
         Artifact artifact = null;
 
         for (Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
             if (artifactDescriptor.getName().equals(projectArtifact.getName())
-                    && artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
+                && artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
                 artifact = projectArtifact;
                 break;
             }
@@ -401,7 +384,7 @@ public class IDEHelperImpl implements IDEHelper {
                                                                     final CancellableTaskHandleImpl handle,
                                                                     @NotNull final CancellableTask cancellableTask) {
         return new Task.Backgroundable(project,
-                name, true) {
+                                       name, true) {
             private final Semaphore lock = new Semaphore(0);
 
             @Override
@@ -464,5 +447,44 @@ public class IDEHelperImpl implements IDEHelper {
             DefaultLoader.getUIHelper().showException("Unexpected exception: " + e.getMessage(), e, "Browse Web App", true, false);
             DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public @Nullable Icon getFileTypeIcon(String name, boolean isDirectory) {
+        if (isDirectory) {
+            if (Objects.equals(name, "/")) {
+                return AllIcons.Nodes.CopyOfFolder;
+            }
+            return AllIcons.Nodes.Folder;
+        }
+        final FileType type = FileTypeManager.getInstance().getFileTypeByFileName(name);
+        return type.getIcon();
+    }
+
+    private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
+
+    public void openAppServiceFile(final AppServiceFile file, Object context) {
+        final Project project = (Project) context;
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        final VirtualFile vFile = getOrCreateVirtualFile(file, fileEditorManager);
+        ApplicationManager.getApplication().invokeLater(() -> fileEditorManager.openFile(vFile, true, true), ModalityState.NON_MODAL);
+    }
+
+    private VirtualFile getOrCreateVirtualFile(AppServiceFile file, FileEditorManager manager) {
+        return Arrays.stream(manager.getOpenFiles())
+                     .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
+                     .findFirst().orElse(createVirtualFile(file, manager));
+    }
+
+    private LightVirtualFile createVirtualFile(AppServiceFile file, FileEditorManager manager) {
+        final LightVirtualFile virtualFile = new LightVirtualFile(file.getFullName());
+        virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
+        if (Objects.nonNull(file.getContent())) {
+            final String content = new String(file.getContent(), StandardCharsets.UTF_8);
+            virtualFile.setContent(null, content, true);
+        }
+        virtualFile.putUserData(APP_SERVICE_FILE_ID, file.getId());
+        virtualFile.setWritable(true);
+        return virtualFile;
     }
 }

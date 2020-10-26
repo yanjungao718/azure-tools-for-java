@@ -23,19 +23,18 @@
 package com.microsoft.azure.toolkit.lib.appservice.file;
 
 import okhttp3.ResponseBody;
-import retrofit2.http.Path;
 import rx.Observable;
 
 import java.util.List;
 
 public interface AppServiceFileClient {
-    Observable<ResponseBody> getFile(@Path("path") String path);
+    Observable<ResponseBody> getFileContent(String path);
 
-    Observable<List<KuduFile>> getFilesInDirectory(@Path("path") String path);
+    Observable<? extends List<? extends AppServiceFile>> getFilesInDirectory(String path);
 
-    Observable<ResponseBody> saveFile(@Path("path") String path);
+    Observable<ResponseBody> saveFile(String path);
 
-    Observable<ResponseBody> createDirectory(@Path("path") String path);
+    Observable<ResponseBody> createDirectory(String path);
 
-    Observable<ResponseBody> deleteFile(@Path("path") String path);
+    Observable<ResponseBody> deleteFile(String path);
 }

@@ -96,6 +96,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
             @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    treeNodeDblClicked(e, tree, project);
+                }
+            }
+
+            @Override
             public void mousePressed(MouseEvent e) {
                 treeMousePressed(e, tree);
             }
@@ -157,6 +164,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         });
 
         return root;
+    }
+
+    private void treeNodeDblClicked(MouseEvent e, JTree tree, final Project project) {
+        final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+        if (treePath == null) {
+            return;
+        }
+        final Node node = getTreeNodeOnMouseClick(tree, treePath);
+        if (!node.isLoading()) {
+            node.onNodeDblClicked(project);
+        }
     }
 
     private void treeMousePressed(MouseEvent e, JTree tree) {

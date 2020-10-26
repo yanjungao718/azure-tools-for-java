@@ -34,9 +34,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 import javax.swing.*;
 import java.util.Objects;
 
-public class AppServiceFileRootNode extends AzureRefreshableNode implements IAppServiceFileNode {
+public class AppServiceFileRootNode extends AzureRefreshableNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
+    private static final String ROOT_PATH = "/site/wwwroot";
 
     protected final String subscriptionId;
     protected final WebApp webapp;
@@ -55,7 +56,7 @@ public class AppServiceFileRootNode extends AzureRefreshableNode implements IApp
     @Override
     protected void refreshItems() throws AzureCmdException {
         final AppServiceFileService service = this.getFileService();
-        service.getFilesInDirectory(this.getPath()).stream()
+        service.getFilesInDirectory(ROOT_PATH).stream()
                .map(file -> new AppServiceFileNode(file, this, service))
                .forEach(this::addChildNode);
     }
@@ -68,12 +69,7 @@ public class AppServiceFileRootNode extends AzureRefreshableNode implements IApp
     }
 
     @Override
-    public String getPath() {
-        return "/site/wwwroot";
-    }
-
-    @Override
     public @Nullable Icon getIcon() {
-        return DefaultLoader.getUIHelper().getFileTypeIcon("/", true);
+        return DefaultLoader.getIdeHelper().getFileTypeIcon("/", true);
     }
 }

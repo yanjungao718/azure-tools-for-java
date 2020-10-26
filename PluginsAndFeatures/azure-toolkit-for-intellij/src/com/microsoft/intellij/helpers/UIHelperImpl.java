@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers;
 
 import com.google.common.collect.ImmutableMap;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.FileSaverDescriptor;
@@ -79,7 +78,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
@@ -91,7 +89,6 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
@@ -521,7 +518,7 @@ public class UIHelperImpl implements UIHelper {
                                                 ContainerRegistryNode.ICON_PATH, sid, resId);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
-        for (FileEditor editor : editors) {
+        for (FileEditor editor: editors) {
             if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
                 editor instanceof ContainerRegistryPropertyView) {
                 ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
@@ -777,57 +774,6 @@ public class UIHelperImpl implements UIHelper {
             return runnableFuture.get();
         } catch (InterruptedException | ExecutionException e) {
             return null;
-        }
-    }
-
-    @Override
-    public @Nullable Icon getFileTypeIcon(String name, boolean isDirectory) {
-        String ext = FileNameUtils.getExtension(name);
-        ext = ext == null ? null : ext.toLowerCase();
-        if (isDirectory) {
-            if (Objects.equals(name, "/")) {
-                return AllIcons.Nodes.CopyOfFolder;
-            }
-            return AllIcons.Nodes.Folder;
-        }
-        switch (ext) {
-            case "jar":
-            case "war":
-            case "ear":
-            case "zip":
-            case "rar":
-            case "tar":
-            case "7z":
-            case "tz":
-                return AllIcons.FileTypes.Archive;
-            case "java":
-                return AllIcons.FileTypes.Java;
-            case "js":
-                return AllIcons.FileTypes.JavaScript;
-            case "html":
-                return AllIcons.FileTypes.Html;
-            case "xhtml":
-                return AllIcons.FileTypes.Xhtml;
-            case "xml":
-                return AllIcons.FileTypes.Xml;
-            case "jsp":
-                return AllIcons.FileTypes.Jsp;
-            case "json":
-                return AllIcons.FileTypes.Json;
-            case "mf":
-                return AllIcons.FileTypes.Manifest;
-            case "css":
-                return AllIcons.FileTypes.Css;
-            case "txt":
-                return AllIcons.FileTypes.Text;
-            case "yml":
-                return AllIcons.FileTypes.Yaml;
-            case "properties":
-                return AllIcons.FileTypes.Properties;
-            case "class":
-                return AllIcons.FileTypes.JavaClass;
-            default:
-                return AllIcons.FileTypes.Unknown;
         }
     }
 }
