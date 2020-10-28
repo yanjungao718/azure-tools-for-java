@@ -26,6 +26,7 @@ import com.google.common.util.concurrent.*;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompileContext;
@@ -464,21 +465,34 @@ public class IDEHelperImpl implements IDEHelper {
 
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
 
-    @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final Project project = (Project) context;
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final VirtualFile vFile = getOrCreateVirtualFile(file, fileEditorManager);
-        if (Objects.nonNull(file.getContent())) {
-            vFile.setBinaryContent(file.getContent().toBlocking().first());
+        final Application application = ApplicationManager.getApplication();
+        final byte[] content = file.getContent().toBlocking().first();
+        final Runnable action = () -> {
+            try {
+                vFile.setBinaryContent(content);
+                application.invokeLater(() -> fileEditorManager.openFile(vFile, true, true), ModalityState.NON_MODAL);
+            } catch (final IOException e) {
+                final String message = String.format("Error occurs when opening file[%s].", file.getName());
+                DefaultLoader.getUIHelper().showError(message, "Open File");
+            }
+        };
+        if (application.isDispatchThread()) {
+            application.runWriteAction(action);
+        } else {
+            application.invokeLater(() -> application.runWriteAction(action));
         }
-        ApplicationManager.getApplication().invokeLater(() -> fileEditorManager.openFile(vFile, true, true), ModalityState.NON_MODAL);
     }
 
     private VirtualFile getOrCreateVirtualFile(AppServiceFile file, FileEditorManager manager) {
-        return Arrays.stream(manager.getOpenFiles())
-                     .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
-                     .findFirst().orElse(createVirtualFile(file, manager));
+        synchronized (file) {
+            return Arrays.stream(manager.getOpenFiles())
+                         .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
+                         .findFirst().orElse(createVirtualFile(file, manager));
+        }
     }
 
     @SneakyThrows
@@ -487,7 +501,6 @@ public class IDEHelperImpl implements IDEHelper {
         virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
         virtualFile.setCharset(StandardCharsets.UTF_8);
         virtualFile.putUserData(APP_SERVICE_FILE_ID, file.getId());
-        virtualFile.setWritable(true);
         return virtualFile;
     }
 }

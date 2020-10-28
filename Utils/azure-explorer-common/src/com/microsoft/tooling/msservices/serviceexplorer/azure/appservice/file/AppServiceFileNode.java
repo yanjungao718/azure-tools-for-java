@@ -112,11 +112,15 @@ public class AppServiceFileNode extends AzureRefreshableNode {
 
     @Override
     public void onNodeDblClicked(Object context) {
-        this.loadFileContent(false);
-        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+        final Runnable runnable = () -> {
+            this.loadFileContent(false);
+            DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+        };
+        final String message = String.format("opening file %s", this.file.getName());
+        DefaultLoader.getIdeHelper().runInBackground(this.getProject(), message, false, true, null, runnable);
     }
 
-    private Observable<byte[]> loadFileContent(boolean force) {
+    private synchronized Observable<byte[]> loadFileContent(boolean force) {
         if (force || Objects.isNull(this.file.getContent())) {
             final Observable<byte[]> content = this.fileService.getFileContent(this.file.getPath());
             this.file.setContent(content);
