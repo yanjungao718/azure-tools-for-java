@@ -28,6 +28,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import rx.Observable;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -60,7 +61,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
     @Override
     public void onNodeDblClicked(Object context) {
         if (Objects.isNull(this.file.getContent())) {
-            final byte[] content = this.fileService.getFileContent(this.file);
+            final Observable<byte[]> content = this.fileService.getFileContent(this.file.getPath());
             this.file.setContent(content);
         }
         DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);

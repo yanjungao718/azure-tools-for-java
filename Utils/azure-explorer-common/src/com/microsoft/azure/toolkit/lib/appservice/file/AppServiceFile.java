@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.lib.appservice.file;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
 import lombok.Data;
+import rx.Observable;
 
 import java.util.Objects;
 
@@ -36,7 +37,7 @@ public class AppServiceFile {
     private String mime;
     private String href;
     private String path;
-    private byte[] content;
+    private Observable<byte[]> content;
     private WebAppBase app;
 
     public String getId() {

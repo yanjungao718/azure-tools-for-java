@@ -64,8 +64,8 @@ public class AppServiceFileService {
         return files;
     }
 
-    public byte[] getFileContent(final AppServiceFile file) {
-        return this.client.getFileContent(file.getPath()).flatMap((Func1<ResponseBody, Observable<byte[]>>) responseBody -> {
+    public Observable<byte[]> getFileContent(final String path) {
+        return this.client.getFileContent(path).flatMap((Func1<ResponseBody, Observable<byte[]>>) responseBody -> {
             final BufferedSource source = responseBody.source();
             return Observable.create((Action1<Emitter<byte[]>>) emitter -> {
                 try {
@@ -77,7 +77,7 @@ public class AppServiceFileService {
                     emitter.onError(e);
                 }
             }, Emitter.BackpressureMode.BUFFER);
-        }).toBlocking().first();
+        });
     }
 
     public static AppServiceFileService forApp(final WebAppBase app) {

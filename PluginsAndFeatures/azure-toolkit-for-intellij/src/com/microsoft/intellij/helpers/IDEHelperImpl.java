@@ -58,6 +58,7 @@ import com.microsoft.intellij.helpers.tasks.CancellableTaskHandleImpl;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
+import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -476,13 +477,14 @@ public class IDEHelperImpl implements IDEHelper {
                      .findFirst().orElse(createVirtualFile(file, manager));
     }
 
+    @SneakyThrows
     private LightVirtualFile createVirtualFile(AppServiceFile file, FileEditorManager manager) {
         final LightVirtualFile virtualFile = new LightVirtualFile(file.getFullName());
         virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
         if (Objects.nonNull(file.getContent())) {
-            final String content = new String(file.getContent(), StandardCharsets.UTF_8);
-            virtualFile.setContent(null, content, true);
+            virtualFile.setBinaryContent(file.getContent().toBlocking().first());
         }
+        virtualFile.setCharset(StandardCharsets.UTF_8);
         virtualFile.putUserData(APP_SERVICE_FILE_ID, file.getId());
         virtualFile.setWritable(true);
         return virtualFile;
