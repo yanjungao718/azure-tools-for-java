@@ -464,10 +464,14 @@ public class IDEHelperImpl implements IDEHelper {
 
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
 
+    @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final Project project = (Project) context;
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final VirtualFile vFile = getOrCreateVirtualFile(file, fileEditorManager);
+        if (Objects.nonNull(file.getContent())) {
+            vFile.setBinaryContent(file.getContent().toBlocking().first());
+        }
         ApplicationManager.getApplication().invokeLater(() -> fileEditorManager.openFile(vFile, true, true), ModalityState.NON_MODAL);
     }
 
@@ -481,9 +485,6 @@ public class IDEHelperImpl implements IDEHelper {
     private LightVirtualFile createVirtualFile(AppServiceFile file, FileEditorManager manager) {
         final LightVirtualFile virtualFile = new LightVirtualFile(file.getFullName());
         virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
-        if (Objects.nonNull(file.getContent())) {
-            virtualFile.setBinaryContent(file.getContent().toBlocking().first());
-        }
         virtualFile.setCharset(StandardCharsets.UTF_8);
         virtualFile.putUserData(APP_SERVICE_FILE_ID, file.getId());
         virtualFile.setWritable(true);

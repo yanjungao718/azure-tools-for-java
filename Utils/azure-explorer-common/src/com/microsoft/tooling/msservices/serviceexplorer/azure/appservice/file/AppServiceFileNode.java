@@ -22,19 +22,31 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
+import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import lombok.extern.java.Log;
+import org.apache.commons.io.FileUtils;
 import rx.Observable;
 
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
+@Log
 public class AppServiceFileNode extends AzureRefreshableNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
+    private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
+    private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
     private final AppServiceFileService fileService;
     private final AppServiceFile file;
 
@@ -42,15 +54,55 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         super(file.getName(), file.getName(), parent, null);
         this.file = file;
         this.fileService = service;
+        if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
+            this.addDownloadAction();
+        }
     }
 
-    @Override
-    public void removeNode(final String sid, final String name, Node node) {
+    private void addDownloadAction() {
+        this.addAction("Download", new NodeActionListener() {
+            @Override
+            protected void actionPerformed(final NodeActionEvent e) {
+                final File dest = DefaultLoader.getUIHelper().showFileSaver("Download", AppServiceFileNode.this.file.getName());
+                if (Objects.nonNull(dest)) {
+                    AppServiceFileNode.this.saveFileContentTo(dest);
+                }
+            }
+        });
+    }
+
+    private void saveFileContentTo(final File dest) {
+        final String fileName = this.file.getName();
+        final String path = this.file.getPath();
+        final String name = String.format("downloading %s ...", fileName);
+        DefaultLoader.getIdeHelper().runInBackground(this.getProject(), name, true, false, null, () -> {
+            final SettableFuture<Boolean> future = SettableFuture.create();
+            final Observable<byte[]> content = this.loadFileContent(true);
+            content.doOnError((e) -> future.set(false)).doOnCompleted(() -> future.set(true)).subscribe((data) -> {
+                try {
+                    FileUtils.writeByteArrayToFile(dest, data, true);
+                } catch (final IOException e) {
+                    log.log(Level.INFO, ERROR_DOWNLOADING, e);
+                    throw new RuntimeException(e);
+                }
+            });
+            try {
+                if (future.get()) {
+                    final String message = String.format(SUCCESS_DOWNLOADING, fileName, dest.getAbsolutePath());
+                    DefaultLoader.getUIHelper().showInfo(AppServiceFileNode.this, message);
+                    return;
+                }
+            } catch (final InterruptedException | ExecutionException ignored) {
+            }
+            final String message = String.format(ERROR_DOWNLOADING, fileName, dest.getAbsolutePath());
+            DefaultLoader.getUIHelper().showError(AppServiceFileNode.this, message);
+        });
     }
 
     @Override
     protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
+            this.loadFileContent(true);
             return;
         }
         this.fileService.getFilesInDirectory(this.file.getPath()).stream()
@@ -60,11 +112,16 @@ public class AppServiceFileNode extends AzureRefreshableNode {
 
     @Override
     public void onNodeDblClicked(Object context) {
-        if (Objects.isNull(this.file.getContent())) {
+        this.loadFileContent(false);
+        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+    }
+
+    private Observable<byte[]> loadFileContent(boolean force) {
+        if (force || Objects.isNull(this.file.getContent())) {
             final Observable<byte[]> content = this.fileService.getFileContent(this.file.getPath());
             this.file.setContent(content);
         }
-        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+        return this.file.getContent();
     }
 
     @Override
