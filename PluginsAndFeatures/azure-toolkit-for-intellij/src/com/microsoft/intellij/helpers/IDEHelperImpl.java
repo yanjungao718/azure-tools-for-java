@@ -476,17 +476,17 @@ public class IDEHelperImpl implements IDEHelper {
     @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
-        final VirtualFile vFile = getOrCreateVirtualFile(file, fileEditorManager);
-        final Task.Modal task = new Task.Modal(null, String.format("Opening file %s...", vFile.getName()), true) {
+        final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
+        final Task.Modal task = new Task.Modal(null, String.format("Opening file %s...", virtualFile.getName()), true) {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
-                setVirtualFileContent(vFile, file.getContent())
+                setVirtualFileContent(virtualFile, file.getContent())
                     .doOnSubscribe(indicator::start)
                     .doAfterTerminate(() -> ApplicationManager.getApplication().invokeLater(() -> {
-                        final FileEditor[] editor = fileEditorManager.openFile(vFile, true, true);
+                        final FileEditor[] editor = fileEditorManager.openFile(virtualFile, true, true);
                         if (ArrayUtils.isEmpty(editor)) {
-                            final String message = String.format("Can not open file %s.", vFile.getName());
+                            final String message = String.format("Can not open file %s.", virtualFile.getName());
                             Messages.showWarningDialog(message, "Open File");
                         }
                         indicator.stop();
@@ -498,10 +498,10 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @SneakyThrows
-    private Observable<byte[]> setVirtualFileContent(final VirtualFile vFile, final Observable<byte[]> content) {
-        final OutputStream output = vFile.getOutputStream(null);
+    private Observable<byte[]> setVirtualFileContent(final VirtualFile virtualFile, final Observable<byte[]> content) {
+        final OutputStream output = virtualFile.getOutputStream(null);
         final Consumer<Throwable> logError = (Throwable e) -> {
-            final String message = String.format("Error occurs when opening file[%s].", vFile.getName());
+            final String message = String.format("Error occurs when opening file[%s].", virtualFile.getName());
             log.log(Level.WARNING, message, e);
             DefaultLoader.getUIHelper().showError(message, "Open File");
         };
