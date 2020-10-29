@@ -33,6 +33,7 @@ import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
@@ -41,6 +42,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
@@ -61,6 +63,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -499,7 +502,11 @@ public class IDEHelperImpl implements IDEHelper {
                         logError.accept(e);
                     }
                     application.invokeLater(() -> {
-                        fileEditorManager.openFile(vFile, true, true);
+                        final FileEditor[] editor = fileEditorManager.openFile(vFile, true, true);
+                        if (ArrayUtils.isEmpty(editor)) {
+                            final String message = String.format("Can not open file %s", file.getName());
+                            Messages.showWarningDialog(message, "Open File");
+                        }
                         indicator.stop();
                     }, ModalityState.NON_MODAL);
                 }).subscribe((bytes) -> {
