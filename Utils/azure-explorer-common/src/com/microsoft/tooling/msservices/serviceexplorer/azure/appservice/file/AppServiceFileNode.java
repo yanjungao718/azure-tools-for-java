@@ -112,6 +112,9 @@ public class AppServiceFileNode extends AzureRefreshableNode {
 
     @Override
     public void onNodeDblClicked(Object context) {
+        if (this.file.getType() == AppServiceFile.Type.DIRECTORY) {
+            return;
+        }
         final Runnable runnable = () -> {
             this.loadFileContent(true);
             DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
