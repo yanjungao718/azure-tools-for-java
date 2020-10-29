@@ -26,7 +26,6 @@ import com.google.common.util.concurrent.*;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompileContext;
@@ -65,6 +64,7 @@ import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import rx.Observable;
 
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
@@ -475,51 +475,50 @@ public class IDEHelperImpl implements IDEHelper {
 
     @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
-        final Project project = (Project) context;
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile vFile = getOrCreateVirtualFile(file, fileEditorManager);
-        final OutputStream output = vFile.getOutputStream(null);
-        final Application application = ApplicationManager.getApplication();
-        final Consumer<Throwable> logError = (Throwable e) -> {
-            final String message = String.format("Error occurs when opening file[%s].", file.getName());
-            log.log(Level.WARNING, message, e);
-            DefaultLoader.getUIHelper().showError(message, "Open File");
-        };
-        final String title = String.format("opening file %s...", file.getName());
-        final Task.Modal task = new Task.Modal(null, title, true) {
+        final Task.Modal task = new Task.Modal(null, String.format("Opening file %s...", vFile.getName()), true) {
             @Override
             public void run(ProgressIndicator indicator) {
-                indicator.start();
                 indicator.setIndeterminate(true);
-                file.getContent().doOnError((e) -> {
-                    logError.accept(e);
-                    indicator.stop();
-                }).doOnCompleted(() -> {
-                    try {
-                        output.flush();
-                        output.close();
-                    } catch (final IOException e) {
-                        logError.accept(e);
-                    }
-                    application.invokeLater(() -> {
+                setVirtualFileContent(vFile, file.getContent())
+                    .doOnSubscribe(indicator::start)
+                    .doAfterTerminate(() -> ApplicationManager.getApplication().invokeLater(() -> {
                         final FileEditor[] editor = fileEditorManager.openFile(vFile, true, true);
                         if (ArrayUtils.isEmpty(editor)) {
-                            final String message = String.format("Can not open file %s", file.getName());
+                            final String message = String.format("Can not open file %s.", vFile.getName());
                             Messages.showWarningDialog(message, "Open File");
                         }
                         indicator.stop();
-                    }, ModalityState.NON_MODAL);
-                }).subscribe((bytes) -> {
-                    try {
-                        output.write(bytes);
-                    } catch (final IOException e) {
-                        logError.accept(e);
-                    }
-                });
+                    }, ModalityState.NON_MODAL))
+                    .subscribe();
             }
         };
         ProgressManager.getInstance().run(task);
+    }
 
+    @SneakyThrows
+    private Observable<byte[]> setVirtualFileContent(final VirtualFile vFile, final Observable<byte[]> content) {
+        final OutputStream output = vFile.getOutputStream(null);
+        final Consumer<Throwable> logError = (Throwable e) -> {
+            final String message = String.format("Error occurs when opening file[%s].", vFile.getName());
+            log.log(Level.WARNING, message, e);
+            DefaultLoader.getUIHelper().showError(message, "Open File");
+        };
+        return content.doOnError(logError::accept).doOnTerminate(() -> {
+            try {
+                output.flush();
+                output.close();
+            } catch (final IOException e) {
+                logError.accept(e);
+            }
+        }).doOnNext((bytes) -> {
+            try {
+                output.write(bytes);
+            } catch (final IOException e) {
+                logError.accept(e);
+            }
+        });
     }
 
     private VirtualFile getOrCreateVirtualFile(AppServiceFile file, FileEditorManager manager) {
