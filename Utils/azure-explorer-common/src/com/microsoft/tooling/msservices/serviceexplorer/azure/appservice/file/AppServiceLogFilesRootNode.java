@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -32,8 +32,8 @@ public class AppServiceLogFilesRootNode extends AppServiceUserFilesRootNode {
     private static final String MODULE_NAME = "Logs";
     private static final String ROOT_PATH = "/LogFiles";
 
-    public AppServiceLogFilesRootNode(final Node parent, final String subscriptionId, final WebApp webapp) {
-        super(MODULE_NAME, parent, subscriptionId, webapp);
+    public AppServiceLogFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
+        super(MODULE_NAME, parent, subscriptionId, app);
     }
 
     @NotNull

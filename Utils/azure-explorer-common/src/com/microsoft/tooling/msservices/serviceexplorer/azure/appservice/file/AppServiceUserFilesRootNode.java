@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -41,17 +41,17 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     private static final String ROOT_PATH = "/site/wwwroot";
 
     protected final String subscriptionId;
-    protected final WebApp webapp;
+    protected final WebAppBase app;
     private AppServiceFileService fileService;
 
-    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebApp webapp) {
-        this(MODULE_NAME, parent, subscriptionId, webapp);
+    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
+        this(MODULE_NAME, parent, subscriptionId, app);
     }
 
-    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final WebApp webapp) {
+    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final WebAppBase app) {
         super(MODULE_ID, name, parent, null);
         this.subscriptionId = subscriptionId;
-        this.webapp = webapp;
+        this.app = app;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
 
     public AppServiceFileService getFileService() {
         if (Objects.isNull(this.fileService)) {
-            this.fileService = AppServiceFileService.forApp(webapp);
+            this.fileService = AppServiceFileService.forApp(app);
         }
         return this.fileService;
     }
