@@ -116,7 +116,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
             this.loadFileContent(false);
             DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
         };
-        final String message = String.format("opening file %s", this.file.getName());
+        final String message = String.format("fetching file %s", this.file.getName());
         DefaultLoader.getIdeHelper().runInBackground(this.getProject(), message, false, true, null, runnable);
     }
 

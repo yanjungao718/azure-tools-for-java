@@ -60,18 +60,23 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import lombok.SneakyThrows;
+import lombok.extern.java.Log;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.logging.Level;
 
+@Log
 public class IDEHelperImpl implements IDEHelper {
     @Override
     public void setApplicationProperty(@NotNull String name, @NotNull String value) {
@@ -465,26 +470,49 @@ public class IDEHelperImpl implements IDEHelper {
 
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
 
+    @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final Project project = (Project) context;
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final VirtualFile vFile = getOrCreateVirtualFile(file, fileEditorManager);
+        final OutputStream output = vFile.getOutputStream(null);
         final Application application = ApplicationManager.getApplication();
-        final byte[] content = file.getContent().toBlocking().first();
-        final Runnable action = () -> {
-            try {
-                vFile.setBinaryContent(content);
-                application.invokeLater(() -> fileEditorManager.openFile(vFile, true, true), ModalityState.NON_MODAL);
-            } catch (final IOException e) {
-                final String message = String.format("Error occurs when opening file[%s].", file.getName());
-                DefaultLoader.getUIHelper().showError(message, "Open File");
+        final Consumer<Throwable> logError = (Throwable e) -> {
+            final String message = String.format("Error occurs when opening file[%s].", file.getName());
+            log.log(Level.WARNING, message, e);
+            DefaultLoader.getUIHelper().showError(message, "Open File");
+        };
+        final String title = String.format("opening file %s...", file.getName());
+        final Task.Modal task = new Task.Modal(null, title, true) {
+            @Override
+            public void run(ProgressIndicator indicator) {
+                indicator.start();
+                indicator.setIndeterminate(true);
+                file.getContent().doOnError((e) -> {
+                    logError.accept(e);
+                    indicator.stop();
+                }).doOnCompleted(() -> {
+                    try {
+                        output.flush();
+                        output.close();
+                    } catch (final IOException e) {
+                        logError.accept(e);
+                    }
+                    application.invokeLater(() -> {
+                        fileEditorManager.openFile(vFile, true, true);
+                        indicator.stop();
+                    }, ModalityState.NON_MODAL);
+                }).subscribe((bytes) -> {
+                    try {
+                        output.write(bytes);
+                    } catch (final IOException e) {
+                        logError.accept(e);
+                    }
+                });
             }
         };
-        if (application.isDispatchThread()) {
-            application.runWriteAction(action);
-        } else {
-            application.invokeLater(() -> application.runWriteAction(action));
-        }
+        ProgressManager.getInstance().run(task);
+
     }
 
     private VirtualFile getOrCreateVirtualFile(AppServiceFile file, FileEditorManager manager) {
@@ -501,6 +529,7 @@ public class IDEHelperImpl implements IDEHelper {
         virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
         virtualFile.setCharset(StandardCharsets.UTF_8);
         virtualFile.putUserData(APP_SERVICE_FILE_ID, file.getId());
+        virtualFile.setWritable(true);
         return virtualFile;
     }
 }
