@@ -32,7 +32,6 @@ import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
@@ -41,6 +40,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -57,20 +57,17 @@ import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
 import com.microsoft.intellij.ApplicationSettings;
 import com.microsoft.intellij.AzureSettings;
 import com.microsoft.intellij.helpers.tasks.CancellableTaskHandleImpl;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import rx.Observable;
 
 import javax.swing.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -472,24 +469,31 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
+    private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
+    private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
 
     @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
-        final Task.Modal task = new Task.Modal(null, String.format("Opening file %s...", virtualFile.getName()), true) {
+        final String error = String.format("Error occurs when opening file[%s].", virtualFile.getName());
+        final String failure = String.format("Can not open file %s.", virtualFile.getName());
+        final Consumer<Throwable> errorHandler = (Throwable e) -> {
+            log.log(Level.WARNING, error, e);
+            DefaultLoader.getUIHelper().showError(error, "Open File");
+        };
+        final String title = String.format("Opening file %s...", virtualFile.getName());
+        final Task.Modal task = new Task.Modal(null, title, true) {
+            @SneakyThrows
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
-                setVirtualFileContent(virtualFile, file.getContent())
-                    .doOnSubscribe(indicator::start)
-                    .doAfterTerminate(() -> ApplicationManager.getApplication().invokeLater(() -> {
-                        final FileEditor[] editor = fileEditorManager.openFile(virtualFile, true, true);
-                        if (ArrayUtils.isEmpty(editor)) {
-                            final String message = String.format("Can not open file %s.", virtualFile.getName());
-                            Messages.showWarningDialog(message, "Open File");
+                writeContentTo(virtualFile.getOutputStream(null), file.getContent(), errorHandler)
+                    .doOnError(errorHandler::accept)
+                    .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
+                        if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
+                            Messages.showWarningDialog(failure, "Open File");
                         }
-                        indicator.stop();
                     }, ModalityState.NON_MODAL))
                     .subscribe();
             }
@@ -497,26 +501,52 @@ public class IDEHelperImpl implements IDEHelper {
         ProgressManager.getInstance().run(task);
     }
 
-    @SneakyThrows
-    private Observable<byte[]> setVirtualFileContent(final VirtualFile virtualFile, final Observable<byte[]> content) {
-        final OutputStream output = virtualFile.getOutputStream(null);
-        final Consumer<Throwable> logError = (Throwable e) -> {
-            final String message = String.format("Error occurs when opening file[%s].", virtualFile.getName());
-            log.log(Level.WARNING, message, e);
-            DefaultLoader.getUIHelper().showError(message, "Open File");
+    /**
+     * user is asked to choose where to save the file is @param dest is null
+     */
+    public void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+        final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
+        if (Objects.isNull(destFile)) {
+            return;
+        }
+        final Project project = (Project) context;
+        final String error = String.format(ERROR_DOWNLOADING, file.getName(), destFile.getAbsolutePath());
+        final String success = String.format(SUCCESS_DOWNLOADING, file.getName(), destFile.getAbsolutePath());
+        final Consumer<Throwable> errorHandler = (Throwable e) -> {
+            log.log(Level.WARNING, error, e);
+            UIUtils.showNotification(project, error, MessageType.ERROR);
         };
-        return content.doOnError(logError::accept).doOnTerminate(() -> {
+        final String title = String.format("Downloading file %s...", file.getName());
+        final Task.Backgroundable task = new Task.Backgroundable(project, title, true) {
+            @SneakyThrows
+            @Override
+            public void run(ProgressIndicator indicator) {
+                indicator.setIndeterminate(true);
+                writeContentTo(new FileOutputStream(destFile), file.getContent(), errorHandler)
+                    .doOnError(errorHandler::accept)
+                    .doOnCompleted(() -> UIUtils.showNotification(project, success, MessageType.INFO))
+                    .subscribe();
+            }
+        };
+        ProgressManager.getInstance().run(task);
+    }
+
+    @SneakyThrows
+    private Observable<byte[]> writeContentTo(final OutputStream output,
+                                              final Observable<byte[]> content,
+                                              final Consumer<? super Throwable> errorHandler) {
+        return content.doOnTerminate(() -> {
             try {
                 output.flush();
                 output.close();
             } catch (final IOException e) {
-                logError.accept(e);
+                errorHandler.accept(e);
             }
         }).doOnNext((bytes) -> {
             try {
                 output.write(bytes);
             } catch (final IOException e) {
-                logError.accept(e);
+                errorHandler.accept(e);
             }
         });
     }
