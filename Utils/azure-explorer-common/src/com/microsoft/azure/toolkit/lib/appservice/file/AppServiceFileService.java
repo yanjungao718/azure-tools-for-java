@@ -23,8 +23,6 @@
 package com.microsoft.azure.toolkit.lib.appservice.file;
 
 import com.google.common.base.Joiner;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
 import com.microsoft.rest.RestClient;
@@ -86,27 +84,22 @@ public class AppServiceFileService {
     }
 
     private static AppServiceFileClient getClient(WebAppBase app) {
-        if (app instanceof WebApp) {
-            if (app.defaultHostName() == null) {
-                throw new UnsupportedOperationException("Cannot initialize kudu vfs client before web app is created");
-            } else {
-                String host = app.defaultHostName().toLowerCase().replace("http://", "").replace("https://", "");
-                final String[] parts = host.split("\\.", 2);
-                host = Joiner.on('.').join(parts[0], "scm", parts[1]);
-                final AppServiceManager manager = app.manager();
-                final RestClient restClient = getRestClient(manager);
-                return restClient.newBuilder()
-                                 .withBaseUrl("https://" + host)
-                                 .withConnectionTimeout(3L, TimeUnit.MINUTES)
-                                 .withReadTimeout(3L, TimeUnit.MINUTES)
-                                 .build()
-                                 .retrofit()
-                                 .create(KuduFileClient.class);
-            }
-        } else if (app instanceof FunctionApp) {
-            return null;
+        if (app.defaultHostName() == null) {
+            throw new UnsupportedOperationException("Cannot initialize kudu vfs client before web app is created");
+        } else {
+            String host = app.defaultHostName().toLowerCase().replace("http://", "").replace("https://", "");
+            final String[] parts = host.split("\\.", 2);
+            host = Joiner.on('.').join(parts[0], "scm", parts[1]);
+            final AppServiceManager manager = app.manager();
+            final RestClient restClient = getRestClient(manager);
+            return restClient.newBuilder()
+                             .withBaseUrl("https://" + host)
+                             .withConnectionTimeout(3L, TimeUnit.MINUTES)
+                             .withReadTimeout(3L, TimeUnit.MINUTES)
+                             .build()
+                             .retrofit()
+                             .create(KuduFileClient.class);
         }
-        return null;
     }
 
     @SneakyThrows

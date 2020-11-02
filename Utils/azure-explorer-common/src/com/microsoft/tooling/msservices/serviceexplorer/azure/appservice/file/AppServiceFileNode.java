@@ -27,14 +27,18 @@ import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import lombok.extern.java.Log;
 import rx.Observable;
 
 import javax.swing.*;
-import java.util.Objects;
 
+@Log
 public class AppServiceFileNode extends AzureRefreshableNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
+    private static final long SIZE_20MB = 20 * 1024 * 1024;
     private final AppServiceFileService fileService;
     private final AppServiceFile file;
 
@@ -42,10 +46,21 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         super(file.getName(), file.getName(), parent, null);
         this.file = file;
         this.fileService = service;
+        if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
+            this.addDownloadAction();
+        }
     }
 
-    @Override
-    public void removeNode(final String sid, final String name, Node node) {
+    private void addDownloadAction() {
+        this.addAction("Download", new NodeActionListener() {
+            @Override
+            protected void actionPerformed(final NodeActionEvent e) {
+                final Observable<byte[]> content = AppServiceFileNode.this.fileService.getFileContent(file.getPath());
+                file.setContent(content);
+                DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
+                file.setContent(null);
+            }
+        });
     }
 
     @Override
@@ -60,11 +75,20 @@ public class AppServiceFileNode extends AzureRefreshableNode {
 
     @Override
     public void onNodeDblClicked(Object context) {
-        if (Objects.isNull(this.file.getContent())) {
-            final Observable<byte[]> content = this.fileService.getFileContent(this.file.getPath());
-            this.file.setContent(content);
+        if (this.file.getType() == AppServiceFile.Type.DIRECTORY) {
+            return;
+        } else if (this.file.getSize() > SIZE_20MB) {
+            DefaultLoader.getUIHelper().showError("File is too large, please download it first", "File is Too Large");
+            return;
         }
-        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+        final Runnable runnable = () -> {
+            final Observable<byte[]> content = AppServiceFileNode.this.fileService.getFileContent(this.file.getPath());
+            this.file.setContent(content);
+            DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+            this.file.setContent(null);
+        };
+        final String message = String.format("fetching file %s...", this.file.getName());
+        DefaultLoader.getIdeHelper().runInBackground(this.getProject(), message, false, true, null, runnable);
     }
 
     @Override

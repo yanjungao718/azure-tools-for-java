@@ -30,6 +30,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.List;
 
 public interface IDEHelper {
@@ -156,6 +157,10 @@ public interface IDEHelper {
     @Nullable
     default Icon getFileTypeIcon(String name, boolean isDirectory) {
         return null;
+    }
+
+    default void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+        // do nothing in default
     }
 
     default void openAppServiceFile(final AppServiceFile file, Object context) {
