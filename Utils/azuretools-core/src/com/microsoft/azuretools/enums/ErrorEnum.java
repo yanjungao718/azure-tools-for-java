@@ -28,6 +28,8 @@ package com.microsoft.azuretools.enums;
 public enum ErrorEnum {
     UNKNOWN_HOST_EXCEPTION(100000, "Encountered an unknown host exception.",
             "It seems you have an unstable network at the moment, please try again when network is available."),
+    INVALID_AUTHENTICATION(100401, "Invalid authentication",
+            "It seems you are not signed in properly, try signing out and then signing in again later"),
     SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception.",
             "Timeout when accessing azure, please try your operation again."),
     FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by Azure CLI command.",

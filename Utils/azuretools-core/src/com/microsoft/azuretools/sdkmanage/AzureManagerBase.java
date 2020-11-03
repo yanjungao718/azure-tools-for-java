@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.google.common.base.Throwables;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
@@ -31,17 +30,14 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.authmanage.*;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
-import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,10 +124,10 @@ public abstract class AzureManagerBase implements AzureManager {
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
         // could be multi tenant - return all subscriptions for the current account
         final List<Tenant> tenants = getTenants(authentication);
-        for (Tenant tenant : tenants) {
+        for (final Tenant tenant : tenants) {
             final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
             final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
-            for (Subscription subscription : tenantSubscriptions) {
+            for (final Subscription subscription : tenantSubscriptions) {
                 subscriptions.add(new Pair<>(subscription, tenant));
             }
         }
@@ -234,38 +230,25 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
-    private List<Subscription> getSubscriptions(Azure.Authenticated tenantAuthentication) {
-        return tenantAuthentication.subscriptions().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-                    return Observable.empty();
-                })
+    private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
+        return authentication.subscriptions().listAsync()
                 .toList()
                 .toBlocking()
                 .singleOrDefault(Collections.emptyList());
     }
 
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
-        try {
-            return authentication.tenants().listAsync()
-                    .toList()
-                    .toBlocking()
-                    .singleOrDefault(Collections.emptyList());
-        } catch (Exception err) {
-            LOGGER.warning(Throwables.getStackTraceAsString(err));
-            if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof UnknownHostException).count() > 0) {
-                throw new AzureRuntimeException(ErrorEnum.UNKNOWN_HOST_EXCEPTION);
-            } else if (err instanceof AzureRuntimeException) {
-                throw err;
-            }
-            return Collections.emptyList();
-        }
+        return authentication.tenants().listAsync()
+                .toList()
+                .toBlocking()
+                .singleOrDefault(Collections.emptyList());
     }
 
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()
                 .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
                 .authenticate(credentials);
     }
@@ -273,12 +256,16 @@ public abstract class AzureManagerBase implements AzureManager {
     protected AppPlatformManager authSpringCloud(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(AppPlatformManager.configure())
+                .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
                 .authenticate(credentials, subscriptionId);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(InsightsManager.configure())
+                .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
                 .authenticate(credentials, subscriptionId);
     }
 }
