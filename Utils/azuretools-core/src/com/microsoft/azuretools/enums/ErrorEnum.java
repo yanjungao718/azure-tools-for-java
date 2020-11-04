@@ -29,11 +29,13 @@ public enum ErrorEnum {
     UNKNOWN_HOST_EXCEPTION(100000, "Encountered an unknown host exception.",
             "It seems you have an unstable network at the moment, please try again when network is available."),
     INVALID_AUTHENTICATION(100401, "Invalid authentication",
-            "It seems you are not signed in properly, try signing out and then signing in again later"),
+            "Authentication token invalid, sign in again or run \"az login\" if using Azure CLI credential"),
     SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception.",
             "Timeout when accessing azure, please try your operation again."),
     FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by Azure CLI command.",
             "Failed to get access token, please try to login Azure CLI using 'az login' and try again."),
+    INVALID_SUBSCRIPTION_CACHE(100004, "Invalid subscription",
+            "It seems local cache of subscription is expired, please try re-login"),
     ;
 
     private int errorCode;
@@ -66,5 +68,4 @@ public enum ErrorEnum {
         }
         throw new IllegalArgumentException(String.format("Not found enum for code: %s", code));
     }
-
 }

@@ -32,6 +32,8 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
@@ -104,7 +106,7 @@ public abstract class AzureManagerBase implements AzureManager {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
                 .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
-                .findFirst().orElseThrow(() -> new IOException("Failed to find storage subscription id"));
+                .findFirst().orElseThrow(() -> new AzureRuntimeException(ErrorEnum.INVALID_SUBSCRIPTION_CACHE));
         return subscriptionTenantPair.second().tenantId();
     }
 
