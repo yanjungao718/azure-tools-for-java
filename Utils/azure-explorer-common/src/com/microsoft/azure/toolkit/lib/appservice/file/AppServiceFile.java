@@ -20,36 +20,39 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice;
+package com.microsoft.azure.toolkit.lib.appservice.file;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+import lombok.Data;
+import rx.Observable;
 
-@Getter
-public class AppComboBoxModel<T extends WebAppBase> {
-    @Setter
-    protected boolean isNewCreateResource;
-    protected String subscriptionId;
-    protected String resourceGroup;
-    protected String appName;
-    protected String os;
-    protected String resourceId;
-    protected T resource;
+import java.util.Objects;
 
-    public AppComboBoxModel() {
+@Data
+public class AppServiceFile {
+    private String name;
+    private long size;
+    private String mtime;
+    private String crtime;
+    private String mime;
+    private String href;
+    private String path;
+    private Observable<byte[]> content;
+    private WebAppBase app;
 
+    public String getId() {
+        return String.format("<%s>/%s", this.getApp().id(), this.getPath());
     }
 
-    public AppComboBoxModel(ResourceEx<T> resourceEx) {
-        this.resource = resourceEx.getResource();
-        this.resourceId = resource.id();
-        this.appName = resource.name();
-        this.resourceGroup = resource.resourceGroupName();
-        this.os = StringUtils.capitalize(resource.operatingSystem().toString());
-        this.subscriptionId = resourceEx.getSubscriptionId();
-        this.isNewCreateResource = false;
+    public String getFullName() {
+        return String.format("<%s>/%s", this.getApp().name(), this.getName());
+    }
+
+    public Type getType() {
+        return Objects.equals("inode/directory", this.mime) ? Type.DIRECTORY : Type.FILE;
+    }
+
+    public enum Type {
+        DIRECTORY, FILE
     }
 }
