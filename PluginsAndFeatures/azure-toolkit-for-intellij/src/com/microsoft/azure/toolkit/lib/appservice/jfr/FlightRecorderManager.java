@@ -20,37 +20,29 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice.file;
+package com.microsoft.azure.toolkit.lib.appservice.jfr;
 
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebAppBase;
-import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-@Data
-public class AppServiceFile {
-    private String name;
-    private long size;
-    private String mtime;
-    private String crtime;
-    private String mime;
-    private String href;
-    private String path;
-    private WebAppBase app;
+public class FlightRecorderManager {
+    private static Map<String, FlightRecorderStarterBase> jfrStarters = new ConcurrentHashMap<>();
 
-    public String getId() {
-        return String.format("<%s>/%s", this.getApp().id(), this.getPath());
-    }
-
-    public String getFullName() {
-        return String.format("<%s>/%s", this.getApp().name(), this.getName());
-    }
-
-    public Type getType() {
-        return Objects.equals("inode/directory", this.mime) ? Type.DIRECTORY : Type.FILE;
-    }
-
-    public enum Type {
-        DIRECTORY, FILE
+    public static FlightRecorderStarterBase getFlightRecorderStarter(@NotNull WebAppBase appService) {
+        return jfrStarters.computeIfAbsent(appService.id(), id -> {
+            if (appService.operatingSystem() == OperatingSystem.LINUX) {
+                return new LinuxFlightRecorderStarter(appService);
+            } else if (appService.operatingSystem() == OperatingSystem.WINDOWS) {
+                return new WindowFlightRecorderStarter(appService);
+            } else {
+                throw new IllegalStateException(String.format("Unknown os for app service(%s):",
+                                                              appService.name(),
+                                                              appService.operatingSystem()));
+            }
+        });
     }
 }
