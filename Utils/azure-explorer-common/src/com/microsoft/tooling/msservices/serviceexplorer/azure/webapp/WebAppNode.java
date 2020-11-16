@@ -35,7 +35,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.Ap
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -138,8 +137,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
         getNodeActionByName(SSH_INTO).setEnabled(running);
-        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(),
-                                                                                                          "DOCKER|"));
+        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
         return super.getNodeActions();
     }
 
