@@ -23,8 +23,10 @@
 package com.microsoft.intellij.servicebinding;
 
 
+import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,6 +54,8 @@ public class ServiceBindingManager {
     public void addServiceBinding(ServiceBindingInfo binding) {
         ServiceBindingState state = ServiceManager.getService(project, ServiceBindingState.class).getState();
         state.addBindingInfo(binding);
+
+        ProjectView.getInstance(ProjectManager.getInstance().getDefaultProject()).refresh();
     }
 
     public void deleteServiceBindings(Collection<ServiceBindingInfo> toDeleteList) {
@@ -74,6 +78,7 @@ public class ServiceBindingManager {
             return;
         }
         state.removeByIds(idsToRemove);
+        ProjectView.getInstance(ProjectManager.getInstance().getDefaultProject()).refresh();
     }
 
     private ServiceBindingManager(Project project) {
