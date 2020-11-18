@@ -22,25 +22,36 @@
 
 package com.microsoft.intellij.servicebinding;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public enum ServiceBindingManager {
-    INSTANCE;
-    public static ServiceBindingManager getInstance() {
-        return INSTANCE;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class ServiceBindingManager {
+    private Project project;
+
+    private static Map<Project, ServiceBindingManager> map = new ConcurrentHashMap<>();
+
+    public static ServiceBindingManager getInstance(@NotNull Project project) {
+        return map.computeIfAbsent(project, (key) -> new ServiceBindingManager(project));
     }
 
-    private List<ServiceBindingInfo> serviceBindingList = new ArrayList<>();
-
-    public List<ServiceBindingInfo> listAll() {
-        return serviceBindingList;
+    public List<ServiceBindingInfo> getServiceBindings() {
+        ServiceBindingState state = ServiceManager.getService(project, ServiceBindingState.class).getState();
+        return state.getServiceBindingInfos();
     }
 
     public <T extends ServiceBindingInfo> void addBinding(T binding) {
         System.out.println("Start to binding service to your application. bindingInfo = " + binding);
-        this.serviceBindingList.add(binding);
+        ServiceBindingState state = ServiceManager.getService(project, ServiceBindingState.class).getState();
+        state.addBindingInfo(binding);
+    }
+
+    private ServiceBindingManager(@NotNull Project project) {
+        this.project = project;
     }
 }
-
-
