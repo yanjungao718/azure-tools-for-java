@@ -25,6 +25,7 @@ import com.intellij.ide.DeleteProvider;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.TreeStructureProvider;
 import com.intellij.ide.projectView.ViewSettings;
+import com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -52,12 +53,14 @@ public class ServiceBindingTreeStructureProvider implements TreeStructureProvide
     public Collection<AbstractTreeNode<?>> modify(@NotNull AbstractTreeNode<?> parent,
                                                   @NotNull Collection<AbstractTreeNode<?>> children,
                                                   ViewSettings settings) {
-        if (ApplicationManager.getApplication().isUnitTestMode() || children.isEmpty()) {
+        Project myProject = parent instanceof ProjectViewProjectNode ? parent.getProject() : null;
+
+        if (myProject == null || ApplicationManager.getApplication().isUnitTestMode() || children.isEmpty()) {
             return children;
         }
         List<AbstractTreeNode<?>> list = new ArrayList<>(children.size() + 1);
         list.addAll(children);
-        list.add(new ServiceBindingRootNode(project, settings));
+        list.add(new ServiceBindingRootNode(myProject, settings));
         return list;
     }
 
