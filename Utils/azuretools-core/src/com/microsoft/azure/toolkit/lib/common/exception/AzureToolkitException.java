@@ -20,25 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.azure.toolkit.lib.common.exception;
 
-import org.apache.commons.lang3.StringUtils;
+import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.Map;
+@Getter
+public class AzureToolkitException extends Exception {
+    private final String action;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+    public AzureToolkitException(String error) {
+        this(error, null, null);
+    }
 
-public class AzureFunctionsConstants {
-    public static final String DISPLAY_NAME = "Azure Functions";
-    public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
+    public AzureToolkitException(String error, Throwable cause) {
+        this(error, cause, null);
+    }
 
-    public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", message("function.hint.azureWebJobsStorage"));
-            put("FUNCTIONS_WORKER_RUNTIME", message("function.hint.functionsWorkerRuntime"));
-        }};
+    public AzureToolkitException(String error, String action) {
+        this(error, null, action);
+    }
 
-    public static String getAppSettingHint(String appSettingKey) {
-        return HINT.containsKey(appSettingKey) ? HINT.get(appSettingKey) : StringUtils.EMPTY;
+    public AzureToolkitException(String error, Throwable cause, String action) {
+        super(error, cause);
+        this.action = action;
     }
 }
