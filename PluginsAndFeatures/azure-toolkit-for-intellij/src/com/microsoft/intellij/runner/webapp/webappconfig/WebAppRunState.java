@@ -74,7 +74,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
-    @AzureOperation(value = "run web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "deploy web app with configuration", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
@@ -123,12 +123,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         if (webAppSettingModel.isOpenBrowserAfterDeployment()) {
             openWebAppInBrowser(url, processHandler);
         }
-        processHandler.notifyComplete();
-    }
-
-    @Override
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
     }
 

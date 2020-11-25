@@ -1,0 +1,195 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.microsoft.azure.toolkit.intellij.common.handler;
+
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.ToolkitErrorDialog;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
+
+    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+
+    private static final Map<String, AzureExceptionAction> exceptionActionMap = new HashMap<>();
+    public static final String AZURE_TOOLKIT_ERROR = "Azure Toolkit Error";
+
+    public static IntelliJAzureExceptionHandler getInstance() {
+        return LazyLoader.INSTANCE;
+    }
+
+    public void handleException(Project object, Throwable throwable, boolean isBackGround, @Nullable AzureExceptionHandler.AzureExceptionAction... action) {
+        this.onHandleException(object, throwable, isBackGround, action);
+    }
+
+    @Override
+    protected void onHandleException(final Throwable throwable, final @Nullable AzureExceptionAction[] actions) {
+        // todo: detect foreground/background from call stack
+        onHandleException(throwable, false, actions);
+    }
+
+    @Override
+    protected void onHandleException(final Throwable throwable, final boolean isBackGround, final @Nullable AzureExceptionAction[] actions) {
+        onHandleException(null, throwable, isBackGround, actions);
+    }
+
+    protected void onHandleException(final Project project, final Throwable throwable, final boolean isBackGround,
+                                     final @Nullable AzureExceptionAction[] actions) {
+        final List<AzureOperationRef> operationRefList = AzureOperationsContext.getOperations();
+        final List<Throwable> azureToolkitExceptions = (List<Throwable>) ExceptionUtils.getThrowableList(throwable).stream()
+                                                                                       .filter(object -> object instanceof AzureToolkitRuntimeException
+                                                                                           || object instanceof AzureToolkitException)
+                                                                                       .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(azureToolkitExceptions) && CollectionUtils.isEmpty(operationRefList)) {
+            showException(project, isBackGround, throwable.getMessage(), null, actions, throwable);
+        } else {
+            // get action from the latest exception
+            final AzureExceptionAction[] actionArray = getActions(azureToolkitExceptions, actions);
+            final String description = getAzureErrorMessage(operationRefList, azureToolkitExceptions);
+            final List<String> operationStack = getAzureOperationStack(operationRefList, azureToolkitExceptions);
+            showException(project, isBackGround, description, operationStack, actionArray, throwable);
+        }
+    }
+
+    private void showException(Project project, boolean isBackGround, String message, List<String> operationStack, AzureExceptionAction[] actions,
+                               Throwable throwable) {
+        if (isBackGround) {
+            showBackgroundException(project, message, operationStack, actions, throwable);
+        } else {
+            showForegroundException(project, message, operationStack, actions, throwable);
+        }
+    }
+
+    private void showForegroundException(Project project, String message, List<String> operationStack, AzureExceptionAction[] actions, Throwable throwable) {
+        final ModalityState state = ModalityState.defaultModalityState();
+        final String details = String.format("<html>%s</html>", convertListToHtml(operationStack));
+        ApplicationManager.getApplication().invokeLater(() -> {
+            final ToolkitErrorDialog errorDialog = new ToolkitErrorDialog(project, AZURE_TOOLKIT_ERROR, message, details, actions, throwable);
+            errorDialog.show();
+        }, state);
+    }
+
+    private void showBackgroundException(Project project, String message, List<String> operationStack, AzureExceptionAction[] actions, Throwable throwable) {
+        final String body = String.format("<html>%s %s</html>", message, convertListToHtml(operationStack));
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, AZURE_TOOLKIT_ERROR, body, NotificationType.ERROR);
+        for (AzureExceptionAction exceptionAction : actions) {
+            notification.addAction(new AnAction(exceptionAction.name()) {
+                @Override
+                public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
+                    exceptionAction.actionPerformed(throwable);
+                }
+            });
+        }
+        Notifications.Bus.notify(notification, project);
+    }
+
+    private String convertListToHtml(List<String> stringList) {
+        if (CollectionUtils.isEmpty(stringList)) {
+            return StringUtils.EMPTY;
+        }
+        final String template = "<ol>%s</ol>";
+        final String liList = stringList.stream()
+                                        .map(string -> String.format("<li>%s</li>", StringUtils.capitalize(string)))
+                                        .collect(Collectors.joining(System.lineSeparator()));
+        return String.format(template, liList);
+    }
+
+    private List<String> getAzureOperationStack(List<AzureOperationRef> callStacks, List<Throwable> throwableList) {
+        final Stream<String> callStackStream = callStacks.stream().map(operation -> AzureOperationUtils.getOperationTitle(operation));
+        final Stream<String> exceptionStream = throwableList.stream().map(throwable -> throwable.getMessage());
+        return Stream.concat(callStackStream, exceptionStream).collect(Collectors.toList());
+    }
+
+    private String getAzureErrorMessage(List<AzureOperationRef> callStacks, List<Throwable> azureToolkitExceptions) {
+        final String action = getActionText(azureToolkitExceptions);
+        final String operation = CollectionUtils.isNotEmpty(callStacks) ?
+                                 AzureOperationUtils.getOperationTitle(callStacks.get(0)) :
+                                 azureToolkitExceptions.get(0).getMessage();
+        final String cause = CollectionUtils.isNotEmpty(azureToolkitExceptions) ?
+                             azureToolkitExceptions.get(azureToolkitExceptions.size() - 1).getMessage() :
+                             AzureOperationUtils.getOperationTitle(callStacks.get(callStacks.size() - 1));
+        return StringUtils.isEmpty(action) ?
+               String.format("Failed to %s, as %s failed", operation, cause) :
+               String.format("Failed to %s, please %s", operation, action);
+    }
+
+    private String getActionText(final List<Throwable> throwableList) {
+        final ListIterator<Throwable> iterator = throwableList.listIterator(throwableList.size());
+        while (iterator.hasPrevious()) {
+            final Throwable throwable = iterator.previous();
+            if (throwable instanceof AzureToolkitException || throwable instanceof AzureToolkitRuntimeException) {
+                final String action = throwable instanceof AzureToolkitException ? ((AzureToolkitException) throwable).getAction() :
+                                      ((AzureToolkitRuntimeException) throwable).getAction();
+                if (StringUtils.isNotEmpty(action)) {
+                    return action;
+                }
+            }
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private AzureExceptionAction[] getActions(final List<Throwable> throwableList, final AzureExceptionAction[] actions) {
+        final ListIterator<Throwable> iterator = throwableList.listIterator(throwableList.size());
+        String actionId = null;
+        while (iterator.hasPrevious()) {
+            final Throwable throwable = iterator.previous();
+            if (throwable instanceof AzureToolkitException || throwable instanceof AzureToolkitRuntimeException) {
+                actionId = throwable instanceof AzureToolkitException ? ((AzureToolkitException) throwable).getActionId() :
+                           ((AzureToolkitRuntimeException) throwable).getActionId();
+                if (StringUtils.isNotEmpty(actionId)) {
+                    break;
+                }
+            }
+        }
+        final AzureExceptionAction registerAction = exceptionActionMap.get(actionId);
+        return registerAction == null ? actions : ArrayUtils.addAll(actions, registerAction);
+    }
+
+    private static final class LazyLoader {
+        private static final IntelliJAzureExceptionHandler INSTANCE = new IntelliJAzureExceptionHandler();
+    }
+}
