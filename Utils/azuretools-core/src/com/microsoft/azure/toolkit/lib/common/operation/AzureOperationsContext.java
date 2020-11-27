@@ -22,11 +22,13 @@
 
 package com.microsoft.azure.toolkit.lib.common.operation;
 
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class AzureOperationsContext {
     static final ThreadLocal<Deque<AzureOperationRef>> operations = ThreadLocal.withInitial(ArrayDeque::new);
@@ -57,32 +59,55 @@ public class AzureOperationsContext {
     }
 
     public static Runnable deriveClosure(final Runnable runnable) {
-        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
-        return () -> {
-            operations.set(closure);
-            runnable.run();
-        };
+        return AzureOperationsContext.deriveClosure(runnable, AzureExceptionHandler::onUncaughtException);
     }
 
     public static Single.OnSubscribe<?> deriveClosure(final Single.OnSubscribe<?> action) {
-        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
-        return (o) -> {
-            operations.set(closure);
-            action.call(o);
-        };
+        return AzureOperationsContext.deriveClosure(action, AzureExceptionHandler::onUncaughtException);
     }
 
     public static Observable.OnSubscribe<?> deriveClosure(final Observable.OnSubscribe<?> action) {
+        return AzureOperationsContext.deriveClosure(action, AzureExceptionHandler::onUncaughtException);
+    }
+
+    public static Completable.OnSubscribe deriveClosure(final Completable.OnSubscribe action) {
+        return AzureOperationsContext.deriveClosure(action, AzureExceptionHandler::onUncaughtException);
+    }
+
+    public static Runnable deriveClosure(final Runnable runnable, Consumer<? super Throwable> onError) {
+        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
+        return () -> {
+            operations.set(closure);
+            try {
+                runnable.run();
+            } catch (final RuntimeException e) {
+                onError.accept(e);
+            }
+        };
+    }
+
+    public static Single.OnSubscribe<?> deriveClosure(final Single.OnSubscribe<?> action, Consumer<? super Throwable> onError) {
         final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
         return (o) -> {
+            Thread.currentThread().setUncaughtExceptionHandler((t, e) -> onError.accept(e));
             operations.set(closure);
             action.call(o);
         };
     }
 
-    public static Completable.OnSubscribe deriveClosure(final Completable.OnSubscribe action) {
+    public static Observable.OnSubscribe<?> deriveClosure(final Observable.OnSubscribe<?> action, Consumer<? super Throwable> onError) {
         final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
         return (o) -> {
+            Thread.currentThread().setUncaughtExceptionHandler((t, e) -> onError.accept(e));
+            operations.set(closure);
+            action.call(o);
+        };
+    }
+
+    public static Completable.OnSubscribe deriveClosure(final Completable.OnSubscribe action, Consumer<? super Throwable> onError) {
+        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
+        return (o) -> {
+            Thread.currentThread().setUncaughtExceptionHandler((t, e) -> onError.accept(e));
             operations.set(closure);
             action.call(o);
         };

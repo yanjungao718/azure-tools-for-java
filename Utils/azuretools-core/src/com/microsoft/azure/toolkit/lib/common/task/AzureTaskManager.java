@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 
 public abstract class AzureTaskManager {
@@ -56,26 +55,26 @@ public abstract class AzureTaskManager {
     }
 
     public final void runLater(AzureTask task) {
-        final Runnable runnable = this.initClosure(task.getRunnable());
-        task.setRunnable(runnable);
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        task.setRunnable(withClosure);
         this.doRunLater(task);
     }
 
     public final void runAndWait(AzureTask task) {
-        final Runnable runnable = this.initClosure(task.getRunnable());
-        task.setRunnable(runnable);
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        task.setRunnable(withClosure);
         this.doRunAndWait(task);
     }
 
     public final void runInBackground(AzureTask task) {
-        final Runnable runnable = this.initClosure(task.getRunnable());
-        task.setRunnable(runnable);
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        task.setRunnable(withClosure);
         this.doRunInBackground(task);
     }
 
     public final void runInModal(AzureTask task) {
-        final Runnable runnable = this.initClosure(task.getRunnable());
-        task.setRunnable(runnable);
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        task.setRunnable(withClosure);
         this.doRunInModal(task);
     }
 
@@ -86,15 +85,4 @@ public abstract class AzureTaskManager {
     protected abstract void doRunInBackground(AzureTask task);
 
     protected abstract void doRunInModal(AzureTask task);
-
-    private Runnable initClosure(final Runnable runnable) {
-        return AzureOperationsContext.deriveClosure(() -> {
-            try {
-                runnable.run();
-            } catch (final RuntimeException e) {
-                //TODO: @miller handle exception
-                AzureExceptionHandler.getInstance().handleException(e);
-            }
-        });
-    }
 }

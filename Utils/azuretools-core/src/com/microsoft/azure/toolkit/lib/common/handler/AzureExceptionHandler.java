@@ -36,6 +36,10 @@ public abstract class AzureExceptionHandler {
         return AzureExceptionHandler.handler;
     }
 
+    public static void onUncaughtException(final Throwable e) {
+        AzureExceptionHandler.getInstance().handleException(e);
+    }
+
     public void handleException(Throwable throwable, @Nullable AzureExceptionAction... action) {
         onHandleException(throwable, action);
     }

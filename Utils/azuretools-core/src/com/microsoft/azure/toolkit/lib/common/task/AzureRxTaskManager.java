@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 import rx.Completable;
 import rx.Observable;
@@ -41,9 +40,6 @@ public class AzureRxTaskManager {
             throw new IllegalStateException("rx task manager has already been registered.");
         }
         registered = true;
-        RxJavaHooks.setOnError(throwable -> {
-            AzureExceptionHandler.getInstance().handleException(throwable);
-        });
         final Func1<Observable.OnSubscribe, Observable.OnSubscribe> oldObservableCreateHooks = RxJavaHooks.getOnObservableCreate();
         final Func1<Single.OnSubscribe, Single.OnSubscribe> oldSingleCreateHooks = RxJavaHooks.getOnSingleCreate();
         final Func1<Completable.OnSubscribe, Completable.OnSubscribe> oldCompletableCreateHooks = RxJavaHooks.getOnCompletableCreate();
