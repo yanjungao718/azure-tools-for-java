@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.deploy;
 
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;

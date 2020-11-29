@@ -239,7 +239,9 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openItem(@NotNull final Object projectObject, @NotNull final Object itemVirtualFile) {
-        AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
+        AzureTaskManager
+            .getInstance()
+            .runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
     @org.jetbrains.annotations.NotNull

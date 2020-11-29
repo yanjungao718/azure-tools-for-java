@@ -36,7 +36,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;

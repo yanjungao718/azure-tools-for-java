@@ -33,7 +33,6 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
@@ -44,7 +43,6 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -56,6 +54,7 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -64,22 +63,19 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.ApplicationSettings;
 import com.microsoft.intellij.AzureSettings;
-import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import rx.Observable;
 
 import javax.swing.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-import java.util.logging.Level;
 
 @Log
 public class IDEHelperImpl implements IDEHelper {
@@ -360,36 +356,38 @@ public class IDEHelperImpl implements IDEHelper {
     private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
-    @SneakyThrows
     @AzureOperation(
         value = "open file[%s] in editor",
         params = {"$file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
+    @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
-        final String error = String.format("Error occurs while opening file[%s].", virtualFile.getName());
+        final OutputStream output = virtualFile.getOutputStream(null);
         final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
-        final Consumer<Throwable> errorHandler = (Throwable e) -> {
-            log.log(Level.WARNING, error, e);
-            DefaultLoader.getUIHelper().showException(error, e, "Error Opening File", false, true);
-        };
         final String title = String.format("Opening file %s...", virtualFile.getName());
-        final AzureTask task = new AzureTask(null, title, true, new Runnable() {
-            @SneakyThrows
-            @Override
-            public void run() {
-                ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-                writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
-                    .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
-                        if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
-                            Messages.showWarningDialog(failure, "Open File");
-                        }
-                    }, ModalityState.NON_MODAL))
-                    .subscribe();
-            }
+        final AzureTask task = new AzureTask(null, title, true, () -> {
+            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+            AppServiceFileService
+                .forApp(file.getApp())
+                .getFileContent(file.getPath())
+                .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
+                    if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
+                        Messages.showWarningDialog(failure, "Open File");
+                    }
+                }, AzureTask.Modality.NONE))
+                .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
+                .subscribe(bytes -> {
+                    try {
+                        IOUtils.write(bytes, output);
+                    } catch (final IOException e) {
+                        final String error = "failed to load data into editor";
+                        final String action = "try later or downloading it first";
+                        throw new AzureToolkitRuntimeException(error, e, action);
+                    }
+                });
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
@@ -402,29 +400,31 @@ public class IDEHelperImpl implements IDEHelper {
         params = {"$file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
+    @SneakyThrows
     public void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
         final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {
             return;
         }
+        final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final String error = String.format(ERROR_DOWNLOADING, file.getName(), destFile.getAbsolutePath());
-        final String success = String.format(SUCCESS_DOWNLOADING, file.getName(), destFile.getAbsolutePath());
-        final Consumer<Throwable> errorHandler = (Throwable e) -> {
-            log.log(Level.WARNING, error, e);
-            UIUtils.showNotification(project, error, MessageType.ERROR);
-        };
         final String title = String.format("Downloading file %s...", file.getName());
-        final AzureTask task = new AzureTask(project, title, true, new Runnable() {
-            @SneakyThrows
-            @Override
-            public void run() {
-                ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-                writeContentTo(new FileOutputStream(destFile), file, errorHandler)
-                    .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
-                    .subscribe();
-            }
+        final AzureTask task = new AzureTask(project, title, true, () -> {
+            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+            AppServiceFileService
+                .forApp(file.getApp())
+                .getFileContent(file.getPath())
+                .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
+                .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
+                .subscribe(bytes -> {
+                    try {
+                        IOUtils.write(bytes, output);
+                    } catch (final IOException e) {
+                        final String error = "failed to write data into local file";
+                        final String action = "try later";
+                        throw new AzureToolkitRuntimeException(error, e, action);
+                    }
+                });
         });
         AzureTaskManager.getInstance().runInBackground(task);
     }
@@ -432,7 +432,7 @@ public class IDEHelperImpl implements IDEHelper {
     private void notifyDownloadSuccess(final AppServiceFile file, final File dest, final Project project) {
         final String title = "File downloaded";
         final File directory = dest.getParentFile();
-        final String message = String.format("File [%s] is successfully downloaded into [%s]", file.getName(), directory.getAbsolutePath());
+        final String message = String.format(SUCCESS_DOWNLOADING, file.getName(), directory.getAbsolutePath());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
         notification.addAction(new AnAction(RevealFileAction.getActionName()) {
             @Override
@@ -451,27 +451,6 @@ public class IDEHelperImpl implements IDEHelper {
             }
         });
         Notifications.Bus.notify(notification);
-    }
-
-    @SneakyThrows
-    private Observable<byte[]> writeContentTo(final OutputStream output,
-                                              final AppServiceFile file,
-                                              final Consumer<? super Throwable> errorHandler) {
-        final Observable<byte[]> content = AppServiceFileService.forApp(file.getApp()).getFileContent(file.getPath());
-        return content.doOnTerminate(() -> {
-            try {
-                output.flush();
-                output.close();
-            } catch (final IOException e) {
-                errorHandler.accept(e);
-            }
-        }).doOnNext((bytes) -> {
-            try {
-                output.write(bytes);
-            } catch (final IOException e) {
-                errorHandler.accept(e);
-            }
-        });
     }
 
     private VirtualFile getOrCreateVirtualFile(AppServiceFile file, FileEditorManager manager) {

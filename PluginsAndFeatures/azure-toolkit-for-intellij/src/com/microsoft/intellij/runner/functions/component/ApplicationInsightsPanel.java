@@ -28,9 +28,10 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.Applicatio
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.common.CommonConst;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -85,14 +86,11 @@ public class ApplicationInsightsPanel extends JPanel {
         if (rxDisposable != null && !rxDisposable.isDisposed()) {
             rxDisposable.dispose();
         }
-        rxDisposable =
-                ComponentUtils.loadResourcesAsync(
-                    () -> AzureSDKManager.getInsightsResources(subscriptionId),
-                    insightsComponents -> fillApplicationInsights(insightsComponents),
-                    exception -> {
-                        DefaultLoader.getUIHelper().showError(message("function.applicationInsights.load.error.title"), exception.getMessage());
-                        fillApplicationInsights(Collections.emptyList());
-                    });
+        rxDisposable = Observable
+            .fromCallable(() -> AzureSDKManager.getInsightsResources(subscriptionId))
+            .subscribeOn(Schedulers.io())
+            .doOnError((e) -> fillApplicationInsights(Collections.emptyList()))
+            .subscribe(this::fillApplicationInsights);
     }
 
     public void changeDefaultApplicationInsightsName(String name) {
@@ -101,7 +99,7 @@ public class ApplicationInsightsPanel extends JPanel {
     }
 
     public boolean isCreateNewInsights() {
-        return selectWrapper == null ? false : selectWrapper.isNewCreated;
+        return selectWrapper != null && selectWrapper.isNewCreated;
     }
 
     public String getApplicationInsightsInstrumentKey() {

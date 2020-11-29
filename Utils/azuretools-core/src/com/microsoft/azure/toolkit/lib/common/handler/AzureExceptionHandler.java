@@ -22,6 +22,9 @@
 package com.microsoft.azure.toolkit.lib.common.handler;
 
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import java.io.InterruptedIOException;
 
 public abstract class AzureExceptionHandler {
     private static AzureExceptionHandler handler;
@@ -37,6 +40,15 @@ public abstract class AzureExceptionHandler {
     }
 
     public static void onUncaughtException(final Throwable e) {
+        AzureExceptionHandler.getInstance().handleException(e);
+    }
+
+    public static void onRxException(final Throwable e) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
         AzureExceptionHandler.getInstance().handleException(e);
     }
 

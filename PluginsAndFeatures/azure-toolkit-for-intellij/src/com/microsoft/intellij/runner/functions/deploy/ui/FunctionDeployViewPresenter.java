@@ -27,15 +27,12 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.Subscription;
 
-import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extends MvpPresenter<V> {
@@ -58,20 +55,6 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
                     final Map<String, String> result = new HashMap<>();
                     appSettings.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().value()));
                     getMvpView().fillAppSettings(result);
-                }), e -> errorHandler(message("function.deploy.presenter.error.showAppSettingsFailed"), (Exception) e));
-    }
-
-    private void errorHandler(String msg, Exception e) {
-        final Throwable rootCause = ExceptionUtils.getRootCause(e);
-        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
-            // Swallow interrupted exception caused by unsubscribe
-            return;
-        }
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(msg, e);
-        });
+                }));
     }
 }
