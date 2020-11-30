@@ -28,6 +28,7 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -114,6 +115,11 @@ public class AppServicePlanPanel extends JPanel {
         return selectedAppServicePlan == null ? null : selectedAppServicePlan.resourceGroup;
     }
 
+    @AzureOperation(
+        value = "load app service plans of subscription[%s]",
+        params = {"$subscriptionId"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadAppServicePlan(String subscriptionId, OperatingSystem operatingSystem) {
         if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
             this.subscriptionId = subscriptionId;

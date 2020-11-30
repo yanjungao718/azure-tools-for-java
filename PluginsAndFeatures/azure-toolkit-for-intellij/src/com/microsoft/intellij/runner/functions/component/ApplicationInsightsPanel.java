@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.functions.component;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -73,6 +74,11 @@ public class ApplicationInsightsPanel extends JPanel {
         newInsightsWrapper = ApplicationInsightsWrapper.wrapperNewInsightsInstance();
     }
 
+    @AzureOperation(
+        value = "load application insights of subscription[%s]",
+        params = {"$subscriptionId"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadApplicationInsights(String subscriptionId) {
         this.subscriptionId = subscriptionId;
         beforeLoadApplicationInsights();
