@@ -45,6 +45,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -110,7 +111,9 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
                                StringUtils.EMPTY : getErrorDialogDetails(operationStack);
         UIUtil.invokeLaterIfNeeded(() -> {
             final AzureToolkitErrorDialog errorDialog = new AzureToolkitErrorDialog(project, AZURE_TOOLKIT_ERROR, message, details, actions, throwable);
-            ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(errorDialog.getContentPanel()));
+            final Window dialogWindow = errorDialog.getWindow();
+            final Component modalityStateComponent = dialogWindow.getParent() == null ? dialogWindow : dialogWindow.getParent();
+            ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
         });
     }
 

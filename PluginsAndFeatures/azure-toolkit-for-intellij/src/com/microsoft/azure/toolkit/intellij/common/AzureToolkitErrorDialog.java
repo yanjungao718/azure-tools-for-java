@@ -58,7 +58,7 @@ public class AzureToolkitErrorDialog extends AzureDialogWrapper {
 
     public AzureToolkitErrorDialog(final Project project, String title, String message, String details,
                                    AzureExceptionHandler.AzureExceptionAction[] actions, Throwable throwable) {
-        super(project);
+        super(project, true);
         this.project = project;
         this.title = title;
         this.message = message;
