@@ -55,6 +55,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -387,7 +388,7 @@ public class IDEHelperImpl implements IDEHelper {
                         final String action = "try later or downloading it first";
                         throw new AzureToolkitRuntimeException(error, e, action);
                     }
-                });
+                }, AzureExceptionHandler::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
@@ -424,7 +425,7 @@ public class IDEHelperImpl implements IDEHelper {
                         final String action = "try later";
                         throw new AzureToolkitRuntimeException(error, e, action);
                     }
-                });
+                }, AzureExceptionHandler::onRxException);
         });
         AzureTaskManager.getInstance().runInBackground(task);
     }

@@ -162,7 +162,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
-                throw (RuntimeException) e;
+                return;
             }
             this.setLoading(false);
             this.handleLoadingError(e);
@@ -233,7 +233,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void handleLoadingError(Throwable e) {
-        AzureExceptionHandler.onUncaughtException(e);
+        AzureExceptionHandler.onRxException(e);
     }
 
     protected boolean isFilterable() {
