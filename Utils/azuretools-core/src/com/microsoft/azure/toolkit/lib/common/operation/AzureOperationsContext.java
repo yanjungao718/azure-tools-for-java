@@ -77,7 +77,11 @@ public class AzureOperationsContext {
         return (o) -> {
             Thread.currentThread().setUncaughtExceptionHandler(rxExceptionHandler);
             operations.set(closure);
-            action.call(o);
+            try {
+                action.call(o);
+            } catch (final Throwable throwable) {
+                AzureExceptionHandler.onRxException(throwable);
+            }
         };
     }
 
@@ -86,7 +90,11 @@ public class AzureOperationsContext {
         return (o) -> {
             Thread.currentThread().setUncaughtExceptionHandler(rxExceptionHandler);
             operations.set(closure);
-            action.call(o);
+            try {
+                action.call(o);
+            } catch (final Throwable throwable) {
+                AzureExceptionHandler.onRxException(throwable);
+            }
         };
     }
 
@@ -95,7 +103,11 @@ public class AzureOperationsContext {
         return (o) -> {
             Thread.currentThread().setUncaughtExceptionHandler(rxExceptionHandler);
             operations.set(closure);
-            action.call(o);
+            try {
+                action.call(o);
+            } catch (final Throwable throwable) {
+                AzureExceptionHandler.onRxException(throwable);
+            }
         };
     }
 

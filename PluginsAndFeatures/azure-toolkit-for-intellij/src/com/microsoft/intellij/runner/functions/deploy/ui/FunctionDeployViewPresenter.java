@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -39,6 +40,11 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
 
     private Subscription loadAppSettingsSubscription;
 
+    @AzureOperation(
+        value = "load app settings of function app[%s]",
+        params = {"$functionApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadAppSettings(FunctionApp functionApp) {
         if (functionApp == null) {
             return;
