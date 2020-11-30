@@ -36,7 +36,9 @@ public class AzureOperationsContext {
     static final UncaughtExceptionHandler exceptionHandler = (t, e) -> AzureExceptionHandler.onUncaughtException(e);
 
     public static List<AzureOperationRef> getOperations() {
-        return Collections.unmodifiableList(new ArrayList<>(operations.get()));
+        final ArrayList<AzureOperationRef> ops = new ArrayList<>(operations.get());
+        Collections.reverse(ops);
+        return Collections.unmodifiableList(ops);
     }
 
     static void push(final AzureOperationRef operation) {

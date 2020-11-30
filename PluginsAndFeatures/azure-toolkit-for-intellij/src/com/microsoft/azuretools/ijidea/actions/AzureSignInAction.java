@@ -63,7 +63,6 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     @Override
-    @AzureOperation(value = "sign in to Azure", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
