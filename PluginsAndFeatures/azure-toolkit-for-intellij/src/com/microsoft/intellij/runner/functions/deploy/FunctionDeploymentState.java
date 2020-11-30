@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.deploy;
 
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
@@ -30,7 +29,9 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -46,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -126,10 +128,16 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
-        ReadAction.run(() -> {
+        AzureTaskManager.getInstance().read(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
-            FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
+            final Path folder = stagingFolder.toPath();
+            try {
+                FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionDeployConfiguration.getModule(), methods);
+            } catch (AzureExecutionException | IOException e) {
+                final String error = String.format("failed prepare staging folder[%s]", folder);
+                throw new AzureToolkitRuntimeException(error, e);
+            }
         });
     }
 

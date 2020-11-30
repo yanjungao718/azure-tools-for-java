@@ -36,7 +36,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
@@ -289,17 +288,23 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         type = AzureOperation.Type.SERVICE
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
-        ReadAction.run(() -> {
+        AzureTaskManager.getInstance().read(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule());
-            Map<String, FunctionConfiguration> configMap =
-                    FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
-            FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(), localSettingsJson, functionRunConfiguration.getAppSettings());
+            final Path folder = stagingFolder.toPath();
+            try {
+                Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionRunConfiguration.getModule(), methods);
+                FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, functionRunConfiguration.getAppSettings());
 
-            final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
-            if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
-                installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
+                final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
+                if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
+                    installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
+                }
+            } catch (AzureExecutionException | IOException e) {
+                final String error = String.format("failed prepare staging folder[%s]", folder);
+                throw new AzureToolkitRuntimeException(error, e);
             }
         });
         if (installProcess != null) {

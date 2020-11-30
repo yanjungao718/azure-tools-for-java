@@ -38,6 +38,14 @@ public abstract class AzureTaskManager {
         return AzureTaskManager.instance;
     }
 
+    public final void read(Runnable task) {
+        this.read(new AzureTask(task));
+    }
+
+    public final void write(Runnable task) {
+        this.write(new AzureTask(task));
+    }
+
     public final void runLater(Runnable task) {
         this.runLater(new AzureTask(task));
     }
@@ -52,6 +60,18 @@ public abstract class AzureTaskManager {
 
     public final void runAndWait(Runnable task, AzureTask.Modality modality) {
         this.runAndWait(new AzureTask(task, modality));
+    }
+
+    public final void read(AzureTask task) {
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        task.setRunnable(withClosure);
+        this.doRead(task);
+    }
+
+    public final void write(AzureTask task) {
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        task.setRunnable(withClosure);
+        this.doWrite(task);
     }
 
     public final void runLater(AzureTask task) {
@@ -77,6 +97,10 @@ public abstract class AzureTaskManager {
         task.setRunnable(withClosure);
         this.doRunInModal(task);
     }
+
+    protected abstract void doRead(AzureTask task);
+
+    protected abstract void doWrite(AzureTask task);
 
     protected abstract void doRunLater(AzureTask task);
 

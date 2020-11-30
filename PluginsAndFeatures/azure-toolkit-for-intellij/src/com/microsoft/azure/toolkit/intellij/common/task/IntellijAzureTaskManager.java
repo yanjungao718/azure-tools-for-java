@@ -35,6 +35,16 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
+    protected void doRead(final AzureTask task) {
+        ApplicationManager.getApplication().runReadAction(task.getRunnable());
+    }
+
+    @Override
+    protected void doWrite(final AzureTask task) {
+        ApplicationManager.getApplication().runWriteAction(task.getRunnable());
+    }
+
+    @Override
     protected void doRunLater(final AzureTask task) {
         final ModalityState state = toIntellijModality(task);
         ApplicationManager.getApplication().invokeLater(task.getRunnable(), state);
