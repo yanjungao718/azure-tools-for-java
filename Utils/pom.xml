@@ -101,10 +101,9 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/aspectj-maven-plugin -->
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>com.nickwongdev</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.11</version>
+                    <version>1.12.6</version>
                     <configuration>
                         <showWeaveInfo>false</showWeaveInfo>
                         <source>1.8</source>
