@@ -153,7 +153,7 @@ public class MySQLNode extends Node implements TelemetryProperties {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
-            Runnable runnable = () ->  {
+            Runnable runnable = () -> {
                 MySQLMvpModel.restart(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
                 MySQLNode.this.refreshNode();
             };

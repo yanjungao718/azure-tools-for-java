@@ -30,15 +30,12 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
 public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView {
 
-    /**
-     * TODO updated once Tanya completes UI design.
-     */
+    // TODO (qianjin): updated once Tanya completes UI design.
     protected static final String ICON_FILE = "azure-mysql-small.png";
     protected static final String BASE_MODULE_NAME = "Azure Database for MySQL";
     protected static final String ACTION_PATTERN_SUFFIX = "... " + BASE_MODULE_NAME + "(%s)";

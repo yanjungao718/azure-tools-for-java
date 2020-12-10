@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
-public class ActionSeparator extends NodeAction  {
+public class ActionSeparator extends NodeAction {
 
     private static ActionSeparator INSTANCE = new ActionSeparator("Separator");
 

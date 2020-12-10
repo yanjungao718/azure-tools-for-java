@@ -98,8 +98,8 @@ public class AuthMethodManager {
         final String action = "Confirm you have already signed in with subscription: " + sid;
         throw new AzureToolkitRuntimeException(error, action);
     }
-	
-	public MySQLManager getMySQLManager(String sid) {
+
+    public MySQLManager getMySQLManager(String sid) {
         final AzureManager manager = getAzureManager();
         if (manager != null) {
             return manager.getMySQLManager(sid);
@@ -107,7 +107,7 @@ public class AuthMethodManager {
         final String error = "Failed to get manager of Azure Database for MySQL with current account";
         final String action = "Confirm you have already signed in with subscription: " + sid;
         throw new AzureToolkitRuntimeException(error, action);
-	}
+    }
 
     public void addSignInEventListener(Runnable l) {
         signInEventListeners.add(l);

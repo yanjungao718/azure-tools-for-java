@@ -103,7 +103,8 @@ public class MySQLMvpModel {
 
     public static void start(final String subscriptionId, final Server server) {
         Server currentServer = MySQLMvpModel.findServer(subscriptionId, server.resourceGroupName(), server.name());
-        Preconditions.checkArgument(ServerState.fromString("Stopped").equals(currentServer.userVisibleState()) || ServerState.DISABLED.equals(currentServer.userVisibleState()),
+        Preconditions.checkArgument(
+                ServerState.fromString("Stopped").equals(currentServer.userVisibleState()) || ServerState.DISABLED.equals(currentServer.userVisibleState()),
                 "Start action is not supported for non-disabled server.");
         final MySQLManager mySQLManager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
         mySQLManager.servers().inner().start(server.resourceGroupName(), server.name());
