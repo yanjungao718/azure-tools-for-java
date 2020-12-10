@@ -28,6 +28,8 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import java.util.List;
 
 public interface MySQLModuleView extends MvpView {
+
     void renderChildren(List<Server> servers);
+
 }
 
