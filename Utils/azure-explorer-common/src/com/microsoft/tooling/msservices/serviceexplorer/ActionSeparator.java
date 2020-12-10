@@ -22,22 +22,15 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.MoreExecutors;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class ActionSeparator extends NodeAction  {
 
-    private static ActionSeparator INSTANCE = new ActionSeparator(null, "Separator");
+    private static ActionSeparator INSTANCE = new ActionSeparator("Separator");
 
     public static ActionSeparator getINSTANCE() {
         return INSTANCE;
     }
 
-    private ActionSeparator(Node node, String name) {
-        super(node, name);
+    private ActionSeparator(String name) {
+        super(null, name);
     }
 }
