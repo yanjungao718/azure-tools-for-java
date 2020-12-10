@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -31,20 +30,22 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
 public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView {
 
+    /**
+     * TODO updated once Tanya completes UI design.
+     */
     protected static final String ICON_FILE = "azure-mysql-small.png";
+    protected static final String BASE_MODULE_NAME = "Azure Database for MySQL";
+    protected static final String ACTION_PATTERN_SUFFIX = "... " + BASE_MODULE_NAME + "(%s)";
     private static final String MYSQL_DATABASE_MODULE_ID = MySQLModule.class.getName();
-    private static final String BASE_MODULE_NAME = "Azure Database for MySQL";
-//    private final MySQLModulePresenter mysqlModulePresenter;
 
     public MySQLModule(final Node parent) {
         super(MYSQL_DATABASE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_FILE);
-//        mysqlModulePresenter = new MySQLModulePresenter();
-//        mysqlModulePresenter.onAttachView(this);
         createListener();
     }
 
@@ -60,7 +61,6 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
     protected void refreshItems() throws AzureCmdException {
         List<Server> items = MySQLMvpModel.listMySQLServers();
         this.renderChildren(items);
-//        mysqlModulePresenter.onMySqlRefresh();
     }
 
     @Override
@@ -101,16 +101,5 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
         return eventObject != null && eventObject instanceof Server;
     }
 
-    /*class MySQLModulePresenter extends MvpPresenter<MySQLModule> {
-        private static final String FAILED_TO_LOAD_CLUSTERS = "Failed to load MySQL servers.";
-        private static final String ERROR_LOAD_CLUSTER = "Azure Services Explorer - Error Loading MySQL Servers";
-
-        public void onMySqlRefresh() {
-            final MySQLModuleView view = getMvpView();
-            if (view != null) {
-                view.renderChildren(MySQLMvpModel.listAllMySQLServers());
-            }
-        }
-    }*/
 }
 
