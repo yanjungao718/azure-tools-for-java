@@ -81,12 +81,13 @@ public class MySQLNode extends Node {
     public class DeleteAzureMySQLAction extends AzureNodeActionPromptListener {
 
         private static final String ACTION_NAME = "Delete";
+        private static final String ACTION_DOING = "Deleting";
         private static final String DELETE_PROMPT_MESSAGE =
                 "This operation will delete your azure mysql server: %s." + StringUtils.LF + "Are you sure you want to continue?";
 
         public DeleteAzureMySQLAction() {
             super(MySQLNode.this, String.format(DELETE_PROMPT_MESSAGE, MySQLNode.this.name),
-                    String.format(ACTION_NAME + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name));
+                    String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name));
         }
 
         @Override
@@ -105,6 +106,7 @@ public class MySQLNode extends Node {
     public class StartAzureMySQLAction extends NodeActionListener {
 
         private static final String ACTION_NAME = "Start";
+        private static final String ACTION_DOING = "Starting";
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -112,7 +114,7 @@ public class MySQLNode extends Node {
                 MySQLMvpModel.start(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
                 MySQLNode.this.refreshNode();
             };
-            String taskTitle = String.format(ACTION_NAME + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
+            String taskTitle = String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
     }
@@ -122,6 +124,7 @@ public class MySQLNode extends Node {
     public class StopAzureMySQLAction extends NodeActionListener {
 
         private static final String ACTION_NAME = "Stop";
+        private static final String ACTION_DOING = "Stopping";
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -129,7 +132,7 @@ public class MySQLNode extends Node {
                 MySQLMvpModel.stop(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
                 MySQLNode.this.refreshNode();
             };
-            String taskTitle = String.format(ACTION_NAME + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
+            String taskTitle = String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
     }
@@ -139,6 +142,7 @@ public class MySQLNode extends Node {
     public class RestartAzureMySQLAction extends NodeActionListener {
 
         private static final String ACTION_NAME = "Restart";
+        private static final String ACTION_DOING = "Restarting";
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -146,7 +150,7 @@ public class MySQLNode extends Node {
                 MySQLMvpModel.restart(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
                 MySQLNode.this.refreshNode();
             };
-            String taskTitle = String.format(ACTION_NAME + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
+            String taskTitle = String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
     }
@@ -156,11 +160,12 @@ public class MySQLNode extends Node {
     public class OpenInBrowserAction extends NodeActionListener {
 
         private static final String ACTION_NAME = "Open in Portal";
+        private static final String ACTION_DOING = "Opening";
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             Runnable runnable = () -> MySQLNode.this.openResourcesInPortal(MySQLNode.this.subscriptionId, MySQLNode.this.server.id());
-            String taskTitle = String.format(ACTION_NAME + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
+            String taskTitle = String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
     }
