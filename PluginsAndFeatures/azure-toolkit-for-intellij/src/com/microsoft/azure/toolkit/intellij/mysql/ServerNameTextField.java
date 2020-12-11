@@ -42,7 +42,6 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
             this.subscription = subscription;
-//            this.revalidateValue();
         }
     }
 
@@ -68,12 +67,15 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
         // validate length
         if (StringUtils.length(value) < 3 || StringUtils.length(value) > 63) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message("Server name must be at least 3 characters and at most 63 characters.").type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message("Server name must be at least 3 characters and at most 63 characters.")
+                    .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special character
         if (!pattern.matcher(value).matches()) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message("Server name must only contain lowercase letters, numbers, and hyphens. The server name must not start or end in a hyphen.").type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this)
+                    .message("Server name must only contain lowercase letters, numbers, and hyphens. The server name must not start or end in a hyphen.")
+                    .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate availability
         try {
@@ -83,7 +85,6 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
                 return builder.input(this).message(this.getValue() + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
             }
         } catch (NullPointerException e) {
-//            e.printStackTrace();
             // swallow server not existed exception.
         }
         return AzureValidationInfo.OK;
