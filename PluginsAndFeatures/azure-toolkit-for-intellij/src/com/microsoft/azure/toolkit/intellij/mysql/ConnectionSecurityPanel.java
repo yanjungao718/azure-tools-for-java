@@ -35,8 +35,6 @@ public class ConnectionSecurityPanel extends JPanel {
 
     public ConnectionSecurityPanel() {
         super();
-        MockUtils.mockCheckBoxWithSelected(allowAccessFromAzureServicesCheckBox);
-        MockUtils.mockCheckBoxWithSelected(allowAccessFromLocalMachineCheckBox);
     }
 
     @Override
