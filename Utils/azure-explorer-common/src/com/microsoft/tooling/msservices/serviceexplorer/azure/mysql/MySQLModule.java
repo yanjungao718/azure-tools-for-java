@@ -38,7 +38,7 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
     // TODO (qianjin): updated once Tanya completes UI design.
     protected static final String ICON_FILE = "azure-mysql-small.png";
     protected static final String BASE_MODULE_NAME = "Azure Database for MySQL";
-    protected static final String ACTION_PATTERN_SUFFIX = "... " + BASE_MODULE_NAME + "(%s)";
+    protected static final String ACTION_PATTERN_SUFFIX = "ing " + BASE_MODULE_NAME + " (%s)...";
     private static final String MYSQL_DATABASE_MODULE_ID = MySQLModule.class.getName();
 
     public MySQLModule(final Node parent) {

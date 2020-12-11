@@ -286,7 +286,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
                 for (Class<? extends NodeActionListener> actionListener : actions) {
                     // process node action separator.
                     if (actionListener.equals(NodeActionListener.WrappedActionSeparator.class)) {
-                        addAction(ActionSeparator.getINSTANCE());
+                        addAction(ActionSeparator.getInstance());
                         continue;
                     }
                     Name nameAnnotation = actionListener.getAnnotation(Name.class);

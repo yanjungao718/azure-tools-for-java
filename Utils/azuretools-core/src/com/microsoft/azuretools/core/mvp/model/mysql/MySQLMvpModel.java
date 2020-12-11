@@ -48,6 +48,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,6 +92,7 @@ public class MySQLMvpModel {
     public static Server create(final String subscriptionId, final String resourceGroupName, final String serverName,
                                 Region region, final ServerPropertiesForDefaultCreate properties) {
         final MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
+        /*Sku sku = new Sku().withName("GP_Gen5_4");*/
         Server result = manager.servers().define(serverName).withRegion(region.name()).withExistingResourceGroup(resourceGroupName)
                 .withProperties(properties)/*.withSku(sku)*/.create();
         return result;
@@ -133,8 +135,11 @@ public class MySQLMvpModel {
     }
 
     public static List<Region> listSupportedRegions() {
-        List<Region> resultList = Arrays.asList(Region.values());
-        return resultList.stream().filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name())).collect(Collectors.toList());
+        return Arrays.asList(com.microsoft.azure.arm.resources.Region.values()).stream()
+                .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
+                .map(e -> Region.findByLabelOrName(e.name()))
+                .sorted(Comparator.comparing(Region::label))
+                .collect(Collectors.toList());
     }
 
     public static boolean updateSSLEnforcement(final String subscriptionId, final Server server, final SslEnforcementEnum sslEnforcement) {

@@ -26,8 +26,6 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -38,14 +36,12 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule.ICON_FILE;
 
 
-public class MySQLNode extends Node implements TelemetryProperties {
+public class MySQLNode extends Node {
 
     @Getter
     private final String subscriptionId;
@@ -59,13 +55,6 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.server = mysqlServer;
         this.serverState = server.userVisibleState();
         loadActions();
-    }
-
-    public Map<String, String> toProperties() {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        // TODO: track region name
-        return properties;
     }
 
     @Override

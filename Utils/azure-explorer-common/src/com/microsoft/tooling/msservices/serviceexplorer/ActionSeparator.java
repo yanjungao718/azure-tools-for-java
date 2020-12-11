@@ -26,7 +26,7 @@ public class ActionSeparator extends NodeAction {
 
     private static ActionSeparator INSTANCE = new ActionSeparator("Separator");
 
-    public static ActionSeparator getINSTANCE() {
+    public static ActionSeparator getInstance() {
         return INSTANCE;
     }
 
