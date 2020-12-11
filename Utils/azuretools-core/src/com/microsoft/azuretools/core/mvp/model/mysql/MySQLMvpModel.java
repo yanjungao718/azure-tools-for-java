@@ -135,6 +135,7 @@ public class MySQLMvpModel {
     }
 
     public static List<Region> listSupportedRegions() {
+        // TODO remove join logic
         return Arrays.asList(com.microsoft.azure.arm.resources.Region.values()).stream()
                 .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
                 .map(e -> Region.findByLabelOrName(e.name()))
