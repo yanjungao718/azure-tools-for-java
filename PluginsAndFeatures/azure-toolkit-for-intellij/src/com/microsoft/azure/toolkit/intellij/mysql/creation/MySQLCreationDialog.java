@@ -38,8 +38,7 @@ import java.awt.event.ItemListener;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
-
-    private final static String DIALOG_TITLE = "Create Azure Database for MySQL";
+    private static final String DIALOG_TITLE = "Create Azure Database for MySQL";
     private JPanel rootPanel;
     private MySQLCreationBasic basic;
     private MySQLCreationAdvanced advanced;
