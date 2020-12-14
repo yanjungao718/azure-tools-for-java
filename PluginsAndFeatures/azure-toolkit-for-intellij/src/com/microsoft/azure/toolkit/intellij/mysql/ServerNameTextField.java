@@ -66,14 +66,12 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
         final String value = this.getValue();
         // validate length
         if (StringUtils.length(value) < 3 || StringUtils.length(value) > 63) {
-            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message("Server name must be at least 3 characters and at most 63 characters.")
+            return AzureValidationInfo.builder().input(this).message("Server name must be at least 3 characters and at most 63 characters.")
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special character
         if (!pattern.matcher(value).matches()) {
-            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this)
+            return AzureValidationInfo.builder().input(this)
                     .message("Server name must only contain lowercase letters, numbers, and hyphens. The server name must not start or end in a hyphen.")
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
@@ -81,8 +79,7 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
         try {
             Server server = MySQLMvpModel.findServer(subscription.subscriptionId(), resourceGroup.name(), this.getValue());
             if (server != null) {
-                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                return builder.input(this).message(this.getValue() + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
+                return AzureValidationInfo.builder().input(this).message(this.getValue() + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
             }
         } catch (NullPointerException e) {
             // swallow server not existed exception.

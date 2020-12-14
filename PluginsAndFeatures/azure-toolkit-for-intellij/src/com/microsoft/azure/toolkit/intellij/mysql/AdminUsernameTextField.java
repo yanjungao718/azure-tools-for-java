@@ -30,12 +30,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AdminUsernameTextField extends ValidationDebouncedTextInput {
 
-    private static final int LENGTH_MIN = 1;
-    private static final int LENGTH_MAX = 16;
-    private static final String LENGTH_INVALILD_MESSAGE = "Admin username must be at least 1 characters and at most 16 characters.";
-    private static final String ALPHANUMBERIC_INVALID_MESSAGE = "Admin username must only contain characters and numbers.";
-    private static final String[] FIXED_NAMES_INVALID = new String[]{"azure_superuser", "admin", "administrator", "root", "guest", "public"};
-    private static final String FIXED_NAMES_INVALID_MESSAGE =
+    private static final int MIN_LENGTH = 1;
+    private static final int MAX_LENGTH = 16;
+    private static final String INVALID_LENGTH_MESSAGE = "Admin username must be at least 1 characters and at most 16 characters.";
+    private static final String INVALID_ALPHANUMERIC_MESSAGE = "Admin username must only contain characters and numbers.";
+    private static final String[] INVALID_USERNAMES = new String[]{"azure_superuser", "admin", "administrator", "root", "guest", "public"};
+    private static final String INVALID_USERNAMES_MESSAGE =
             "Admin login name cannot be 'azure_superuser', 'admin', 'administrator', 'root', 'guest' or 'public'.";
 
     @Getter
@@ -58,19 +58,19 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
         }
         final String value = this.getValue();
         // validate length
-        if (StringUtils.length(value) < LENGTH_MIN || StringUtils.length(value) > LENGTH_MAX) {
+        if (StringUtils.length(value) < MIN_LENGTH || StringUtils.length(value) > MAX_LENGTH) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message(LENGTH_INVALILD_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message(INVALID_LENGTH_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special character
         if (!StringUtils.isAlphanumeric(value)) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message(ALPHANUMBERIC_INVALID_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message(INVALID_ALPHANUMERIC_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special admin username
-        if (StringUtils.equalsAnyIgnoreCase(value, FIXED_NAMES_INVALID)) {
+        if (StringUtils.equalsAnyIgnoreCase(value, INVALID_USERNAMES)) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message(FIXED_NAMES_INVALID_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message(INVALID_USERNAMES_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
     }
