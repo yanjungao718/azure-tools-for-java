@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.mysql;
 
+import com.google.common.base.Preconditions;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
@@ -62,12 +63,11 @@ public class AzureMySQLConfig {
         final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
         final AzureMySQLConfig config = new AzureMySQLConfig();
         List<Subscription> selectedSubscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (CollectionUtils.isNotEmpty(selectedSubscriptions)) {
-            Subscription subscription = selectedSubscriptions.get(0);
-            config.setSubscription(subscription);
-            DraftResourceGroup resourceGroup = DraftResourceGroup.builder().subscription(subscription).name("rs-" + defaultNameSuffix).build();
-            config.setResourceGroup(resourceGroup);
-        }
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There is no subscription in your account.");
+        Subscription subscription = selectedSubscriptions.get(0);
+        config.setSubscription(subscription);
+        DraftResourceGroup resourceGroup = DraftResourceGroup.builder().subscription(subscription).name("rs-" + defaultNameSuffix).build();
+        config.setResourceGroup(resourceGroup);
         List<String> supportedVersions = MySQLMvpModel.listSupportedVersions();
         if (CollectionUtils.isNotEmpty(supportedVersions)) {
             config.setVersion(ServerVersion.fromString(supportedVersions.get(0)));
