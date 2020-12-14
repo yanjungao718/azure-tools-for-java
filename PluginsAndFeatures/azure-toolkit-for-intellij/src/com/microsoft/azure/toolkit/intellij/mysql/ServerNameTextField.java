@@ -21,7 +21,6 @@
  */
 package com.microsoft.azure.toolkit.intellij.mysql;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
@@ -76,13 +75,8 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate availability
-        try {
-            Server server = MySQLMvpModel.findServer(subscription.subscriptionId(), resourceGroup.name(), this.getValue());
-            if (server != null) {
-                return AzureValidationInfo.builder().input(this).message(this.getValue() + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
-            }
-        } catch (NullPointerException e) {
-            // swallow server not existed exception.
+        if (!MySQLMvpModel.checkNameAvailabilitys(subscription.subscriptionId(), value)) {
+            return AzureValidationInfo.builder().input(this).message(this.getValue() + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
     }
