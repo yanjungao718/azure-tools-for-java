@@ -24,9 +24,23 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 public class AdminUsernameTextField extends ValidationDebouncedTextInput {
+
+    private static final int LENGTH_MIN = 1;
+    private static final int LENGTH_MAX = 16;
+    private static final String LENGTH_INVALILD_MESSAGE = "Admin username must be at least 1 characters and at most 16 characters.";
+    private static final String ALPHANUMBERIC_INVALID_MESSAGE = "Admin username must only contain characters and numbers.";
+    private static final String[] FIXED_NAMES_INVALID = new String[]{"azure_superuser", "admin", "administrator", "root", "guest", "public"};
+    private static final String FIXED_NAMES_INVALID_MESSAGE =
+            "Admin login name cannot be 'azure_superuser', 'admin', 'administrator', 'root', 'guest' or 'public'.";
+
+    @Getter
+    @Setter
+    private boolean passwordInitialized;
 
     /**
      * Admin username must be at least 1 characters and at most 16 characters.
@@ -35,32 +49,28 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
      */
     @NotNull
     public AzureValidationInfo doValidateValue() {
+        if (!isPasswordInitialized()) {
+            return AzureValidationInfo.UNINITIALIZED;
+        }
         final AzureValidationInfo info = super.doValidateValue();
         if (!AzureValidationInfo.OK.equals(info)) {
             return info;
         }
         final String value = this.getValue();
         // validate length
-        if (StringUtils.length(value) < 1 || StringUtils.length(value) > 16) {
+        if (StringUtils.length(value) < LENGTH_MIN || StringUtils.length(value) > LENGTH_MAX) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message("Admin username must be at least 1 characters and at most 16 characters.")
-                    .type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message(LENGTH_INVALILD_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special character
         if (!StringUtils.isAlphanumeric(value)) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message("Admin username must only contain characters and numbers.").type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message(ALPHANUMBERIC_INVALID_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special admin username
-        if (StringUtils.equalsIgnoreCase(value, "azure_superuser")
-                || StringUtils.equalsIgnoreCase(value, "admin")
-                || StringUtils.equalsIgnoreCase(value, "administrator")
-                || StringUtils.equalsIgnoreCase(value, "root")
-                || StringUtils.equalsIgnoreCase(value, "guest")
-                || StringUtils.equalsIgnoreCase(value, "public")) {
+        if (StringUtils.equalsAnyIgnoreCase(value, FIXED_NAMES_INVALID)) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message("Admin login name cannot be 'azure_superuser', 'admin', 'administrator', 'root', 'guest' or 'public'.")
-                    .type(AzureValidationInfo.Type.ERROR).build();
+            return builder.input(this).message(FIXED_NAMES_INVALID_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
     }
