@@ -31,6 +31,10 @@ import org.apache.commons.lang3.StringUtils;
 import javax.swing.*;
 
 public class PasswordUtils {
+    private static final int PASSWORD_LENGTH_MIN = 8;
+    private static final int PASSWORD_LENGTH_MAX = 128;
+    private static final int PASSWORD_CATEGORIES_MIN = 3;
+    private static final int LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD = 3;
 
     protected static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
@@ -71,13 +75,13 @@ public class PasswordUtils {
      */
     private static AzureValidationInfo validatePassword(String password, String username, AzureFormInput<?> input) {
         // validate length
-        if (StringUtils.length(password) < 8 || StringUtils.length(password) > 128) {
+        if (StringUtils.length(password) < PASSWORD_LENGTH_MIN || StringUtils.length(password) > PASSWORD_LENGTH_MAX) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(input).message("Your password must be at least 8 characters and at most 128 characters.")
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate character categories.
-        if (countCharacterCategories(password) < 3) {
+        if (countCharacterCategories(password) < PASSWORD_CATEGORIES_MIN) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(input).message("Your password must contain characters from three of the following categories – " +
                     "English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.).")
@@ -85,9 +89,9 @@ public class PasswordUtils {
         }
         // validate part of admin username
         final int adminUsernameLength = StringUtils.length(username);
-        if (adminUsernameLength >= 3) {
-            for (int index = 0; index <= adminUsernameLength - 3; index++) {
-                if (StringUtils.contains(password, StringUtils.substring(username, index, index + 3))) {
+        if (adminUsernameLength >= LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD) {
+            for (int index = 0; index <= adminUsernameLength - LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD; index++) {
+                if (StringUtils.contains(password, StringUtils.substring(username, index, index + LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD))) {
                     final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                     return builder.input(input).message("Your password cannot contain all or part of the login name." +
                             " Part of a login name is defined as three or more consecutive alphanumeric characters.")
@@ -121,7 +125,7 @@ public class PasswordUtils {
                 count++;
                 containsSpecialCharacter = true;
             }
-            if (count >= 3) {
+            if (count >= PASSWORD_CATEGORIES_MIN) {
                 break;
             }
         }
