@@ -113,8 +113,8 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
         return new TextDocumentListenerAdapter() {
             @Override
             public void onDocumentChanged() {
-                if (!adminUsernameTextField.isPasswordInitialized()) {
-                    adminUsernameTextField.setPasswordInitialized(true);
+                if (!adminUsernameTextField.isValueInitialized()) {
+                    adminUsernameTextField.setValueInitialized(true);
                 }
             }
         };
