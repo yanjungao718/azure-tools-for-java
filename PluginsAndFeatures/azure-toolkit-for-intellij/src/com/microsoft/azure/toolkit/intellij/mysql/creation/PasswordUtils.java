@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LongestCommonSubsequence;
 
 import javax.swing.*;
 
@@ -34,7 +35,7 @@ public class PasswordUtils {
     private static final int PASSWORD_LENGTH_MIN = 8;
     private static final int PASSWORD_LENGTH_MAX = 128;
     private static final int PASSWORD_CATEGORIES_MIN = 3;
-    private static final int LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD = 3;
+    private static final int LONGEST_COMMON_SUBSEQUENCE_BETWEEN_NAME_AND_PASSWORD = 3;
 
     protected static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
@@ -87,17 +88,14 @@ public class PasswordUtils {
                     "English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.).")
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
-        // validate part of admin username
-        final int adminUsernameLength = StringUtils.length(username);
-        if (adminUsernameLength >= LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD) {
-            for (int index = 0; index <= adminUsernameLength - LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD; index++) {
-                if (StringUtils.contains(password, StringUtils.substring(username, index, index + LONGEST_COM_SUB_SEQUENCE_BETWEEN_NAME_AND_PASSWORD))) {
-                    final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                    return builder.input(input).message("Your password cannot contain all or part of the login name." +
-                            " Part of a login name is defined as three or more consecutive alphanumeric characters.")
-                            .type(AzureValidationInfo.Type.ERROR).build();
-                }
-            }
+        // validate longest common subsequence between username and password.
+        LongestCommonSubsequence algorithm = new LongestCommonSubsequence();
+        int longestCommonSubsequenceLength = algorithm.apply(username, password);
+        if (longestCommonSubsequenceLength >= LONGEST_COMMON_SUBSEQUENCE_BETWEEN_NAME_AND_PASSWORD) {
+            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.input(input).message("Your password cannot contain all or part of the login name." +
+                    " Part of a login name is defined as three or more consecutive alphanumeric characters.")
+                    .type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
     }
