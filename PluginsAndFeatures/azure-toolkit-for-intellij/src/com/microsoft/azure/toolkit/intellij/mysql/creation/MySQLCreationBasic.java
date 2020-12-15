@@ -64,8 +64,8 @@ public class MySQLCreationBasic extends JPanel implements AzureFormPanel<AzureMy
     }
 
     private void init() {
-        passwordFieldInput = PasswordValidationUtils.generateAzurePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
-        confirmPasswordFieldInput = PasswordValidationUtils.generateAzureConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
+        confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
     }
 
     private void initListeners() {

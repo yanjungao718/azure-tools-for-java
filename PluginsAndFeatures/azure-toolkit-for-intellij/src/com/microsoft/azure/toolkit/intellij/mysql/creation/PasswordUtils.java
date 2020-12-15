@@ -25,13 +25,14 @@ package com.microsoft.azure.toolkit.intellij.mysql.creation;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 
-public class PasswordValidationUtils {
+public class PasswordUtils {
 
-    protected static AzurePasswordFieldInput generateAzurePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
+    protected static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
             @Override
             public AzureValidationInfo doValidate() {
@@ -41,12 +42,12 @@ public class PasswordValidationUtils {
                 }
                 final String adminUsername = adminUsernameTextField.getText();
                 final String value = this.getValue();
-                return PasswordValidationUtils.validatePassword(value, adminUsername, this);
+                return PasswordUtils.validatePassword(value, adminUsername, this);
             }
         };
     }
 
-    protected static AzurePasswordFieldInput generateAzureConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
+    protected static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
         return new AzurePasswordFieldInput(confirmPasswordField) {
             @Override
             public AzureValidationInfo doValidate() {
@@ -57,7 +58,7 @@ public class PasswordValidationUtils {
                 final String value = this.getValue();
                 final char[] password = passwordField.getPassword();
                 final String passwordAsString = password != null ? String.valueOf(password) : StringUtils.EMPTY;
-                return PasswordValidationUtils.validateConfirmPassword(value, passwordAsString, this);
+                return PasswordUtils.validateConfirmPassword(value, passwordAsString, this);
             }
         };
     }
@@ -104,19 +105,19 @@ public class PasswordValidationUtils {
         boolean containsUpperAlpha = false;
         boolean containsSpecialCharacter = false;
         for (char ch : value.toCharArray()) {
-            if (!containsNumber && StringUtils.isNumeric(String.valueOf(ch))) {
+            if (!containsNumber && CharUtils.isAsciiNumeric(ch)) {
                 count++;
                 containsNumber = true;
             }
-            if (!containsLowerAlpha & StringUtils.isAllLowerCase(String.valueOf(ch))) {
+            if (!containsLowerAlpha & CharUtils.isAsciiAlphaLower(ch)) {
                 count++;
                 containsLowerAlpha = true;
             }
-            if (!containsUpperAlpha & StringUtils.isAllUpperCase(String.valueOf(ch))) {
+            if (!containsUpperAlpha & CharUtils.isAsciiAlphaUpper(ch)) {
                 count++;
                 containsUpperAlpha = true;
             }
-            if (!containsSpecialCharacter && !StringUtils.isAlphanumeric(String.valueOf(ch))) {
+            if (!containsSpecialCharacter && !CharUtils.isAsciiAlphanumeric(ch)) {
                 count++;
                 containsSpecialCharacter = true;
             }

@@ -82,8 +82,8 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
     }
 
     private void init() {
-        passwordFieldInput = PasswordValidationUtils.generateAzurePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
-        confirmPasswordFieldInput = PasswordValidationUtils.generateAzureConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
+        confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
     }
 
     private void initListeners() {
@@ -121,19 +121,11 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
     }
 
     private void onSecurityAllowAccessFromAzureServicesCheckBoxChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            config.setAllowAccessFromAzureServices(true);
-        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-            config.setAllowAccessFromAzureServices(false);
-        }
+        config.setAllowAccessFromAzureServices(e.getStateChange() == ItemEvent.SELECTED);
     }
 
     private void onSecurityAllowAccessFromLocalMachineCheckBoxChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            config.setAllowAccessFromLocalMachine(true);
-        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-            config.setAllowAccessFromLocalMachine(false);
-        }
+        config.setAllowAccessFromLocalMachine(e.getStateChange() == ItemEvent.SELECTED);
     }
 
     @Override

@@ -29,7 +29,6 @@ import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -91,7 +90,6 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        rootPanel.setPreferredSize(new Dimension(420, 168));
         return rootPanel;
     }
 
