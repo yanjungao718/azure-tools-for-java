@@ -101,9 +101,6 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
             final Subscription subscription = (Subscription) e.getItem();
             this.resourceGroupComboBox.setSubscription(subscription);
             this.serverNameTextField.setSubscription(subscription);
-            if (config.getSubscription() == null) {
-                config.setSubscription(subscription);
-            }
         }
     }
 
@@ -111,9 +108,6 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof ResourceGroup) {
             final ResourceGroup resourceGroup = (ResourceGroup) e.getItem();
             this.serverNameTextField.setResourceGroup(resourceGroup);
-            if (config.getResourceGroup() == null) {
-                config.setResourceGroup(resourceGroup);
-            }
         }
     }
 

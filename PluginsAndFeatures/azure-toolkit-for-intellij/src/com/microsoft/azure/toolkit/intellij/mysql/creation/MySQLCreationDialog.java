@@ -122,7 +122,6 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
         AzureMySQLConfig config = AzureMySQLConfig.getDefaultAzureMySQLConfig();
         basic = new MySQLCreationBasic(config);
         advanced = new MySQLCreationAdvanced(config);
