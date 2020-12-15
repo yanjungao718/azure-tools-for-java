@@ -70,8 +70,6 @@ public class MySQLCreationBasic extends JPanel implements AzureFormPanel<AzureMy
 
     private void initListeners() {
         this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
-        this.passwordField.getDocument().addDocumentListener(generatePasswordListener());
-        this.confirmPasswordField.getDocument().addDocumentListener(generateConfirmPasswordListener());
     }
 
     private DocumentListener generateAdminUsernameListener() {
@@ -80,28 +78,6 @@ public class MySQLCreationBasic extends JPanel implements AzureFormPanel<AzureMy
             public void onDocumentChanged() {
                 if (!adminUsernameTextField.isPasswordInitialized()) {
                     adminUsernameTextField.setPasswordInitialized(true);
-                }
-            }
-        };
-    }
-
-    private DocumentListener generatePasswordListener() {
-        return new TextDocumentListenerAdapter() {
-            @Override
-            public void onDocumentChanged() {
-                if (!passwordFieldInput.isPasswordInitialized()) {
-                    passwordFieldInput.setPasswordInitialized(true);
-                }
-            }
-        };
-    }
-
-    private DocumentListener generateConfirmPasswordListener() {
-        return new TextDocumentListenerAdapter() {
-            @Override
-            public void onDocumentChanged() {
-                if (!confirmPasswordFieldInput.isPasswordInitialized()) {
-                    confirmPasswordFieldInput.setPasswordInitialized(true);
                 }
             }
         };

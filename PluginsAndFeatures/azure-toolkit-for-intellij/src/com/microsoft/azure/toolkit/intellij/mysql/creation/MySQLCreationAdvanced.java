@@ -90,8 +90,6 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
         this.resourceGroupComboBox.addItemListener(this::onResourceGroupChanged);
         this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
-        this.passwordField.getDocument().addDocumentListener(generatePasswordListener());
-        this.confirmPasswordField.getDocument().addDocumentListener(generateConfirmPasswordListener());
         this.security.getAllowAccessFromAzureServicesCheckBox().addItemListener(this::onSecurityAllowAccessFromAzureServicesCheckBoxChanged);
         this.security.getAllowAccessFromLocalMachineCheckBox().addItemListener(this::onSecurityAllowAccessFromLocalMachineCheckBoxChanged);
     }
@@ -117,28 +115,6 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
             public void onDocumentChanged() {
                 if (!adminUsernameTextField.isPasswordInitialized()) {
                     adminUsernameTextField.setPasswordInitialized(true);
-                }
-            }
-        };
-    }
-
-    private DocumentListener generatePasswordListener() {
-        return new TextDocumentListenerAdapter() {
-            @Override
-            public void onDocumentChanged() {
-                if (!passwordFieldInput.isPasswordInitialized()) {
-                    passwordFieldInput.setPasswordInitialized(true);
-                }
-            }
-        };
-    }
-
-    private DocumentListener generateConfirmPasswordListener() {
-        return new TextDocumentListenerAdapter() {
-            @Override
-            public void onDocumentChanged() {
-                if (!confirmPasswordFieldInput.isPasswordInitialized()) {
-                    confirmPasswordFieldInput.setPasswordInitialized(true);
                 }
             }
         };
