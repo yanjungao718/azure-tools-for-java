@@ -23,8 +23,6 @@
 package com.microsoft.azure.toolkit.intellij.mysql.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
@@ -32,8 +30,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -51,33 +47,11 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
         setOKActionEnabled(false);
         init();
         extendInit();
-        initListeners();
     }
 
     private void extendInit() {
         advanced.setVisible(false);
         this.startTrackingValidation();
-    }
-
-    private void initListeners() {
-        advanced.getSubscriptionComboBox().addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
-                    final Subscription subscription = (Subscription) e.getItem();
-                    basic.getServerNameTextField().setSubscription(subscription);
-                }
-            }
-        });
-        advanced.getResourceGroupComboBox().addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof ResourceGroup) {
-                    final ResourceGroup resourceGroup = (ResourceGroup) e.getItem();
-                    basic.getServerNameTextField().setResourceGroup(resourceGroup);
-                }
-            }
-        });
     }
 
     @Override
