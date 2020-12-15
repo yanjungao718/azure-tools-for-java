@@ -45,10 +45,10 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
         super(project);
         setOKActionEnabled(false);
         init();
-        extendInit();
     }
 
-    private void extendInit() {
+    protected void init() {
+        super.init();
         advanced.setVisible(false);
         this.startTrackingValidation();
     }
