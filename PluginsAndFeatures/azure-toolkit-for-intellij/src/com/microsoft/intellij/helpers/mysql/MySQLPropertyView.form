@@ -21,7 +21,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <nested-form id="fb60e" form-file="com/microsoft/intellij/helpers/mysql/PropertyActionPanel.form" binding="propertyActionPanel">
+              <nested-form id="fb60e" form-file="com/microsoft/intellij/helpers/mysql/MySQLPropertyAction.form" binding="propertyActionPanel">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>

@@ -61,7 +61,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private JPanel rootPanel;
     private JPanel contextPanel;
     private JScrollPane scrollPane;
-    private PropertyActionPanel propertyActionPanel;
+    private MySQLPropertyAction propertyActionPanel;
     private DatabaseComboBox databaseComboBox;
     private JLabel databaseLabel;
     public static final String MYSQL_OUTPUT_TEXT_PATTERN_SPRING =

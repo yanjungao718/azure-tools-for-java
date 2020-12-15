@@ -1,6 +1,27 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.helpers.mysql;
 
-import com.microsoft.azure.toolkit.intellij.mysql.MockUtils;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -30,29 +51,14 @@ public class MySQLPropertryOverview extends JPanel {
 
     MySQLPropertryOverview() {
         super();
-
         disableTxtBoard();
         makeTxtOpaque();
-        // mock
-        /*
-        MockUtils.mockResourceGroup4TextField(resourceGroupTextField);
-        MockUtils.mockMySQLServer4TextFiled(serverNameTextField);
-        statusTextField.setText("Running");
-        serverAdminLoginNameTextField.setText("qianjin@qianjin-mysql-01");
-        MockUtils.mockLocaltion4Textfield(locationTextField);
-        MockUtils.mockMySQLVersion4TextField(mysqlVersionTextField);
-        MockUtils.mockSubscription4TextField(subscriptionTextField);
-        subscriptionIDTextField.setText("685ba005-af8d-4b04-8f16-a7bf38b2eb5a");
-        sslEnforceStatusTextField.setText("ENABLE");
-//        MockUtils.mockDatabase(databaseComboBox);
-        performanceConfigurationsTextField.setText("General Purpose, 4 vCore(s), 100 GB");
-         */
     }
 
     @Override
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
-        rootPanel.setVisible(aFlag);
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        rootPanel.setVisible(visible);
     }
 
     private void disableTxtBoard() {
@@ -79,14 +85,5 @@ public class MySQLPropertryOverview extends JPanel {
         performanceConfigurationsTextField.setBackground(null);
         subscriptionIDTextField.setBackground(null);
         sslEnforceStatusTextField.setBackground(null);
-//        txtNameValue.setBackground(null);
-//        txtTypeValue.setBackground(null);
-//        txtResGrpValue.setBackground(null);
-//        txtSubscriptionValue.setBackground(null);
-//        txtRegionValue.setBackground(null);
-//        txtHostNameValue.setBackground(null);
-//        txtSslPortValue.setBackground(null);
-//        txtNonSslPortValue.setBackground(null);
-//        txtVersionValue.setBackground(null);
     }
 }
