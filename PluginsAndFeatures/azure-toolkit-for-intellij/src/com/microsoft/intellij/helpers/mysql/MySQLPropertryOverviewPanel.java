@@ -26,7 +26,7 @@ import lombok.Getter;
 
 import javax.swing.*;
 
-public class MySQLPropertryOverview extends JPanel {
+public class MySQLPropertryOverviewPanel extends JPanel {
     private JPanel rootPanel;
     @Getter
     private JTextField resourceGroupTextField;
@@ -49,7 +49,7 @@ public class MySQLPropertryOverview extends JPanel {
     @Getter
     private JTextField sslEnforceStatusTextField;
 
-    MySQLPropertryOverview() {
+    MySQLPropertryOverviewPanel() {
         super();
         disableTxtBoard();
         makeTxtOpaque();

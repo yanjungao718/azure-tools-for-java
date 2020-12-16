@@ -20,35 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.mysql;
+package com.microsoft.intellij.helpers.mysql;
 
 import lombok.Getter;
 
 import javax.swing.*;
 
-public class ConnectionStringsOutput extends JPanel {
+public class MySQLPropertyActionPanel extends JPanel {
     @Getter
-    private JTextArea outputTextArea;
+    private JButton saveButton;
+    @Getter
+    private JButton discardButton;
     private JPanel rootPanel;
-    @Getter
-    private JButton copyButton;
-    @Getter
-    private JLabel titleLabel;
-    @Getter
-    private JTextPane outputTextPane;
 
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        rootPanel.setVisible(visible);
-    }
-
-    private void createUIComponents() {
-        outputTextPane = new JTextPane() {
-            @Override
-            public boolean getScrollableTracksViewportWidth() {
-                return false;
-            }
-        };
-    }
 }
