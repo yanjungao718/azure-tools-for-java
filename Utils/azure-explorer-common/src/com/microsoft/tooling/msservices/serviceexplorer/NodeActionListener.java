@@ -36,10 +36,31 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NodeActionListener implements EventListener {
+public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
+    protected int priority = Sortable.DEFAULT_PRIORITY;
+    protected int group = Groupable.DEFAULT_GROUP;
+
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
     }
 
     protected void beforeActionPerformed(NodeActionEvent e) {

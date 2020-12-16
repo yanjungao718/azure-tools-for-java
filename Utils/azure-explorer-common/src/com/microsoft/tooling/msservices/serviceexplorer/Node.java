@@ -47,11 +47,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Node implements MvpView, BasicTelemetryProperty {
+public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     private static final String CLICK_ACTION = "click";
     public static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
     public static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
+    public static final int DEFAULT_SORT_PRIORITY = 100;
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -229,12 +230,24 @@ public class Node implements MvpView, BasicTelemetryProperty {
             addAction(nodeAction);
         }
         nodeAction.addListener(actionListener);
+        nodeAction.setPriority(actionListener.getPriority());
+        nodeAction.setGroup(actionListener.getGroup());
         return nodeAction;
     }
 
     public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {
+        return addAction(name, iconPath, actionListener, Groupable.DEFAULT_GROUP, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group) {
+        return addAction(name, iconPath, actionListener, group, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group, int priority) {
         NodeAction nodeAction = addAction(name, actionListener);
         nodeAction.setIconPath(iconPath);
+        nodeAction.setGroup(group);
+        nodeAction.setPriority(priority);
         return nodeAction;
     }
 
@@ -405,10 +418,10 @@ public class Node implements MvpView, BasicTelemetryProperty {
         final String portalUrl = azureManager.getPortalUrl();
         final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
         final String url = portalUrl
-            + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
-            + tenantId
-            + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
-            + resourceRelativePath;
+                + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
+                + tenantId
+                + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
+                + resourceRelativePath;
         DefaultLoader.getIdeHelper().openLinkInBrowser(url);
     }
 }
