@@ -20,20 +20,22 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.projects
+package com.microsoft.tooling.msservices.serviceexplorer;
 
-import com.microsoft.azure.hdinsight.projects.SparkVersion.*
-import com.microsoft.azure.hdinsight.spark.exception.UnsupportedSparkVersionException
+import org.apache.commons.lang3.StringUtils;
 
-object SparkToolsLib {
-    private const val toolsVerForSpark2_1: String = "0.1.2"
-    private const val toolsVerForSpark2_3: String = "0.1.2"
+public interface Sortable {
 
-    fun getJarFileName(sparkVer: SparkVersion): String = when (sparkVer) {
-        SPARK_2_3_0 -> "spark-tools-${toolsVerForSpark2_3}_2.3.0.jar"
-        SPARK_2_3_2 -> "spark-tools-${toolsVerForSpark2_3}_2.3.2.jar"
-        SPARK_2_1_0 -> "spark-tools-${toolsVerForSpark2_1}_2.1.jar"
-        else -> throw UnsupportedSparkVersionException(
-                "Unsupported version $sparkVer, Current Spark tools only supports Spark v2.1 and v2.3")
+    int HIGH_PRIORITY = 50;
+    int DEFAULT_PRIORITY = 100;
+    int LOW_PRIORITY = 200;
+
+    default int getPriority() {
+        return DEFAULT_PRIORITY;
+    }
+
+    static int compare(final Sortable first, final Sortable second) {
+        return first.getPriority() == second.getPriority() ?
+                StringUtils.compare(first.toString(), second.toString()) : first.getPriority() - second.getPriority();
     }
 }
