@@ -69,6 +69,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -223,24 +224,30 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private JPopupMenu createPopupMenuForNode(Node node) {
-        JPopupMenu menu = new JPopupMenu();
-
-        for (final NodeAction nodeAction : node.getNodeActions()) {
-            if (!nodeAction.isEnabled()) {
-                continue;
+        final JPopupMenu menu = new JPopupMenu();
+        final LinkedHashMap<Integer, List<NodeAction>> sortedNodeActionsGroupMap =
+            node.getNodeActions().stream()
+                .sorted(Comparator.comparing(NodeAction::getGroup).thenComparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
+                .collect(Collectors.groupingBy(NodeAction::getGroup, LinkedHashMap::new, Collectors.toList()));
+        // Convert node actions map to menu items, as linked hash map keeps ordered, no need to sort again
+        sortedNodeActionsGroupMap.forEach((groupNumber, actions) -> {
+            if (menu.getComponentCount() > 0) {
+                menu.addSeparator();
             }
-            JMenuItem menuItem = new JMenuItem(nodeAction.getName());
-            menuItem.setEnabled(nodeAction.isEnabled());
-            if (nodeAction.getIconPath() != null) {
-                menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
-            }
-            // delegate the menu item click to the node action's listeners
-            menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
-
-            menu.add(menuItem);
-        }
-
+            actions.stream().map(this::createMenuItemFromNodeAction).forEachOrdered(menu::add);
+        });
         return menu;
+    }
+
+    private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
+        final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
+        menuItem.setEnabled(nodeAction.isEnabled());
+        if (nodeAction.getIconPath() != null) {
+            menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
+        }
+        // delegate the menu item click to the node action's listeners
+        menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
+        return menuItem;
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
@@ -259,11 +266,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode, project));
 
         // create child tree nodes for each child node
-        if (node.hasChildNodes()) {
-            for (Node childNode : node.getChildNodes()) {
-                treeNode.add(createTreeNode(childNode, project));
-            }
-        }
+        node.getChildNodes().stream()
+            .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
+            .map(childNode -> createTreeNode(childNode, project))
+            .forEach(treeNode::add);
 
         return treeNode;
     }
