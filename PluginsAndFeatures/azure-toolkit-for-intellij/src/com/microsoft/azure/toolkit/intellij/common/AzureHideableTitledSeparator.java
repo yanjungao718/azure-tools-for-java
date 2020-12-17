@@ -56,6 +56,7 @@ public class AzureHideableTitledSeparator extends TitledSeparator {
 
     public void addContentComponent(JComponent component) {
         contentComponentList.add(component);
+        component.setVisible(isExpanded);
     }
 
     private final void update(boolean expand) {
