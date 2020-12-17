@@ -31,6 +31,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.mysql.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.mysql.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.mysql.DatabaseComboBox;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -66,12 +67,12 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private DatabaseComboBox databaseComboBox;
     private JLabel databaseLabel;
     public static final String MYSQL_OUTPUT_TEXT_PATTERN_SPRING =
-            "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" + StringUtils.LF +
-                    "spring.datasource.url=jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false" + StringUtils.LF +
-                    "spring.datasource.username=%s" + StringUtils.LF + "spring.datasource.password={your_password}";
+            "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" + System.lineSeparator() +
+                    "spring.datasource.url=jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false" + System.lineSeparator() +
+                    "spring.datasource.username=%s" + System.lineSeparator() + "spring.datasource.password={your_password}";
 
     public static final String MYSQL_OUTPUT_TEXT_PATTERN_JDBC =
-            "String url =\"jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false\";" + StringUtils.LF +
+            "String url =\"jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false\";" + System.lineSeparator() +
                     "myDbConn = DriverManager.getConnection(url, \"%s\", {your_password});";
 
     private MySQLProperty property;
@@ -150,15 +151,18 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(actionName);
         MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(false);
         Runnable runnable = () -> {
+            String subscriptionId = property.getSubscriptionId();
+            // refresh property
+            refreshProperty(subscriptionId, property.getServer().resourceGroupName(), property.getServer().name());
             boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices)) {
                 MySQLMvpModel.FirewallRuleMvpModel
-                        .updateAllowAccessFromAzureServices(property.getSubscriptionId(), property.getServer(), allowAccessToAzureServices);
+                        .updateAllowAccessFromAzureServices(subscriptionId, property.getServer(), allowAccessToAzureServices);
                 originalAllowAccessToAzureServices = allowAccessToAzureServices;
             }
             boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToLocal.equals(allowAccessToLocal)) {
-                MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessToLocalMachine(property.getSubscriptionId(), property.getServer(), allowAccessToLocal);
+                MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessToLocalMachine(subscriptionId, property.getServer(), allowAccessToLocal);
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
@@ -210,26 +214,38 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     public void onReadProperty(String sid, String resourceGroup, String name) {
         final String actionName = "Opening Property of";
         Runnable runnable = () -> {
-            MySQLProperty mySQLProperty = new MySQLProperty();
-            mySQLProperty.setSubscriptionId(sid);
-            // find server
-            Server server = MySQLMvpModel.findServer(sid, resourceGroup, name);
-            mySQLProperty.setServer(server);
-            if (ServerState.READY.equals(server.userVisibleState())) {
-                // find firewalls
-                List<FirewallRuleInner> firewallRules = MySQLMvpModel.FirewallRuleMvpModel.listFirewallRules(sid, resourceGroup, name);
-                mySQLProperty.setFirewallRules(firewallRules);
-            }
+            // refresh property
+            this.refreshProperty(sid, resourceGroup, name);
             // show property
-            this.showProperty(mySQLProperty);
+            this.showProperty(this.property);
         };
+        // show property in background
         String taskTitle = String.format(actionName + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
     }
 
+    private void refreshProperty(String sid, String resourceGroup, String name) {
+        MySQLProperty newProperty = new MySQLProperty();
+        newProperty.setSubscriptionId(sid);
+        // find server
+        try {
+            Server server = MySQLMvpModel.findServer(sid, resourceGroup, name);
+            newProperty.setServer(server);
+        } catch (Exception ex) {
+            String error = "find Azure Database for MySQL server information";
+            String action = "confirm your network is available and your server actually exists.";
+            throw new AzureToolkitRuntimeException(error, action);
+        }
+        if (ServerState.READY.equals(newProperty.getServer().userVisibleState())) {
+            // find firewalls
+            List<FirewallRuleInner> firewallRules = MySQLMvpModel.FirewallRuleMvpModel.listFirewallRules(sid, resourceGroup, name);
+            newProperty.setFirewallRules(firewallRules);
+        }
+        this.property = newProperty;
+    }
+
     @Override
     public void showProperty(MySQLProperty property) {
-        this.property = property;
         Server server = property.getServer();
         final String sid = AzureMvpModel.getSegment(server.id(), "subscriptions");
         Subscription subscription = AzureMvpModel.getInstance().getSubscriptionById(sid);
