@@ -38,15 +38,12 @@ import java.util.List;
 public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView {
 
     // TODO (qianjin): updated once Tanya completes UI design.
-    protected static final String ICON_FILE = "mysql/MySQL.svg";
-    protected static final String MYSQL_ICON_RUNNING = "mysql/MySQLRunning.svg";
-    protected static final String MYSQL_ICON_STOPPED = "mysql/MySQLStopped.svg";
     public static final String BASE_MODULE_NAME = "Azure Database for MySQL";
     public static final String ACTION_PATTERN_SUFFIX = BASE_MODULE_NAME + " (%s)...";
     private static final String MYSQL_DATABASE_MODULE_ID = MySQLModule.class.getName();
 
     public MySQLModule(final Node parent) {
-        super(MYSQL_DATABASE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_FILE);
+        super(MYSQL_DATABASE_MODULE_ID, BASE_MODULE_NAME, parent, null);
         createListener();
     }
 
