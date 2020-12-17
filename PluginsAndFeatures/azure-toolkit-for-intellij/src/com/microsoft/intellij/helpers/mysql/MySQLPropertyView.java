@@ -124,7 +124,6 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
         if (itemEvent.getStateChange() == ItemEvent.SELECTED || itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-            System.out.println("check box changed...");
             Boolean changed = MySQLPropertyView.this.changed();
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             MySQLPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
