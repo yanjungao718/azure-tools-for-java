@@ -68,12 +68,12 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private JLabel databaseLabel;
     public static final String MYSQL_OUTPUT_TEXT_PATTERN_SPRING =
             "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" + System.lineSeparator() +
-                    "spring.datasource.url=jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false" + System.lineSeparator() +
-                    "spring.datasource.username=%s" + System.lineSeparator() + "spring.datasource.password={your_password}";
+            "spring.datasource.url=jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false" + System.lineSeparator() +
+            "spring.datasource.username=%s" + System.lineSeparator() + "spring.datasource.password={your_password}";
 
     public static final String MYSQL_OUTPUT_TEXT_PATTERN_JDBC =
             "String url =\"jdbc:mysql://%s:3306/%s?useSSL=true&requireSSL=false\";" + System.lineSeparator() +
-                    "myDbConn = DriverManager.getConnection(url, \"%s\", {your_password});";
+            "myDbConn = DriverManager.getConnection(url, \"%s\", {your_password});";
 
     private MySQLProperty property;
 
@@ -97,11 +97,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     }
 
     private String getConnectionString(final String pattern, final String hostname, final String database, final String username) {
-        if (StringUtils.isBlank(hostname) || StringUtils.isBlank(database) || StringUtils.isBlank(username)) {
-            return String.format(pattern, "{your_hostname}", "{your_database}", "{your_username}");
-        } else {
-            return String.format(pattern, hostname, database, username);
-        }
+        String newHostname = StringUtils.isNotBlank(hostname) ? hostname : "{your_hostname}";
+        String newDatabase = StringUtils.isNotBlank(database) ? database : "{your_database}";
+        String newUsername = StringUtils.isNotBlank(username) ? username : "{your_username}";
+        return String.format(pattern, newHostname, newDatabase, newUsername);
     }
 
     private void init() {
@@ -135,6 +134,9 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         try {
             Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsJDBC.getOutputTextArea().getText());
         } catch (Exception exception) {
+            String error = "copy JDBC connection strings";
+            String action = "try again later.";
+            throw new AzureToolkitRuntimeException(error, action);
         }
     }
 
@@ -142,6 +144,9 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         try {
             Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsSpring.getOutputTextArea().getText());
         } catch (Exception exception) {
+            String error = "copy Spring connection strings";
+            String action = "try again later.";
+            throw new AzureToolkitRuntimeException(error, action);
         }
     }
 
