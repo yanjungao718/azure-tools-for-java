@@ -28,16 +28,17 @@ import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
-import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
-import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
-import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLShowPropertiesAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightRecordAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.*;
+import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.EditDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportParameterAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
@@ -56,8 +57,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
@@ -69,7 +68,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NodeActionsMap {
     public static final Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions =
@@ -92,8 +95,6 @@ public class NodeActionsMap {
                 .add(CreateFunctionAppAction.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
-        node2Actions.put(MySQLModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateMySQLAction.class).build());
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,
@@ -125,10 +126,6 @@ public class NodeActionsMap {
 
         node2Actions.put(FunctionAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());
-
-        node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(MySQLShowPropertiesAction.class).add(MySQLConnectToServerAction.class)
-                .build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)
