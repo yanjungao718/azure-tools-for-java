@@ -20,7 +20,12 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer;
+package com.microsoft.intellij.helpers;
+
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.util.IconLoader;
+
+import javax.swing.*;
 
 public class AzureAllIcons {
 
@@ -28,45 +33,39 @@ public class AzureAllIcons {
 
     public static final class Common {
 
-        public static final AzureIcon CREATE = loadAzureIcon(ICON_BASE_DIR + "mysql/Create.svg", ICON_BASE_DIR + "mysql/Create_dark.svg");
+        public static final Icon CREATE = AllIcons.Welcome.CreateNewProject;
 
-        public static final AzureIcon DELETE = loadAzureIcon(ICON_BASE_DIR + "mysql/Delete.svg", ICON_BASE_DIR + "mysql/Delete_dark.svg");
+        public static final Icon DELETE = AllIcons.Actions.GC;
 
-        public static final AzureIcon START = loadAzureIcon(ICON_BASE_DIR + "mysql/Start.svg", ICON_BASE_DIR + "mysql/Start_dark.svg");
+        public static final Icon START = loadIcon("common/Start.svg");
 
-        public static final AzureIcon STOP = loadAzureIcon(ICON_BASE_DIR + "mysql/Stop.svg", ICON_BASE_DIR + "mysql/Stop_dark.svg");
+        public static final Icon STOP = loadIcon("common/Stop.svg");
 
-        public static final AzureIcon RESTART = loadAzureIcon(ICON_BASE_DIR + "mysql/Restart.svg", ICON_BASE_DIR + "mysql/Restart_dark.svg");
+        public static final Icon RESTART = AllIcons.Actions.Restart;
 
-        public static final AzureIcon OPEN_IN_PORTAL = loadAzureIcon(ICON_BASE_DIR + "mysql/OpenInPortal.svg", ICON_BASE_DIR + "mysql/OpenInPortal_dark.svg");
+        public static final Icon OPEN_IN_PORTAL = loadIcon("common/OpenInPortal.svg");
 
-        public static final AzureIcon SHOW_PROPERTIES = loadAzureIcon(ICON_BASE_DIR + "mysql/ShowProperties.svg",
-                ICON_BASE_DIR + "mysql/ShowProperties_dark.svg");
+        public static final Icon SHOW_PROPERTIES = AllIcons.Actions.Properties;
     }
 
     public static final class MySQL {
 
-        public static final AzureIcon MODULE = loadAzureIcon(ICON_BASE_DIR + "mysql/MySQL.svg");
+        public static final Icon MODULE = loadIcon("mysql/MySQL.svg");
 
-        public static final AzureIcon RUNNING = loadAzureIcon(ICON_BASE_DIR + "mysql/MySQLRunning.svg");
+        public static final Icon RUNNING = loadIcon("mysql/MySQLRunning.svg");
 
-        public static final AzureIcon STOPPED = loadAzureIcon(ICON_BASE_DIR + "mysql/MySQLStopped.svg");
+        public static final Icon STOPPED = loadIcon("mysql/MySQLStopped.svg");
 
-        public static final AzureIcon UPDATING = loadAzureIcon(ICON_BASE_DIR + "mysql/MySQLUpdating.svg");
+        public static final Icon UPDATING = loadIcon("mysql/MySQLUpdating.svg");
 
-        public static final AzureIcon CONNECT_TO_SERVER = loadAzureIcon(ICON_BASE_DIR + "mysql/ConnectToServer.svg",
-                ICON_BASE_DIR + "mysql/ConnectToServer_dark.svg");
+        public static final Icon CONNECT_TO_SERVER = loadIcon("mysql/ConnectToServer.svg");
 
-        public static final AzureIcon BIND_INTO = loadAzureIcon(ICON_BASE_DIR + "mysql/BindInto.svg", ICON_BASE_DIR + "mysql/BindInto_dark.svg");
+        public static final Icon BIND_INTO = loadIcon("mysql/BindInto.svg");
 
     }
 
-    private static AzureIcon loadAzureIcon(String iconPath) {
-        return AzureIcon.builder().icon(iconPath).darkIcon(iconPath).build();
-    }
-
-    private static AzureIcon loadAzureIcon(String iconPath, String darkIconPath) {
-        return AzureIcon.builder().icon(iconPath).darkIcon(darkIconPath).build();
+    private static Icon loadIcon(String iconPath) {
+        return IconLoader.getIcon(ICON_BASE_DIR + iconPath);
     }
 
 }
