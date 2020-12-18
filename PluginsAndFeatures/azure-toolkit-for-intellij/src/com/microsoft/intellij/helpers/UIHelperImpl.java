@@ -34,7 +34,6 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -727,11 +726,6 @@ public class UIHelperImpl implements UIHelper {
     public static ImageIcon loadIcon(@Nullable String name) {
         java.net.URL url = UIHelperImpl.class.getResource("/icons/" + name);
         return new ImageIcon(url);
-    }
-
-    @NotNull
-    public static Icon loadSvgIcon(@Nullable String name) {
-        return IconLoader.getIcon("/icons/" + name);
     }
 
     @Override
