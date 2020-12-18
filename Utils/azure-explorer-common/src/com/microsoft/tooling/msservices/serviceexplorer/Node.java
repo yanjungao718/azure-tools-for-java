@@ -62,8 +62,6 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     protected Node parent;
     protected ObservableList<Node> childNodes = new ObservableList<Node>();
     protected String iconPath;
-    @Getter
-    protected AzureIcon azureIcon;
     protected Object viewData;
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
@@ -212,7 +210,14 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
      */
     @Nullable
     public Icon getIcon() {
-        return null;
+        return DefaultLoader.getUIHelper().loadIconByNodeClass(this.getClass());
+    }
+
+    /**
+     * optionally to custom icon for different state.
+     */
+    protected Icon getIconByState(boolean running, boolean updating) {
+        return DefaultLoader.getUIHelper().loadIconByNodeClassWithStates(this.getClass(), running, updating);
     }
 
     public void addChildNode(Node child) {
