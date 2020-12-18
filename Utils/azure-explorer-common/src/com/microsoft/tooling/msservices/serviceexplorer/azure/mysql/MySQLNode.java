@@ -27,10 +27,9 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
@@ -47,18 +46,13 @@ import java.util.List;
 public class MySQLNode extends Node {
 
     private static final ServerState SERVER_UPDATING = ServerState.fromString("Updating");
+
     public static final int OPEN_GROUP = Groupable.DEFAULT_GROUP + 1;
     public static final int OPEN_IN_PORTAL_PRIORITY = Sortable.DEFAULT_PRIORITY + 1;
 
     public static final int OPERATE_GROUP = Groupable.DEFAULT_GROUP + 2;
     public static final int SHOW_PROPERTIES_PRIORITY = Sortable.DEFAULT_PRIORITY + 1;
     public static final int CONNECT_TO_SERVER_PRIORITY = Sortable.DEFAULT_PRIORITY + 2;
-
-    public static final int BASIC_GROUP = Groupable.DEFAULT_GROUP + 3;
-    public static final int START_PRIORITY = Sortable.DEFAULT_PRIORITY + 1;
-    public static final int STOP_PRIORITY = Sortable.DEFAULT_PRIORITY + 2;
-    public static final int RESTART_PRIORITY = Sortable.DEFAULT_PRIORITY + 3;
-    public static final int DELETE_PRIORITY = Sortable.DEFAULT_PRIORITY + 4;
 
     @Getter
     private final String subscriptionId;
@@ -83,6 +77,11 @@ public class MySQLNode extends Node {
 
     @Override
     protected void loadActions() {
+        addAction(new BasicActionListener(new StartAzureMySQLAction(), AzureActionEnum.START));
+        addAction(new BasicActionListener(new StopAzureMySQLAction(), AzureActionEnum.STOP));
+        addAction(new BasicActionListener(new RestartAzureMySQLAction(), AzureActionEnum.RESTART));
+        addAction(new BasicActionListener(new DeleteAzureMySQLAction(), AzureActionEnum.DELETE));
+        addAction(new BasicActionListener(new DeleteAzureMySQLAction(), AzureActionEnum.OPEN_IN_PORTAL));
         initActions();
     }
 
@@ -90,10 +89,10 @@ public class MySQLNode extends Node {
     public List<NodeAction> getNodeActions() {
         boolean updating = SERVER_UPDATING.equals(serverState);
         boolean running = ServerState.READY.equals(serverState);
-        getNodeActionByName(StartAzureMySQLAction.ACTION_NAME).setEnabled(!updating && !running);
-        getNodeActionByName(StopAzureMySQLAction.ACTION_NAME).setEnabled(!updating && running);
-        getNodeActionByName(RestartAzureMySQLAction.ACTION_NAME).setEnabled(!updating && running);
-        getNodeActionByName(DeleteAzureMySQLAction.ACTION_NAME).setEnabled(!updating);
+        getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(!updating && !running);
+        getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(!updating && running);
+        getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(!updating && running);
+        getNodeActionByName(AzureActionEnum.DELETE.getName()).setEnabled(!updating);
         return super.getNodeActions();
     }
 
@@ -104,10 +103,8 @@ public class MySQLNode extends Node {
     }
 
     // Delete Azure MySQL action class
-    @Name(DeleteAzureMySQLAction.ACTION_NAME)
     public class DeleteAzureMySQLAction extends AzureNodeActionPromptListener {
 
-        private static final String ACTION_NAME = "Delete";
         private static final String ACTION_DOING = "Deleting";
         private static final String DELETE_PROMPT_MESSAGE =
                 "This operation will delete your azure mysql server: %s." + StringUtils.LF + "Are you sure you want to continue?";
@@ -115,16 +112,6 @@ public class MySQLNode extends Node {
         public DeleteAzureMySQLAction() {
             super(MySQLNode.this, String.format(DELETE_PROMPT_MESSAGE, MySQLNode.this.name),
                     String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name));
-        }
-
-        @Override
-        public int getGroup() {
-            return BASIC_GROUP;
-        }
-
-        @Override
-        public int getPriority() {
-            return DELETE_PRIORITY;
         }
 
         @Override
@@ -137,29 +124,12 @@ public class MySQLNode extends Node {
         protected void onSubscriptionsChanged(NodeActionEvent e) {
 
         }
-
-        @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.DELETE);
-        }
     }
 
     // Start Azure MySQL action class
-    @Name(StartAzureMySQLAction.ACTION_NAME)
-    public class StartAzureMySQLAction extends NodeActionListener {
+    private class StartAzureMySQLAction extends NodeActionListener {
 
-        private static final String ACTION_NAME = "Start";
         private static final String ACTION_DOING = "Starting";
-
-        @Override
-        public int getGroup() {
-            return BASIC_GROUP;
-        }
-
-        @Override
-        public int getPriority() {
-            return START_PRIORITY;
-        }
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -172,28 +142,12 @@ public class MySQLNode extends Node {
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
 
-        @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.START);
-        }
     }
 
     // Stop Azure MySQL action class
-    @Name(StopAzureMySQLAction.ACTION_NAME)
-    public class StopAzureMySQLAction extends NodeActionListener {
+    private class StopAzureMySQLAction extends NodeActionListener {
 
-        private static final String ACTION_NAME = "Stop";
         private static final String ACTION_DOING = "Stopping";
-
-        @Override
-        public int getGroup() {
-            return BASIC_GROUP;
-        }
-
-        @Override
-        public int getPriority() {
-            return STOP_PRIORITY;
-        }
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -206,28 +160,12 @@ public class MySQLNode extends Node {
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
 
-        @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.STOP);
-        }
     }
 
     // Restart Azure MySQL action class
-    @Name(RestartAzureMySQLAction.ACTION_NAME)
-    public class RestartAzureMySQLAction extends NodeActionListener {
+    private class RestartAzureMySQLAction extends NodeActionListener {
 
-        private static final String ACTION_NAME = "Restart";
         private static final String ACTION_DOING = "Restarting";
-
-        @Override
-        public int getGroup() {
-            return BASIC_GROUP;
-        }
-
-        @Override
-        public int getPriority() {
-            return RESTART_PRIORITY;
-        }
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -240,39 +178,18 @@ public class MySQLNode extends Node {
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
         }
 
-        @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.RESTART);
-        }
     }
 
     // Open in browser action class
-    @Name(OpenInBrowserAction.ACTION_NAME)
-    public class OpenInBrowserAction extends NodeActionListener {
+    private class OpenInBrowserAction extends NodeActionListener {
 
-        private static final String ACTION_NAME = "Open in Portal";
         private static final String ACTION_DOING = "Opening";
-
-        @Override
-        public int getGroup() {
-            return OPEN_GROUP;
-        }
-
-        @Override
-        public int getPriority() {
-            return OPEN_IN_PORTAL_PRIORITY;
-        }
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             Runnable runnable = () -> MySQLNode.this.openResourcesInPortal(MySQLNode.this.subscriptionId, MySQLNode.this.server.id());
             String taskTitle = String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
-        }
-
-        @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.OPEN_IN_PORTAL);
         }
 
     }
