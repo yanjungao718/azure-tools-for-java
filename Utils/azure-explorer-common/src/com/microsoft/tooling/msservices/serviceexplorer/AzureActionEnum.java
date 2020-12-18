@@ -28,21 +28,33 @@ public enum AzureActionEnum {
 
     REFRESH("Refresh", "Refreshing"),
     CREATE("Create", "Creating"),
-    START("Start", "Starting"),
-    STOP("Stop", "Stopping"),
-    RESTART("Restart", "Restarting"),
-    DELETE("Delete", "Deleting"),
+
     OPEN_IN_PORTAL("Open In Portal", "Opening in portal"),
-    SHOW_PROPERTIES("Show Properties", "Showing properties");
+    SHOW_PROPERTIES("Show Properties", "Showing properties"),
+
+    START("Start", "Starting", 50, 1),
+    STOP("Stop", "Stopping", 50, 2),
+    RESTART("Restart", "Restarting", 50, 3),
+    DELETE("Delete", "Deleting", 50, 4);
 
     @Getter
     private final String name;
     @Getter
     private final String doingName;
+    @Getter
+    private final Integer group;
+    @Getter
+    private final Integer priority;
 
     AzureActionEnum(String name, String doingName) {
+        this(name, doingName, null, null);
+    }
+
+    AzureActionEnum(String name, String doingName, Integer group, Integer priority) {
         this.name = name;
         this.doingName = doingName;
+        this.group = group;
+        this.priority = priority;
     }
 
     @Override

@@ -127,10 +127,7 @@ public class NodeActionsMap {
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());
 
         node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(MySQLNode.OpenInBrowserAction.class)
-                .add(MySQLShowPropertiesAction.class).add(MySQLConnectToServerAction.class)//.add(MySQLBindIntoAction.class)
-                .add(MySQLNode.StartAzureMySQLAction.class).add(MySQLNode.RestartAzureMySQLAction.class)
-                .add(MySQLNode.StopAzureMySQLAction.class).add(MySQLNode.DeleteAzureMySQLAction.class)
+                .add(MySQLShowPropertiesAction.class).add(MySQLConnectToServerAction.class)
                 .build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
