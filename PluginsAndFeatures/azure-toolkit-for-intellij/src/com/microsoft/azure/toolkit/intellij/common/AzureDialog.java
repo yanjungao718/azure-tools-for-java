@@ -28,7 +28,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import lombok.extern.java.Log;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.List;

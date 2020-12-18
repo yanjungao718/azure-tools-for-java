@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.form;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,11 @@ public interface AzureForm<T> {
     List<AzureFormInput<?>> getInputs();
 
     default List<AzureValidationInfo> validateData() {
-        return this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
+        List<AzureValidationInfo> resultList = new ArrayList<>();
+        for (AzureFormInput<?> input : this.getInputs()) {
+            resultList.add(input.doValidate());
+        }
+        return resultList;
+//        return this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
     }
 }

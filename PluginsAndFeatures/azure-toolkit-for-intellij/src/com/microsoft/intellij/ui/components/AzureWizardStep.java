@@ -24,7 +24,6 @@ package com.microsoft.intellij.ui.components;
 
 import com.intellij.ui.wizard.WizardModel;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
@@ -93,9 +92,4 @@ public abstract class AzureWizardStep<T extends WizardModel> extends WizardStep<
         sendTelemetryOnAction("Previous");
         return super.onPrevious(model);
     }
-
-    public AzureForm getForm() {
-        return null;
-    };
-
 }

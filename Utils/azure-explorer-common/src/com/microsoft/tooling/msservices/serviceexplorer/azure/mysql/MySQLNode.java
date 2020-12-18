@@ -99,7 +99,6 @@ public class MySQLNode extends Node {
     private void refreshNode() {
         Server result = MySQLMvpModel.findServer(subscriptionId, server.resourceGroupName(), server.name());
         this.serverState = result.userVisibleState();
-        // this.setAzureIcon(getAzureIcon());
     }
 
     // Delete Azure MySQL action class

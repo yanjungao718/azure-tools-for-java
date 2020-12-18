@@ -36,7 +36,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
-import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
