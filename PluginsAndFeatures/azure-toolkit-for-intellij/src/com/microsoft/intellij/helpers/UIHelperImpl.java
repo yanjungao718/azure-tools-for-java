@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.helpers;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -33,6 +34,7 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -59,26 +61,40 @@ import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
 import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
+import com.microsoft.intellij.helpers.mysql.MySQLPropertyView;
+import com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
-import com.microsoft.intellij.helpers.storage.*;
+import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditor;
+import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider;
+import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
+import com.microsoft.intellij.helpers.storage.QueueFileEditor;
+import com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider;
+import com.microsoft.intellij.helpers.storage.TableFileEditor;
 import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
+import com.microsoft.intellij.serviceexplorer.NodeIconsMap;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
+import com.microsoft.tooling.msservices.model.storage.BlobContainer;
+import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
+import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
@@ -269,6 +285,50 @@ public class UIHelperImpl implements UIHelper {
             @Override
             public Icon getIcon() {
                 return UIHelperImpl.loadIcon(iconName);
+            }
+
+            @Override
+            public boolean isBinary() {
+                return true;
+            }
+
+            @Override
+            public boolean isReadOnly() {
+                return false;
+            }
+
+            @Override
+            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+                return "UTF8";
+            }
+        };
+    }
+
+    @org.jetbrains.annotations.NotNull
+    private FileType getFileTypeWithIcon(@NotNull final String itemName, @Nullable final Icon icon) {
+        return new FileType() {
+            @NotNull
+            @Override
+            public String getName() {
+                return itemName;
+            }
+
+            @NotNull
+            @Override
+            public String getDescription() {
+                return itemName;
+            }
+
+            @NotNull
+            @Override
+            public String getDefaultExtension() {
+                return "";
+            }
+
+            @Nullable
+            @Override
+            public Icon getIcon() {
+                return icon;
             }
 
             @Override
@@ -564,6 +624,30 @@ public class UIHelperImpl implements UIHelper {
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
 
+    @Override
+    public void openMySQLPropertyView(@NotNull MySQLNode node) {
+        EventUtil.executeWithLog(TelemetryConstants.MYSQL, TelemetryConstants.MYSQL_SHOW_PROPERTIES, (operation) -> {
+            String name = node.getName();
+            String subscriptionId = node.getSubscriptionId();
+            String nodeId = node.getId(); // node.getResourceId();
+
+            final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
+            if (fileEditorManager == null) {
+                return;
+            }
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, nodeId);
+            if (itemVirtualFile == null) {
+                itemVirtualFile = createVirtualFile(name, MySQLPropertyViewProvider.TYPE, AzureAllIcons.MySQL.MODULE, subscriptionId, nodeId);
+            }
+            FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
+            for (FileEditor editor : editors) {
+                if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
+                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().resourceGroupName(), node.getServer().name());
+                }
+            }
+        });
+    }
+
     @Nullable
     @Override
     public <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
@@ -645,6 +729,52 @@ public class UIHelperImpl implements UIHelper {
         return new ImageIcon(url);
     }
 
+    @NotNull
+    public static Icon loadSvgIcon(@Nullable String name) {
+        return IconLoader.getIcon("/icons/" + name);
+    }
+
+    @Override
+    public Icon loadIconByAction(AzureActionEnum actionEnum) {
+        if (AzureActionEnum.REFRESH.equals(actionEnum)) {
+            return AzureAllIcons.Common.RESTART;
+        } else if (AzureActionEnum.CREATE.equals(actionEnum)) {
+            return AzureAllIcons.Common.CREATE;
+        } else if (AzureActionEnum.START.equals(actionEnum)) {
+            return AzureAllIcons.Common.START;
+        } else if (AzureActionEnum.STOP.equals(actionEnum)) {
+            return AzureAllIcons.Common.STOP;
+        } else if (AzureActionEnum.RESTART.equals(actionEnum)) {
+            return AzureAllIcons.Common.RESTART;
+        } else if (AzureActionEnum.DELETE.equals(actionEnum)) {
+            return AzureAllIcons.Common.DELETE;
+        } else if (AzureActionEnum.OPEN_IN_PORTAL.equals(actionEnum)) {
+            return AzureAllIcons.Common.OPEN_IN_PORTAL;
+        } else if (AzureActionEnum.SHOW_PROPERTIES.equals(actionEnum)) {
+            return AzureAllIcons.Common.SHOW_PROPERTIES;
+        } else if (AzureActionEnum.START.equals(actionEnum)) {
+            return AzureAllIcons.Common.START;
+        }
+        return null;
+    }
+
+    @Override
+    public Icon loadIconByNodeClassWithStates(Class<? extends Node> clazz, boolean running, boolean updating) {
+        ImmutableList<Icon> iconList = NodeIconsMap.NODE_TO_STATE_ICONS.get(clazz);
+        if (CollectionUtils.isEmpty(iconList)) {
+            return null;
+        }
+        Icon runningIcon = iconList.size() > 0 ? iconList.get(0) : null;
+        Icon stoppedIcon = iconList.size() > 1 ? iconList.get(1) : null;
+        Icon updatingIcon = iconList.size() > 2 ? iconList.get(2) : null;
+        return running ? runningIcon : !updating ? stoppedIcon : updatingIcon;
+    }
+
+    @Override
+    public Icon loadIconByNodeClass(Class<? extends Node> clazz) {
+        return NodeIconsMap.NODE_TO_ICONS.get(clazz);
+    }
+
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
         LightVirtualFile virtualFile = null;
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
@@ -670,6 +800,14 @@ public class UIHelperImpl implements UIHelper {
     private LightVirtualFile createVirtualFile(String name, String type, String icon, String sid, String resId) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
         itemVirtualFile.setFileType(getFileType(type, icon));
+        itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
+        itemVirtualFile.putUserData(RESOURCE_ID, resId);
+        return itemVirtualFile;
+    }
+
+    private LightVirtualFile createVirtualFile(String name, String type, Icon icon, String sid, String resId) {
+        LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
+        itemVirtualFile.setFileType(getFileTypeWithIcon(type, icon));
         itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
         itemVirtualFile.putUserData(RESOURCE_ID, resId);
         return itemVirtualFile;

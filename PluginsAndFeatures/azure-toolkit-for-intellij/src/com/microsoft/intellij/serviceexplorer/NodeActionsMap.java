@@ -28,6 +28,9 @@ import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
+import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
+import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
+import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLShowPropertiesAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightRecordAction;
@@ -53,6 +56,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
@@ -87,6 +92,8 @@ public class NodeActionsMap {
                 .add(CreateFunctionAppAction.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
+        node2Actions.put(MySQLModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateMySQLAction.class).build());
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,
@@ -118,6 +125,13 @@ public class NodeActionsMap {
 
         node2Actions.put(FunctionAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());
+
+        node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(MySQLNode.OpenInBrowserAction.class)
+                .add(MySQLShowPropertiesAction.class).add(MySQLConnectToServerAction.class)//.add(MySQLBindIntoAction.class)
+                .add(MySQLNode.StartAzureMySQLAction.class).add(MySQLNode.RestartAzureMySQLAction.class)
+                .add(MySQLNode.StopAzureMySQLAction.class).add(MySQLNode.DeleteAzureMySQLAction.class)
+                .build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)
