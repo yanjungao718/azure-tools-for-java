@@ -207,12 +207,6 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         propertyChangeSupport.firePropertyChange("iconPath", oldValue, iconPath);
     }
 
-    /*public void setAzureIcon(AzureIcon azureIcon) {
-        AzureIcon oldValue = this.azureIcon;
-        this.azureIcon = azureIcon;
-        propertyChangeSupport.firePropertyChange("azureIcon", oldValue, azureIcon);
-    }*/
-
     /**
      * higher priority than iconPath
      */
