@@ -66,10 +66,7 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
     @Override
     protected List<? extends DatabaseInner> loadItems() throws Exception {
-        if (subscription == null) {
-            return new ArrayList<>();
-        }
-        if (server == null || !ServerState.READY.equals(server.userVisibleState())) {
+        if (Objects.isNull(subscription) || Objects.isNull(server) || !ServerState.READY.equals(server.userVisibleState())) {
             return new ArrayList<>();
         }
         return MySQLMvpModel.DatabaseMvpModel.listDatabases(subscription.subscriptionId(), server);
