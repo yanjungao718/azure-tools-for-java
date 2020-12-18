@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import lombok.extern.java.Log;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.List;
@@ -65,11 +66,17 @@ public abstract class AzureDialog<T> extends AzureDialogWrapper {
     @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().validateData();
-        this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR));
-        return infos.stream()
-                    .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK)
+        this.setOKActionEnabled(infos.stream().noneMatch(
+                i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
+        List<ValidationInfo> resultList = infos.stream()
+                    .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
                     .map(AzureDialog::toIntellijValidationInfo)
                     .collect(Collectors.toList());
+        // this is in order to let ok action disable if only there is any uninitialized filed.
+        if (infos.stream().filter(e -> AzureValidationInfo.UNINITIALIZED.equals(e)).count() > 0L) {
+            setErrorInfoAll(resultList);
+        }
+        return resultList;
     }
 
     //TODO: @wangmi move to some util class
