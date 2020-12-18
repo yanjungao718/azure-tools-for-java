@@ -46,8 +46,6 @@ public class AzureAllIcons {
 
     public static final class MySQL {
 
-        private static final String MYSQL_BASE_DIR = ICON_BASE_DIR + "mysql/";
-
         public static final AzureIcon MODULE = loadAzureIcon(ICON_BASE_DIR + "mysql/MySQL.svg");
 
         public static final AzureIcon RUNNING = loadAzureIcon(ICON_BASE_DIR + "mysql/MySQLRunning.svg");
