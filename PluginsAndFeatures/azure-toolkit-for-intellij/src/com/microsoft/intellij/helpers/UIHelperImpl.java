@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -65,12 +65,7 @@ import com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
-import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditor;
-import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider;
-import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
-import com.microsoft.intellij.helpers.storage.QueueFileEditor;
-import com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider;
-import com.microsoft.intellij.helpers.storage.TableFileEditor;
+import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.intellij.serviceexplorer.NodeIconsMap;
@@ -78,13 +73,11 @@ import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
-import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
@@ -93,7 +86,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
@@ -698,43 +691,22 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public Icon loadIconByAction(AzureActionEnum actionEnum) {
-        if (AzureActionEnum.REFRESH.equals(actionEnum)) {
-            return AzureAllIcons.Common.RESTART;
-        } else if (AzureActionEnum.CREATE.equals(actionEnum)) {
-            return AzureAllIcons.Common.CREATE;
-        } else if (AzureActionEnum.START.equals(actionEnum)) {
-            return AzureAllIcons.Common.START;
-        } else if (AzureActionEnum.STOP.equals(actionEnum)) {
-            return AzureAllIcons.Common.STOP;
-        } else if (AzureActionEnum.RESTART.equals(actionEnum)) {
-            return AzureAllIcons.Common.RESTART;
-        } else if (AzureActionEnum.DELETE.equals(actionEnum)) {
-            return AzureAllIcons.Common.DELETE;
-        } else if (AzureActionEnum.OPEN_IN_PORTAL.equals(actionEnum)) {
-            return AzureAllIcons.Common.OPEN_IN_PORTAL;
-        } else if (AzureActionEnum.SHOW_PROPERTIES.equals(actionEnum)) {
-            return AzureAllIcons.Common.SHOW_PROPERTIES;
-        } else if (AzureActionEnum.START.equals(actionEnum)) {
-            return AzureAllIcons.Common.START;
-        }
-        return null;
+        Preconditions.checkNotNull(actionEnum, "actionEnum cannot be null.");
+        return NodeIconsMap.BASIC_ACTION_TO_ICON_MAP.get(actionEnum);
     }
 
     @Override
-    public Icon loadIconByNodeClassWithStates(Class<? extends Node> clazz, boolean running, boolean updating) {
-        ImmutableList<Icon> iconList = NodeIconsMap.NODE_TO_STATE_ICONS.get(clazz);
-        if (CollectionUtils.isEmpty(iconList)) {
-            return null;
+    public Icon loadIconByNodeClass(Class<? extends Node> clazz, NodeState... states) {
+        Preconditions.checkNotNull(states, "states cannot be null.");
+        ImmutableMap<NodeState, Icon> iconMap = NodeIconsMap.NODE_TO_ICON_WITH_STATE_MAP.get(clazz);
+        if (MapUtils.isNotEmpty(iconMap)) {
+            for (NodeState state : states) {
+                if (iconMap.containsKey(state)) {
+                    return iconMap.get(state);
+                }
+            }
         }
-        Icon runningIcon = iconList.size() > 0 ? iconList.get(0) : null;
-        Icon stoppedIcon = iconList.size() > 1 ? iconList.get(1) : null;
-        Icon updatingIcon = iconList.size() > 2 ? iconList.get(2) : null;
-        return running ? runningIcon : !updating ? stoppedIcon : updatingIcon;
-    }
-
-    @Override
-    public Icon loadIconByNodeClass(Class<? extends Node> clazz) {
-        return NodeIconsMap.NODE_TO_ICONS.get(clazz);
+        return NodeIconsMap.NODE_TO_ICON_MAP.get(clazz);
     }
 
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {

@@ -22,9 +22,11 @@
 
 package com.microsoft.intellij.serviceexplorer;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.intellij.helpers.AzureAllIcons;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 
@@ -34,13 +36,29 @@ import java.util.Map;
 
 public class NodeIconsMap {
 
-    public static final Map<Class<? extends Node>, Icon> NODE_TO_ICONS = new HashMap<>();
-    public static final Map<Class<? extends Node>, ImmutableList<Icon>> NODE_TO_STATE_ICONS = new HashMap<>();
+    public static final Map<AzureActionEnum, Icon> BASIC_ACTION_TO_ICON_MAP = new HashMap<>();
+    public static final Map<Class<? extends Node>, Icon> NODE_TO_ICON_MAP = new HashMap<>();
+    public static final Map<Class<? extends Node>, ImmutableMap<NodeState, Icon>> NODE_TO_ICON_WITH_STATE_MAP = new HashMap<>();
 
     static {
-        NODE_TO_ICONS.put(MySQLModule.class, AzureAllIcons.MySQL.MODULE);
+        // basic action to icon map.
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.REFRESH, AzureAllIcons.Common.RESTART);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.CREATE, AzureAllIcons.Common.CREATE);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.START, AzureAllIcons.Common.START);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.STOP, AzureAllIcons.Common.STOP);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.RESTART, AzureAllIcons.Common.RESTART);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.DELETE, AzureAllIcons.Common.DELETE);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.OPEN_IN_PORTAL, AzureAllIcons.Common.OPEN_IN_PORTAL);
+        BASIC_ACTION_TO_ICON_MAP.put(AzureActionEnum.SHOW_PROPERTIES, AzureAllIcons.Common.SHOW_PROPERTIES);
 
-        NODE_TO_STATE_ICONS.put(MySQLNode.class, new ImmutableList.Builder<Icon>()
-                .add(AzureAllIcons.MySQL.RUNNING, AzureAllIcons.MySQL.STOPPED, AzureAllIcons.MySQL.UPDATING).build());
+        // node to icon map.
+        NODE_TO_ICON_MAP.put(MySQLModule.class, AzureAllIcons.MySQL.MODULE);
+
+        // node to icon with state map.
+        NODE_TO_ICON_WITH_STATE_MAP.put(MySQLNode.class, new ImmutableMap.Builder<NodeState, Icon>()
+                .put(NodeState.RUNNING, AzureAllIcons.MySQL.RUNNING)
+                .put(NodeState.STOPPED, AzureAllIcons.MySQL.STOPPED)
+                .put(NodeState.UPDATING, AzureAllIcons.MySQL.UPDATING)
+                .build());
     }
 }

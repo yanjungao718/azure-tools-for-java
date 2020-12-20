@@ -215,8 +215,8 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     /**
      * optionally to custom icon for different state.
      */
-    protected Icon getIconByState(boolean running, boolean updating) {
-        return DefaultLoader.getUIHelper().loadIconByNodeClassWithStates(this.getClass(), running, updating);
+    protected Icon getIconByState(NodeState... states) {
+        return DefaultLoader.getUIHelper().loadIconByNodeClass(this.getClass(), states);
     }
 
     public void addChildNode(Node child) {
