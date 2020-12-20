@@ -53,7 +53,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
     private static final String MYSQL_DEFAULT_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String MYSQL_PATTERN_URL = "jdbc:mysql://%s:3306?serverTimezone=UTC&useSSL=true&requireSSL=false";
     private static final String NOT_SUPPORT_ERROR_MESSAGE = "Database plugin isn't installed in your IDE.";
-    private static final String NOT_SUPPORT_ERROR_ACTION = "Please note this action is only supported in Intellij Ultimate edition.";
+    private static final String NOT_SUPPORT_ERROR_ACTION = "note this action is only supported in Intellij Ultimate edition.";
     private static final String NOT_SUPPORT_IU_DIALOG_TITLE = "Azure Toolkit Error";
     private static final String ERROR_MESSAGE_PATTERN = "Failed to open datasource management dialog for %s";
     private static final String ERROR_ACTION = "please try again. ";
