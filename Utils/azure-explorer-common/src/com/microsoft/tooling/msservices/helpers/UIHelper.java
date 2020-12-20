@@ -32,6 +32,7 @@ import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
@@ -177,11 +178,7 @@ public interface UIHelper {
         return null;
     }
 
-    default Icon loadIconByNodeClass(Class<? extends Node> clazz) {
-        return null;
-    }
-
-    default Icon loadIconByNodeClassWithStates(Class<? extends Node> clazz, boolean running, boolean updating) {
+    default Icon loadIconByNodeClass(Class<? extends Node> clazz, NodeState... states) {
         return null;
     }
 
