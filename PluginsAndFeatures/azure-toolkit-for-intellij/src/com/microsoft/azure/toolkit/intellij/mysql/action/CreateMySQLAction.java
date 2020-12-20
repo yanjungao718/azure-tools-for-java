@@ -79,7 +79,7 @@ public class CreateMySQLAction extends NodeActionListener {
             DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
         final MySQLCreationDialog dialog = new MySQLCreationDialog(project);
-        dialog.setOkActionListener((data) -> this.createAzureMySQL(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project, dialog));
+        dialog.setOkActionListener((data) -> this.createAzureMySQL(data, () -> dialog.close(), project, dialog));
         dialog.show();
     }
 

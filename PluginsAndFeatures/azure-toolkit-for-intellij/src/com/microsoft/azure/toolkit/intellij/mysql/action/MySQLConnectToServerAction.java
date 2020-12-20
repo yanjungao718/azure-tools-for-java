@@ -22,10 +22,10 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql.action;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
@@ -52,16 +52,17 @@ public class MySQLConnectToServerAction extends NodeActionListener {
     private static final String MYSQL_PATTERN_NAME = "Azure Database for MySQL - %s";
     private static final String MYSQL_DEFAULT_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String MYSQL_PATTERN_URL = "jdbc:mysql://%s:3306?serverTimezone=UTC&useSSL=true&requireSSL=false";
-    private static final String NOT_SUPPORT_IU_DIALOG_MESSAGE =
-            "Database plugin isn't installed in your IDE. Please note this action is only supported in Intellij Ultimate edition.";
+    private static final String NOT_SUPPORT_ERROR_MESSAGE = "Database plugin isn't installed in your IDE.";
+    private static final String NOT_SUPPORT_ERROR_ACTION = "Please note this action is only supported in Intellij Ultimate edition.";
     private static final String NOT_SUPPORT_IU_DIALOG_TITLE = "Azure Toolkit Error";
+    private static final String ERROR_MESSAGE_PATTERN = "Failed to open datasource management dialog for %s";
+    private static final String ERROR_ACTION = "please try again. ";
 
     private final MySQLNode node;
     private final Project project;
 
     public MySQLConnectToServerAction(MySQLNode node) {
         super();
-        AllIcons.Debugger.Db_db_object.toString();
         this.node = node;
         this.project = (Project) node.getProject();
     }
@@ -93,7 +94,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
             DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
         if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
-            DefaultLoader.getUIHelper().showError(NOT_SUPPORT_IU_DIALOG_MESSAGE, NOT_SUPPORT_IU_DIALOG_TITLE);
+            throw new AzureToolkitRuntimeException(NOT_SUPPORT_ERROR_MESSAGE, NOT_SUPPORT_ERROR_ACTION);
         } else {
             this.openDataSourceManagerDialog(project);
         }
@@ -110,7 +111,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
             MethodUtils.invokeMethod(builder, true, "withUser", node.getServer().administratorLogin() + "@" + node.getServer().name());
             MethodUtils.invokeMethod(builder, true, "commit");
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            throw new AzureToolkitRuntimeException(String.format(ERROR_MESSAGE_PATTERN, node.getServer().name()), ERROR_ACTION);
         }
         showDataSourceManagerDialog(dbPsiFacade, registry);
     }
@@ -122,7 +123,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
             Constructor constructor = dataSourceRegistryClazz.getConstructor(parameterTypes);
             return constructor.newInstance(project);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            return null;
+            throw new AzureToolkitRuntimeException(String.format(ERROR_MESSAGE_PATTERN, node.getServer().name()), ERROR_ACTION);
         }
     }
 
@@ -131,7 +132,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
             Class dbPsiFacadeClass = Class.forName("com.intellij.database.psi.DbPsiFacade");
             return MethodUtils.invokeStaticMethod(dbPsiFacadeClass, "getInstance", project);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return null;
+            throw new AzureToolkitRuntimeException(String.format(ERROR_MESSAGE_PATTERN, node.getServer().name()), ERROR_ACTION);
         }
     }
 
@@ -140,6 +141,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
             Class dataSourceManagerDialogClazz = Class.forName("com.intellij.database.view.ui.DataSourceManagerDialog");
             MethodUtils.invokeStaticMethod(dataSourceManagerDialogClazz, "showDialog", dbPsiFacade, registry);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new AzureToolkitRuntimeException(String.format(ERROR_MESSAGE_PATTERN, node.getServer().name()), ERROR_ACTION);
         }
     }
 
