@@ -254,7 +254,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
         final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
         menuItem.setEnabled(nodeAction.isEnabled());
-        Icon icon = nodeAction.getListeners().get(0).getIcon();
+        Icon icon = nodeAction.getNodeIcon();
         if (Objects.nonNull(icon)) {
             menuItem.setIcon(icon);
         } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
