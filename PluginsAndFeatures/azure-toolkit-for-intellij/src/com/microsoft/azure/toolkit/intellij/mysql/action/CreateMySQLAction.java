@@ -79,15 +79,15 @@ public class CreateMySQLAction extends NodeActionListener {
             DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
         final MySQLCreationDialog dialog = new MySQLCreationDialog(project);
-        dialog.setOkActionListener((data) -> this.createAzureMySQL(data, () -> dialog.close(), project, dialog));
+        dialog.setOkActionListener((data) -> this.createAzureMySQL(data, project, dialog));
         dialog.show();
     }
 
-    private void createAzureMySQL(final AzureMySQLConfig config, Runnable callback, final Project project, MySQLCreationDialog dialog) {
+    private void createAzureMySQL(final AzureMySQLConfig config, final Project project, MySQLCreationDialog dialog) {
         final Runnable runnable = () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
-            callback.run();
+            DefaultLoader.getIdeHelper().invokeLater(dialog::close);
             Server server = AzureMySQLService.getInstance().createMySQL(config);
             refreshAzureExplorer(server);
         };
