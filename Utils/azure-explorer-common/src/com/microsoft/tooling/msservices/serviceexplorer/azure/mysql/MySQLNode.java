@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import lombok.Getter;
@@ -73,7 +74,7 @@ public class MySQLNode extends Node {
         addAction(new BasicActionListener(new StartAzureMySQLAction(), AzureActionEnum.START));
         addAction(new BasicActionListener(new StopAzureMySQLAction(), AzureActionEnum.STOP));
         addAction(new BasicActionListener(new RestartAzureMySQLAction(), AzureActionEnum.RESTART));
-        addAction(new BasicActionListener(new DeleteAzureMySQLAction(), AzureActionEnum.DELETE));
+        addAction(AzureActionEnum.DELETE.getName(), new DeleteAzureMySQLAction());
         addAction(new BasicActionListener(new OpenInBrowserAction(), AzureActionEnum.OPEN_IN_PORTAL));
         initActions();
     }
@@ -104,6 +105,21 @@ public class MySQLNode extends Node {
         public DeleteAzureMySQLAction() {
             super(MySQLNode.this, String.format(DELETE_PROMPT_MESSAGE, MySQLNode.this.name),
                     String.format(ACTION_DOING + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, MySQLNode.this.name));
+        }
+
+        @Override
+        public int getGroup() {
+            return super.getGroup() + AzureActionEnum.DELETE.getGroup();
+        }
+
+        @Override
+        public int getPriority() {
+            return super.getPriority() + AzureActionEnum.DELETE.getPriority();
+        }
+
+        @Override
+        public Icon getIcon() {
+            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.DELETE);
         }
 
         @Override
