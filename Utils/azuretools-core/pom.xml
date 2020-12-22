@@ -261,10 +261,8 @@
             <artifactId>azure-mgmt-appplatform</artifactId>
         </dependency>
 	<dependency>
-        <!--<groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>-->
         <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>
 		<artifactId>azure-mgmt-mysql</artifactId>
-        <!--<version>1.0.0-beta-4</version>-->
         <version>1.0.0-beta</version>
 	</dependency>
         <dependency>
@@ -311,11 +309,4 @@
         </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>staging</id>
-            <name>staging</name>
-            <url>https://oss.sonatype.org/content/repositories/commicrosoftazure-4389</url>
-        </repository>
-    </repositories>
 </project>
