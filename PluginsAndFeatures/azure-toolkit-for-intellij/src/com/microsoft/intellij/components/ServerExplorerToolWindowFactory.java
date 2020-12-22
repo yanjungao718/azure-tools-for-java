@@ -33,6 +33,7 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
@@ -56,10 +57,15 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -67,8 +73,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -95,6 +107,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         tree.setRootVisible(false);
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        new TreeSpeedSearch(tree);
 
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
@@ -223,24 +236,33 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private JPopupMenu createPopupMenuForNode(Node node) {
-        JPopupMenu menu = new JPopupMenu();
-
-        for (final NodeAction nodeAction : node.getNodeActions()) {
-            if (!nodeAction.isEnabled()) {
-                continue;
+        final JPopupMenu menu = new JPopupMenu();
+        final LinkedHashMap<Integer, List<NodeAction>> sortedNodeActionsGroupMap =
+            node.getNodeActions().stream()
+                .sorted(Comparator.comparing(NodeAction::getGroup).thenComparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
+                .collect(Collectors.groupingBy(NodeAction::getGroup, LinkedHashMap::new, Collectors.toList()));
+        // Convert node actions map to menu items, as linked hash map keeps ordered, no need to sort again
+        sortedNodeActionsGroupMap.forEach((groupNumber, actions) -> {
+            if (menu.getComponentCount() > 0) {
+                menu.addSeparator();
             }
-            JMenuItem menuItem = new JMenuItem(nodeAction.getName());
-            menuItem.setEnabled(nodeAction.isEnabled());
-            if (nodeAction.getIconPath() != null) {
-                menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
-            }
-            // delegate the menu item click to the node action's listeners
-            menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
-
-            menu.add(menuItem);
-        }
-
+            actions.stream().map(this::createMenuItemFromNodeAction).forEachOrdered(menu::add);
+        });
         return menu;
+    }
+
+    private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
+        final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
+        menuItem.setEnabled(nodeAction.isEnabled());
+        Icon icon = nodeAction.getNodeIcon();
+        if (Objects.nonNull(icon)) {
+            menuItem.setIcon(icon);
+        } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
+            menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
+        }
+        // delegate the menu item click to the node action's listeners
+        menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
+        return menuItem;
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
@@ -259,11 +281,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode, project));
 
         // create child tree nodes for each child node
-        if (node.hasChildNodes()) {
-            for (Node childNode : node.getChildNodes()) {
-                treeNode.add(createTreeNode(childNode, project));
-            }
-        }
+        node.getChildNodes().stream()
+            .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
+            .map(childNode -> createTreeNode(childNode, project))
+            .forEach(treeNode::add);
 
         return treeNode;
     }
@@ -380,7 +401,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             final String iconPath = node.getIconPath();
             if (Objects.nonNull(icon)) {
                 setIcon(icon);
-            } else if (iconPath != null && !iconPath.isEmpty()) {
+            } else if (StringUtils.isNotBlank(iconPath)) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }
 

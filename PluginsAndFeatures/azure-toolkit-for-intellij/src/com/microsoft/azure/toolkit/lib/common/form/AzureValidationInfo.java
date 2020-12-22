@@ -34,6 +34,8 @@ public class AzureValidationInfo {
         AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
     public static final AzureValidationInfo OK =
         AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
+    public static final AzureValidationInfo UNINITIALIZED =
+        AzureValidationInfo.builder().type(Type.INFO).message("UNINITIALIZED").build();
     private final AzureFormInput<?> input;
     private final String message;
     @Builder.Default

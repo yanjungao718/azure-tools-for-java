@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.47.0</version>
+        <version>3.48.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -259,6 +259,11 @@
             <groupId>com.microsoft.azure.appplatform.v2019_05_01_preview</groupId>
             <artifactId>azure-mgmt-appplatform</artifactId>
         </dependency>
+	<dependency>
+        <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>
+		<artifactId>azure-mgmt-mysql</artifactId>
+        <version>1.0.0-beta</version>
+	</dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-tools-common</artifactId>
@@ -309,4 +314,5 @@
             <artifactId>jtwig-core</artifactId>
         </dependency>
     </dependencies>
+
 </project>

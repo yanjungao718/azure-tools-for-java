@@ -32,8 +32,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import lombok.extern.java.Log;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 
@@ -97,7 +99,19 @@ public class AppServiceFileNode extends AzureRefreshableNode {
     }
 
     @Override
+    public int getPriority() {
+        return this.file.getType() == AppServiceFile.Type.DIRECTORY ? Sortable.HIGH_PRIORITY : Sortable.DEFAULT_PRIORITY;
+    }
+
+    @Override
     public Icon getIcon() {
         return DefaultLoader.getIdeHelper().getFileTypeIcon(this.file.getName(), this.file.getType() == AppServiceFile.Type.DIRECTORY);
+    }
+
+    @Override
+    public String getToolTip() {
+        return file.getType() == AppServiceFile.Type.DIRECTORY ?
+               String.format("Type: %s Date modified: %s", file.getMime(), file.getMtime()) :
+               String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), file.getMtime());
     }
 }

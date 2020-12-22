@@ -31,14 +31,36 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.*;
 
+import javax.swing.*;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NodeActionListener implements EventListener {
+public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
+    protected int priority = Sortable.DEFAULT_PRIORITY;
+    protected int group = Groupable.DEFAULT_GROUP;
+
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
     }
 
     protected void beforeActionPerformed(NodeActionEvent e) {
@@ -68,6 +90,10 @@ public abstract class NodeActionListener implements EventListener {
 
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
+
+    public Icon getIcon() {
+        return null;
+    }
 
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
@@ -133,4 +159,5 @@ public abstract class NodeActionListener implements EventListener {
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
     }
+
 }
