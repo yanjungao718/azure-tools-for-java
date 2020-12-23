@@ -41,7 +41,7 @@ public class Constant {
             + "with exception:\n%s";
     public static final String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run, with exception:\n%s";
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM mcr.microsoft.com/java/tomcat:8-zulu-alpine-tomcat-9" + System.lineSeparator()
-            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT" +  + System.lineSeparator()
+            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT" + System.lineSeparator()
             + "COPY %s /usr/local/tomcat/webapps/ROOT.war" + System.lineSeparator();
     public static final String DOCKERFILE_CONTENT_SPRING = "FROM azul/zulu-openjdk-alpine:8\r\n" + "VOLUME /tmp\r\n"
             + "EXPOSE 8080\r\n" + "COPY %s app.jar\r\n"
