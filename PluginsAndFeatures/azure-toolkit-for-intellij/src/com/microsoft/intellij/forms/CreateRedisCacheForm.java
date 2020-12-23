@@ -61,6 +61,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -87,6 +88,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private JTextField txtNewResGrp;
     private JRadioButton rdoUseExist;
     private JComboBox<String> cbUseExist;
+    // TODO(qianjin) : use AzureComboBox
     private JComboBox<Location> cbLocations;
     private JComboBox<String> cbPricing;
     private JCheckBox chkNoSSL;
@@ -122,6 +124,11 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private static final String NEW_RES_GRP_ERROR_FORMAT = "The resource group: %s is already existed.";
     private static final String RES_GRP_NAME_RULE = "Resource group name can only allows up to 90 characters, include"
             + " alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period.";
+    private static final List<String> SUPPORTED_REGIONS = Arrays.asList("centralus", "eastasia", "southeastasia", "eastus", "eastus2", "westus",
+            "westus2", "northcentralus", "southcentralus", "westcentralus", "northeurope", "westeurope", "japaneast", "japanwest", "brazilsouth",
+            "australiasoutheast", "australiaeast", "westindia", "southindia", "centralindia", "canadacentral", "canadaeast", "uksouth", "ukwest",
+            "koreacentral", "koreasouth", "francecentral", "southafricanorth", "uaenorth", "australiacentral", "switzerlandnorth", "germanywestcentral",
+            "norwayeast", "australiacentral2", "eastus2euap", "centraluseuap");
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
@@ -398,7 +405,8 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
         List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
         if (locations != null) {
-            List<Location> sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+            List<Location> sortedLocations = locations.stream().filter(e -> SUPPORTED_REGIONS.contains(e.name()))
+                    .sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
             cbLocations.setModel(new DefaultComboBoxModel(sortedLocations.toArray()));
         }
         List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
