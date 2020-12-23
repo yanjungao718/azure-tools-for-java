@@ -52,12 +52,8 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     @Override
     @AzureOperation(value = "remove function app", type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
-        try {
-            functionModulePresenter.onDeleteFunctionApp(sid, id);
-            removeDirectChildNode(node);
-        } finally {
-            functionModulePresenter.onModuleRefresh();
-        }
+        functionModulePresenter.onDeleteFunctionApp(sid, id);
+        removeDirectChildNode(node);
     }
 
     @Override
