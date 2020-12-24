@@ -23,12 +23,17 @@
 package com.microsoft.azure.toolkit.lib.common.operation;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitOperationException;
+import lombok.extern.java.Log;
 import org.apache.commons.collections4.CollectionUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 
+import java.util.Objects;
+import java.util.logging.Level;
+
 @Aspect
+@Log
 public final class AzureOperationEnhancer {
 
     @Pointcut("execution(@AzureOperation * *..*.*(..))")
@@ -40,15 +45,19 @@ public final class AzureOperationEnhancer {
         final AzureOperationRef operation = toOperationRef(point);
         final AzureOperation.Type type = AzureOperationUtils.getAnnotation(operation).type();
         if (type == AzureOperation.Type.ACTION) {
-            AzureOperationsContext.operations.get().clear();
+            AzureOperationsContext.clear();
         }
         AzureOperationsContext.push(operation);
     }
 
     @AfterReturning("operation()")
     public void exitOperation(JoinPoint point) {
-        if (CollectionUtils.isNotEmpty(AzureOperationsContext.operations.get())) {
-            AzureOperationsContext.pop();
+        final AzureOperationRef operation = toOperationRef(point);
+        if (CollectionUtils.isNotEmpty(AzureOperationsContext.getOperations())) {
+            final AzureOperationRef popped = AzureOperationsContext.pop();
+            if (!Objects.equals(popped, operation)) {
+                log.log(Level.SEVERE, "!!!operation stack is wrongly managed!!!");
+            }
         }
     }
 
