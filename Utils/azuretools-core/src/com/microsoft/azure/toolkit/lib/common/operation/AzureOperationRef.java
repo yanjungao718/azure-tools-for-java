@@ -23,15 +23,26 @@
 package com.microsoft.azure.toolkit.lib.common.operation;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.lang.reflect.Method;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class AzureOperationRef {
     private Method method;
     private String[] paramNames;
     private Object[] paramValues;
     private Object instance;
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof AzureOperationRef)) {
+            return false;
+        }
+        final AzureOperationRef operation = (AzureOperationRef) obj;
+        return operation.getMethod() == this.method || operation.getMethod().equals(this.method);
+    }
 }

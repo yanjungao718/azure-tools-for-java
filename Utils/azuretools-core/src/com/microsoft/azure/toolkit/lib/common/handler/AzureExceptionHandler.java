@@ -22,10 +22,13 @@
 package com.microsoft.azure.toolkit.lib.common.handler;
 
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import lombok.extern.java.Log;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.InterruptedIOException;
+import java.util.logging.Level;
 
+@Log
 public abstract class AzureExceptionHandler {
     private static AzureExceptionHandler handler;
 
@@ -53,11 +56,13 @@ public abstract class AzureExceptionHandler {
     }
 
     public void handleException(Throwable throwable, @Nullable AzureExceptionAction... action) {
+        log.log(Level.WARNING, "caught an error in AzureExceptionHandler", throwable);
         onHandleException(throwable, action);
     }
 
     public void handleException(Throwable throwable, boolean isBackGround, @Nullable AzureExceptionAction... action) {
-        onHandleException(throwable, isBackGround, action);
+        log.log(Level.WARNING, "caught an error in AzureExceptionHandler", throwable);
+        this.onHandleException(throwable, isBackGround, action);
     }
 
     protected abstract void onHandleException(Throwable throwable, @Nullable AzureExceptionAction[] action);
