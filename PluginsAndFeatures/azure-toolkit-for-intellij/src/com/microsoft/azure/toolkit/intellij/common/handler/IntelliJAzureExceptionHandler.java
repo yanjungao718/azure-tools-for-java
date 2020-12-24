@@ -29,6 +29,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureToolkitErrorDialog;
@@ -46,10 +48,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,8 +70,9 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
 
     @Override
     protected void onHandleException(final Throwable throwable, final @Nullable AzureExceptionAction[] actions) {
-        // todo: detect foreground/background from call stack
-        onHandleException(throwable, false, actions);
+        final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+        final boolean background = Objects.isNull(indicator) || !indicator.isModal();
+        onHandleException(throwable, background, actions);
     }
 
     @Override

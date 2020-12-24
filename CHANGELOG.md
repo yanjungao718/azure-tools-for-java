@@ -65,11 +65,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ## 3.47.0
 
 ### Added
-- Add Azure MySQL support in Azure Toolkits
-  - Manage Azure MySQL instance (create/start/stop/restart/configure/show properties)
-  - Configure Azure MySQL to allow access it from azure services and local PC
-  - Show sample of JDBC connection strings on MySQL
-  - Open and connect to MySQL server by Intellij database tools
+- Add Azure Database for MySQL support in Azure Toolkits
+  - Manage Azure Database for MySQL instance (create/start/stop/restart/configure/show properties)
+  - Configure Azure Database for MySQL to allow access it from azure services and local PC
+  - Show sample of JDBC connection strings on Azure Database for MySQL
+  - Open and connect to Azure Database for MySQL server by Intellij database tools
 - Add Stacktrace filter in Spark console
 - Enable speed search in subscription table
 - Enable speed search in Azure explorer tree
