@@ -24,7 +24,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 public enum WebAppBaseState {
     RUNNING,
-    STOPPED;
+    STOPPED,
+    UPDATING;
 
     private static WebAppBaseState[] copyOfValues = values();
 
