@@ -53,7 +53,7 @@ public class MySQLNode extends Node {
     private ServerState serverState;
 
     public MySQLNode(AzureRefreshableNode parent, String subscriptionId, Server server) {
-        super(server.id(), server.name(), parent, true);
+        super(server.id(), server.name(), parent, null, true);
         this.subscriptionId = subscriptionId;
         this.server = server;
         this.serverState = server.userVisibleState();
@@ -116,8 +116,8 @@ public class MySQLNode extends Node {
         }
 
         @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.DELETE);
+        public AzureIconSymbol getIconSymbol() {
+            return AzureIconSymbol.Common.DELETE;
         }
 
         @Override
