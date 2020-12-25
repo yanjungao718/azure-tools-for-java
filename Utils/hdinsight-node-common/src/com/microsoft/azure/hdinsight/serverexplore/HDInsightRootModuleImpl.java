@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.serverexplore;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.IconPathBuilder;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -38,9 +37,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class HDInsightRootModuleImpl extends HDInsightRootModule {
     private static final String HDINSIGHT_NODE_EXPAND = "HDInsightExplorer.HDInsightNodeExpand";

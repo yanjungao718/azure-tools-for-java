@@ -56,7 +56,7 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException{
+    protected void refreshItems() throws AzureCmdException {
         if (!isFeatureEnabled()) {
             return;
         }
