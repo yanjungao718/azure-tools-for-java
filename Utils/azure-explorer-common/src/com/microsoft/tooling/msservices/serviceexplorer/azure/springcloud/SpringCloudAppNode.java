@@ -27,6 +27,7 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.App
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -35,6 +36,7 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -78,6 +80,24 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 fillData(event.getAppInner(), event.getDeploymentInner());
             }
         }, this.app.id());
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        if (Objects.isNull(deploy)) {
+            return AzureIconSymbol.SpringCloud.UNKNOWN;
+        }
+        DeploymentResourceStatus status1 = deploy.properties().status();
+        boolean unknown = DeploymentResourceStatus.UNKNOWN.equals(status1);
+        boolean running = DeploymentResourceStatus.RUNNING.equals(status1);
+        boolean pending = DeploymentResourceStatus.ALLOCATING.equals(status1)
+                || DeploymentResourceStatus.COMPILING.equals(status1)
+                || DeploymentResourceStatus.UPGRADING.equals(status1);
+        boolean stopped = DeploymentResourceStatus.STOPPED.equals(status1);
+        boolean failed = DeploymentResourceStatus.FAILED.equals(status1);
+        return unknown ? AzureIconSymbol.SpringCloud.UNKNOWN : running ? AzureIconSymbol.SpringCloud.RUNNING :
+                pending ? AzureIconSymbol.SpringCloud.PENDING : stopped ? AzureIconSymbol.SpringCloud.STOPPED :
+                        failed ? AzureIconSymbol.SpringCloud.FAILED : AzureIconSymbol.SpringCloud.UPDATING;
     }
 
     @Override

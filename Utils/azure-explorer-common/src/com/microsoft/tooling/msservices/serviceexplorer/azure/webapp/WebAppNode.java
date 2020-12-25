@@ -72,6 +72,19 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        boolean isLinux = OS_LINUX.equalsIgnoreCase(webapp.operatingSystem().toString());
+        boolean running = WebAppBaseState.RUNNING.equals(state);
+        boolean updating = WebAppBaseState.UPDATING.equals(state);
+        if (isLinux) {
+            return running ? AzureIconSymbol.WebApp.RUNNING_ON_LINUX : updating ?
+                    AzureIconSymbol.WebApp.UPDATING_ON_LINUX : AzureIconSymbol.WebApp.STOPPED_ON_LINUX;
+        } else {
+            return running ? AzureIconSymbol.WebApp.RUNNING : updating ? AzureIconSymbol.WebApp.UPDATING : AzureIconSymbol.WebApp.STOPPED;
+        }
+    }
+
+    @Override
     @AzureOperation(value = "refresh content of web app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         webAppNodePresenter.onNodeRefresh();

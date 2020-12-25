@@ -42,7 +42,7 @@ public class NodeAction implements Sortable, Groupable {
     private String iconPath;
     @Getter
     @Setter
-    private Icon nodeIcon;
+    private AzureIconSymbol iconSymbol;
 
     public NodeAction(Node node, String name) {
         this.node = node;

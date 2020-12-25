@@ -194,6 +194,14 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         }
     }
 
+    /**
+     * higher priority than iconPath and icon
+     */
+    @Nullable
+    public AzureIconSymbol getIconSymbol() {
+        return null;
+    }
+
     public String getIconPath() {
         return iconPath;
     }
@@ -239,7 +247,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         nodeAction.addListener(actionListener);
         nodeAction.setPriority(actionListener.getPriority());
         nodeAction.setGroup(actionListener.getGroup());
-        nodeAction.setNodeIcon(actionListener.getIcon());
+        nodeAction.setIconSymbol(actionListener.getIconSymbol());
         return nodeAction;
     }
 

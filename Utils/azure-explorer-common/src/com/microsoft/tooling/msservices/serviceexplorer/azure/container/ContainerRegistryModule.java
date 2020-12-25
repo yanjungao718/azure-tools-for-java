@@ -23,6 +23,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
@@ -40,6 +42,11 @@ public class ContainerRegistryModule extends AzureRefreshableNode {
         super(ACR_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
         containerRegistryPresenter = new ContainerRegistryModulePresenter<>();
         containerRegistryPresenter.onAttachView(ContainerRegistryModule.this);
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.ContainerRegistry.MODULE;
     }
 
     @Override

@@ -24,6 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -34,6 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
@@ -57,6 +59,8 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
     // node related
     private static final String CREATING_STATE = "Creating";
+    private static final String RUNNING_STATE = "Running";
+    private static final String STOPPED_STATE = "Stopped";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
 
     // action names
@@ -90,6 +94,13 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         this.provisionState = content.getProvisionState();
         this.subscriptionId = subscriptionId;
         loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState);
+        boolean stopped = STOPPED_STATE.equalsIgnoreCase(provisionState);
+        return running ? AzureIconSymbol.RedisCache.RUNNING : !stopped ? AzureIconSymbol.RedisCache.UPDATING : AzureIconSymbol.RedisCache.STOPPED;
     }
 
     // Show property action class

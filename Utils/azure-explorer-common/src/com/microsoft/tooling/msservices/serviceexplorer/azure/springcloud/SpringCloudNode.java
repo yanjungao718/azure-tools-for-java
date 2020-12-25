@@ -27,6 +27,7 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.App
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.ServiceResourceInner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -68,6 +69,11 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         springCloudNodePresenter = new SpringCloudNodePresenter<>();
         springCloudNodePresenter.onAttachView(this);
         loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.SpringCloud.CLUSTER;
     }
 
     private void notifyDataRefresh(SpringCloudAppEvent event) {
