@@ -63,8 +63,8 @@ public final class BasicActionListener extends NodeActionListener {
     }
 
     @Override
-    public Icon getIcon() {
-        return DefaultLoader.getUIHelper().loadIconByAction(actionEnum);
+    public AzureIconSymbol getIconSymbol() {
+        return delegate.getIconSymbol();
     }
 
     @Override
