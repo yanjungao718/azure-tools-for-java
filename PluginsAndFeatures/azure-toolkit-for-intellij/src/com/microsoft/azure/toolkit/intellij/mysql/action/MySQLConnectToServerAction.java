@@ -29,16 +29,15 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.helpers.AzureAllIcons;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
-import javax.swing.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -78,8 +77,8 @@ public class MySQLConnectToServerAction extends NodeActionListener {
     }
 
     @Override
-    public Icon getIcon() {
-        return AzureAllIcons.MySQL.CONNECT_TO_SERVER;
+    public AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.MySQL.CONNECT_TO_SERVER;
     }
 
     @Override

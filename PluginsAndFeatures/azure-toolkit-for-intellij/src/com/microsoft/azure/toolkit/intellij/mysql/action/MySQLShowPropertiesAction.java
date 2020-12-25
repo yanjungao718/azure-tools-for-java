@@ -22,14 +22,12 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql.action;
 
-import com.microsoft.intellij.helpers.AzureAllIcons;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-
-import javax.swing.*;
 
 @Name(MySQLShowPropertiesAction.ACTION_NAME)
 public class MySQLShowPropertiesAction extends NodeActionListener {
@@ -54,8 +52,8 @@ public class MySQLShowPropertiesAction extends NodeActionListener {
     }
 
     @Override
-    public Icon getIcon() {
-        return AzureAllIcons.Common.SHOW_PROPERTIES;
+    public AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.Common.SHOW_PROPERTIES;
     }
 
     @Override

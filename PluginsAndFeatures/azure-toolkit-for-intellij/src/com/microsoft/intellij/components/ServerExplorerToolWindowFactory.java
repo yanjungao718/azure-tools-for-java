@@ -47,12 +47,14 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -254,9 +256,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
         final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
         menuItem.setEnabled(nodeAction.isEnabled());
-        Icon icon = nodeAction.getNodeIcon();
-        if (Objects.nonNull(icon)) {
-            menuItem.setIcon(icon);
+        AzureIconSymbol iconSymbol = nodeAction.getIconSymbol();
+        if (Objects.nonNull(iconSymbol)) {
+            menuItem.setIcon(AzureIconLoader.loadIcon(iconSymbol));
         } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
             menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
         }
@@ -399,8 +401,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
             final Icon icon = node.getIcon();
             final String iconPath = node.getIconPath();
+            final AzureIconSymbol iconSymbol = node.getIconSymbol();
             if (Objects.nonNull(icon)) {
                 setIcon(icon);
+            } else if (Objects.nonNull(iconSymbol)) {
+                setIcon(AzureIconLoader.loadIcon(iconSymbol));
             } else if (StringUtils.isNotBlank(iconPath)) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }

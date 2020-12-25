@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -68,16 +67,14 @@ import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
-import com.microsoft.intellij.serviceexplorer.NodeIconsMap;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.*;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
@@ -86,7 +83,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
@@ -597,7 +593,7 @@ public class UIHelperImpl implements UIHelper {
             LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, nodeId);
             if (itemVirtualFile == null) {
                 itemVirtualFile = createVirtualFile(name, subscriptionId, nodeId);
-                itemVirtualFile.setFileType(new AzureFileType(MySQLPropertyViewProvider.TYPE, AzureAllIcons.MySQL.MODULE));
+                itemVirtualFile.setFileType(new AzureFileType(MySQLPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE)));
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
@@ -687,26 +683,6 @@ public class UIHelperImpl implements UIHelper {
     public static ImageIcon loadIcon(@Nullable String name) {
         java.net.URL url = UIHelperImpl.class.getResource("/icons/" + name);
         return new ImageIcon(url);
-    }
-
-    @Override
-    public Icon loadIconByAction(AzureActionEnum actionEnum) {
-        Preconditions.checkNotNull(actionEnum, "actionEnum cannot be null.");
-        return NodeIconsMap.BASIC_ACTION_TO_ICON_MAP.get(actionEnum);
-    }
-
-    @Override
-    public Icon loadIconByNodeClass(Class<? extends Node> clazz, NodeState... states) {
-        Preconditions.checkNotNull(states, "states cannot be null.");
-        ImmutableMap<NodeState, Icon> iconMap = NodeIconsMap.NODE_TO_ICON_WITH_STATE_MAP.get(clazz);
-        if (MapUtils.isNotEmpty(iconMap)) {
-            for (NodeState state : states) {
-                if (iconMap.containsKey(state)) {
-                    return iconMap.get(state);
-                }
-            }
-        }
-        return NodeIconsMap.NODE_TO_ICON_MAP.get(clazz);
     }
 
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {

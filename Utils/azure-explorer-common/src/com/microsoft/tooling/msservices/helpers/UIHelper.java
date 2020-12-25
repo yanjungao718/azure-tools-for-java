@@ -30,9 +30,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
@@ -42,9 +40,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.Spring
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import javax.swing.Icon;
-import javax.swing.JOptionPane;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 public interface UIHelper {
@@ -172,14 +169,6 @@ public interface UIHelper {
 
     default void showWarningNotification(String title, String message) {
 
-    }
-
-    default Icon loadIconByAction(AzureActionEnum actionEnum) {
-        return null;
-    }
-
-    default Icon loadIconByNodeClass(Class<? extends Node> clazz, NodeState... states) {
-        return null;
     }
 
 }
