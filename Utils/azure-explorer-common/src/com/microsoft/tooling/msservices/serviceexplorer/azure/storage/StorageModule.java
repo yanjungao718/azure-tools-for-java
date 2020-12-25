@@ -88,32 +88,10 @@ public class StorageModule extends AzureRefreshableNode {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Storage Accounts\n\n" + ex.getMessage(), ex);
         }
 
-//            public List<ArmStorageAccount> execute(@NotNull Azure azure) throws Throwable {
-//                List<ArmStorageAccount> storageAccounts = new ArrayList<>();
-//                for (StorageAccount storageAccount : azure.storageAccounts().list()){
-//                    ArmStorageAccount sa = new ArmStorageAccount(storageAccount.name(), subscriptionId, storageAccount);
-//
-//                    sa.setProtocol("https");
-//                    sa.setType(storageAccount.sku().name().toString());
-//                    sa.setLocation(Strings.nullToEmpty(storageAccount.regionName()));
-//                    List<StorageAccountKey> keys = storageAccount.keys();
-//                    if (!(keys == null || keys.isEmpty())) {
-//                        sa.setPrimaryKey(keys.get(0).value());
-//                        if (keys.size() > 1) {
-//                            sa.setSecondaryKey(keys.get(1).value());
-//                        }
-//                    }
-//                    sa.setResourceGroupName(storageAccount.resourceGroupName());
-//                    storageAccounts.add(sa);
-//                }
-//                return storageAccounts;
-//            }
         //TODO
         // load External Accounts
         for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList(getProject())) {
             ClientStorageAccount storageAccount = StorageClientSDKManager.getManager().getStorageAccount(clientStorageAccount.getConnectionString());
-
-//            addChildNode(new ExternalStorageNode(this, storageAccount));
         }
         if (!failedSubscriptions.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder("An error occurred when trying to load Storage Accounts for the subscriptions:\n\n");
