@@ -24,7 +24,7 @@ package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
