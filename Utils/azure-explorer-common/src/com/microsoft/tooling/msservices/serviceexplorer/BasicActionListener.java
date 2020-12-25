@@ -24,10 +24,8 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.Getter;
 
-import javax.swing.*;
 import java.util.Objects;
 
 public final class BasicActionListener extends NodeActionListener {
