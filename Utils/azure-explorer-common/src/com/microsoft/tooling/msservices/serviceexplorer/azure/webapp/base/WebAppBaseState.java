@@ -30,7 +30,7 @@ public enum WebAppBaseState {
     private static WebAppBaseState[] copyOfValues = values();
 
     public static WebAppBaseState fromString(final String name) {
-        for(final WebAppBaseState value: copyOfValues) {
+        for (final WebAppBaseState value: copyOfValues) {
             if (value.name().equalsIgnoreCase(name)) {
                 return value;
             }
