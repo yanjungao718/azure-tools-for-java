@@ -27,6 +27,7 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.App
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -34,7 +35,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -51,6 +55,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
     private static final String ACTION_OPEN_IN_PORTAL = "Open In Portal";
+    private static final Map<DeploymentResourceStatus, AzureIconSymbol> STATUS_TO_ICON_MAP = new HashMap<>();
 
     private AppResourceInner app;
     private DeploymentResourceStatus status;
@@ -62,6 +67,16 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     private final SpringCloudAppNodePresenter springCloudAppNodePresenter;
     private final Disposable rxSubscription;
+
+    static {
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.UNKNOWN, AzureIconSymbol.SpringCloud.UNKNOWN);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.RUNNING, AzureIconSymbol.SpringCloud.RUNNING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.ALLOCATING, AzureIconSymbol.SpringCloud.PENDING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.COMPILING, AzureIconSymbol.SpringCloud.PENDING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.UPGRADING, AzureIconSymbol.SpringCloud.PENDING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.STOPPED, AzureIconSymbol.SpringCloud.STOPPED);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.FAILED, AzureIconSymbol.SpringCloud.FAILED);
+    }
 
     public SpringCloudAppNode(AppResourceInner app, DeploymentResourceInner deploy, SpringCloudNode parent) {
         super(app.id(), app.name(), parent, getIconForStatus(deploy == null ? DeploymentResourceStatus.UNKNOWN : deploy.properties().status()), true);
@@ -78,6 +93,14 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 fillData(event.getAppInner(), event.getDeploymentInner());
             }
         }, this.app.id());
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        if (Objects.isNull(deploy) || Objects.isNull(deploy.properties().status())) {
+            return AzureIconSymbol.SpringCloud.UNKNOWN;
+        }
+        return STATUS_TO_ICON_MAP.get(deploy.properties().status());
     }
 
     @Override

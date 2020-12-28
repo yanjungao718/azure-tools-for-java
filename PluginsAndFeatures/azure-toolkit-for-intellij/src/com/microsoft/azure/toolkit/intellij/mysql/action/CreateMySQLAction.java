@@ -40,12 +40,10 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
-
-import javax.swing.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -62,8 +60,8 @@ public class CreateMySQLAction extends NodeActionListener {
     }
 
     @Override
-    public Icon getIcon() {
-        return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.CREATE);
+    public AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.Common.CREATE;
     }
 
     @Override

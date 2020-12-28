@@ -30,6 +30,7 @@ import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetai
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 import java.util.List;
@@ -45,6 +46,11 @@ public class SqlBigDataClusterModule extends RefreshableNode implements ILogger 
     public SqlBigDataClusterModule(@Nullable Object project) {
         super(ARIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, null, ICON_PATH);
         this.project = project;
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.SQLServerBigDataCluster.MODULE;
     }
 
     @Override

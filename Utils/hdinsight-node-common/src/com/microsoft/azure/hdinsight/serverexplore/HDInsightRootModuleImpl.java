@@ -25,20 +25,18 @@ package com.microsoft.azure.hdinsight.serverexplore;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.IconPathBuilder;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class HDInsightRootModuleImpl extends HDInsightRootModule {
     private static final String HDINSIGHT_NODE_EXPAND = "HDInsightExplorer.HDInsightNodeExpand";
@@ -55,7 +53,10 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
         super(HDInsight_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
     }
 
-    private List<IClusterDetail> clusterDetailList;
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.HDInsight.MODULE;
+    }
 
     @Override
     public HDInsightRootModule getNewNode(@NotNull Node node) {

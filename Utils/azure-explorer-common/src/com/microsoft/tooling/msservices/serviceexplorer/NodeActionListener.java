@@ -31,7 +31,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.*;
 
-import javax.swing.*;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +90,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
-    public Icon getIcon() {
+    public AzureIconSymbol getIconSymbol() {
         return null;
     }
 

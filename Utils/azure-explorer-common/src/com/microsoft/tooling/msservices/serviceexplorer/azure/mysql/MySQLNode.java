@@ -28,13 +28,11 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.*;
 import java.util.List;
 
 public class MySQLNode extends Node {
@@ -63,10 +61,10 @@ public class MySQLNode extends Node {
     }
 
     @Override
-    public @Nullable Icon getIcon() {
+    public @Nullable AzureIconSymbol getIconSymbol() {
         boolean running = ServerState.READY.equals(serverState);
         boolean updating = SERVER_UPDATING.equals(serverState);
-        return this.getIconByState(running ? NodeState.RUNNING : updating ? NodeState.UPDATING : NodeState.STOPPED, NodeState.DEFAULT);
+        return running ? AzureIconSymbol.MySQL.RUNNING : updating ? AzureIconSymbol.MySQL.UPDATING : AzureIconSymbol.MySQL.STOPPED;
     }
 
     @Override
@@ -118,8 +116,8 @@ public class MySQLNode extends Node {
         }
 
         @Override
-        public Icon getIcon() {
-            return DefaultLoader.getUIHelper().loadIconByAction(AzureActionEnum.DELETE);
+        public AzureIconSymbol getIconSymbol() {
+            return AzureIconSymbol.Common.DELETE;
         }
 
         @Override

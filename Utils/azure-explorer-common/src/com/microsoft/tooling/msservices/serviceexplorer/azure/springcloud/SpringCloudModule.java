@@ -24,7 +24,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.ServiceResourceInner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
@@ -40,6 +42,11 @@ public class SpringCloudModule extends AzureRefreshableNode implements SpringClo
         super(SPRING_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_FILE);
         springCloudModulePresenter = new SpringCloudModulePresenter<>();
         springCloudModulePresenter.onAttachView(this);
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.SpringCloud.MODULE;
     }
 
     @Override
