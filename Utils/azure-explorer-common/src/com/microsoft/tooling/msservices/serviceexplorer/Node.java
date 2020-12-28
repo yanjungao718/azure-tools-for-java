@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
@@ -53,6 +54,9 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     public static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
     public static final int DEFAULT_SORT_PRIORITY = 100;
+    private static final String PROGRESS_MESSAGE_PATTERN = "%s %s (%s)...";
+    private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s :%s. Are you sure you want to continue?";
+
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -79,8 +83,22 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         this(id, name, null, null, false);
     }
 
+    public Node(String id, String name, Node parent) {
+        this(id, name, parent, false);
+    }
+
     public Node(String id, String name, Node parent, String iconPath) {
         this(id, name, parent, iconPath, false);
+    }
+
+    public Node(String id, String name, Node parent, boolean delayActionLoading) {
+        this.id = id;
+        this.name = name;
+        this.parent = parent;
+
+        if (!delayActionLoading) {
+            loadActions();
+        }
     }
 
     public Node(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
@@ -244,7 +262,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         return nodeAction;
     }
 
-    public NodeAction addAction(BasicActionListener actionListener) {
+    public NodeAction addAction(DelegateActionListener.BasicActionListener actionListener) {
         return addAction(actionListener.getActionEnum().getName(), actionListener);
     }
 
@@ -431,5 +449,13 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
                 + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
                 + resourceRelativePath;
         DefaultLoader.getIdeHelper().openLinkInBrowser(url);
+    }
+
+    public static String getProgressMessage(String doingName, String moduleName, String nodeName) {
+        return String.format(PROGRESS_MESSAGE_PATTERN, doingName, moduleName, nodeName);
+    }
+
+    public static String getPromptMessage(String actionName, String moduleName, String nodeName) {
+        return String.format(PROMPT_MESSAGE_PATTERN, actionName, moduleName, nodeName);
     }
 }

@@ -44,8 +44,16 @@ public abstract class RefreshableNode extends Node {
     public static String REFRESH_ICON_DARK = "RefreshDark_16.png";
     private static final String REFRESH = "Refresh";
 
+    public RefreshableNode(String id, String name, Node parent) {
+        super(id, name, parent);
+    }
+
     public RefreshableNode(String id, String name, Node parent, String iconPath) {
         super(id, name, parent, iconPath);
+    }
+
+    public RefreshableNode(String id, String name, Node parent, boolean delayActionLoading) {
+        super(id, name, parent, delayActionLoading);
     }
 
     public RefreshableNode(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
@@ -54,13 +62,7 @@ public abstract class RefreshableNode extends Node {
 
     @Override
     protected void loadActions() {
-        addAction(REFRESH, DefaultLoader.getUIHelper().isDarkTheme() ? REFRESH_ICON_DARK : REFRESH_ICON_LIGHT, new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                load(true);
-            }
-        }, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY);
-
+        addAction(new RefreshActionListener().asGenericListener(AzureActionEnum.REFRESH));
         super.loadActions();
     }
 
@@ -173,6 +175,14 @@ public abstract class RefreshableNode extends Node {
             for (NodeContent content: nodeMap.get(sid)) {
                 addChildNode(createNode(this, sid, content));
             }
+        }
+    }
+
+    private class RefreshActionListener extends NodeActionListener {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            RefreshableNode.this.load(true);
         }
     }
 }

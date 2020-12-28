@@ -30,11 +30,16 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
 
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO(Qianjin): remove implementations of Sortable and Groupable
 public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
     protected int priority = Sortable.DEFAULT_PRIORITY;
     protected int group = Groupable.DEFAULT_GROUP;
@@ -73,7 +78,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             nodeActionEvent.getAction().getName(), buildProp(node));
     }
 
-    private Map<String, String> buildProp(Node node) {
+    protected Map<String, String> buildProp(Node node) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Node", node.getId());
         properties.put("Name", node.getName());
@@ -157,6 +162,36 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
+    }
+
+    public final NodeActionListener asGenericListener() {
+        if (this instanceof DelegateActionListener) {
+            return this;
+        }
+        NodeActionListener delegate = this;
+        if (this instanceof Backgroundable) {
+            Backgroundable backgroundable = (Backgroundable) this;
+            delegate = new DelegateActionListener.BackgroundActionListener(
+                    delegate, backgroundable.getProgressMessage(), backgroundable.isCancellable(), backgroundable.isConditional());
+        }
+        if (this instanceof Promptable) {
+            Promptable promptable = (Promptable) this;
+            delegate = new DelegateActionListener.PromptActionListener(delegate, promptable.getPromptMessage());
+        }
+        if (this instanceof Telemetrable) {
+            Telemetrable telemetrable = (Telemetrable) this;
+            delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperateName());
+        }
+        if (this instanceof Basicable) {
+            Basicable basicable = (Basicable) this;
+            delegate = new DelegateActionListener.BasicActionListener(delegate, basicable.getActionEnum());
+        }
+        return delegate;
+    }
+
+    public final DelegateActionListener.BasicActionListener asGenericListener(AzureActionEnum actionEnum) {
+        NodeActionListener delegate = asGenericListener();
+        return new DelegateActionListener.BasicActionListener(delegate, actionEnum);
     }
 
 }
