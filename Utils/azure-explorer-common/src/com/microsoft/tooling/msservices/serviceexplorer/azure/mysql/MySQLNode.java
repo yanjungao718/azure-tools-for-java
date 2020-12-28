@@ -91,8 +91,6 @@ public class MySQLNode extends Node {
     // Delete Azure MySQL action class
     private class DeleteAzureMySQLAction extends NodeActionListener implements Backgroundable, Promptable {
 
-        private static final String DELETE_PROMPT_PATTERN = "This operation will delete your %s: %s. Are you sure you want to continue?";
-
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             MySQLNode.this.serverState = SERVER_UPDATING;
