@@ -26,16 +26,16 @@ import lombok.Getter;
 
 public enum AzureActionEnum {
 
-    REFRESH("Refresh", "Refreshing", AzureIconSymbol.Common.REFRESH),
-    CREATE("Create", "Creating", AzureIconSymbol.Common.CREATE),
+    REFRESH("Refresh", "Refreshing", AzureIconSymbol.Common.REFRESH, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 1),
+    CREATE("Create", "Creating", AzureIconSymbol.Common.CREATE, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 2),
 
-    OPEN_IN_PORTAL("Open In Portal", "Opening in portal", AzureIconSymbol.Common.OPEN_IN_PORTAL),
-    SHOW_PROPERTIES("Show Properties", "Showing properties", AzureIconSymbol.Common.SHOW_PROPERTIES),
+    OPEN_IN_PORTAL("Open In Portal", "Opening", AzureIconSymbol.Common.OPEN_IN_PORTAL),
+    SHOW_PROPERTIES("Show Properties", "Loading", AzureIconSymbol.Common.SHOW_PROPERTIES),
 
-    START("Start", "Starting", AzureIconSymbol.Common.START, Groupable.DEFAULT_GROUP + 50, Sortable.DEFAULT_PRIORITY + 1),
-    STOP("Stop", "Stopping", AzureIconSymbol.Common.STOP, Groupable.DEFAULT_GROUP + 50, Sortable.DEFAULT_PRIORITY + 2),
-    RESTART("Restart", "Restarting", AzureIconSymbol.Common.RESTART, Groupable.DEFAULT_GROUP + 50, Sortable.DEFAULT_PRIORITY + 3),
-    DELETE("Delete", "Deleting", AzureIconSymbol.Common.DELETE, Groupable.DEFAULT_GROUP + 50, Sortable.DEFAULT_PRIORITY + 4);
+    START("Start", "Starting", AzureIconSymbol.Common.START, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 1),
+    STOP("Stop", "Stopping", AzureIconSymbol.Common.STOP, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 2),
+    RESTART("Restart", "Restarting", AzureIconSymbol.Common.RESTART, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 3),
+    DELETE("Delete", "Deleting", AzureIconSymbol.Common.DELETE, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 4);
 
     @Getter
     private final String name;
@@ -47,10 +47,6 @@ public enum AzureActionEnum {
     private final Integer group;
     @Getter
     private final Integer priority;
-
-    AzureActionEnum(String name, String doingName) {
-        this(name, doingName, null);
-    }
 
     AzureActionEnum(String name, String doingName, AzureIconSymbol iconSymbol) {
         this(name, doingName, iconSymbol, Groupable.DEFAULT_GROUP, Sortable.DEFAULT_PRIORITY);
