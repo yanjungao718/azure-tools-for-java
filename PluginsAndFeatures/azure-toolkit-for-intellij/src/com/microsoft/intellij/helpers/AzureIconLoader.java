@@ -43,12 +43,7 @@ public class AzureIconLoader {
     public static Icon loadIcon(AzureIconSymbol iconSymbol) {
         Preconditions.checkNotNull(iconSymbol);
         Preconditions.checkArgument(StringUtils.isNotBlank(iconSymbol.getPath()), "iconPath can not be blank.");
-        Icon icon = ICON_MAP.get(iconSymbol);
-        if (icon == null) {
-            icon = IconLoader.getIcon(iconSymbol.getPath());
-            ICON_MAP.put(iconSymbol, icon);
-        }
-        return icon;
+        return ICON_MAP.computeIfAbsent(iconSymbol, k -> IconLoader.getIcon(iconSymbol.getPath()));
     }
 
     private static void loadIDEIcons() {
@@ -63,11 +58,7 @@ public class AzureIconLoader {
         Preconditions.checkNotNull(iconSymbol);
         Preconditions.checkArgument(StringUtils.isNotBlank(iconSymbol.getPath()), "iconPath can not be blank.");
         Preconditions.checkNotNull(customIcon);
-        Icon icon = ICON_MAP.get(iconSymbol);
-        if (icon == null) {
-            ICON_MAP.put(iconSymbol, customIcon);
-        }
-        return icon;
+        return ICON_MAP.computeIfAbsent(iconSymbol, k -> customIcon);
     }
 
 }

@@ -35,7 +35,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -53,6 +55,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
     private static final String ACTION_OPEN_IN_PORTAL = "Open In Portal";
+    private static final Map<DeploymentResourceStatus, AzureIconSymbol> STATUS_TO_ICON_MAP = new HashMap<>();
 
     private AppResourceInner app;
     private DeploymentResourceStatus status;
@@ -64,6 +67,16 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     private final SpringCloudAppNodePresenter springCloudAppNodePresenter;
     private final Disposable rxSubscription;
+
+    static {
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.UNKNOWN, AzureIconSymbol.SpringCloud.UNKNOWN);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.RUNNING, AzureIconSymbol.SpringCloud.RUNNING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.ALLOCATING, AzureIconSymbol.SpringCloud.PENDING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.COMPILING, AzureIconSymbol.SpringCloud.PENDING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.UPGRADING, AzureIconSymbol.SpringCloud.PENDING);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.STOPPED, AzureIconSymbol.SpringCloud.STOPPED);
+        STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.FAILED, AzureIconSymbol.SpringCloud.FAILED);
+    }
 
     public SpringCloudAppNode(AppResourceInner app, DeploymentResourceInner deploy, SpringCloudNode parent) {
         super(app.id(), app.name(), parent, getIconForStatus(deploy == null ? DeploymentResourceStatus.UNKNOWN : deploy.properties().status()), true);
@@ -84,20 +97,10 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        if (Objects.isNull(deploy)) {
+        if (Objects.isNull(deploy) || Objects.isNull(deploy.properties().status())) {
             return AzureIconSymbol.SpringCloud.UNKNOWN;
         }
-        DeploymentResourceStatus status1 = deploy.properties().status();
-        boolean unknown = DeploymentResourceStatus.UNKNOWN.equals(status1);
-        boolean running = DeploymentResourceStatus.RUNNING.equals(status1);
-        boolean pending = DeploymentResourceStatus.ALLOCATING.equals(status1)
-                || DeploymentResourceStatus.COMPILING.equals(status1)
-                || DeploymentResourceStatus.UPGRADING.equals(status1);
-        boolean stopped = DeploymentResourceStatus.STOPPED.equals(status1);
-        boolean failed = DeploymentResourceStatus.FAILED.equals(status1);
-        return unknown ? AzureIconSymbol.SpringCloud.UNKNOWN : running ? AzureIconSymbol.SpringCloud.RUNNING :
-                pending ? AzureIconSymbol.SpringCloud.PENDING : stopped ? AzureIconSymbol.SpringCloud.STOPPED :
-                        failed ? AzureIconSymbol.SpringCloud.FAILED : AzureIconSymbol.SpringCloud.UPDATING;
+        return STATUS_TO_ICON_MAP.get(deploy.properties().status());
     }
 
     @Override
