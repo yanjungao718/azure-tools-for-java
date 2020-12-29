@@ -65,10 +65,10 @@ public class MySQLNode extends Node {
 
     @Override
     protected void loadActions() {
-        addAction(new StartAzureMySQLAction().asGenericListener(AzureActionEnum.START));
-        addAction(new StopAzureMySQLAction().asGenericListener(AzureActionEnum.STOP));
-        addAction(new RestartAzureMySQLAction().asGenericListener(AzureActionEnum.RESTART));
-        addAction(new DeleteAzureMySQLAction().asGenericListener(AzureActionEnum.DELETE));
+        addAction(new StartAction().asGenericListener(AzureActionEnum.START));
+        addAction(new StopAction().asGenericListener(AzureActionEnum.STOP));
+        addAction(new RestartAction().asGenericListener(AzureActionEnum.RESTART));
+        addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
         addAction(new OpenInBrowserAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
         addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
         initActions();
@@ -90,8 +90,8 @@ public class MySQLNode extends Node {
         this.serverState = result.userVisibleState();
     }
 
-    // Delete Azure MySQL action class
-    private class DeleteAzureMySQLAction extends NodeActionListener implements Backgroundable, Promptable {
+    // Delete action class
+    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -110,8 +110,8 @@ public class MySQLNode extends Node {
         }
     }
 
-    // Start Azure MySQL action class
-    private class StartAzureMySQLAction extends NodeActionListener implements Backgroundable {
+    // Start action class
+    private class StartAction extends NodeActionListener implements Backgroundable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -126,8 +126,8 @@ public class MySQLNode extends Node {
         }
     }
 
-    // Stop Azure MySQL action class
-    private class StopAzureMySQLAction extends NodeActionListener implements Backgroundable {
+    // Stop action class
+    private class StopAction extends NodeActionListener implements Backgroundable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -142,8 +142,8 @@ public class MySQLNode extends Node {
         }
     }
 
-    // Restart Azure MySQL action class
-    private class RestartAzureMySQLAction extends NodeActionListener implements Backgroundable {
+    // Restart action class
+    private class RestartAction extends NodeActionListener implements Backgroundable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
