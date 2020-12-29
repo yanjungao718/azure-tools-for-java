@@ -26,6 +26,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
@@ -69,6 +70,7 @@ public class MySQLNode extends Node {
         addAction(new RestartAzureMySQLAction().asGenericListener(AzureActionEnum.RESTART));
         addAction(new DeleteAzureMySQLAction().asGenericListener(AzureActionEnum.DELETE));
         addAction(new OpenInBrowserAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
+        addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
         initActions();
     }
 
@@ -169,4 +171,19 @@ public class MySQLNode extends Node {
             return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
         }
     }
+
+    // Show Properties
+    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
+        }
+    }
+
 }

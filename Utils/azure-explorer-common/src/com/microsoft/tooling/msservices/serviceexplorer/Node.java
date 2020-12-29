@@ -36,6 +36,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -325,10 +326,15 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         List<Class<? extends NodeActionListener>> actions = node2Actions.get(this.getClass());
         if (actions != null) {
             try {
-                for (Class<? extends NodeActionListener> actionListener : actions) {
-                    Name nameAnnotation = actionListener.getAnnotation(Name.class);
+                for (Class<? extends NodeActionListener> actionClazz : actions) {
+                    NodeActionListener actionListener = createNodeActionListener(actionClazz);
+                    if (actionListener instanceof Basicable && ((Basicable) actionListener).getActionEnum() != null) {
+                        addAction(((Basicable) actionListener).getActionEnum().getName(), actionListener.asGenericListener());
+                        continue;
+                    }
+                    Name nameAnnotation = actionClazz.getAnnotation(Name.class);
                     if (nameAnnotation != null) {
-                        addAction(nameAnnotation.value(), createNodeActionListener(actionListener));
+                        addAction(nameAnnotation.value(), actionListener.asGenericListener());
                     }
                 }
             } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
