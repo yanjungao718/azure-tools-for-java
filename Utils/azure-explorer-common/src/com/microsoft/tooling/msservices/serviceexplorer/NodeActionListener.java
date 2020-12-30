@@ -73,7 +73,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             nodeActionEvent.getAction().getName(), buildProp(node));
     }
 
-    private Map<String, String> buildProp(Node node) {
+    protected Map<String, String> buildProp(Node node) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Node", node.getId());
         properties.put("Name", node.getName());
