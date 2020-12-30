@@ -67,16 +67,6 @@ public class MySQLConnectToServerAction extends NodeActionListener {
     }
 
     @Override
-    public int getGroup() {
-        return MySQLNode.OPERATE_GROUP;
-    }
-
-    @Override
-    public int getPriority() {
-        return MySQLNode.CONNECT_TO_SERVER_PRIORITY;
-    }
-
-    @Override
     public AzureIconSymbol getIconSymbol() {
         return AzureIconSymbol.MySQL.CONNECT_TO_SERVER;
     }

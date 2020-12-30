@@ -30,7 +30,6 @@ import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAct
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
-import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLShowPropertiesAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightRecordAction;
@@ -135,8 +134,7 @@ public class NodeActionsMap {
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());
 
         node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(MySQLShowPropertiesAction.class).add(MySQLConnectToServerAction.class)
-                .build());
+                .add(MySQLConnectToServerAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)

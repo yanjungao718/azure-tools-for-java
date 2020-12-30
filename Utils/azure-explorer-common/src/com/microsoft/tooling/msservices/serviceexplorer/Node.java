@@ -36,6 +36,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -53,6 +54,8 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     public static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
     public static final int DEFAULT_SORT_PRIORITY = 100;
+    private static final String PROGRESS_MESSAGE_PATTERN = "%s %s (%s)...";
+    private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s :%s. Are you sure you want to continue?";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -79,8 +82,22 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         this(id, name, null, null, false);
     }
 
+    public Node(String id, String name, Node parent) {
+        this(id, name, parent, false);
+    }
+
     public Node(String id, String name, Node parent, String iconPath) {
         this(id, name, parent, iconPath, false);
+    }
+
+    public Node(String id, String name, Node parent, boolean delayActionLoading) {
+        this.id = id;
+        this.name = name;
+        this.parent = parent;
+
+        if (!delayActionLoading) {
+            loadActions();
+        }
     }
 
     public Node(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
@@ -244,7 +261,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         return nodeAction;
     }
 
-    public NodeAction addAction(BasicActionListener actionListener) {
+    public NodeAction addAction(DelegateActionListener.BasicActionListener actionListener) {
         return addAction(actionListener.getActionEnum().getName(), actionListener);
     }
 
@@ -309,10 +326,15 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         List<Class<? extends NodeActionListener>> actions = node2Actions.get(this.getClass());
         if (actions != null) {
             try {
-                for (Class<? extends NodeActionListener> actionListener : actions) {
-                    Name nameAnnotation = actionListener.getAnnotation(Name.class);
+                for (Class<? extends NodeActionListener> actionClazz : actions) {
+                    NodeActionListener actionListener = createNodeActionListener(actionClazz);
+                    if (actionListener instanceof Basicable && ((Basicable) actionListener).getAction() != null) {
+                        addAction(((Basicable) actionListener).getAction().getName(), actionListener.asGenericListener());
+                        continue;
+                    }
+                    Name nameAnnotation = actionClazz.getAnnotation(Name.class);
                     if (nameAnnotation != null) {
-                        addAction(nameAnnotation.value(), createNodeActionListener(actionListener));
+                        addAction(nameAnnotation.value(), actionListener.asGenericListener());
                     }
                 }
             } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
@@ -431,5 +453,13 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
                 + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
                 + resourceRelativePath;
         DefaultLoader.getIdeHelper().openLinkInBrowser(url);
+    }
+
+    public static String getProgressMessage(String doingName, String moduleName, String nodeName) {
+        return String.format(PROGRESS_MESSAGE_PATTERN, doingName, moduleName, nodeName);
+    }
+
+    public static String getPromptMessage(String actionName, String moduleName, String nodeName) {
+        return String.format(PROMPT_MESSAGE_PATTERN, actionName, moduleName, nodeName);
     }
 }

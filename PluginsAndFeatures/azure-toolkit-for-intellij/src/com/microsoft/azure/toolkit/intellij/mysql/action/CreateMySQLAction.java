@@ -39,18 +39,16 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.Name;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-@Name(CreateMySQLAction.ACTION_NAME)
-public class CreateMySQLAction extends NodeActionListener {
-
-    protected static final String ACTION_NAME = "Create";
+public class CreateMySQLAction extends NodeActionListener implements Basicable {
 
     private final MySQLModule model;
 
@@ -60,8 +58,8 @@ public class CreateMySQLAction extends NodeActionListener {
     }
 
     @Override
-    public AzureIconSymbol getIconSymbol() {
-        return AzureIconSymbol.Common.CREATE;
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 
     @Override
@@ -89,7 +87,8 @@ public class CreateMySQLAction extends NodeActionListener {
             Server server = AzureMySQLService.getInstance().createMySQL(config);
             refreshAzureExplorer(server);
         };
-        final AzureTask task = new AzureTask(null, message("azure.mysql.create.task.title"), true, runnable);
+        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME, config.getServerName());
+        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }
 

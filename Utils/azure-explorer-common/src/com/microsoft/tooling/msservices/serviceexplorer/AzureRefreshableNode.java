@@ -26,6 +26,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public abstract class AzureRefreshableNode extends RefreshableNode {
+    public AzureRefreshableNode(String id, String name, Node parent) {
+        super(id, name, parent);
+    }
+
     public AzureRefreshableNode(String id, String name, Node parent, String iconPath) {
         super(id, name, parent, iconPath);
     }
