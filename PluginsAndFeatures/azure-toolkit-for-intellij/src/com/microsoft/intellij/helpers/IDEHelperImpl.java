@@ -389,7 +389,7 @@ public class IDEHelperImpl implements IDEHelper {
         final OutputStream output = virtualFile.getOutputStream(null);
         final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
         final String title = String.format("Opening file %s...", virtualFile.getName());
-        final AzureTask task = new AzureTask(null, title, true, () -> {
+        final AzureTask task = new AzureTask(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             fileService
                 .getFileContent(file.getPath())
