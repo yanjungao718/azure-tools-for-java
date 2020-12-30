@@ -39,11 +39,12 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     private static final String FUNCTION_SERVICE_MODULE_ID = FunctionModule.class.getName();
     private static final String ICON_PATH = "azure-functions-small.png";
     private static final String BASE_MODULE_NAME = "Function App(Preview)";
-    protected static final String MODULE_NAME = "Function App";
     private static final String FUNCTION_MODULE = "FunctionModule";
     private static final String FAILED_TO_DELETE_FUNCTION_APP = "Failed to delete Function App %s";
     private static final String ERROR_DELETING_FUNCTION_APP = "Azure Services Explorer - Error Deleting Function App";
     private final FunctionModulePresenter<FunctionModule> functionModulePresenter;
+
+    protected static final String MODULE_NAME = "Function App";
 
     public FunctionModule(Node parent) {
         super(FUNCTION_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
