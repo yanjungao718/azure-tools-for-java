@@ -44,6 +44,8 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     private static final String ERROR_DELETING_FUNCTION_APP = "Azure Services Explorer - Error Deleting Function App";
     private final FunctionModulePresenter<FunctionModule> functionModulePresenter;
 
+    protected static final String MODULE_NAME = "Function App";
+
     public FunctionModule(Node parent) {
         super(FUNCTION_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
         functionModulePresenter = new FunctionModulePresenter<>();

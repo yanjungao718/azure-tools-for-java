@@ -25,33 +25,28 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_FUNCTION_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_INBROWSER_FUNCTION_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_FUNCTION_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOWPROP_FUNCTION_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_FUNCTION_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_FUNCTION_APP;
 
 public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeView {
     private static final Logger LOGGER = Logger.getLogger(FunctionAppNode.class.getName());
@@ -60,15 +55,12 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     private static final String DELETE_FUNCTION_PROGRESS_MESSAGE = "Deleting Function App";
     private static final String FUNCTION_LABEL = "Function";
 
-    private final FunctionAppNodePresenter<FunctionAppNode> functionAppNodePresenter;
     private FunctionApp functionApp;
 
     public FunctionAppNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
         super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
                 functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
         this.functionApp = functionApp;
-        functionAppNodePresenter = new FunctionAppNodePresenter<>();
-        functionAppNodePresenter.onAttachView(FunctionAppNode.this);
         loadActions();
     }
 
@@ -86,7 +78,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
     @Override
     protected void refreshItems() {
-        this.functionAppNodePresenter.onNodeRefresh();
+        this.renderSubModules();
     }
 
     @Override
@@ -98,31 +90,13 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(FUNCTION, STOP_FUNCTION_APP,
-                createBackgroundActionListener("Stopping", () -> stopFunctionApp()), Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(FUNCTION, START_FUNCTION_APP,
-                createBackgroundActionListener("Starting", () -> startFunctionApp()), Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
-                createBackgroundActionListener("Restarting", () -> restartFunctionApp()), Groupable.MAINTENANCE_GROUP));
-        addAction(ACTION_DELETE, new DeleteFunctionAppAction());
-        addAction("Open in Portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                openResourcesInPortal(subscriptionId, getFunctionAppId());
-            }
-        }));
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                showProperties();
-            }
-        }));
+        addAction(new StartAction().asGenericListener(AzureActionEnum.START));
+        addAction(new StopAction().asGenericListener(AzureActionEnum.STOP));
+        addAction(new RestartAction().asGenericListener(AzureActionEnum.RESTART));
+        addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
+        addAction(new OpenInPortalAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
+        addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
         super.loadActions();
-    }
-
-    @AzureOperation(value = "show properties of function app", type = AzureOperation.Type.ACTION)
-    private void showProperties() {
-        DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
     }
 
     @Override
@@ -149,54 +123,133 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         return this.functionApp.regionName();
     }
 
-    @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
-    public void startFunctionApp() {
-        functionAppNodePresenter.onStartFunctionApp(this.subscriptionId, this.getFunctionAppId());
+    // Delete action class
+    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            FunctionAppNode.this.getParent()
+                    .removeNode(FunctionAppNode.this.getSubscriptionId(), FunctionAppNode.this.getFunctionAppId(), FunctionAppNode.this);
+        }
+
+        @Override
+        public String getPromptMessage() {
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.DELETE.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.FunctionApp.DELETE;
+        }
     }
 
-    @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
-    public void restartFunctionApp() {
-        functionAppNodePresenter.onRestartFunctionApp(this.subscriptionId, this.getFunctionAppId());
+    private class StartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+
+        @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+            FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+            FunctionAppNode.this.renderNode(WebAppBaseState.fromString(target.state()));
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.START.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.FunctionApp.START;
+        }
     }
 
-    @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
-    public void stopFunctionApp() {
-        functionAppNodePresenter.onStopFunctionApp(this.subscriptionId, this.getFunctionAppId());
+    private class StopAction extends NodeActionListener implements Backgroundable, Telemetrable {
+
+        @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+            FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+            FunctionAppNode.this.renderNode(WebAppBaseState.fromString(target.state()));
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.STOP.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.FunctionApp.STOP;
+        }
+
     }
 
-    private class DeleteFunctionAppAction extends AzureNodeActionPromptListener {
-        DeleteFunctionAppAction() {
-            super(FunctionAppNode.this, String.format(DELETE_FUNCTION_PROMPT_MESSAGE, getFunctionAppName()),
-                    DELETE_FUNCTION_PROGRESS_MESSAGE);
+    // restart action class
+    private class RestartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+
+        @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+            FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+            FunctionAppNode.this.renderNode(WebAppBaseState.fromString(target.state()));
         }
 
         @Override
-        protected void azureNodeAction(NodeActionEvent e) {
-            getParent().removeNode(getSubscriptionId(), getFunctionAppId(), FunctionAppNode.this);
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.RESTART.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
         }
 
         @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) {
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.FunctionApp.RESTART;
+        }
+
+    }
+
+    // Open in browser action class
+    private class OpenInPortalAction extends NodeActionListener implements Backgroundable, Telemetrable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            FunctionAppNode.this.openResourcesInPortal(subscriptionId, FunctionAppNode.this.getFunctionAppId());
         }
 
         @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return FUNCTION;
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
         }
 
         @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return DELETE_FUNCTION_APP;
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.FunctionApp.OPEN_IN_PORTAL;
+        }
+    }
+
+    // Show properties
+    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable, Telemetrable {
+
+        @AzureOperation(value = "show properties of function app", type = AzureOperation.Type.ACTION)
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
         }
 
         @Override
-        public int getGroup() {
-            return Groupable.MAINTENANCE_GROUP;
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
         }
 
         @Override
-        public int getPriority() {
-            return Sortable.LOW_PRIORITY;
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.FunctionApp.SHOW_PROPERTIES;
         }
     }
 }
