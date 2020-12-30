@@ -118,18 +118,18 @@ class DelegateActionListener extends NodeActionListener {
     static final class TelemetricActionListener extends DelegateActionListener {
 
         private String serviceName;
-        private String operateName;
+        private String operationName;
 
-        public TelemetricActionListener(NodeActionListener delegate, String serviceName, String operateName) {
+        public TelemetricActionListener(NodeActionListener delegate, String serviceName, String operationName) {
             super(delegate);
             this.serviceName = serviceName;
-            this.operateName = operateName;
+            this.operationName = operationName;
         }
 
         @Override
         public void actionPerformed(NodeActionEvent e) throws AzureCmdException {
             sendTelemetry(e);
-            Operation operation = TelemetryManager.createOperation(serviceName, operateName);
+            Operation operation = TelemetryManager.createOperation(serviceName, operationName);
             try {
                 operation.start();
                 Node node = e.getAction().getNode();
