@@ -349,7 +349,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
     }
 
     protected void runWithProgress(IWorker worker, String title) {
-        AzureTaskManager.getInstance().runInModal(new AzureTask(project, title + " Progress", true, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, title + " Progress", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             try {
