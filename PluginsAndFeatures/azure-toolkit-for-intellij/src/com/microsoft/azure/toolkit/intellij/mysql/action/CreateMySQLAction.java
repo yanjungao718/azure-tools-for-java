@@ -31,6 +31,7 @@ import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
@@ -43,13 +44,14 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateMySQLAction extends NodeActionListener implements Backgroundable, Basicable {
+public class CreateMySQLAction extends NodeActionListener implements Backgroundable, Basicable, Telemetrable {
 
     private final MySQLModule model;
     private AzureMySQLConfig config;
@@ -68,6 +70,11 @@ public class CreateMySQLAction extends NodeActionListener implements Backgrounda
     public String getProgressMessage() {
         return Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME,
                 Objects.nonNull(config) ? config.getServerName() : StringUtils.EMPTY);
+    }
+
+    @Override
+    public TelemetryParameter getTelemetryParameter() {
+        return TelemetryParameter.MySQL.CREATE;
     }
 
     @Override
