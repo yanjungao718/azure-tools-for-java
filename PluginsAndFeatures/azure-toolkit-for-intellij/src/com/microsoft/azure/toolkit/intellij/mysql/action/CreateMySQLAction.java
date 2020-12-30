@@ -88,7 +88,7 @@ public class CreateMySQLAction extends NodeActionListener implements Basicable {
             refreshAzureExplorer(server);
         };
         String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME, config.getServerName());
-        final AzureTask task = new AzureTask(null, progressMessage, true, runnable);
+        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }
 
