@@ -67,13 +67,13 @@ class DelegateActionListener extends NodeActionListener {
 
         private final String progressMessage;
         private boolean cancellable;
-        private boolean conditional;
+        private boolean conditionalModal;
 
-        public BackgroundActionListener(NodeActionListener delegate, @NotNull String progressMessage, boolean cancellable, boolean conditional) {
+        public BackgroundActionListener(NodeActionListener delegate, @NotNull String progressMessage, boolean cancellable, boolean conditionalModal) {
             super(delegate);
             this.progressMessage = progressMessage;
             this.cancellable = cancellable;
-            this.conditional = conditional;
+            this.conditionalModal = conditionalModal;
         }
 
         @Override
@@ -86,7 +86,7 @@ class DelegateActionListener extends NodeActionListener {
                 }
             };
             AzureTask task = new AzureTask(e.getAction().getNode().getProject(), progressMessage, cancellable, runnable);
-            if (conditional) {
+            if (conditionalModal) {
                 AzureTaskManager.getInstance().runInModal(task);
             } else {
                 AzureTaskManager.getInstance().runInBackground(task);
