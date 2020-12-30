@@ -28,8 +28,13 @@ import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
@@ -38,6 +43,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 // TODO(Qianjin): remove implementations of Sortable and Groupable
 public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
@@ -180,7 +186,12 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         }
         if (this instanceof Telemetrable) {
             Telemetrable telemetrable = (Telemetrable) this;
-            delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperationName());
+            if (Objects.nonNull(telemetrable.getTelemetryParameter())) {
+                TelemetryParameter parameter = telemetrable.getTelemetryParameter();
+                delegate = new DelegateActionListener.TelemetricActionListener(delegate, parameter.getServiceName(), parameter.getOperationName());
+            } else {
+                delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperationName());
+            }
         }
         if (this instanceof Basicable) {
             Basicable basicable = (Basicable) this;

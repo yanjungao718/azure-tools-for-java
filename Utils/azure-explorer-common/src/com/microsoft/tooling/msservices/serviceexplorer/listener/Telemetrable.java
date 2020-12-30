@@ -22,10 +22,22 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.listener;
 
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
+import org.apache.commons.lang3.StringUtils;
+
 public interface Telemetrable {
 
-    String getServiceName();
+    default String getServiceName() {
+        return StringUtils.EMPTY;
+    }
 
-    String getOperationName();
+    default String getOperationName() {
+        return StringUtils.EMPTY;
+    }
+
+    /**
+     * higher priority than getServiceName() and getOperationName(). it is designed to deprecated both of them in future.
+     */
+    TelemetryParameter getTelemetryParameter();
 
 }
