@@ -79,7 +79,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         type = AzureOperation.Type.SERVICE
     )
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
-        final AzureTask task = new AzureTask(null, message("function.create.task.title"), true, () -> {
+        final AzureTask task = new AzureTask(null, message("function.create.task.title"), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             final FunctionApp functionApp = functionAppService.createFunctionApp(config);
