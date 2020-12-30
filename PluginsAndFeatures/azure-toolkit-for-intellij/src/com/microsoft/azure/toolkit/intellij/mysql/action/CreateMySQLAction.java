@@ -66,11 +66,8 @@ public class CreateMySQLAction extends NodeActionListener implements Backgrounda
 
     @Override
     public String getProgressMessage() {
-        if (Objects.nonNull(config)) {
-            return Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME, config.getServerName());
-        } else {
-            return Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME, StringUtils.EMPTY);
-        }
+        return Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME,
+                Objects.nonNull(config) ? config.getServerName() : StringUtils.EMPTY);
     }
 
     @Override
