@@ -178,7 +178,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         if (this instanceof Backgroundable) {
             Backgroundable backgroundable = (Backgroundable) this;
             delegate = new DelegateActionListener.BackgroundActionListener(
-                    delegate, backgroundable.getProgressMessage(), backgroundable.isCancellable(), backgroundable.isConditional());
+                    delegate, backgroundable.getProgressMessage(), backgroundable.isCancellable(), backgroundable.isConditionalModal());
         }
         if (this instanceof Promptable) {
             Promptable promptable = (Promptable) this;
