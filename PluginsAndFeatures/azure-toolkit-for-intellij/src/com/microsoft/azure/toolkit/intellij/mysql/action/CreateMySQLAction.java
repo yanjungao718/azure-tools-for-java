@@ -34,7 +34,6 @@ import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
@@ -46,11 +45,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateMySQLAction extends NodeActionListener implements Basicable, Telemetrable {
+public class CreateMySQLAction extends NodeActionListener implements Basicable {
 
     private final MySQLModule model;
 
@@ -62,11 +60,6 @@ public class CreateMySQLAction extends NodeActionListener implements Basicable, 
     @Override
     public AzureActionEnum getAction() {
         return AzureActionEnum.CREATE;
-    }
-
-    @Override
-    public TelemetryParameter getTelemetryParameter() {
-        return TelemetryParameter.MySQL.CREATE;
     }
 
     @Override
