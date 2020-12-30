@@ -26,7 +26,6 @@ public interface Telemetrable {
 
     String getServiceName();
 
-
     String getOperationName();
 
 }
