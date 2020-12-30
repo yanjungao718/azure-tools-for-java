@@ -38,15 +38,16 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-@Name("Create Function App")
-public class CreateFunctionAppAction extends NodeActionListener {
+public class CreateFunctionAppAction extends NodeActionListener implements Basicable {
     private final FunctionAppService functionAppService;
     private final FunctionModule functionModule;
 
@@ -54,6 +55,11 @@ public class CreateFunctionAppAction extends NodeActionListener {
         super();
         this.functionModule = functionModule;
         this.functionAppService = FunctionAppService.getInstance();
+    }
+
+    @Override
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 
     @Override
@@ -79,13 +85,15 @@ public class CreateFunctionAppAction extends NodeActionListener {
         type = AzureOperation.Type.SERVICE
     )
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
-        final AzureTask task = new AzureTask(null, message("function.create.task.title"), false, () -> {
+        Runnable runnable = () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             final FunctionApp functionApp = functionAppService.createFunctionApp(config);
             callback.run();
             refreshAzureExplorer(functionApp);
-        });
+        };
+        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), FunctionModule.MODULE_NAME, config.getName());
+        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
         AzureTaskManager.getInstance().runInModal(task);
     }
 
