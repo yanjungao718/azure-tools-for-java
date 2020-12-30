@@ -34,7 +34,7 @@ public interface Backgroundable {
         return false;
     }
 
-    default boolean isConditional() {
+    default boolean isConditionalModal() {
         return false;
     }
 
