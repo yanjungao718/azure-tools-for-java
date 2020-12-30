@@ -37,7 +37,7 @@ import java.util.List;
 public class DeploymentSlotModule extends AzureRefreshableNode implements DeploymentSlotModuleView {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String ICON_PATH = "Slot_16.png";
-    private static final String MODULE_NAME = "Deployment Slots";
+    protected static final String MODULE_NAME = "Deployment Slots";
 
     private final DeploymentSlotModulePresenter presenter;
     protected final String subscriptionId;
