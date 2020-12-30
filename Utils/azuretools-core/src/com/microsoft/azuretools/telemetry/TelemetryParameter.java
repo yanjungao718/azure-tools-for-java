@@ -132,14 +132,15 @@ public final class TelemetryParameter {
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
-        } else if (!(obj instanceof TelemetryParameter)) {
-            return false;
-        } else if (obj == this) {
-            return true;
-        } else {
-            TelemetryParameter rhs = (TelemetryParameter) obj;
-            return this.operationName.equalsIgnoreCase(rhs.operationName);
         }
+        if (!(obj instanceof TelemetryParameter)) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        TelemetryParameter rhs = (TelemetryParameter) obj;
+        return this.operationName.equalsIgnoreCase(rhs.operationName);
     }
 
 }
