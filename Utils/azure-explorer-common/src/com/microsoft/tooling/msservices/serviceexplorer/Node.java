@@ -328,8 +328,8 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
             try {
                 for (Class<? extends NodeActionListener> actionClazz : actions) {
                     NodeActionListener actionListener = createNodeActionListener(actionClazz);
-                    if (actionListener instanceof Basicable && ((Basicable) actionListener).getActionEnum() != null) {
-                        addAction(((Basicable) actionListener).getActionEnum().getName(), actionListener.asGenericListener());
+                    if (actionListener instanceof Basicable && ((Basicable) actionListener).getAction() != null) {
+                        addAction(((Basicable) actionListener).getAction().getName(), actionListener.asGenericListener());
                         continue;
                     }
                     Name nameAnnotation = actionClazz.getAnnotation(Name.class);

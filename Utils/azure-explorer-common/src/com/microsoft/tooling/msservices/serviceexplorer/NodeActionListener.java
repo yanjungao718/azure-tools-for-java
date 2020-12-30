@@ -180,11 +180,11 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         }
         if (this instanceof Telemetrable) {
             Telemetrable telemetrable = (Telemetrable) this;
-            delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperateName());
+            delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperationName());
         }
         if (this instanceof Basicable) {
             Basicable basicable = (Basicable) this;
-            delegate = new DelegateActionListener.BasicActionListener(delegate, basicable.getActionEnum());
+            delegate = new DelegateActionListener.BasicActionListener(delegate, basicable.getAction());
         }
         return delegate;
     }

@@ -26,6 +26,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 
 public interface Basicable {
 
-    AzureActionEnum getActionEnum();
+    AzureActionEnum getAction();
 
 }

@@ -60,7 +60,7 @@ public class CreateMySQLAction extends NodeActionListener implements Backgrounda
     }
 
     @Override
-    public AzureActionEnum getActionEnum() {
+    public AzureActionEnum getAction() {
         return AzureActionEnum.CREATE;
     }
 
