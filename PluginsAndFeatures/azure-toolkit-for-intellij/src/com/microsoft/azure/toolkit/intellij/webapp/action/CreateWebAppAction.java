@@ -41,18 +41,19 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-@Name("Create Web App")
-public class CreateWebAppAction extends NodeActionListener {
+public class CreateWebAppAction extends NodeActionListener implements Basicable {
     private final WebAppService webappService;
     private final WebAppModule webappModule;
 
@@ -60,6 +61,11 @@ public class CreateWebAppAction extends NodeActionListener {
         super();
         this.webappModule = webappModule;
         this.webappService = WebAppService.getInstance();
+    }
+
+    @Override
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 
     @Override
@@ -76,7 +82,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
-        final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), false, () -> {
+        Runnable runnable = () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final WebApp webapp = webappService.createWebApp(config);
             callback.run();
@@ -85,13 +91,15 @@ public class CreateWebAppAction extends NodeActionListener {
             if (Objects.nonNull(application) && application.toFile().exists()) {
                 AzureTaskManager.getInstance().runLater(() -> deploy(webapp, application, project));
             }
-        });
+        };
+        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), WebAppModule.MODULE_NAME, config.getName());
+        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
         AzureTaskManager.getInstance().runInModal(task);
     }
 
     @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.SERVICE)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), false, () -> {
+        Runnable runnable = () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();
@@ -99,7 +107,9 @@ public class CreateWebAppAction extends NodeActionListener {
             processHandler.startNotify();
             consoleView.attachToProcess(processHandler);
             WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
-        });
+        };
+        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), WebAppModule.MODULE_NAME, webapp.name());
+        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
         AzureTaskManager.getInstance().runInModal(task);
     }
 
