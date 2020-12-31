@@ -447,7 +447,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private void createWebApp() {
         updateConfiguration();
-        AzureTaskManager.getInstance().runInModal(new AzureTask(null, "Creating New WebApp...", true, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(null, "Creating New WebApp...", false, () -> {
             Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {

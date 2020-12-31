@@ -76,7 +76,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
-        final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
+        final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final WebApp webapp = webappService.createWebApp(config);
             callback.run();
@@ -91,7 +91,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.SERVICE)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), true, () -> {
+        final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();

@@ -109,7 +109,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     }
 
     public static void updateSubscriptionWithProgressDialog(final SubscriptionManager subscriptionManager, Project project) {
-        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Subscriptions...", true, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Subscriptions...", false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             //System.out.println("updateSubscriptionWithProgressDialog: calling getSubscriptionDetails()");
             subscriptionManager.getSubscriptionDetails();

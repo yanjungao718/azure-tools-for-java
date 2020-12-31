@@ -342,7 +342,7 @@ public class SignInWindow extends AzureDialogWrapper {
             AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
 
-            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Load Subscriptions Progress", true, () -> {
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Load Subscriptions Progress", false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setText("Loading subscriptions...");
                 try {
