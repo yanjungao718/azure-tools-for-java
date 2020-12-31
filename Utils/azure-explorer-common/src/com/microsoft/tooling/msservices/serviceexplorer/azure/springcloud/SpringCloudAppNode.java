@@ -28,18 +28,16 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.Dep
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
 import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
@@ -50,15 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Logger;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_SPRING_CLOUD_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
 
 public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
-    private static final Logger LOGGER = Logger.getLogger(SpringCloudAppNodeView.class.getName());
-    private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: %s. Are you sure you want to continue?";
-    private static final String DELETE_APP_PROGRESS_MESSAGE = "Deleting Spring Cloud App";
 
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final Map<DeploymentResourceStatus, AzureIconSymbol> STATUS_TO_ICON_MAP = new HashMap<>();
@@ -70,8 +61,6 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     private final String clusterName;
     private final String subscriptionId;
     private final String clusterId;
-
-    private final SpringCloudAppNodePresenter springCloudAppNodePresenter;
     private final Disposable rxSubscription;
 
     static {
@@ -91,8 +80,6 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         this.clusterName = SpringCloudIdHelper.getClusterName(app.id());
         this.clusterId = parent.getClusterId();
         this.subscriptionId = SpringCloudIdHelper.getSubscriptionId(app.id());
-        springCloudAppNodePresenter = new SpringCloudAppNodePresenter();
-        springCloudAppNodePresenter.onAttachView(this);
         fillData(app, deploy);
         rxSubscription = SpringCloudStateManager.INSTANCE.subscribeSpringAppEvent(event -> {
             if (event.isUpdate()) {
@@ -203,49 +190,13 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         syncActionState();
     }
 
-
-    private class DeleteSpringCloudAppAction extends AzureNodeActionPromptListener {
-        DeleteSpringCloudAppAction() {
-            super(SpringCloudAppNode.this, String.format(DELETE_APP_PROMPT_MESSAGE, SpringCloudIdHelper.getAppName(SpringCloudAppNode.this.id)),
-                    DELETE_APP_PROGRESS_MESSAGE);
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent event) {
-            springCloudAppNodePresenter.onDeleteApp(id);
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) {
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return SPRING_CLOUD;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return DELETE_SPRING_CLOUD_APP;
-        }
-
-        @Override
-        public int getPriority() {
-            return Sortable.LOW_PRIORITY;
-        }
-
-        @Override
-        public int getGroup() {
-            return Groupable.MAINTENANCE_GROUP;
-        }
-    }
-
     // Delete action class
     private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
-            springCloudAppNodePresenter.onDeleteApp(id);
+            AzureSpringCloudMvpModel.deleteApp(SpringCloudAppNode.this.id).await();
+            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.id, null);
         }
 
         @Override
@@ -269,8 +220,8 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
-            springCloudAppNodePresenter.onStartSpringCloudApp(SpringCloudAppNode.this.app.id(),
-                    SpringCloudAppNode.this.app.properties().activeDeploymentName(), SpringCloudAppNode.this.status);
+            AzureSpringCloudMvpModel.startApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
+            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
         }
 
         @Override
@@ -289,8 +240,8 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
-            springCloudAppNodePresenter.onStopSpringCloudApp(SpringCloudAppNode.this.app.id(),
-                    SpringCloudAppNode.this.app.properties().activeDeploymentName(), SpringCloudAppNode.this.status);
+            AzureSpringCloudMvpModel.stopApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
+            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
         }
 
         @Override
@@ -309,8 +260,8 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
-            springCloudAppNodePresenter.onReStartSpringCloudApp(SpringCloudAppNode.this.app.id(),
-                    SpringCloudAppNode.this.app.properties().activeDeploymentName(), SpringCloudAppNode.this.status);
+            AzureSpringCloudMvpModel.restartApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
+            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
         }
 
         @Override
