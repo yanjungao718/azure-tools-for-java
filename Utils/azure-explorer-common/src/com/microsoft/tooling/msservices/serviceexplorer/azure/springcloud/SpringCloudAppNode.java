@@ -295,7 +295,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -304,11 +304,6 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
             // immediately
             SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(SpringCloudAppNode.this.clusterId,
                     SpringCloudAppNode.this.app, SpringCloudAppNode.this.deploy);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
         }
 
         @Override
