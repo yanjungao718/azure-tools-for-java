@@ -46,14 +46,14 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateWebAppAction extends NodeActionListener implements Basicable {
+public class CreateWebAppAction extends NodeActionListener implements ActionBasicable {
     private final WebAppService webappService;
     private final WebAppModule webappModule;
 

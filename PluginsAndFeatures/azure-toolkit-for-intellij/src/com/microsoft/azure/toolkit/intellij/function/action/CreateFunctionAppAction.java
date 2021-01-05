@@ -43,11 +43,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateFunctionAppAction extends NodeActionListener implements Basicable {
+public class CreateFunctionAppAction extends NodeActionListener implements ActionBasicable {
     private final FunctionAppService functionAppService;
     private final FunctionModule functionModule;
 
