@@ -60,7 +60,8 @@ public final class TelemetryParameter {
         TelemetryParameter RESTART = new TelemetryParameter(MODULE, "restart-webapp");
         TelemetryParameter SHOW_PROPERTIES = new TelemetryParameter(MODULE, "showprop-webapp");
         TelemetryParameter SHINTO = new TelemetryParameter(MODULE, "sshinto-webapp");
-        TelemetryParameter OPEN_IN_PORTAL = new TelemetryParameter(MODULE, "open-inbrowser-webapp");
+        TelemetryParameter OPEN_IN_PORTAL = new TelemetryParameter(MODULE, "webap-open-in-portal");
+        TelemetryParameter OPEN_IN_BROWSER = new TelemetryParameter(MODULE, "open-inbrowser-webapp");
         TelemetryParameter START_STREAMING_LOG = new TelemetryParameter(MODULE, "start-streaming-log-webapp");
         TelemetryParameter STOP_STREAMING_LOG = new TelemetryParameter(MODULE, "stop-streaming-log-webapp");
 
@@ -82,7 +83,8 @@ public final class TelemetryParameter {
             TelemetryParameter DELETE = new TelemetryParameter(MODULE, "delete-webapp-slot");
             TelemetryParameter SWAP = new TelemetryParameter(MODULE, "swap-webapp-slot");
             TelemetryParameter SHOW_PROPERTIES = new TelemetryParameter(MODULE, "show-webapp-slot-prop");
-            TelemetryParameter OPEN_IN_PORTAL = new TelemetryParameter(MODULE, "open-webappslot-inbrowser");
+            TelemetryParameter OPEN_IN_BROWSER = new TelemetryParameter(MODULE, "open-webappslot-inbrowser");
+            TelemetryParameter OPEN_IN_PORTAL = new TelemetryParameter(MODULE, "open-webappslot-in-portal");
             TelemetryParameter START_STREAMING_LOG = new TelemetryParameter(MODULE, "start-streaming-log-webapp-slot");
             TelemetryParameter STOP_STREAMING_LOG = new TelemetryParameter(MODULE, "stop-streaming-log-webapp-slot");
         }
