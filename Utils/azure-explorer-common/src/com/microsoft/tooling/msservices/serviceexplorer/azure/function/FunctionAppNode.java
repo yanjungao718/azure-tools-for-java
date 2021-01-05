@@ -45,7 +45,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeView {
@@ -69,11 +68,6 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         boolean running = WebAppBaseState.RUNNING.equals(state);
         boolean updating = WebAppBaseState.UPDATING.equals(state);
         return running ? AzureIconSymbol.FunctionApp.RUNNING : updating ? AzureIconSymbol.FunctionApp.UPDATING : AzureIconSymbol.FunctionApp.STOPPED;
-    }
-
-    @Override
-    public String getIconPath() {
-        return Objects.equals(this.state, WebAppBaseState.STOPPED) ? "azure-functions-stop.png" : "azure-functions-small.png";
     }
 
     @Override
