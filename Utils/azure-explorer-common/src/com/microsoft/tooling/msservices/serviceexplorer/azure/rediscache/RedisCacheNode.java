@@ -226,16 +226,11 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
         }
 
         @Override

@@ -242,18 +242,13 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     // Show properties
-    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
 
         @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
 
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), MySQLModule.MODULE_NAME, WebAppNode.this.name);
         }
 
         @Override

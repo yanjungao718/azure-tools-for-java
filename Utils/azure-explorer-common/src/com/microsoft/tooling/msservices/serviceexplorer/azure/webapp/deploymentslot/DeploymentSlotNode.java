@@ -248,17 +248,12 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // Show properties action class
-    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
 
         @AzureOperation(value = "show properties of deployment slot", type = AzureOperation.Type.ACTION)
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), DeploymentSlotModule.MODULE_NAME, DeploymentSlotNode.this.name);
         }
 
         @Override

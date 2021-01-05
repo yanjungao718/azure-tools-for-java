@@ -234,17 +234,12 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     // Show properties
-    private class ShowPropertiesAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
 
         @AzureOperation(value = "show properties of function app", type = AzureOperation.Type.ACTION)
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.SHOW_PROPERTIES.getDoingName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
         }
 
         @Override
