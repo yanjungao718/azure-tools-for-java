@@ -21,11 +21,14 @@
  */
 package com.microsoft.azure.toolkit.lib.common.handler;
 
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.InterruptedIOException;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 @Log
@@ -46,6 +49,14 @@ public abstract class AzureExceptionHandler {
         AzureExceptionHandler.getInstance().handleException(e);
     }
 
+    public static void notify(final Throwable e, @Nullable AzureExceptionAction... actions) {
+        AzureExceptionHandler.getInstance().handleException(e, actions);
+    }
+
+    public static void notify(final Throwable e, boolean background, @Nullable AzureExceptionAction... actions) {
+        AzureExceptionHandler.getInstance().handleException(e, background, actions);
+    }
+
     public static void onRxException(final Throwable e) {
         final Throwable rootCause = ExceptionUtils.getRootCause(e);
         if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
@@ -57,6 +68,11 @@ public abstract class AzureExceptionHandler {
 
     public void handleException(Throwable throwable, @Nullable AzureExceptionAction... action) {
         log.log(Level.WARNING, "caught an error in AzureExceptionHandler", throwable);
+        final Boolean backgrounded = AzureTaskContext.current().getBackgrounded();
+        if (Objects.nonNull(backgrounded)) {
+            onHandleException(throwable, backgrounded, action);
+            return;
+        }
         onHandleException(throwable, action);
     }
 
@@ -73,5 +89,20 @@ public abstract class AzureExceptionHandler {
         String name();
 
         void actionPerformed(Throwable throwable);
+
+        static AzureExceptionAction simple(String name, Consumer<? super Throwable> consumer) {
+            return new AzureExceptionAction() {
+                @Override
+                public String name() {
+                    return name;
+                }
+
+                @Override
+                public void actionPerformed(final Throwable throwable) {
+                    consumer.accept(throwable);
+                }
+            };
+        }
     }
+
 }
