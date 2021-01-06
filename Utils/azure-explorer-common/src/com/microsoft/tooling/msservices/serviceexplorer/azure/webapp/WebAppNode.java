@@ -142,7 +142,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
         }
 
         @Override

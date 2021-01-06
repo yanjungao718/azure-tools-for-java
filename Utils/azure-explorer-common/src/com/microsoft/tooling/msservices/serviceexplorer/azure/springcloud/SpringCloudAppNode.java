@@ -201,7 +201,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
         }
 
         @Override

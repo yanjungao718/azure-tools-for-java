@@ -134,7 +134,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
         }
 
         @Override

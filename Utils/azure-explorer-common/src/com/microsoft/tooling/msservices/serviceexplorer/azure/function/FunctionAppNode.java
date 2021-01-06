@@ -128,7 +128,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
         }
 
         @Override

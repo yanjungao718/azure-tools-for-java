@@ -103,7 +103,7 @@ public class MySQLNode extends Node {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
         }
 
         @Override

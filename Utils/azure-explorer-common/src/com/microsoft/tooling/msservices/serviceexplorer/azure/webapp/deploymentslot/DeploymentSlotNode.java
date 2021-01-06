@@ -127,7 +127,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), DeploymentSlotModule.MODULE_NAME, DeploymentSlotNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), DeploymentSlotModule.MODULE_NAME, DeploymentSlotNode.this.name);
         }
 
         @Override
