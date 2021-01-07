@@ -55,6 +55,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     // node related
     private static final String CREATING_STATE = "Creating";
     private static final String RUNNING_STATE = "Running";
+    private static final String SUCCESS_STATE = "Succeeded";
     private static final String STOPPED_STATE = "Stopped";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
 
@@ -93,7 +94,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState);
+        boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState) || SUCCESS_STATE.equalsIgnoreCase(provisionState);
         boolean stopped = STOPPED_STATE.equalsIgnoreCase(provisionState);
         return running ? AzureIconSymbol.RedisCache.RUNNING : !stopped ? AzureIconSymbol.RedisCache.UPDATING : AzureIconSymbol.RedisCache.STOPPED;
     }
