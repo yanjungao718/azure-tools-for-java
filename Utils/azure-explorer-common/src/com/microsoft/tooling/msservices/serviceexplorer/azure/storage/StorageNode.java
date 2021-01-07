@@ -52,7 +52,7 @@ public class StorageNode extends Node implements TelemetryProperties {
     private String subscriptionId;
 
     public StorageNode(Node parent, String subscriptionId, StorageAccount storageAccount) {
-        super(storageAccount.name(), storageAccount.name(), parent, STORAGE_ACCOUNT_ICON_PATH,  true);
+        super(storageAccount.name(), storageAccount.name(), parent, STORAGE_ACCOUNT_ICON_PATH, true);
 
         this.subscriptionId = subscriptionId;
         this.storageAccount = storageAccount;
@@ -163,5 +163,7 @@ public class StorageNode extends Node implements TelemetryProperties {
                 + "<br>" + storageAccount.resourceGroupName();
     }
 
-    public String getSubscriptionId() { return subscriptionId; }
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
 }
