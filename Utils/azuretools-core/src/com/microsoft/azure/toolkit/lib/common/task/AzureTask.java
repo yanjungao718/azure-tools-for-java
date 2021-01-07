@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -96,6 +97,10 @@ public class AzureTask<T> {
         this.cancellable = cancellable;
         this.supplier = supplier;
         this.modality = modality;
+    }
+
+    public String getId() {
+        return Utils.getId(this);
     }
 
     public enum Modality {

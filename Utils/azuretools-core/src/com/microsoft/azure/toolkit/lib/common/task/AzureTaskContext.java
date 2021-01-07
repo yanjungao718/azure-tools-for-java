@@ -24,8 +24,10 @@ package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -33,6 +35,7 @@ import lombok.extern.java.Log;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
+import java.util.Optional;
 
 @Log
 public abstract class AzureTaskContext {
@@ -56,11 +59,15 @@ public abstract class AzureTaskContext {
 
     public static Deque<AzureOperationRef> getContextOperations(AzureTaskContext.Node node) {
         final Deque<AzureOperationRef> ops = new ArrayDeque<>();
-        if (Objects.nonNull(node.parent)) {
-            ops.addAll(node.parent.getOperations());
+        if (Objects.nonNull(node.getParent())) {
+            ops.addAll(node.getParent().getOperations());
         }
         ops.addAll(node.operations);
         return ops;
+    }
+
+    public static Deque<AzureOperationRef> getContextOperations() {
+        return getContextOperations(AzureTaskContext.current());
     }
 
     public static AzureTaskContext.Node current() {
@@ -83,6 +90,10 @@ public abstract class AzureTaskContext {
         }
     }
 
+    public String getId() {
+        return Utils.getId(this);
+    }
+
     public static class Node extends AzureTaskContext {
         @Setter
         @Getter
@@ -90,18 +101,29 @@ public abstract class AzureTaskContext {
         @Getter
         private AzureTaskContext parent;
         protected boolean disposed;
+        @Getter
+        @Setter(AccessLevel.PACKAGE)
+        private AzureTask<?> task;
 
         private Node(final AzureTaskContext parent) {
             super();
             this.parent = parent;
         }
 
-        void pushOperation(final AzureOperationRef operation) {
+        public AzureTaskContext getRealParent() {
+            AzureTaskContext pr = this.parent;
+            while (pr instanceof AzureTaskContext.Snapshot) {
+                pr = ((AzureTaskContext.Snapshot) pr).getOrigin();
+            }
+            return pr;
+        }
+
+        public void pushOperation(final AzureOperationRef operation) {
             this.operations.push(operation);
         }
 
         @Nullable
-        AzureOperationRef popOperation() {
+        public AzureOperationRef popOperation() {
             if (this.operations.size() > 0) {
                 return this.operations.pop();
             }
@@ -123,15 +145,16 @@ public abstract class AzureTaskContext {
         private void setup() {
             final Node current = AzureTaskContext.current();
             final long threadId = Thread.currentThread().getId();
+            assert current.threadId == -1 || current.threadId == threadId : String.format("[threadId:%s] illegal thread context[%s]", threadId, current);
             if (this.threadId > 0 || this.disposed) {
                 log.warning(String.format("[threadId:%s] context[%s] already setup/disposed", threadId, this));
             }
-            this.threadId = threadId;
-            if (this.threadId == current.threadId) {
+            this.threadId = threadId; // we can not decide in which thread this task will run until here.
+            if (threadId == current.threadId) { // this task runs in the same thread as parent.
                 this.parent = current;
-                log.info(String.format("[threadId:%s] setting up IN-THREAD context[%s]", threadId, this));
+                log.info(String.format("[threadId:%s] setting up SYNC context[%s]", threadId, this));
             } else {
-                log.info(String.format("[threadId:%s] setting up THREAD context[%s]", threadId, this));
+                log.info(String.format("[threadId:%s] setting up ASYNC context[%s]", threadId, this));
             }
             AzureTaskContext.context.set(this);
         }
@@ -144,30 +167,37 @@ public abstract class AzureTaskContext {
                 log.warning(String.format("[threadId:%s] disposing a disposed context[%s].", threadId, this));
             }
             this.disposed = true;
-            if (this.threadId == this.parent.threadId) {
-                // log.info(String.format("[threadId:%s] disposing IN-THREAD context[%s]", threadId, this));
-                assert !(this.parent instanceof Snapshot);
+            if (this.parent instanceof Node) { // this is not the root task of current thread.
+                log.info(String.format("[threadId:%s] disposing SYNC context[%s]", threadId, this));
+                assert this.threadId == this.parent.threadId : String.format("current[%s].threadId != current.parent[%s].threadId", this, this.parent);
                 AzureTaskContext.context.set((Node) this.parent);
-            } else {
-                // log.info(String.format("[threadId:%s] disposing THREAD context[%s]", threadId, this));
-                assert this.parent instanceof Snapshot;
+            } else { // this is the root task of current thread.
+                log.info(String.format("[threadId:%s] disposing ASYNC context[%s]", threadId, this));
+                if (this.threadId == this.parent.threadId) {
+                    log.warning(String.format("[threadId:%s] thread/threadId is reused.", threadId));
+                }
                 AzureTaskContext.context.remove();
             }
         }
 
         public String toString() {
-            final String hashcode = Integer.toHexString(System.identityHashCode(this));
+            final String id = getId();
             if (this.parent instanceof Snapshot) {
-                final String orHashcode = Integer.toHexString(System.identityHashCode(((Snapshot) this.parent).origin));
-                return String.format("{hashcode: %s, threadId:%s, snapshot@parent.origin:%s, disposed:%s}", hashcode, this.threadId, orHashcode, this.disposed);
+                final String orId = ((Snapshot) this.parent).origin.getId();
+                return String.format("{id: %s, threadId:%s, snapshot@parent.origin:%s, disposed:%s}", id, this.threadId, orId, this.disposed);
             } else {
-                final String prHashcode = Integer.toHexString(System.identityHashCode(this.parent));
-                return String.format("{hashcode: %s, threadId:%s, parent:%s, disposed:%s}", hashcode, this.threadId, prHashcode, this.disposed);
+                final String prId = Optional.ofNullable(this.parent).map(AzureTaskContext::getId).orElse("0");
+                return String.format("{id: %s, threadId:%s, parent:%s, disposed:%s}", id, this.threadId, prId, this.disposed);
             }
+        }
+
+        public String getId() {
+            return Utils.getId(this);
         }
     }
 
-    private static class Snapshot extends AzureTaskContext {
+    public static class Snapshot extends AzureTaskContext {
+        @Getter
         private final AzureTaskContext.Node origin; // snapshot refers original context
 
         private Snapshot(@NotNull final AzureTaskContext.Node origin) {
@@ -176,9 +206,9 @@ public abstract class AzureTaskContext {
         }
 
         public String toString() {
-            final String hashcode = Integer.toHexString(System.identityHashCode(this));
-            final String orHashcode = Integer.toHexString(System.identityHashCode(this.origin));
-            return String.format("{hashcode: %s, threadId:%s, origin:%s}", hashcode, this.threadId, orHashcode);
+            final String id = getId();
+            final String orId = this.origin.getId();
+            return String.format("{id: %s, threadId:%s, origin:%s}", id, this.threadId, orId);
         }
     }
 }
