@@ -118,9 +118,9 @@ public class CreateWebAppAction extends NodeActionListener implements ActionBasi
             indicator.setIndeterminate(true);
             return webappService.createWebApp(config);
         });
-        return AzureTaskManager.getInstance().runInModal(task).toSingle().doOnSuccess(webapp -> {
-            this.notifyCreationSuccess(webapp);
-            this.refreshAzureExplorer(webapp);
+        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
+            this.notifyCreationSuccess(app);
+            this.refreshAzureExplorer(app);
         });
     }
 
@@ -135,7 +135,7 @@ public class CreateWebAppAction extends NodeActionListener implements ActionBasi
             consoleView.attachToProcess(processHandler);
             WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
         });
-        AzureTaskManager.getInstance().runInModal(task).single().subscribe((none) -> {
+        AzureTaskManager.getInstance().runInModalAsObservable(task).single().subscribe((none) -> {
             this.notifyDeploymentSuccess(webapp);
         }); // let root exception handler to show the error.
     }
@@ -144,7 +144,7 @@ public class CreateWebAppAction extends NodeActionListener implements ActionBasi
     private void refreshAzureExplorer(WebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }
         });
     }
