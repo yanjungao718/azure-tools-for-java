@@ -189,15 +189,10 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Open Explorer
-    private class OpenExplorerAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
+    private class OpenExplorerAction extends NodeActionListener implements ActionTelemetrable {
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage("Opening", RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
         }
 
         @Override
