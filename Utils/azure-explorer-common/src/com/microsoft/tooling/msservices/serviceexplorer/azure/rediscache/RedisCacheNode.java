@@ -60,9 +60,6 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
 
     // action names
-    private static final String DELETE_ACTION = "Delete";
-    private static final String SHOW_PROPERTY_ACTION = "Show Properties";
-    private static final String OPEN_IN_BROWSER_ACTION = "Open in Browser";
     private static final String OPEN_EXPLORER = "Open Redis Explorer";
 
     // string format
