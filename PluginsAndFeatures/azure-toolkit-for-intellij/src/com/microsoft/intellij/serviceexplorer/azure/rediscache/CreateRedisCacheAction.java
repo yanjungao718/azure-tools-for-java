@@ -29,13 +29,13 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateRedisCacheForm;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
-@Name("Create Redis Cache")
-public class CreateRedisCacheAction extends NodeActionListener {
+public class CreateRedisCacheAction extends NodeActionListener implements ActionBasicable {
     private static final String ERROR_CREATING_REDIS_CACHE = "Error creating Redis cache";
     private RedisCacheModule redisCacheModule;
 
@@ -44,10 +44,21 @@ public class CreateRedisCacheAction extends NodeActionListener {
     }
 
     @Override
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
+    }
+
+    @Override
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) redisCacheModule.getProject();
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
+            this.doActionPerformed(e, isSuccess, project);
+        });
+    }
+
+    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+            if (!isLoggedIn) {
                 return;
             }
             if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_REDIS_CACHE)) {

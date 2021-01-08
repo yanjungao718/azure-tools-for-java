@@ -23,27 +23,24 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
+import lombok.Lombok;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_REDIS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_BROWSER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_EXPLORER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_READPROP;
 
 public class RedisCacheNode extends Node implements TelemetryProperties {
 
@@ -57,12 +54,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
     // node related
     private static final String CREATING_STATE = "Creating";
+    private static final String RUNNING_STATE = "Running";
+    private static final String SUCCESS_STATE = "Succeeded";
+    private static final String STOPPED_STATE = "Stopped";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
 
     // action names
-    private static final String DELETE_ACTION = "Delete";
-    private static final String SHOW_PROPERTY_ACTION = "Show Properties";
-    private static final String OPEN_IN_BROWSER_ACTION = "Open in Browser";
     private static final String OPEN_EXPLORER = "Open Redis Explorer";
 
     // string format
@@ -92,87 +89,21 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         loadActions();
     }
 
-    // Show property action class
-    private class ShowRedisCachePropertyAction extends NodeActionListener {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this);
-        }
-    }
-
-    // Delete Redis Cache action class
-    private class DeleteRedisCacheAction extends AzureNodeActionPromptListener {
-        public DeleteRedisCacheAction() {
-            super(RedisCacheNode.this, String.format(DELETE_CONFIRM_DIALOG_FORMAT, RedisCacheNode.this.name),
-                    DELETE_CONFIRM_TITLE);
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId,
-                RedisCacheNode.this.resourceId, RedisCacheNode.this);
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return REDIS;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return DELETE_REDIS;
-        }
-
-        @Override
-        public int getPriority() {
-            return Sortable.LOW_PRIORITY;
-        }
-
-        @Override
-        public int getGroup() {
-            return Groupable.MAINTENANCE_GROUP;
-        }
-    }
-
-    // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener {
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            String portalUrl = "";
-            try {
-                portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
-            } catch (Exception exception) {
-                System.out.println(exception.getMessage());
-            }
-            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
-                    RedisCacheNode.this.resourceId));
-        }
-    }
-
-    // Open Redis Cache Explorer
-    private class OpenRedisExplorerAction extends NodeActionListener {
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
-        }
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState) || SUCCESS_STATE.equalsIgnoreCase(provisionState);
+        boolean stopped = STOPPED_STATE.equalsIgnoreCase(provisionState);
+        return running ? AzureIconSymbol.RedisCache.RUNNING : !stopped ? AzureIconSymbol.RedisCache.UPDATING : AzureIconSymbol.RedisCache.STOPPED;
     }
 
     @Override
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
-            addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
-            addAction(SHOW_PROPERTY_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_READPROP,
-                new ShowRedisCachePropertyAction()));
-            addAction(OPEN_EXPLORER, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_EXPLORER,
-                new OpenRedisExplorerAction()));
+            addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
+            addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
+            addAction(OPEN_EXPLORER, new OpenExplorerAction().asGenericListener());
         }
-        addAction(OPEN_IN_BROWSER_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_BROWSER,
-            new OpenInBrowserAction()));
+        addAction(new OpenInBrowserAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
         super.loadActions();
     }
 
@@ -190,4 +121,81 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     public String getResourceId() {
         return this.resourceId;
     }
+
+    // Delete action class
+    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.resourceId, RedisCacheNode.this);
+        }
+
+        @Override
+        public String getPromptMessage() {
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.DELETE.getDoingName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.RedisCache.DELETE;
+        }
+    }
+
+    // Open in browser action class
+    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            String portalUrl = "";
+            try {
+                portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+            } catch (Exception exception) {
+                Lombok.sneakyThrow(exception);
+            }
+            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, RedisCacheNode.this.resourceId));
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.RedisCache.OPEN_IN_PORTAL;
+        }
+    }
+
+    // Show Properties
+    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.RedisCache.SHOW_PROPERTIES;
+        }
+    }
+
+    // Open Explorer
+    private class OpenExplorerAction extends NodeActionListener implements ActionTelemetrable {
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.RedisCache.OPEN_EXPLORER;
+        }
+    }
+
 }

@@ -28,14 +28,24 @@ import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 
-import javax.swing.*;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+// TODO(Qianjin): remove implementations of Sortable and Groupable
 public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
     protected int priority = Sortable.DEFAULT_PRIORITY;
     protected int group = Groupable.DEFAULT_GROUP;
@@ -74,7 +84,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             nodeActionEvent.getAction().getName(), buildProp(node));
     }
 
-    private Map<String, String> buildProp(Node node) {
+    protected Map<String, String> buildProp(Node node) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Node", node.getId());
         properties.put("Name", node.getName());
@@ -91,7 +101,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
-    public Icon getIcon() {
+    public AzureIconSymbol getIconSymbol() {
         return null;
     }
 
@@ -158,6 +168,41 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
+    }
+
+    public final NodeActionListener asGenericListener() {
+        if (this instanceof DelegateActionListener) {
+            return this;
+        }
+        NodeActionListener delegate = this;
+        if (this instanceof ActionBackgroundable) {
+            ActionBackgroundable backgroundable = (ActionBackgroundable) this;
+            delegate = new DelegateActionListener.BackgroundActionListener(
+                    delegate, backgroundable.getProgressMessage(), backgroundable.isCancellable(), backgroundable.isConditionalModal());
+        }
+        if (this instanceof ActionPromptable) {
+            ActionPromptable promptable = (ActionPromptable) this;
+            delegate = new DelegateActionListener.PromptActionListener(delegate, promptable.getPromptMessage());
+        }
+        if (this instanceof ActionTelemetrable) {
+            ActionTelemetrable telemetrable = (ActionTelemetrable) this;
+            if (Objects.nonNull(telemetrable.getTelemetryParameter())) {
+                TelemetryParameter parameter = telemetrable.getTelemetryParameter();
+                delegate = new DelegateActionListener.TelemetricActionListener(delegate, parameter.getServiceName(), parameter.getOperationName());
+            } else {
+                delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperationName());
+            }
+        }
+        if (this instanceof ActionBasicable) {
+            ActionBasicable basicable = (ActionBasicable) this;
+            delegate = new DelegateActionListener.BasicActionListener(delegate, basicable.getAction());
+        }
+        return delegate;
+    }
+
+    public final DelegateActionListener.BasicActionListener asGenericListener(AzureActionEnum actionEnum) {
+        NodeActionListener delegate = asGenericListener();
+        return new DelegateActionListener.BasicActionListener(delegate, actionEnum);
     }
 
 }

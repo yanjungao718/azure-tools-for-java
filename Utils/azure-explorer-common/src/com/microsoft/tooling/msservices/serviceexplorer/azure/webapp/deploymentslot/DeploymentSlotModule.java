@@ -23,9 +23,12 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -35,9 +38,9 @@ import java.util.List;
 public class DeploymentSlotModule extends AzureRefreshableNode implements DeploymentSlotModuleView {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String ICON_PATH = "Slot_16.png";
-    private static final String MODULE_NAME = "Deployment Slots";
 
     private final DeploymentSlotModulePresenter presenter;
+    protected static final String MODULE_NAME = "Deployment Slots";
     protected final String subscriptionId;
     protected final WebApp webapp;
 
@@ -47,6 +50,12 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
         this.webapp = webapp;
         presenter = new DeploymentSlotModulePresenter<>();
         presenter.onAttachView(this);
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        boolean isLinux = OperatingSystem.LINUX.name().equalsIgnoreCase(webapp.operatingSystem().toString());
+        return isLinux ? AzureIconSymbol.DeploymentSlot.MODULE_ON_LINUX : AzureIconSymbol.DeploymentSlot.MODULE;
     }
 
     @Override

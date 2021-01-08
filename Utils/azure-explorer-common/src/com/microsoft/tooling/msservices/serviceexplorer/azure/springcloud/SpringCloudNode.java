@@ -22,15 +22,24 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResource;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResource;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.ServiceResourceInner;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 import java.util.Arrays;
@@ -39,8 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_IN_PORTAL_SPRING_CLOUD_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
 import static com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule.ICON_FILE;
 
 /**
@@ -70,6 +77,11 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         loadActions();
     }
 
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.SpringCloud.CLUSTER;
+    }
+
     private void notifyDataRefresh(SpringCloudAppEvent event) {
         if (event.isDelete()) {
             SpringCloudAppNode matchedNode =
@@ -92,12 +104,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     @Override
     protected void loadActions() {
         super.loadActions();
-        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                openResourcesInPortal(subscriptionId, clusterId);
-            }
-        }));
+        addAction(new OpenInPortalAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
     }
 
     @Override
@@ -172,6 +179,25 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     public void unsubscribe() {
         if (rxSubscription != null && !rxSubscription.isDisposed()) {
             rxSubscription.dispose();
+        }
+    }
+
+    // Open in portal action class
+    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) {
+            SpringCloudNode.this.openResourcesInPortal(SpringCloudNode.this.subscriptionId, SpringCloudNode.this.clusterId);
+        }
+
+        @Override
+        public String getProgressMessage() {
+            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudNode.this.name);
+        }
+
+        @Override
+        public TelemetryParameter getTelemetryParameter() {
+            return TelemetryParameter.SpringCloud.OPEN_IN_PORTAL;
         }
     }
 }

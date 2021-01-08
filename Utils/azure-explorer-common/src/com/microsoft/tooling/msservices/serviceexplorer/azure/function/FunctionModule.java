@@ -25,9 +25,11 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
@@ -42,11 +44,18 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     private static final String ERROR_DELETING_FUNCTION_APP = "Azure Services Explorer - Error Deleting Function App";
     private final FunctionModulePresenter<FunctionModule> functionModulePresenter;
 
+    public static final String MODULE_NAME = "Function App";
+
     public FunctionModule(Node parent) {
         super(FUNCTION_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
         functionModulePresenter = new FunctionModulePresenter<>();
         functionModulePresenter.onAttachView(FunctionModule.this);
         createListener();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.FunctionApp.MODULE;
     }
 
     @Override

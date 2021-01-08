@@ -24,10 +24,12 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
@@ -35,13 +37,11 @@ import java.util.List;
 
 public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView {
 
-    // TODO (qianjin): updated once Tanya completes UI design.
-    public static final String BASE_MODULE_NAME = "Azure Database for MySQL";
-    public static final String ACTION_PATTERN_SUFFIX = BASE_MODULE_NAME + " (%s)...";
+    public static final String MODULE_NAME = "Azure Database for MySQL";
     private static final String MYSQL_DATABASE_MODULE_ID = MySQLModule.class.getName();
 
     public MySQLModule(final Node parent) {
-        super(MYSQL_DATABASE_MODULE_ID, BASE_MODULE_NAME, parent, null);
+        super(MYSQL_DATABASE_MODULE_ID, MODULE_NAME, parent);
         createListener();
     }
 
@@ -51,6 +51,11 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
             final MySQLNode node = new MySQLNode(this, sid, server);
             addChildNode(node);
         }
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.MySQL.MODULE;
     }
 
     @Override

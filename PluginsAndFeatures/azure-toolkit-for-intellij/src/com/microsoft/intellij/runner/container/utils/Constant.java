@@ -29,7 +29,7 @@ public class Constant {
     public static final String CONSOLE_NAME = "AzureToolsConsole";
     public static final String DOCKERFILE_FOLDER = ".";
     public static final String DOCKERFILE_NAME = "Dockerfile";
-    public static final String TOMCAT_SERVICE_PORT = "8080";
+    public static final String TOMCAT_SERVICE_PORT = "80";
     public static final String IMAGE_PREFIX = "local/tomcat";
     public static final String MESSAGE_INSTRUCTION = "(Set the DOCKER_HOST environment variable to connect elsewhere."
             + "Set the DOCKER_CERT_PATH variable to connect TLS-enabled daemon.)";
@@ -42,9 +42,9 @@ public class Constant {
     public static final String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile, "
             + "with exception:\n%s";
     public static final String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run, with exception:\n%s";
-    public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
-            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT\r\n"
-            + "COPY %s /usr/local/tomcat/webapps/ROOT.war\r\n";
+    public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM mcr.microsoft.com/java/tomcat:8-zulu-alpine-tomcat-9" + System.lineSeparator()
+            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT" + System.lineSeparator()
+            + "COPY %s /usr/local/tomcat/webapps/ROOT.war" + System.lineSeparator();
     public static final String DOCKERFILE_CONTENT_SPRING = "FROM azul/zulu-openjdk-alpine:8\r\n"
             + "VOLUME /tmp\r\n"
             + "EXPOSE 8080\r\n"

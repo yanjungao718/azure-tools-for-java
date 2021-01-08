@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.48.0</version>
+        <version>3.49.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -256,7 +256,7 @@
             <artifactId>rxjava</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure.appplatform.v2019_05_01_preview</groupId>
+            <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
             <artifactId>azure-mgmt-appplatform</artifactId>
         </dependency>
 	<dependency>

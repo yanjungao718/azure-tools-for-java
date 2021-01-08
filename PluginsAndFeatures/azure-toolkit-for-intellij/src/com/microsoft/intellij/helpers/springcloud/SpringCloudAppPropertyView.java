@@ -35,9 +35,14 @@ import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.AppResourceProperties;
+import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceProperties;
+import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceStatus;
+import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentSettings;
+import com.microsoft.azure.management.appplatform.v2020_07_01.PersistentDisk;
+import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -51,7 +56,7 @@ import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNodePresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudMonitorUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -330,7 +335,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
     }
 
     private static void monitorStatus(String appId, DeploymentResourceInner deploymentResourceInner) throws IOException, InterruptedException {
-        SpringCloudAppNodePresenter.awaitAndMonitoringStatus(appId,
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(appId,
                                                              deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
     }
 

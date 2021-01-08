@@ -38,6 +38,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLPropertyMvpView;
@@ -225,7 +226,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             this.showProperty(this.property);
         };
         // show property in background
-        String taskTitle = String.format(actionName + StringUtils.SPACE + MySQLModule.ACTION_PATTERN_SUFFIX, name);
+        String taskTitle = Node.getProgressMessage(actionName, MySQLModule.MODULE_NAME, name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
     }
 

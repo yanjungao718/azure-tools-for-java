@@ -25,10 +25,11 @@ package com.microsoft.azure.arcadia.serverexplore;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class ArcadiaSparkClusterRootModuleImpl extends HDInsightRootModule {
@@ -39,6 +40,11 @@ public class ArcadiaSparkClusterRootModuleImpl extends HDInsightRootModule {
     public ArcadiaSparkClusterRootModuleImpl(@NotNull Node parent) {
         super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
         this.loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.ApacheSparkOnAzureSynapse.MODULE;
     }
 
     @Override

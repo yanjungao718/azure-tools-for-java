@@ -24,12 +24,13 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 public enum WebAppBaseState {
     RUNNING,
-    STOPPED;
+    STOPPED,
+    UPDATING;
 
     private static WebAppBaseState[] copyOfValues = values();
 
     public static WebAppBaseState fromString(final String name) {
-        for(final WebAppBaseState value: copyOfValues) {
+        for (final WebAppBaseState value: copyOfValues) {
             if (value.name().equalsIgnoreCase(name)) {
                 return value;
             }

@@ -22,20 +22,20 @@
 
 package com.microsoft.azure.toolkit.lib.common.operation;
 
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 @Getter
-@Setter
 @Builder
 public class AzureOperationRef {
-    private Method method;
-    private String[] paramNames;
-    private Object[] paramValues;
-    private Object instance;
+    private final Method method;
+    private final String[] paramNames;
+    private final Object[] paramValues;
+    private final Object instance;
 
     @Override
     public boolean equals(final Object obj) {
@@ -43,6 +43,16 @@ public class AzureOperationRef {
             return false;
         }
         final AzureOperationRef operation = (AzureOperationRef) obj;
-        return operation.getMethod() == this.method || operation.getMethod().equals(this.method);
+        return Objects.equals(operation.getMethod(), this.getMethod());
+    }
+
+    @Override
+    public String toString() {
+        final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
+        return String.format("{title:'%s', method:%s}", annotation.value(), method.getName());
+    }
+
+    public String getId() {
+        return Utils.getId(this);
     }
 }
