@@ -51,7 +51,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 import rx.Single;
 
 import java.nio.file.Path;
@@ -60,7 +59,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateWebAppAction extends NodeActionListener implements ActionBasicable {
+public class CreateWebAppAction extends NodeActionListener {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private final WebAppService webappService;
     private final WebAppModule webappModule;
@@ -113,7 +112,7 @@ public class CreateWebAppAction extends NodeActionListener implements ActionBasi
 
     @AzureOperation(value = "create web app", type = AzureOperation.Type.ACTION)
     private Single<WebApp> createWebApp(final WebAppConfig config) {
-        final AzureTask<WebApp> task = new AzureTask<>(null, message("webapp.create.title"), false, () -> {
+        final AzureTask<WebApp> task = new AzureTask<>(null, message("webapp.create.title", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return webappService.createWebApp(config);
@@ -126,7 +125,7 @@ public class CreateWebAppAction extends NodeActionListener implements ActionBasi
 
     @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask<Void> task = new AzureTask<>(null, message("webapp.deploy.title"), false, () -> {
+        final AzureTask<Void> task = new AzureTask<>(null, message("webapp.deploy.title", webapp.name()), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();
