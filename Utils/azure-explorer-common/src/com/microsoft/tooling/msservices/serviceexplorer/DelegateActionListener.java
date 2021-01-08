@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -124,6 +125,12 @@ class DelegateActionListener extends NodeActionListener {
             super(delegate);
             this.serviceName = serviceName;
             this.operationName = operationName;
+        }
+
+        public TelemetricActionListener(NodeActionListener delegate, TelemetryParameter telemetryParameter) {
+            super(delegate);
+            this.serviceName = telemetryParameter.getServiceName();
+            this.operationName = telemetryParameter.getOperationName();
         }
 
         @Override
