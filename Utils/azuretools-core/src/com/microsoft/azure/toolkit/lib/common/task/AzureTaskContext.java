@@ -89,6 +89,7 @@ public abstract class AzureTaskContext {
         try {
             context.setup();
             Optional.ofNullable(context.getTask()).ifPresent(task -> {
+                AzurePerformanceMetricsCollector.beforeEnter(task);
                 AzureTaskContext.current().pushOperation(task);
             });
             runnable.run();
@@ -97,6 +98,7 @@ public abstract class AzureTaskContext {
         } finally {
             Optional.ofNullable(context.getTask()).ifPresent(task -> {
                 final IAzureOperation popped = AzureTaskContext.current().popOperation();
+                AzurePerformanceMetricsCollector.afterExit(task);
                 assert Objects.equals(task, popped) : String.format("popped op[%s] is not the exiting async task[%s]", popped, task);
             });
             context.dispose();

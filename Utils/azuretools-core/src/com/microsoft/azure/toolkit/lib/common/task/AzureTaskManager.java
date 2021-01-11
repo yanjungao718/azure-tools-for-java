@@ -258,6 +258,7 @@ public abstract class AzureTaskManager {
             final AzureTaskContext.Node context = AzureTaskContext.current().derive();
             task.setContext(context);
             context.setTask(task);
+            AzurePerformanceMetricsCollector.afterCreate(task);
             final Runnable t = () -> AzureTaskContext.run(() -> {
                 try {
                     // log.info(String.format("doing task[%s] in thread[%s]/context[%s]", task.getTitle(), Thread.currentThread().getId(), context));
