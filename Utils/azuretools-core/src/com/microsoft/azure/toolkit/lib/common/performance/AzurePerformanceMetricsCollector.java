@@ -46,21 +46,21 @@ import java.util.stream.Collectors;
 public class AzurePerformanceMetricsCollector {
     private static final File file = new File(System.getProperty("user.home") + "/performance.csv");
 
-    public static final String PERFORMANCE = "PERFORMANCE";
-    public static final String TELEMETRY_OP_TIMESTAMP = "timestamp";
-    public static final String TELEMETRY_OP_ACTION = "action";
-    public static final String TELEMETRY_OP_CONTEXT_ID = "context_id";
-    public static final String TELEMETRY_OP_ID = "id";
-    public static final String TELEMETRY_OP_PARENT_ID = "parent_id";
-    public static final String TELEMETRY_OP_NAME = "name";
-    public static final String TELEMETRY_OP_TYPE = "type";
-    public static final String OP_ACTION_CREATE = "CREATE";
-    public static final String OP_ACTION_ENTER = "ENTER";
-    public static final String OP_ACTION_EXIT = "EXIT";
+    private static final String PERFORMANCE = "PERFORMANCE";
+    private static final String TELEMETRY_OP_TIMESTAMP = "timestamp";
+    private static final String TELEMETRY_OP_ACTION = "action";
+    private static final String TELEMETRY_OP_CONTEXT_ID = "context_id";
+    private static final String TELEMETRY_OP_ID = "id";
+    private static final String TELEMETRY_OP_PARENT_ID = "parent_id";
+    private static final String TELEMETRY_OP_NAME = "name";
+    private static final String TELEMETRY_OP_TYPE = "type";
+    private static final String OP_ACTION_CREATE = "CREATE";
+    private static final String OP_ACTION_ENTER = "ENTER";
+    private static final String OP_ACTION_EXIT = "EXIT";
 
     public static void afterCreate(final IAzureOperation op) {
         final long timestamp = System.currentTimeMillis();
-        final HashMap<String, String> properties = buildProperties(op);
+        final Map<String, String> properties = buildProperties(op);
         properties.put(TELEMETRY_OP_TIMESTAMP, String.valueOf(timestamp));
         properties.put(TELEMETRY_OP_ACTION, OP_ACTION_CREATE);
         sendTelemetry(properties);
@@ -68,7 +68,7 @@ public class AzurePerformanceMetricsCollector {
 
     public static void beforeEnter(final IAzureOperation op) {
         final long timestamp = System.currentTimeMillis();
-        final HashMap<String, String> properties = buildProperties(op);
+        final Map<String, String> properties = buildProperties(op);
         properties.put(TELEMETRY_OP_TIMESTAMP, String.valueOf(timestamp));
         properties.put(TELEMETRY_OP_ACTION, OP_ACTION_ENTER);
         sendTelemetry(properties);
@@ -76,17 +76,17 @@ public class AzurePerformanceMetricsCollector {
 
     public static void afterExit(final IAzureOperation op) {
         final long timestamp = System.currentTimeMillis();
-        final HashMap<String, String> properties = buildProperties(op);
+        final Map<String, String> properties = buildProperties(op);
         properties.put(TELEMETRY_OP_TIMESTAMP, String.valueOf(timestamp));
         properties.put(TELEMETRY_OP_ACTION, OP_ACTION_EXIT);
         sendTelemetry(properties);
     }
 
     @NotNull
-    private static HashMap<String, String> buildProperties(final IAzureOperation op) {
+    private static Map<String, String> buildProperties(final IAzureOperation op) {
         final Deque<IAzureOperation> ctxOperations = AzureTaskContext.getContextOperations();
         final Optional<IAzureOperation> parent = Optional.ofNullable(ctxOperations.peekFirst());
-        final HashMap<String, String> properties = new HashMap<>();
+        final Map<String, String> properties = new HashMap<>();
         properties.put(TELEMETRY_OP_CONTEXT_ID, getCompositeId(ctxOperations, op));
         properties.put(TELEMETRY_OP_ID, op.getId());
         properties.put(TELEMETRY_OP_PARENT_ID, parent.map(IAzureOperation::getId).orElse("/"));
