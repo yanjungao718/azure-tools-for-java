@@ -36,6 +36,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
+import com.microsoft.azuretools.ijidea.utility.JTableUtils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -50,8 +51,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
@@ -156,29 +155,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         column.setHeaderValue(""); // Don't show title text
         column.setMinWidth(23);
         column.setMaxWidth(23);
+        JTableUtils.enableBatchSelection(table, CHECKBOX_COLUMN);
         table.getTableHeader().setReorderingAllowed(false);
         new TableSpeedSearch(table);
-
-        // secret functionality: select all subs
-        table.getTableHeader().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int col = table.columnAtPoint(e.getPoint());
-                if (col == CHECKBOX_COLUMN) {
-                    boolean anySelected = false;
-                    for (int row = 0; row < table.getRowCount(); row++) {
-                        Boolean b = (Boolean) table.getValueAt(row, CHECKBOX_COLUMN);
-                        if (b) {
-                            anySelected = true;
-                            break;
-                        }
-                    }
-                    for (int row = 0; row < table.getRowCount(); row++) {
-                        table.getModel().setValueAt(!anySelected, row, CHECKBOX_COLUMN);
-                    }
-                }
-            }
-        });
 
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
