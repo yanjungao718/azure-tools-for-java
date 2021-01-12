@@ -46,7 +46,6 @@ import rx.Single;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class SelectSubscriptionsAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
@@ -82,11 +81,12 @@ public class SelectSubscriptionsAction extends AzureAnAction {
         }
 
         final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
-
-        return loadSubscriptions(subscriptionManager, project)
-            .switchMap((subs) -> selectSubscriptions(project, subs))
-            .toSingle()
-            .doOnSuccess((subs) -> Optional.ofNullable(subs).ifPresent(subscriptionManager::setSubscriptionDetails));
+        List<SubscriptionDetail> subs = subscriptionManager.getSubscriptionDetails();
+        SubscriptionsDialog d = SubscriptionsDialog.go(subs, project);
+        if (Objects.nonNull(d)) {
+            subscriptionManager.setSubscriptionDetails(subs);
+        }
+        return Single.just(subs);
     }
 
     private static Observable<List<SubscriptionDetail>> selectSubscriptions(final Project project, List<SubscriptionDetail> subs) {
