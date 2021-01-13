@@ -38,6 +38,7 @@ import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -213,13 +214,16 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         return registerAction == null ? actions : ArrayUtils.addAll(actions, registerAction);
     }
 
-    public static List<AzureOperationRef> revise(Deque<? extends AzureOperationRef> operations) {
+    public static List<AzureOperationRef> revise(Deque<? extends IAzureOperation> operations) {
         final LinkedList<AzureOperationRef> result = new LinkedList<>();
-        for (final AzureOperationRef op : operations) {
-            result.addFirst(op);
-            final AzureOperation annotation = AzureOperationUtils.getAnnotation(op);
-            if (annotation.type() == AzureOperation.Type.ACTION) {
-                break;
+        for (final IAzureOperation op : operations) {
+            if (op instanceof AzureOperationRef) {
+                final AzureOperationRef operation = (AzureOperationRef) op;
+                result.addFirst(operation);
+                final AzureOperation annotation = AzureOperationUtils.getAnnotation(operation);
+                if (annotation.type() == AzureOperation.Type.ACTION) {
+                    break;
+                }
             }
         }
         return result;

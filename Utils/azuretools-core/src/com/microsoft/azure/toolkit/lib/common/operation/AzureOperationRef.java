@@ -31,7 +31,7 @@ import java.util.Objects;
 
 @Getter
 @Builder
-public class AzureOperationRef {
+public class AzureOperationRef implements IAzureOperation {
     private final Method method;
     private final String[] paramNames;
     private final Object[] paramValues;
@@ -50,6 +50,16 @@ public class AzureOperationRef {
     public String toString() {
         final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
         return String.format("{title:'%s', method:%s}", annotation.value(), method.getName());
+    }
+
+    public String getName() {
+        final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
+        return annotation.value();
+    }
+
+    public String getType() {
+        final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
+        return annotation.type().name();
     }
 
     public String getId() {
