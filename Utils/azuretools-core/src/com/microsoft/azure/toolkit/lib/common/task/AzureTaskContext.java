@@ -170,11 +170,7 @@ public abstract class AzureTaskContext {
             this.async = threadId != current.threadId;
             if (threadId == current.threadId) { // this task runs in the same thread as parent.
                 this.parent = current;
-                log.info(String.format("[threadId:%s] setting up SYNC context[%s]", threadId, this));
-            } else {
-                log.info(String.format("[threadId:%s] setting up ASYNC context[%s]", threadId, this));
             }
-            log.info(String.format("[threadId:%s] setting up %s context[%s]", threadId, this.async ? "ASYNC" : "SYNC", this));
             AzureTaskContext.context.set(this);
         }
 
@@ -187,12 +183,10 @@ public abstract class AzureTaskContext {
             }
             this.disposed = true;
             if (this.parent instanceof Node) { // this is not the root task of current thread.
-                log.info(String.format("[threadId:%s] disposing SYNC context[%s]", threadId, this));
                 assert this.threadId == this.parent.threadId : String.format("current[%s].threadId != current.parent[%s].threadId", this, this.parent);
                 assert !this.async : String.format("disposing async task context[%s](parent[%s]) in sync mode", this, this.parent);
                 AzureTaskContext.context.set((Node) this.parent);
             } else { // this is the root task of current thread.
-                log.info(String.format("[threadId:%s] disposing ASYNC context[%s]", threadId, this));
                 assert this.async : String.format("disposing sync task context[%s](parent[%s]) in async mode", this, this.parent);
                 if (this.threadId == this.parent.threadId) {
                     log.warning(String.format("[threadId:%s] thread/threadId is reused.", threadId));

@@ -261,7 +261,6 @@ public abstract class AzureTaskManager {
             AzurePerformanceMetricsCollector.afterCreate(task);
             final Runnable t = () -> AzureTaskContext.run(() -> {
                 try {
-                    // log.info(String.format("doing task[%s] in thread[%s]/context[%s]", task.getTitle(), Thread.currentThread().getId(), context));
                     emitter.onNext(task.getSupplier().get());
                     emitter.onCompleted();
                 } catch (final Throwable e) {

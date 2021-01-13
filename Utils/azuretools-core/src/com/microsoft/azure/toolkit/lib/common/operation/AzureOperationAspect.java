@@ -60,7 +60,6 @@ public final class AzureOperationAspect {
 
     private static AzureOperationRef enterOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        log.info(String.format("enter operation[%s] in context[%s]", operation, AzureTaskContext.current()));
         AzurePerformanceMetricsCollector.beforeEnter(operation);
         AzureTaskContext.current().pushOperation(operation);
         return operation;
@@ -69,7 +68,6 @@ public final class AzureOperationAspect {
     private static AzureOperationRef exitOperation(JoinPoint point) {
         final AzureOperationRef current = toOperationRef(point);
         final AzureOperationRef operation = (AzureOperationRef) AzureTaskContext.current().popOperation();
-        log.info(String.format("exit operation[%s] in context[%s]", operation, AzureTaskContext.current()));
         AzurePerformanceMetricsCollector.afterExit(operation);
         assert Objects.equals(current, operation) : String.format("popped operation[%s] is not the exiting operation[%s]", current, operation);
         return operation;
