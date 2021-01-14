@@ -47,6 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     private static final String CLICK_ACTION = "click";
@@ -330,6 +331,10 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
                     NodeActionListener actionListener = createNodeActionListener(actionClazz);
                     if (actionListener instanceof ActionBasicable && ((ActionBasicable) actionListener).getAction() != null) {
                         addAction(((ActionBasicable) actionListener).getAction().getName(), actionListener.asGenericListener());
+                        continue;
+                    }
+                    if (Objects.nonNull(actionListener.getAction())) {
+                        addAction(new DelegateActionListener.BasicActionListener(actionListener, actionListener.getAction()));
                         continue;
                     }
                     Name nameAnnotation = actionClazz.getAnnotation(Name.class);

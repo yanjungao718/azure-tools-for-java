@@ -51,7 +51,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 import rx.Single;
 
 import java.nio.file.Path;
@@ -60,7 +59,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateWebAppAction extends NodeActionListener implements ActionBasicable {
+public class CreateWebAppAction extends NodeActionListener {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private final WebAppService webappService;
     private final WebAppModule webappModule;

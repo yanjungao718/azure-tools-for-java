@@ -27,23 +27,16 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -91,13 +84,19 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(new StopAction().asGenericListener(AzureActionEnum.STOP));
-        addAction(new StartAction().asGenericListener(AzureActionEnum.START));
-        addAction(new RestartAction().asGenericListener(AzureActionEnum.RESTART));
-        addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
-        addAction(new OpenInBrowserAction().asGenericListener(AzureActionEnum.OPEN_IN_BROWSER));
-        addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
+        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         super.loadActions();
+    }
+
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(WebAppModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
@@ -132,129 +131,37 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return webapp;
     }
 
-    // Delete action class
-    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            WebAppNode.this.getParent().removeNode(WebAppNode.this.getSubscriptionId(), WebAppNode.this.getId(), WebAppNode.this);
-        }
-
-        @Override
-        public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.DELETE.getDoingName(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.WebApp.DELETE;
-        }
+    @AzureOperation(value = "delete web app", type = AzureOperation.Type.ACTION)
+    private void delete() {
+        WebAppNode.this.getParent().removeNode(WebAppNode.this.getSubscriptionId(), WebAppNode.this.getId(), WebAppNode.this);
     }
 
-    // Start action class
-    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @AzureOperation(value = "start web app", type = AzureOperation.Type.ACTION)
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureWebAppMvpModel.getInstance().startWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
-            WebAppNode.this.renderNode(WebAppBaseState.RUNNING);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.START.getDoingName(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.WebApp.START;
-        }
+    @AzureOperation(value = "start web app", type = AzureOperation.Type.ACTION)
+    private void start() {
+        AzureWebAppMvpModel.getInstance().startWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
+        WebAppNode.this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    // Stop action class
-    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @AzureOperation(value = "stop web app", type = AzureOperation.Type.ACTION)
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureWebAppMvpModel.getInstance().stopWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
-            WebAppNode.this.renderNode(WebAppBaseState.STOPPED);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.STOP.getDoingName(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.WebApp.STOP;
-        }
-
+    @AzureOperation(value = "stop web app", type = AzureOperation.Type.ACTION)
+    private void stop() {
+        AzureWebAppMvpModel.getInstance().stopWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
+        WebAppNode.this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    // Restart action class
-    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @AzureOperation(value = "restart web app", type = AzureOperation.Type.ACTION)
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureWebAppMvpModel.getInstance().restartWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
-            WebAppNode.this.renderNode(WebAppBaseState.RUNNING);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.RESTART.getDoingName(), WebAppModule.MODULE_NAME, WebAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.WebApp.RESTART;
-        }
-
+    @AzureOperation(value = "restart web app", type = AzureOperation.Type.ACTION)
+    private void restart() {
+        AzureWebAppMvpModel.getInstance().restartWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
+        WebAppNode.this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().openInBrowser("http://" + WebAppNode.this.hostName);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_BROWSER.getDoingName(), MySQLModule.MODULE_NAME, WebAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.WebApp.OPEN_IN_BROWSER;
-        }
+    @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
+    private void openInBrowser() {
+        DefaultLoader.getUIHelper().openInBrowser("http://" + WebAppNode.this.hostName);
     }
 
-    // Show properties
-    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
-
-        @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
-
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.WebApp.SHOW_PROPERTIES;
-        }
+    @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }
 
 }

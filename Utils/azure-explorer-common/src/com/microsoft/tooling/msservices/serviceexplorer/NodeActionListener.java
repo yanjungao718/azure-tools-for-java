@@ -105,6 +105,10 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         return null;
     }
 
+    public AzureActionEnum getAction() {
+        return null;
+    }
+
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
         String operationName = getOperationName(e);
