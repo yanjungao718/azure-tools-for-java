@@ -22,16 +22,18 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Getter
-public class AzureTask<T> {
+public class AzureTask<T> implements IAzureOperation {
     private final Modality modality;
     private final Supplier<T> supplier;
     private final Object project;
@@ -100,7 +102,17 @@ public class AzureTask<T> {
     }
 
     public String getId() {
-        return Utils.getId(this);
+        return "&" + Utils.getId(this);
+    }
+
+    @Override
+    public String getName() {
+        return Optional.ofNullable(this.getTitle()).orElse("<no_name>");
+    }
+
+    @Override
+    public String getType() {
+        return "ASYNC";
     }
 
     public enum Modality {

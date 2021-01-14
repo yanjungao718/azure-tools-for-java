@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.operation;
 
+import com.microsoft.azure.toolkit.lib.common.performance.AzurePerformanceMetricsCollector;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import lombok.extern.java.Log;
 import org.aspectj.lang.JoinPoint;
@@ -59,15 +60,15 @@ public final class AzureOperationAspect {
 
     private static AzureOperationRef enterOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        log.info(String.format("enter operation[%s] in context[%s]", operation, AzureTaskContext.current()));
+        AzurePerformanceMetricsCollector.beforeEnter(operation);
         AzureTaskContext.current().pushOperation(operation);
         return operation;
     }
 
     private static AzureOperationRef exitOperation(JoinPoint point) {
         final AzureOperationRef current = toOperationRef(point);
-        final AzureOperationRef operation = AzureTaskContext.current().popOperation();
-        log.info(String.format("exit operation[%s] in context[%s]", operation, AzureTaskContext.current()));
+        final AzureOperationRef operation = (AzureOperationRef) AzureTaskContext.current().popOperation();
+        AzurePerformanceMetricsCollector.afterExit(operation);
         assert Objects.equals(current, operation) : String.format("popped operation[%s] is not the exiting operation[%s]", current, operation);
         return operation;
     }
@@ -77,10 +78,10 @@ public final class AzureOperationAspect {
         final Object[] args = point.getArgs();
         final Object instance = point.getThis();
         return AzureOperationRef.builder()
-                                .instance(instance)
-                                .method(signature.getMethod())
-                                .paramNames(signature.getParameterNames())
-                                .paramValues(args)
-                                .build();
+            .instance(instance)
+            .method(signature.getMethod())
+            .paramNames(signature.getParameterNames())
+            .paramValues(args)
+            .build();
     }
 }
