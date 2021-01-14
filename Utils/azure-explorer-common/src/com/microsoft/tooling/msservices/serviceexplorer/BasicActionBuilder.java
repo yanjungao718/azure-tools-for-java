@@ -69,19 +69,19 @@ public class BasicActionBuilder {
         return this;
     }
 
-    public BasicActionBuilder isBackgroudable(final boolean backgroundRequired) {
+    public BasicActionBuilder withBackgroudable(final boolean backgroundRequired) {
         this.backgroundable = backgroundRequired;
         return this;
     }
 
-    public BasicActionBuilder isBackgroudable(final boolean backgroundRequired, final boolean cancellable, final boolean conditionalModal) {
+    public BasicActionBuilder withBackgroudable(final boolean backgroundRequired, final boolean cancellable, final boolean conditionalModal) {
         this.backgroundable = backgroundRequired;
         this.backgroundCancellable = cancellable;
         this.backgroundConditionalModal = conditionalModal;
         return this;
     }
 
-    public BasicActionBuilder isPromptable(final boolean promptRequired) {
+    public BasicActionBuilder withPromptable(final boolean promptRequired) {
         this.promptable = promptRequired;
         return this;
     }
@@ -89,7 +89,7 @@ public class BasicActionBuilder {
     /**
      * TODO (Qianjin) : remove after telemetry is implemented in @AzureOperation.
      */
-    public BasicActionBuilder isTelemetrable(final boolean telemetryRequired, TelemetryParameter telemetryParameter) {
+    public BasicActionBuilder withTelemetrable(final boolean telemetryRequired, TelemetryParameter telemetryParameter) {
         this.telemetrable = telemetryRequired;
         this.telemetryParameter = telemetryParameter;
         return this;

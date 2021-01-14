@@ -84,16 +84,16 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(configureBasicActionBuilder(() -> stop()).withAction(AzureActionEnum.STOP).isBackgroudable(true).build());
-        addAction(configureBasicActionBuilder(() -> start()).withAction(AzureActionEnum.START).isBackgroudable(true).build());
-        addAction(configureBasicActionBuilder(() -> restart()).withAction(AzureActionEnum.RESTART).isBackgroudable(true).build());
-        addAction(configureBasicActionBuilder(() -> delete()).withAction(AzureActionEnum.DELETE).isBackgroudable(true).isPromptable(true).build());
-        addAction(configureBasicActionBuilder(() -> openInBrowser()).withAction(AzureActionEnum.OPEN_IN_PORTAL).isBackgroudable(true).build());
-        addAction(configureBasicActionBuilder(() -> showProperties()).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
+        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         super.loadActions();
     }
 
-    protected final BasicActionBuilder configureBasicActionBuilder(Runnable runnable) {
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
         return new BasicActionBuilder(runnable)
                 .withModuleName(WebAppModule.MODULE_NAME)
                 .withInstanceName(name);
