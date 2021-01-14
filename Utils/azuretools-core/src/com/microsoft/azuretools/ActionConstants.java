@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.telemetry;
+package com.microsoft.azuretools;
 
 import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
@@ -29,10 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
-/**
- * TODO(qianjin): this class is designed to replace TelemetryConstants. action: replace all references to it and then delete it.
- */
-public final class AzureAction {
+public final class ActionConstants {
 
     private static final String SEPARATOR = "#";
     private static final String OPERATION_SEPARATOR = "#";
