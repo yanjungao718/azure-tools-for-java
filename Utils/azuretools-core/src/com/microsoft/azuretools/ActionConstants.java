@@ -31,8 +31,8 @@ import java.util.Objects;
 
 public final class ActionConstants {
 
-    private static final String SEPARATOR = "#";
-    private static final String OPERATION_SEPARATOR = "#";
+    private static final String SEPARATOR = ".";
+    private static final String OPERATION_SEPARATOR = "-";
 
     public static ActionEntity parse(String action) {
         String[] params = StringUtils.split(action, SEPARATOR);
@@ -61,7 +61,7 @@ public final class ActionConstants {
         String RESTART = build(MODULE, "restart-webapp");
         String SHOW_PROPERTIES = build(MODULE, "showprop-webapp");
         String SHINTO = build(MODULE, "sshinto-webapp");
-        String OPEN_IN_PORTAL = build(MODULE, "webap-open-in-portal");
+        String OPEN_IN_PORTAL = build(MODULE, "webapp-open-in-portal");
         String OPEN_IN_BROWSER = build(MODULE, "open-inbrowser-webapp");
         String START_STREAMING_LOG = build(MODULE, "start-streaming-log-webapp");
         String STOP_STREAMING_LOG = build(MODULE, "stop-streaming-log-webapp");
