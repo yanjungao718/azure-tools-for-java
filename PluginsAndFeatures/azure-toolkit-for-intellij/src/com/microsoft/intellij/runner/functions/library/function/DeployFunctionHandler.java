@@ -90,7 +90,7 @@ public class DeployFunctionHandler {
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
         prompt(message("function.deploy.hint.startDeployFunction"));
         getArtifactHandler().publish(deployTarget);
-        prompt(String.format(message("function.deploy.hint.deployDone"), model.getAppName()));
+        prompt(message("function.deploy.hint.deployDone", model.getAppName()));
         listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
@@ -101,7 +101,7 @@ public class DeployFunctionHandler {
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        prompt(String.format(message("function.deploy.hint.updateDone"), model.getAppName()));
+        prompt(message("function.deploy.hint.updateDone", model.getAppName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {

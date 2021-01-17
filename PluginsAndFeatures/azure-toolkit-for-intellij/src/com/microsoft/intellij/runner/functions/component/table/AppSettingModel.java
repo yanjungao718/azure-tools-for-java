@@ -121,7 +121,7 @@ public class AppSettingModel implements TableModel {
         }
         final Pair<String, String> target = appSettings.get(row);
         if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey())) {
-            throw new IllegalArgumentException(String.format(message("function.appSettings.validate.requiredParameter"), target.getKey()));
+            throw new IllegalArgumentException(message("function.appSettings.validate.requiredParameter", target.getKey()));
         }
         appSettings.remove(row);
         fireTableChanged();

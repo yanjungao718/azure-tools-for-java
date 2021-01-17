@@ -77,7 +77,7 @@ public class CreateFunctionHandler {
         if (app == null) {
             return createFunctionApp();
         } else {
-            final String error = String.format(message("function.create.error.targetExists"), ctx.getAppName());
+            final String error = message("function.create.error.targetExists", ctx.getAppName());
             final String action = "change the name of the web app and try later";
             throw new AzureToolkitRuntimeException(error, action);
         }
@@ -106,7 +106,7 @@ public class CreateFunctionHandler {
         configureApplicationLog(withCreate);
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
         FunctionApp result = withCreate.create();
-        Log.prompt(String.format(message("function.create.hint.functionCreated"), ctx.getAppName()));
+        Log.prompt(message("function.create.hint.functionCreated", ctx.getAppName()));
         return result;
     }
 
@@ -137,7 +137,7 @@ public class CreateFunctionHandler {
                 insights = AzureSDKManager.getOrCreateApplicationInsights(ctx.getSubscription(), ctx.getResourceGroup(), ctx.getInsightsName(), region);
                 instrumentationKey = insights.instrumentationKey();
             } catch (final IOException e) {
-                Log.prompt(String.format(message("function.create.error.createApplicationInsightsFailed"), ctx.getAppName()));
+                Log.prompt(message("function.create.error.createApplicationInsightsFailed", ctx.getAppName()));
             }
         }
         ctx.getAppSettings().put(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
@@ -164,7 +164,7 @@ public class CreateFunctionHandler {
             case Docker:
                 throw new UnsupportedOperationException(message("function.create.error.dockerNotSupport"));
             default:
-                throw new AzureExecutionException(String.format(message("function.create.error.invalidRuntime"), os));
+                throw new AzureExecutionException(message("function.create.error.invalidRuntime", os));
         }
         return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
                       .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())

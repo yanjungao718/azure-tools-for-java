@@ -94,7 +94,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
             return;
         }
         final Runnable runnable = () -> open(context);
-        final String message = String.format("fetching file %s...", this.file.getName());
+        final String message = String.format("fetching file (%s)...", this.file.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), message, false, runnable));
     }
 
