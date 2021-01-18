@@ -26,6 +26,8 @@ import com.google.common.base.Preconditions;
 import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
+
 public class BasicActionBuilder {
 
     private static final String FUZZY_PROGRESS_MESSAGE_PATTERN = "%s...";
@@ -36,6 +38,7 @@ public class BasicActionBuilder {
 
     private Runnable runnable;
     private AzureActionEnum action;
+    private String doingName;
 
     private String moduleName;
     private String instanceName;
@@ -56,6 +59,11 @@ public class BasicActionBuilder {
 
     public BasicActionBuilder withAction(final AzureActionEnum action) {
         this.action = action;
+        return this;
+    }
+
+    public BasicActionBuilder withDoingName(final String doingName) {
+        this.doingName = doingName;
         return this;
     }
 
@@ -117,20 +125,32 @@ public class BasicActionBuilder {
     }
 
     private String getProgressMessage() {
+        String realDoingName = getDoingName();
         if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(instanceName)) {
-            return String.format(FULL_PROGRESS_MESSAGE_PATTERN, action.getDoingName(), moduleName, instanceName);
+            return String.format(FULL_PROGRESS_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
         }
         if (StringUtils.isNotBlank(moduleName)) {
-            return String.format(GENERIC_PROGRESS_MESSAGE_PATTERN, action.getDoingName(), moduleName);
+            return String.format(GENERIC_PROGRESS_MESSAGE_PATTERN, realDoingName, moduleName);
         }
         if (StringUtils.isNotBlank(instanceName)) {
-            return String.format(GENERIC_PROGRESS_MESSAGE_PATTERN, action.getDoingName(), instanceName);
+            return String.format(GENERIC_PROGRESS_MESSAGE_PATTERN, realDoingName, instanceName);
         }
-        return String.format(FUZZY_PROGRESS_MESSAGE_PATTERN, action.getDoingName());
+        return String.format(FUZZY_PROGRESS_MESSAGE_PATTERN, realDoingName);
     }
 
     private String getPromptMessage() {
-        return String.format(PROMPT_MESSAGE_PATTERN, action.getDoingName(), moduleName, instanceName);
+        String realDoingName = getDoingName();
+        return String.format(PROMPT_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
+    }
+
+    private String getDoingName() {
+        if (StringUtils.isNotBlank(doingName)) {
+            return doingName;
+        }
+        if (Objects.nonNull(action)) {
+            return action.getDoingName();
+        }
+        return StringUtils.EMPTY;
     }
 
 }
