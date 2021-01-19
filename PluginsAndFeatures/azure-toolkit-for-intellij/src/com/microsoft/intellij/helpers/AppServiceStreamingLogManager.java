@@ -54,9 +54,7 @@ public enum AppServiceStreamingLogManager {
     INSTANCE;
 
     private static final String STREAMING_LOG_NOT_STARTED = message("appService.logStreaming.hint.notStart");
-    private static final String ENABLE_FILE_LOGGING_PROMPT = message("appService.logStreaming.hint.enablePrompt");
     private static final String STARTING_STREAMING_LOG = message("appService.logStreaming.hint.start");
-    private static final String LOG_STREAMING_IS_NOT_SUPPORTED = message("appService.logStreaming.hint.notSupport");
     private static final String FAILED_TO_START_STREAMING_LOG = message("appService.logStreaming.error.startFailed");
     private static final String FAILED_TO_CLOSE_STREAMING_LOG = message("appService.logStreaming.error.closeFailed");
     private static final String CLOSING_STREAMING_LOG = message("appService.logStreaming.hint.closing");
@@ -100,13 +98,13 @@ public enum AppServiceStreamingLogManager {
                 if (!consoleView.isActive()) {
                     if (!logStreaming.isLogStreamingSupported()) {
                         DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayInfoDialog(
-                                NOT_SUPPORTED, String.format(LOG_STREAMING_IS_NOT_SUPPORTED, name)));
+                                NOT_SUPPORTED, message("appService.logStreaming.hint.notSupport", name)));
                         return;
                     }
                     if (!logStreaming.isLogStreamingEnabled()) {
                         // Enable Log Streaming if log streaming of target is not enabled
                         final boolean userInput = DefaultLoader.getUIHelper().showConfirmation(
-                                String.format(ENABLE_FILE_LOGGING_PROMPT, name), ENABLE_LOGGING, YES_NO, null);
+                            message("appService.logStreaming.hint.enablePrompt", name), ENABLE_LOGGING, YES_NO, null);
                         if (userInput) {
                             logStreaming.enableLogStreaming();
                         } else {
@@ -152,7 +150,6 @@ public enum AppServiceStreamingLogManager {
         private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
         private static final String APPLICATION_INSIGHT_PATTERN = "%s/#blade/AppInsightsExtension/QuickPulseBladeV2/ComponentId/%s/ResourceId/%s";
         private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS = message("appService.logStreaming.error.noApplicationInsights");
-        private static final String AI_INSTANCES_NOT_FOUND = message("appService.logStreaming.error.aiNotFound");
 
         private String resourceId;
         private FunctionApp functionApp;
@@ -206,7 +203,7 @@ public enum AppServiceStreamingLogManager {
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.instrumentationKey(), aiKey))
                     .findFirst()
-                    .orElseThrow(() -> new IOException(String.format(AI_INSTANCES_NOT_FOUND, subscriptionId)));
+                    .orElseThrow(() -> new IOException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
             final String aiUrl = getApplicationInsightLiveMetricsUrl(target, azureManager.getPortalUrl());
             DefaultLoader.getIdeHelper().openLinkInBrowser(aiUrl);
         }

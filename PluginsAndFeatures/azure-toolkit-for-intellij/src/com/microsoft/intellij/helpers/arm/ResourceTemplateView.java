@@ -148,7 +148,7 @@ public class ResourceTemplateView extends BaseEditor {
     private void updateDeployment() {
         String oldTemplate = this.originTemplate;
         String oldParameters = this.originParameters;
-        final String title = "Update your azure resource " + node.getDeployment().name() + "...";
+        final String title = "Update azure resource (" + node.getDeployment().name() + ")...";
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
                 ResourceTemplateView.this.originTemplate = getTemplate();

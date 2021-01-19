@@ -79,7 +79,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
         if (!file.exists()) {
-            throw new FileNotFoundException(String.format(message("webapp.deploy.error.noTargetFile"), file.getAbsolutePath()));
+            throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
         }
         webAppConfiguration.setTargetName(file.getName());
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);

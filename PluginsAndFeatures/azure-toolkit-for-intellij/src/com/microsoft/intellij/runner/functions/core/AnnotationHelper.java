@@ -148,7 +148,8 @@ public class AnnotationHelper {
         if (obj instanceof PsiClassType) {
             return ((PsiClassType) obj).resolve().getQualifiedName();
         }
-        throw new AzureExecutionException(String.format(message("function.annotation.error.invalidAnnotationType"),
-                                                        PsiAnnotation.class.getCanonicalName(), obj.getClass().getCanonicalName()));
+        final String error = message("function.annotation.error.invalidAnnotationType",
+                                     PsiAnnotation.class.getCanonicalName(), obj.getClass().getCanonicalName());
+        throw new AzureExecutionException(error);
     }
 }

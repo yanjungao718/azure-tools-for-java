@@ -76,8 +76,8 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         // prerequisite check
         if (appService.operatingSystem() == OperatingSystem.LINUX &&
                 StringUtils.containsIgnoreCase(appService.linuxFxVersion(), "DOCKER|")) {
-            notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"),
-                                       String.format(message("webapp.flightRecord.error.notSupport.message"), appService.name()));
+            final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());
+            notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"), message);
             return;
         }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
@@ -93,12 +93,12 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
             appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, appService.id());
             if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
-                notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"),
-                                           String.format(message("webapp.flightRecord.error.notRunning.message"), appService.name()));
+                final String message = message("webapp.flightRecord.error.notRunning.message", appService.name());
+                notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"), message);
                 return;
             }
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-            progressIndicator.setText(String.format(message("webapp.flightRecord.task.startProfileWebApp.title"), appService.name()));
+            progressIndicator.setText(message("webapp.flightRecord.task.startProfileWebApp.title", appService.name()));
             CountDownLatch finishLatch = new CountDownLatch(1);
             AzureTaskManager.getInstance().runAndWait(() -> {
                 FlightRecorderConfiguration config = collectFlightRecorderConfiguration();
@@ -129,7 +129,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
 
     private FlightRecorderConfiguration collectFlightRecorderConfiguration() {
         RunFlightRecorderDialog ui = new RunFlightRecorderDialog(project, appService);
-        ui.setTitle(String.format(message("webapp.flightRecord.task.startRecorder.title"), appService.defaultHostName()));
+        ui.setTitle(message("webapp.flightRecord.task.startRecorder.title", appService.defaultHostName()));
         ui.setOkActionListener((config) -> {
             ui.close(DialogWrapper.OK_EXIT_CODE);
         });
@@ -148,7 +148,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             FileUtils.forceDeleteOnExit(file);
             FlightRecorderStarterBase starter = FlightRecorderManager.getFlightRecorderStarter(appService);
             starter.startFlightRecorder(config.getPid(), config.getDuration(), file.getName());
-            progressIndicator.setText(String.format(message("webapp.flightRecord.hint.recording"), config.getDuration()));
+            progressIndicator.setText(message("webapp.flightRecord.hint.recording", config.getDuration()));
 
             progressIndicator.checkCanceled();
             try {
@@ -188,7 +188,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         if (PluginUtil.isIdeaUltimate()) {
             return String.format(message("webapp.flightRecord.hint.openJfrIntelliJ"), filePath);
         } else {
-            return String.format(message("webapp.flightRecord.hint.openJfrZuluMissionControl"), filePath);
+            return message("webapp.flightRecord.hint.openJfrZuluMissionControl", filePath);
         }
     }
 

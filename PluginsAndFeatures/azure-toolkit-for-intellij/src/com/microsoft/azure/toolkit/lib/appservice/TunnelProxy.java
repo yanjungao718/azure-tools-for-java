@@ -102,7 +102,7 @@ public class TunnelProxy {
                 return output;
             }
         } catch (JSchException e) {
-            logger.warning(String.format(message("appService.tunnel.error.sshFailed"), e.getMessage()));
+            logger.warning(message("appService.tunnel.error.sshFailed", e.getMessage()));
         }
         return null;
     }

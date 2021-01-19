@@ -41,7 +41,7 @@ public class FlightRecorderManager {
             } else if (appService.operatingSystem() == OperatingSystem.WINDOWS) {
                 return new WindowFlightRecorderStarter(appService);
             } else {
-                throw new IllegalStateException(String.format(message("appService.jfr.error.unknownOs"), appService.name(), appService.operatingSystem()));
+                throw new IllegalStateException(message("appService.jfr.error.unknownOs", appService.operatingSystem(), appService.name()));
             }
         });
     }

@@ -75,7 +75,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
                     "common.integer.validate.notInteger")).build();
         } else if ((minValue != null && value < minValue) || (maxValue != null && value > maxValue)) {
             return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR)
-                                      .message(String.format(message("common.integer.validate.invalidValue"), minValue, maxValue)).build();
+                                      .message(message("common.integer.validate.invalidValue", minValue, maxValue)).build();
         } else {
             return AzureValidationInfo.OK;
         }
