@@ -28,9 +28,9 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefau
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 
@@ -51,7 +51,7 @@ public class AzureMySQLService {
         type = AzureOperation.Type.SERVICE
     )
     public Server createMySQL(final AzureMySQLConfig config) {
-        final Operation operation = TelemetryManager.createOperation(TelemetryParameter.MySQL.CREATE);
+        final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();
             String subscrptionId = config.getSubscription().subscriptionId();

@@ -26,9 +26,9 @@ import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -74,8 +74,8 @@ public class MySQLConnectToServerAction extends NodeActionListener implements Ac
     }
 
     @Override
-    public TelemetryParameter getTelemetryParameter() {
-        return TelemetryParameter.MySQL.CONNECT_TO_SERVER;
+    public String getTelemetryParameter() {
+        return ActionConstants.MySQL.CONNECT_TO_SERVER;
     }
 
     @Override
