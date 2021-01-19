@@ -360,9 +360,9 @@ public class FunctionUtils {
         }
         if (!(annotation instanceof PsiAnnotation)) {
             throw new AzureExecutionException(
-                    String.format(message("function.binding.error.parseFailed"),
-                                  PsiAnnotation.class.getCanonicalName(),
-                                  annotation.getClass().getCanonicalName()));
+                message("function.binding.error.parseFailed",
+                        PsiAnnotation.class.getCanonicalName(),
+                        annotation.getClass().getCanonicalName()));
         }
 
         final BindingEnum annotationEnum =

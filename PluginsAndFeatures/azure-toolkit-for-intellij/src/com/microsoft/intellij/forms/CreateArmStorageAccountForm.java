@@ -220,7 +220,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         // creating from Azure Explorer directly
         setSubscription((SubscriptionDetail) subscriptionComboBox.getSelectedItem());
         if (subscription == null) {
-            final String title = "Creating storage account " + nameTextField.getText() + "...";
+            final String title = "Creating storage account (" + nameTextField.getText() + ")...";
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
