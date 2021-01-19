@@ -29,13 +29,14 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateRedisCacheForm;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
-public class CreateRedisCacheAction extends NodeActionListener implements ActionBasicable {
+@Name("Create")
+public class CreateRedisCacheAction extends NodeActionListener {
     private static final String ERROR_CREATING_REDIS_CACHE = "Error creating Redis cache";
     private RedisCacheModule redisCacheModule;
 

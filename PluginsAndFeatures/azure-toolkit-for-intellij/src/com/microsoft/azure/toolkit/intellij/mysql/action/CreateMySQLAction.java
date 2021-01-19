@@ -39,16 +39,17 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateMySQLAction extends NodeActionListener implements ActionBasicable {
+@Name("Create")
+public class CreateMySQLAction extends NodeActionListener {
 
     private final MySQLModule model;
 

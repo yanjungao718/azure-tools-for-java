@@ -43,11 +43,11 @@ import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.util.AzureLoginHelper;
+import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 import rx.Single;
 
 import java.util.Objects;
@@ -55,7 +55,8 @@ import java.util.function.Consumer;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateFunctionAppAction extends NodeActionListener implements ActionBasicable {
+@Name("Create")
+public class CreateFunctionAppAction extends NodeActionListener {
 
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private final FunctionAppService functionAppService;
