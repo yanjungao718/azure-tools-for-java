@@ -328,17 +328,13 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
             try {
                 for (Class<? extends NodeActionListener> actionClazz : actions) {
                     NodeActionListener actionListener = createNodeActionListener(actionClazz);
-                    if (actionListener instanceof DelegateActionListener.BasicActionListener && actionListener.getAction() != null) {
-                        addAction(actionListener.getAction().getName(), actionListener.asGenericListener());
-                        continue;
-                    }
                     if (Objects.nonNull(actionListener.getAction())) {
                         addAction(new DelegateActionListener.BasicActionListener(actionListener, actionListener.getAction()));
                         continue;
                     }
                     Name nameAnnotation = actionClazz.getAnnotation(Name.class);
                     if (nameAnnotation != null) {
-                        addAction(nameAnnotation.value(), actionListener.asGenericListener());
+                        addAction(nameAnnotation.value(), actionListener);
                     }
                 }
             } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {

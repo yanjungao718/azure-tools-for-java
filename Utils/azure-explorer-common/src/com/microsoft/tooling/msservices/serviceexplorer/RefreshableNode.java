@@ -62,7 +62,7 @@ public abstract class RefreshableNode extends Node {
 
     @Override
     protected void loadActions() {
-        addAction(new RefreshActionListener().asGenericListener(AzureActionEnum.REFRESH));
+        addAction(new DelegateActionListener.BasicActionListener(new RefreshActionListener(), AzureActionEnum.REFRESH));
         super.loadActions();
     }
 
