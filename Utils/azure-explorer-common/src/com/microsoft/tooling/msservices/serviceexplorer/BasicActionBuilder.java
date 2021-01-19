@@ -23,7 +23,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
