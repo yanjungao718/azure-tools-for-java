@@ -25,10 +25,10 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -191,7 +191,8 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         if (this instanceof ActionTelemetrable) {
             ActionTelemetrable telemetrable = (ActionTelemetrable) this;
             if (Objects.nonNull(telemetrable.getTelemetryParameter())) {
-                TelemetryParameter parameter = telemetrable.getTelemetryParameter();
+                String action = telemetrable.getTelemetryParameter();
+                ActionConstants.ActionEntity parameter = ActionConstants.parse(action);
                 delegate = new DelegateActionListener.TelemetricActionListener(delegate, parameter.getServiceName(), parameter.getOperationName());
             } else {
                 delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperationName());
