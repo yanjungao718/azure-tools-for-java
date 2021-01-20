@@ -140,7 +140,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         deploymentName = deploymentNameTextField.getText();
-        final String title = "Deploying your azure resource " + deploymentName + "...";
+        final String title = "Deploying your azure resource (" + deploymentName + ")...";
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.CREATE_DEPLOYMENT, (operation -> {
                 SubscriptionDetail subs = (SubscriptionDetail) subscriptionCb.getSelectedItem();

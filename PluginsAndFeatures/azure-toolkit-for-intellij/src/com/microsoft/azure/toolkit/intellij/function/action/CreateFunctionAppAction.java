@@ -128,7 +128,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
 
     private void notifyCreationSuccess(final FunctionApp app) {
         final String title = message("function.create.success.title");
-        final String message = String.format(message("function.create.success.message"), app.name());
+        final String message = message("function.create.success.message", app.name());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
     }

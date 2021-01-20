@@ -175,7 +175,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 throw new AzureToolkitRuntimeException(message("function.run.error.funcOutOfDate"));
             }
         } catch (IOException e) {
-            throw new AzureToolkitRuntimeException(String.format(message("function.run.error.validateRuntimeFailed"), e.getMessage()));
+            throw new AzureToolkitRuntimeException(message("function.run.error.validateRuntimeFailed", e.getMessage()));
         }
     }
 
@@ -224,7 +224,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         isDebuggerLaunched = false;
         final int debugPort = findFreePortForApi(DEFAULT_DEBUG_PORT);
         final int funcPort = findFreePortForApi(Math.max(DEFAULT_FUNC_PORT, debugPort + 1));
-        processHandler.println(String.format(message("function.run.hint.port"), funcPort), ProcessOutputTypes.SYSTEM);
+        processHandler.println(message("function.run.hint.port", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Redirect function cli output to console
         readInputStreamByLines(process.getInputStream(), inputLine -> {

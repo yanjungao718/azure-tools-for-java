@@ -119,7 +119,7 @@ public class ValidationUtils {
         if (StringUtils.isEmpty(appServicePlan)) {
             throw new IllegalArgumentException(message("appService.servicePlan.validate.empty"));
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
-            throw new IllegalArgumentException(String.format(message("appService.servicePlan.validate.invalidName"), APP_SERVICE_PLAN_NAME_PATTERN));
+            throw new IllegalArgumentException(message("appService.servicePlan.validate.invalidName", APP_SERVICE_PLAN_NAME_PATTERN));
         }
     }
 
@@ -143,8 +143,7 @@ public class ValidationUtils {
             invalidCharacters.add(matcher.group());
         }
         if (!invalidCharacters.isEmpty()) {
-            throw new IllegalArgumentException(String.format(message("function.applicationInsights.validate.invalidChar"),
-                                                             String.join(",", invalidCharacters)));
+            throw new IllegalArgumentException(message("function.applicationInsights.validate.invalidChar", String.join(",", invalidCharacters)));
         }
     }
 

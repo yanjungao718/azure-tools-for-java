@@ -115,10 +115,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
             functionDeployConfiguration.setNewResource(false);
             return functionApp;
         }
-        processHandler.setText(String.format(message("function.create.hint.creating"), functionDeployConfiguration.getAppName()));
+        processHandler.setText(message("function.create.hint.creating", functionDeployConfiguration.getAppName()));
         final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployConfiguration.getModel());
         functionApp = createFunctionHandler.execute();
-        processHandler.setText(String.format(message("function.create.hint.created"), functionDeployConfiguration.getAppName()));
+        processHandler.setText(message("function.create.hint.created", functionDeployConfiguration.getAppName()));
         return functionApp;
     }
 

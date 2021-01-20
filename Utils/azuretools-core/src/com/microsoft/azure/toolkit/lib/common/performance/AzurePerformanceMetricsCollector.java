@@ -90,7 +90,7 @@ public class AzurePerformanceMetricsCollector {
         properties.put(TELEMETRY_OP_CONTEXT_ID, getCompositeId(ctxOperations, op));
         properties.put(TELEMETRY_OP_ID, op.getId());
         properties.put(TELEMETRY_OP_PARENT_ID, parent.map(IAzureOperation::getId).orElse("/"));
-        properties.put(TELEMETRY_OP_NAME, op.getName());
+        properties.put(TELEMETRY_OP_NAME, op.getName().replaceAll("\\(.+\\)","(***)"));
         properties.put(TELEMETRY_OP_TYPE, op.getType());
         return properties;
     }
