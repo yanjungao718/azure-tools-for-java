@@ -40,11 +40,6 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
     public static final String ICON_PATH = "arm_deployment.png";
     private static final String EXPORT_TEMPLATE_SUCCESS = "Export successfully.";
     private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
-    private static final String SHOW_PROPERTY_ACTION = "Show Properties";
-    private static final String DELETE_ACTION = "Delete";
-    private static final String DELETE_DEPLOYMENT_PROMPT_MESSAGE = "This operation will delete the Deployment "
-        + "%s. Are you sure you want to continue?";
-    private static final String DELETE_DEPLOYMENT_PROGRESS_MESSAGE = "Deleting Deployment";
     private final Deployment deployment;
     private final DeploymentNodePresenter deploymentNodePresenter;
     private final String subscriptionId;
