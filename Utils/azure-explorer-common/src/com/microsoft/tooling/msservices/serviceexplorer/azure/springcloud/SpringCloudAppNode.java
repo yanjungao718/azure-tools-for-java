@@ -30,17 +30,14 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
@@ -130,14 +127,20 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(new StartAction().asGenericListener(AzureActionEnum.START));
-        addAction(new StopAction().asGenericListener(AzureActionEnum.STOP));
-        addAction(new RestartAction().asGenericListener(AzureActionEnum.RESTART));
-        addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
-        addAction(new OpenInPortalAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
-        addAction(ACTION_OPEN_IN_BROWSER, new OpenInBrowserAction().asGenericListener());
-        addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
+        addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
+        addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_BROWSER).withBackgroudable(true).build());
         super.loadActions();
+    }
+
+    private BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(SpringCloudModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     private static NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
@@ -190,148 +193,44 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         syncActionState();
     }
 
-    // Delete action class
-    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
+    private void delete() {
+        AzureSpringCloudMvpModel.deleteApp(SpringCloudAppNode.this.id).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.id, null);
+    }
 
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureSpringCloudMvpModel.deleteApp(SpringCloudAppNode.this.id).await();
-            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.id, null);
-        }
+    private void start() {
+        AzureSpringCloudMvpModel.startApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
+    }
 
-        @Override
-        public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
+    private void stop() {
+        AzureSpringCloudMvpModel.stopApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
+    }
 
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.DELETE.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
+    private void restart() {
+        AzureSpringCloudMvpModel.restartApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
+    }
 
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.DELETE;
+    private void openInPortal() {
+        SpringCloudAppNode.this.openResourcesInPortal(SpringCloudAppNode.this.getSubscriptionId(), SpringCloudAppNode.this.getAppId());
+    }
+
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
+        // add this statement for false updating notice to update Property view
+        // immediately
+        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(SpringCloudAppNode.this.clusterId,
+                SpringCloudAppNode.this.app, SpringCloudAppNode.this.deploy);
+    }
+
+    private void openInBrowser() {
+        if (StringUtils.isNotEmpty(SpringCloudAppNode.this.app.properties().url())) {
+            DefaultLoader.getUIHelper().openInBrowser(SpringCloudAppNode.this.app.properties().url());
+        } else {
+            DefaultLoader.getUIHelper().showInfo(SpringCloudAppNode.this, "Public url is not available for app: " + app.name());
         }
     }
 
-    // Start action class
-    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureSpringCloudMvpModel.startApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
-            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.START.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.START;
-        }
-    }
-
-    // Stop action class
-    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureSpringCloudMvpModel.stopApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
-            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.STOP.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.STOP;
-        }
-    }
-
-    // Restart action class
-    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            AzureSpringCloudMvpModel.restartApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
-            SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.RESTART.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.RESTART;
-        }
-    }
-
-    // Open in portal action class
-    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            SpringCloudAppNode.this.openResourcesInPortal(SpringCloudAppNode.this.getSubscriptionId(), SpringCloudAppNode.this.getAppId());
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.OPEN_IN_PORTAL;
-        }
-    }
-
-    // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
-            // add this statement for false updating notice to update Property view
-            // immediately
-            SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(SpringCloudAppNode.this.clusterId,
-                    SpringCloudAppNode.this.app, SpringCloudAppNode.this.deploy);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.SHOW_PROPERTIES;
-        }
-    }
-
-    // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            if (StringUtils.isNotEmpty(SpringCloudAppNode.this.app.properties().url())) {
-                DefaultLoader.getUIHelper().openInBrowser(SpringCloudAppNode.this.app.properties().url());
-            } else {
-                DefaultLoader.getUIHelper().showInfo(SpringCloudAppNode.this, "Public url is not available for app: " + app.name());
-            }
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage("Opening", SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.OPEN_IN_BROWSER;
-        }
-    }
 }

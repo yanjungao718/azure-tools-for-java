@@ -29,17 +29,13 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.Ser
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 import java.util.Arrays;
@@ -104,7 +100,13 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     @Override
     protected void loadActions() {
         super.loadActions();
-        addAction(new OpenInPortalAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+    }
+
+    private BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(SpringCloudModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
@@ -182,22 +184,8 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         }
     }
 
-    // Open in portal action class
-    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            SpringCloudNode.this.openResourcesInPortal(SpringCloudNode.this.subscriptionId, SpringCloudNode.this.clusterId);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), SpringCloudModule.MODULE_NAME, SpringCloudNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.SpringCloud.OPEN_IN_PORTAL;
-        }
+    private void openInPortal() {
+        SpringCloudNode.this.openResourcesInPortal(SpringCloudNode.this.subscriptionId, SpringCloudNode.this.clusterId);
     }
+
 }
