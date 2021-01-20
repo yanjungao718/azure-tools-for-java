@@ -88,7 +88,7 @@ public class UpdateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         String deploymentName = deploymentNode.getDeployment().name();
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Update your azure resource " + deploymentName + "...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Update your azure resource (" + deploymentName + ")...", false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.UPDATE_DEPLOYMENT, (operation -> {
                 Deployment.Update update = deploymentNode.getDeployment().update();
 

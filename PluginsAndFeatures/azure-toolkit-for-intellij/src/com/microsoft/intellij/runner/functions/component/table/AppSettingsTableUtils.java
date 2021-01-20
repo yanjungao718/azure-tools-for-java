@@ -135,8 +135,9 @@ public class AppSettingsTableUtils {
                                                      message("function.appSettings.export.succeed.message"));
                     }
                 } catch (IOException e) {
-                    PluginUtil.displayErrorDialog(message("function.appSettings.export.error.title"),
-                                                  String.format(message("function.appSettings.export.error.failedToSave"), e.getMessage()));
+                    final String title = message("function.appSettings.export.error.title");
+                    final String message = message("function.appSettings.export.error.failedToSave", e.getMessage());
+                    PluginUtil.displayErrorDialog(title, message);
                 }
             }
         };

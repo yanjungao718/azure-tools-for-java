@@ -383,15 +383,15 @@ public class IDEHelperImpl implements IDEHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
-        final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
-        final String title = String.format("Opening file %s...", virtualFile.getName());
+        final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
+        final String title = String.format("Opening file (%s)...", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             indicator.setText2("Checking file existence");
             final AppServiceFile file = fileService.getFileByPath(target.getPath());
             if (file == null) {
-                final String failureFileDeleted = String.format("Target file %s has been deleted", target.getName());
+                final String failureFileDeleted = String.format("Target file (%s) has been deleted", target.getName());
                 UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(failureFileDeleted, "Open File"));
                 return;
             }
@@ -460,7 +460,7 @@ public class IDEHelperImpl implements IDEHelper {
         type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format("Saving %s", appServiceFile.getName()), false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format("Saving file (%s)...", appServiceFile.getName()), false, () -> {
             final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
             final AppServiceFile target = fileService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
@@ -496,7 +496,7 @@ public class IDEHelperImpl implements IDEHelper {
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final String title = String.format("Downloading file %s...", file.getName());
+        final String title = String.format("Downloading file (%s)...", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             AppServiceFileService

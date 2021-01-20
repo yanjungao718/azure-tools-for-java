@@ -110,7 +110,7 @@ public class WebSocketSSLProxy {
 
     private void handleConnectionBroken(Exception e) {
         if (Objects.nonNull(serverSocket)) {
-            logger.warning(String.format(message("common.webSocket.error.proxyingWebSocketFailed"), e.getMessage()));
+            logger.warning(message("common.webSocket.error.proxyingWebSocketFailed", e.getMessage()));
         }
         close();
     }
