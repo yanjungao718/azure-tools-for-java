@@ -23,14 +23,13 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments;
 
 import com.microsoft.azure.management.resources.Deployment;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ARM;
@@ -70,47 +69,25 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(SHOW_PROPERTY_ACTION, null, new ShowDeploymentPropertyAction());
-        addAction(DELETE_ACTION, null, new DeleteDeploymentAction());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         super.loadActions();
     }
 
-    public Deployment getDeployment() {
-        return deployment;
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName("Deployment of Resource Management")
+                .withInstanceName(name);
     }
 
-    public DeploymentNodePresenter getDeploymentNodePresenter() {
-        return deploymentNodePresenter;
+    @AzureOperation(value = "show properties about Deployment of Resource Management", type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
+        DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
     }
 
-    public String getSubscriptionId() {
-        return subscriptionId;
-    }
-
-    // Show property action class
-    private class ShowDeploymentPropertyAction extends NodeActionListener {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
-            DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
-        }
-    }
-
-    private class DeleteDeploymentAction extends AzureNodeActionPromptListener {
-
-        DeleteDeploymentAction() {
-            super(DeploymentNode.this, String.format(DELETE_DEPLOYMENT_PROMPT_MESSAGE, deployment.name()),
-                DELETE_DEPLOYMENT_PROGRESS_MESSAGE);
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) {
-            getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) {
-        }
+    @AzureOperation(value = "Delete Deployment of Resource Management", type = AzureOperation.Type.ACTION)
+    private void delete() {
+        getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
     }
 }
