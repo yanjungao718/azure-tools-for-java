@@ -195,41 +195,41 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     private void delete() {
         AzureSpringCloudMvpModel.deleteApp(SpringCloudAppNode.this.id).await();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.id, null);
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(id, null);
     }
 
     private void start() {
-        AzureSpringCloudMvpModel.startApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
+        AzureSpringCloudMvpModel.startApp(app.id(), app.properties().activeDeploymentName()).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
     private void stop() {
-        AzureSpringCloudMvpModel.stopApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
+        AzureSpringCloudMvpModel.stopApp(app.id(), app.properties().activeDeploymentName()).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
     private void restart() {
-        AzureSpringCloudMvpModel.restartApp(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.app.properties().activeDeploymentName()).await();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(SpringCloudAppNode.this.app.id(), SpringCloudAppNode.this.status);
+        AzureSpringCloudMvpModel.restartApp(app.id(), app.properties().activeDeploymentName()).await();
+        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
     private void openInPortal() {
-        SpringCloudAppNode.this.openResourcesInPortal(SpringCloudAppNode.this.getSubscriptionId(), SpringCloudAppNode.this.getAppId());
+        openResourcesInPortal(getSubscriptionId(), getAppId());
     }
 
     private void showProperties() {
         DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
         // add this statement for false updating notice to update Property view
         // immediately
-        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(SpringCloudAppNode.this.clusterId,
-                SpringCloudAppNode.this.app, SpringCloudAppNode.this.deploy);
+        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId,
+                app, deploy);
     }
 
     private void openInBrowser() {
-        if (StringUtils.isNotEmpty(SpringCloudAppNode.this.app.properties().url())) {
-            DefaultLoader.getUIHelper().openInBrowser(SpringCloudAppNode.this.app.properties().url());
+        if (StringUtils.isNotEmpty(app.properties().url())) {
+            DefaultLoader.getUIHelper().openInBrowser(app.properties().url());
         } else {
-            DefaultLoader.getUIHelper().showInfo(SpringCloudAppNode.this, "Public url is not available for app: " + app.name());
+            DefaultLoader.getUIHelper().showInfo(this, "Public url is not available for app: " + app.name());
         }
     }
 

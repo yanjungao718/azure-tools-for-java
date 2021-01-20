@@ -23,7 +23,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
@@ -50,7 +49,7 @@ public class BasicActionBuilder {
     private boolean promptable;
 
     private boolean telemetrable;
-    private TelemetryParameter telemetryParameter;
+    private String actionString;
 
     public BasicActionBuilder(Runnable runnable) {
         Preconditions.checkNotNull(runnable);
@@ -94,12 +93,9 @@ public class BasicActionBuilder {
         return this;
     }
 
-    /**
-     * TODO (Qianjin) : remove after telemetry is implemented in @AzureOperation.
-     */
-    public BasicActionBuilder withTelemetrable(final boolean telemetryRequired, TelemetryParameter telemetryParameter) {
+    public BasicActionBuilder withTelemetrable(final boolean telemetryRequired, String actionString) {
         this.telemetrable = telemetryRequired;
-        this.telemetryParameter = telemetryParameter;
+        this.actionString = actionString;
         return this;
     }
 
@@ -118,7 +114,7 @@ public class BasicActionBuilder {
             delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage());
         }
         if (telemetrable) {
-            delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetryParameter);
+            delegate = new DelegateActionListener.TelemetricActionListener(delegate, actionString);
 
         }
         return new DelegateActionListener.BasicActionListener(delegate, action);

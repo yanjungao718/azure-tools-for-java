@@ -23,7 +23,7 @@
 package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
+import com.microsoft.azuretools.ActionConstants;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,8 +75,9 @@ public class TelemetryManager {
         return new DefaultOperation(serviceName, operationName);
     }
 
-    public static Operation createOperation(TelemetryParameter telemetryParameter) {
-        return new DefaultOperation(telemetryParameter.getServiceName(), telemetryParameter.getOperationName());
+    public static Operation createOperation(String actionString) {
+        ActionConstants.ActionEntity action = ActionConstants.parse(actionString);
+        return new DefaultOperation(action.getServiceName(), action.getOperationName());
     }
 
 }

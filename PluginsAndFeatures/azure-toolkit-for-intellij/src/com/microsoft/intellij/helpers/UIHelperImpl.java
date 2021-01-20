@@ -44,12 +44,12 @@ import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
@@ -589,7 +589,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openMySQLPropertyView(@NotNull MySQLNode node) {
-        EventUtil.executeWithLog(TelemetryParameter.MySQL.SHOW_PROPERTIES, (operation) -> {
+        EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
             String name = node.getName();
             String subscriptionId = node.getSubscriptionId();
             String nodeId = node.getId();
