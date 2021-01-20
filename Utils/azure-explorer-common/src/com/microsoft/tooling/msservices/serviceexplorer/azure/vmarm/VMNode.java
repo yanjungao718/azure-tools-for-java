@@ -144,7 +144,6 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     public static final String ACTION_DOWNLOAD_RDP_FILE = "Connect Remote Desktop";
     private static final String ACTION_SHUTDOWN = "Shutdown";
     private static final String ACTION_START = "Start";
-    private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
     private static final String ACTION_START_ICON = "Start.png";
     private static final String ACTION_DELETE_ICON = "Delete.png";
@@ -216,10 +215,6 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(started);
 
         return super.getNodeActions();
-    }
-
-    private boolean hasRDPPort(VirtualMachine virtualMachine) {
-        return false;
     }
 
     private boolean isRunning() {
