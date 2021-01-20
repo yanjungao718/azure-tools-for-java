@@ -38,20 +38,13 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHUTDOWN_VM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
 
 public class VMNode extends RefreshableNode implements TelemetryProperties {
     private static String RUNNING_STATUS = "PowerState/running";
@@ -97,44 +90,10 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         refreshItems();
     }
 
-    public class ShutdownVMAction extends AzureNodeActionPromptListener {
-        public ShutdownVMAction() {
-            super(VMNode.this, String.format(
-                    "This operation will result in losing the virtual IP address that was assigned to this virtual machine.\n\n" +
-                            "Are you sure that you want to shut down virtual machine %s?", virtualMachine.name()),
-                    "Shutting down VM");
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e)
-                throws AzureCmdException {
-            virtualMachine.powerOff();
-            refreshItems();
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return VM;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return SHUTDOWN_VM;
-        }
-
-        @Override
-        public int getPriority() {
-            return Sortable.HIGH_PRIORITY;
-        }
-
-        @Override
-        public int getGroup() {
-            return Groupable.MAINTENANCE_GROUP;
-        }
+    @AzureOperation(value = ActionConstants.VirtualMachine.STOP, type = AzureOperation.Type.ACTION)
+    private void stop() {
+        virtualMachine.powerOff();
+        refreshItems();
     }
 
     private static final String WAIT_ICON_PATH = "VirtualMachineUpdating_16.png";
@@ -192,8 +151,8 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     protected void loadActions() {
         addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
-        addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new ShutdownVMAction());
         super.loadActions();
     }
 
