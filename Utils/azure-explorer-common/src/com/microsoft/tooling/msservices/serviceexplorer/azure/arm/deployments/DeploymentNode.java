@@ -75,6 +75,10 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
                 .withInstanceName(name);
     }
 
+    public Deployment getDeployment() {
+        return deployment;
+    }
+
     @AzureOperation(value = "show properties about Deployment of Resource Management", type = AzureOperation.Type.ACTION)
     private void showProperties() {
         EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
