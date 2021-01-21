@@ -161,7 +161,7 @@ public final class ActionConstants {
         String DELETE = OPERATION_PREFIX + "delete-vm";
         String START = OPERATION_PREFIX + "start-vm";
         String RESTART = OPERATION_PREFIX + "restart-vm";
-        String SHUTDOWN = OPERATION_PREFIX + "shutdown-vm";
+        String STOP = OPERATION_PREFIX + "shutdown-vm";
     }
 
     public interface StorageAccount {
