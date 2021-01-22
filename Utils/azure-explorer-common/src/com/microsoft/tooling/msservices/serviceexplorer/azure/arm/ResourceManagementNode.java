@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -104,7 +105,7 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
         return rgName;
     }
 
-    @AzureOperation(value = "delete resource management", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.ResourceManagement.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         getParent().removeNode(sid, rgName, ResourceManagementNode.this);
     }

@@ -175,6 +175,17 @@ public final class ActionConstants {
         String DELETE_STORAGE_TABLE = OPERATION_PREFIX + "delete-storage-table";
     }
 
+    public interface ResourceManagement {
+        String MODULE = "resource";
+        String OPERATION_PREFIX = MODULE + SEPARATOR + MODULE + OPERATION_SEPARATOR;
+
+        String DELETE = OPERATION_PREFIX + "delete";
+
+        interface Deployment {
+            String DELETE = OPERATION_PREFIX + "deployment-delete";
+        }
+    }
+
     @AllArgsConstructor
     @Getter
     public static class ActionEntity {
