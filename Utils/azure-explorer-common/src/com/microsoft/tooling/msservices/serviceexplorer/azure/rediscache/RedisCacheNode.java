@@ -22,6 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
@@ -98,7 +100,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
             addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
             addAction(OPEN_EXPLORER, initActionBuilder(this::openExplorer).withDoingName("Opening").build());
         }
-        addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         super.loadActions();
     }
 
@@ -123,11 +125,13 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
+    @AzureOperation(value = ActionConstants.RedisCache.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
-    private void openInBrowser() {
+    @AzureOperation(value = ActionConstants.RedisCache.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
         String portalUrl = "";
         try {
             portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
