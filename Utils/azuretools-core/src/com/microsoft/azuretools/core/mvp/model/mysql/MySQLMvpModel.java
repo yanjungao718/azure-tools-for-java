@@ -288,7 +288,7 @@ public class MySQLMvpModel {
         }
 
         private static String getPublicIp() throws IOException {
-            final URL url = new URL("http://whatismyip.akamai.com");
+            final URL url = new URL("https://ipecho.net/plain");
             final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             String ip;
             try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), StandardCharsets.UTF_8))) {
