@@ -43,7 +43,9 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
 import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -109,7 +111,10 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         // locate artifact to specified location
         String targetFilePath = dataModel.getTargetPath();
         processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
+        String containerServerPort = "8080";
+        if (StringUtils.endsWith(targetFilePath, MavenConstants.TYPE_WAR)) {
+            containerServerPort = "80";
+        }
         // validate dockerfile
         Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
         processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
@@ -140,10 +145,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         );
 
         // docker run
-        String containerId = DockerUtil.createContainer(
-                docker,
-                String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName())
-        );
+        String containerId = DockerUtil.createContainer(docker, String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), containerServerPort);
         runningContainerId[0] = containerId;
         Container container = DockerUtil.runContainer(docker, containerId);
         // props
@@ -152,7 +154,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         ImmutableList<Container.PortMapping> ports = container.ports();
         if (ports != null) {
             for (Container.PortMapping portMapping : ports) {
-                if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
+                if (StringUtils.equals(containerServerPort, String.valueOf(portMapping.privatePort()))) {
                     publicPort = String.valueOf(portMapping.publicPort());
                 }
             }
