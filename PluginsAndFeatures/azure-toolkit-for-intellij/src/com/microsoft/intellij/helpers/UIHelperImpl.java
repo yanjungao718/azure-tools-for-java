@@ -501,7 +501,8 @@ public class UIHelperImpl implements UIHelper {
                                                               ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, sid, resId);
-            itemVirtualFile.setFileType(new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, UIHelperImpl.loadIcon(ContainerRegistryNode.ICON_PATH)));
+            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
+            itemVirtualFile.setFileType(fileType);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
         for (FileEditor editor: editors) {
