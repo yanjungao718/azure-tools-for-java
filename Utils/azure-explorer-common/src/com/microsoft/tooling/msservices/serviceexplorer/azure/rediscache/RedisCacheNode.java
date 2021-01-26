@@ -98,7 +98,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
             addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
-            addAction(OPEN_EXPLORER, initActionBuilder(this::openExplorer).withDoingName("Opening").build());
+            addAction(OPEN_EXPLORER, initActionBuilder(this::openExplorer).build("Opening"));
         }
         addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         super.loadActions();

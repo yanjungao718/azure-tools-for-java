@@ -92,7 +92,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
-        addAction(ACTION_SWAP_WITH_PRODUCTION, initActionBuilder(this::swap).withDoingName("Swapping").withBackgroudable(true).build());
+        addAction(ACTION_SWAP_WITH_PRODUCTION, initActionBuilder(this::swap).withBackgroudable(true).build("Swapping"));
         super.loadActions();
     }
 

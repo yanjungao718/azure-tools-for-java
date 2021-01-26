@@ -37,7 +37,6 @@ public class BasicActionBuilder {
 
     private Runnable runnable;
     private AzureActionEnum action;
-    private String doingName;
 
     private String moduleName;
     private String instanceName;
@@ -48,9 +47,6 @@ public class BasicActionBuilder {
 
     private boolean promptable;
 
-    private boolean telemetrable;
-    private String actionString;
-
     public BasicActionBuilder(Runnable runnable) {
         Preconditions.checkNotNull(runnable);
         this.runnable = runnable;
@@ -58,11 +54,6 @@ public class BasicActionBuilder {
 
     public BasicActionBuilder withAction(final AzureActionEnum action) {
         this.action = action;
-        return this;
-    }
-
-    public BasicActionBuilder withDoingName(final String doingName) {
-        this.doingName = doingName;
         return this;
     }
 
@@ -93,14 +84,20 @@ public class BasicActionBuilder {
         return this;
     }
 
-    public BasicActionBuilder withTelemetrable(final boolean telemetryRequired, String actionString) {
-        this.telemetrable = telemetryRequired;
-        this.actionString = actionString;
-        return this;
+    public DelegateActionListener.BasicActionListener build() {
+        Preconditions.checkNotNull(Objects.nonNull(action));
+        NodeActionListener delegate = this.innerBuild(null);
+        return new DelegateActionListener.BasicActionListener(delegate, action);
     }
 
-    public DelegateActionListener.BasicActionListener build() {
-        Preconditions.checkNotNull(action);
+    public NodeActionListener build(final String doingName) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(doingName));
+        NodeActionListener delegate = this.innerBuild(doingName);
+        return delegate;
+    }
+
+    private NodeActionListener innerBuild(final String doingName) {
+        Preconditions.checkNotNull(runnable);
         NodeActionListener delegate = new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
@@ -108,20 +105,20 @@ public class BasicActionBuilder {
             }
         };
         if (backgroundable) {
-            delegate = new DelegateActionListener.BackgroundActionListener(delegate, getProgressMessage(), backgroundCancellable, backgroundConditionalModal);
+            delegate = new DelegateActionListener.BackgroundActionListener(delegate,
+                    getProgressMessage(doingName), backgroundCancellable, backgroundConditionalModal);
         }
         if (promptable) {
-            delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage());
+            delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage(doingName));
         }
-        if (telemetrable) {
-            delegate = new DelegateActionListener.TelemetricActionListener(delegate, actionString);
-
-        }
-        return new DelegateActionListener.BasicActionListener(delegate, action);
+        return delegate;
     }
 
-    private String getProgressMessage() {
-        String realDoingName = getDoingName();
+    private String getProgressMessage(final String doingName) {
+        String realDoingName = doingName;
+        if (StringUtils.isBlank(doingName)) {
+            realDoingName = action.getDoingName();
+        }
         if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(instanceName)) {
             return String.format(FULL_PROGRESS_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
         }
@@ -134,19 +131,12 @@ public class BasicActionBuilder {
         return String.format(FUZZY_PROGRESS_MESSAGE_PATTERN, realDoingName);
     }
 
-    private String getPromptMessage() {
-        String realDoingName = getDoingName();
+    private String getPromptMessage(final String doingName) {
+        String realDoingName = doingName;
+        if (StringUtils.isBlank(doingName)) {
+            realDoingName = action.getDoingName();
+        }
         return String.format(PROMPT_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
-    }
-
-    private String getDoingName() {
-        if (StringUtils.isNotBlank(doingName)) {
-            return doingName;
-        }
-        if (Objects.nonNull(action)) {
-            return action.getDoingName();
-        }
-        return StringUtils.EMPTY;
     }
 
 }
