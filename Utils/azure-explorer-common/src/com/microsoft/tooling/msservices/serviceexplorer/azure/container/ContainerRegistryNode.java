@@ -28,9 +28,11 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR_OPEN_INB
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -59,10 +61,15 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
     public ContainerRegistryNode(ContainerRegistryModule parent, String subscriptionId, String registryId, String
             registryName) {
         super(subscriptionId + registryName, registryName,
-                parent, ICON_PATH, true /*delayActionLoading*/);
+                parent, null, true /*delayActionLoading*/);
         this.subscriptionId = subscriptionId;
         this.resourceId = registryId;
         loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.ContainerRegistry.MODULE;
     }
 
     @Override
