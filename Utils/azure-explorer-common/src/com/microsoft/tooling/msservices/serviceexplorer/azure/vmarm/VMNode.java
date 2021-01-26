@@ -165,7 +165,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean started = isRunning();
-        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(started);
+        getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(started);
         getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(!started);
         getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(started);
 
