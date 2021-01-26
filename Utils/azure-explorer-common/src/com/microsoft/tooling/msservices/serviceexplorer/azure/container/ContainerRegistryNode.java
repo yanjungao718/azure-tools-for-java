@@ -22,6 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -76,10 +78,12 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
                 .withInstanceName(name);
     }
 
+    @AzureOperation(value = ActionConstants.ContainerRegister.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
     }
 
+    @AzureOperation(value = ActionConstants.ContainerRegister.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
