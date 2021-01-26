@@ -92,8 +92,7 @@ public class BasicActionBuilder {
 
     public NodeActionListener build(final String doingName) {
         Preconditions.checkArgument(StringUtils.isNotBlank(doingName));
-        NodeActionListener delegate = this.innerBuild(doingName);
-        return delegate;
+        return this.innerBuild(doingName);
     }
 
     private NodeActionListener innerBuild(final String doingName) {
@@ -115,10 +114,8 @@ public class BasicActionBuilder {
     }
 
     private String getProgressMessage(final String doingName) {
-        String realDoingName = doingName;
-        if (StringUtils.isBlank(doingName)) {
-            realDoingName = action.getDoingName();
-        }
+        Preconditions.checkArgument(Objects.nonNull(action) || StringUtils.isNotBlank(doingName));
+        String realDoingName = StringUtils.firstNonBlank(doingName, action.getDoingName());
         if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(instanceName)) {
             return String.format(FULL_PROGRESS_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
         }
