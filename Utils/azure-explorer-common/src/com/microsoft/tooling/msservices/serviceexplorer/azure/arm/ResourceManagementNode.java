@@ -43,14 +43,9 @@ import java.util.List;
 
 public class ResourceManagementNode extends RefreshableNode implements ResourceManagementNodeView {
 
-    private static final String ICON_RESOURCE_MANAGEMENT = "arm_resourcegroup.png";
-    private static final String ACTION_DELETE = "Delete";
-    private static final String DELETE_RESOURCE_GROUP_PROMPT_MESSAGE = "This operation will delete the Resource Group: %s. Are you sure you want to continue?";
-    private static final String DELETE_RESOURCE_GROUP_PROGRESS_MESSAGE = "Deleting Resource Group";
     private final ResourceManagementNodePresenter rmNodePresenter;
     private final String sid;
     private final String rgName;
-    private final Object listenerObj = new Object();
 
     public ResourceManagementNode(ResourceManagementModule parent, String subscriptionId, ResourceGroup resourceGroup) {
         super(resourceGroup.id(), resourceGroup.name(), parent, null, true);
