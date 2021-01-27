@@ -7,6 +7,7 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -48,12 +49,14 @@ public class SubscriptionManager {
         return subscriptionIdToSubscriptionMap;
     }
 
+    @AzureOperation(value = "get details of all cached subscriptions", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return subscriptionDetails;
     }
 
+    @AzureOperation(value = "get details of selected subscriptions", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
@@ -71,6 +74,7 @@ public class SubscriptionManager {
         }
     }
 
+    @AzureOperation(value = "refresh cached subscriptions", type = AzureOperation.Type.SERVICE)
     protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.updateAccountSubscriptionList()");
 
