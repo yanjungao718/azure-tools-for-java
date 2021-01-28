@@ -114,10 +114,6 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         // locate artifact to specified location
         String targetFilePath = dataModel.getTargetPath();
         processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-        String containerServerPort = "8080";
-        if (StringUtils.endsWith(targetFilePath, MavenConstants.TYPE_WAR)) {
-            containerServerPort = "80";
-        }
         // validate dockerfile
         Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
         processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
@@ -146,6 +142,14 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 new DockerProgressHandler(processHandler)
         );
         // docker run
+        String containerServerPort = getPortFromDockerfile(content);
+        if (StringUtils.isBlank(containerServerPort)) {
+            if (StringUtils.endsWith(targetFilePath, MavenConstants.TYPE_WAR)) {
+                containerServerPort = "80";
+            } else {
+                containerServerPort = "8080";
+            }
+        }
         String containerId = DockerUtil.createContainer(docker, String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), containerServerPort);
         runningContainerId[0] = containerId;
         Container container = DockerUtil.runContainer(docker, containerId);
