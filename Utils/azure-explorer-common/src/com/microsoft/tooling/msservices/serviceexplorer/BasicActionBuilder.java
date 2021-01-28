@@ -86,16 +86,17 @@ public class BasicActionBuilder {
 
     public DelegateActionListener.BasicActionListener build() {
         Preconditions.checkNotNull(Objects.nonNull(action));
-        NodeActionListener delegate = this.innerBuild(null);
+        NodeActionListener delegate = this.innerBuild(null, null);
         return new DelegateActionListener.BasicActionListener(delegate, action);
     }
 
     public NodeActionListener build(final String doingName) {
         Preconditions.checkArgument(StringUtils.isNotBlank(doingName));
-        return this.innerBuild(doingName);
+        Preconditions.checkArgument(!promptable);
+        return this.innerBuild(doingName, null);
     }
 
-    private NodeActionListener innerBuild(final String doingName) {
+    private NodeActionListener innerBuild(final String doingName, final String actionName) {
         Preconditions.checkNotNull(runnable);
         NodeActionListener delegate = new NodeActionListener() {
             @Override
@@ -108,7 +109,7 @@ public class BasicActionBuilder {
                     getProgressMessage(doingName), backgroundCancellable, backgroundConditionalModal);
         }
         if (promptable) {
-            delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage(doingName));
+            delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage(actionName));
         }
         return delegate;
     }
@@ -128,12 +129,9 @@ public class BasicActionBuilder {
         return String.format(FUZZY_PROGRESS_MESSAGE_PATTERN, realDoingName);
     }
 
-    private String getPromptMessage(final String doingName) {
-        String realDoingName = doingName;
-        if (StringUtils.isBlank(doingName)) {
-            realDoingName = action.getDoingName();
-        }
-        return String.format(PROMPT_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
+    private String getPromptMessage(final String actionName) {
+        String realActionName = StringUtils.firstNonBlank(actionName, action.getName());
+        return String.format(PROMPT_MESSAGE_PATTERN, realActionName, moduleName, instanceName);
     }
 
 }
