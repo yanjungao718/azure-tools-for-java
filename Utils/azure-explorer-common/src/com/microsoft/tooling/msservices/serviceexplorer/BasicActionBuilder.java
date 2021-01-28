@@ -130,7 +130,7 @@ public class BasicActionBuilder {
     }
 
     private String getPromptMessage(final String actionName) {
-        String realActionName = StringUtils.firstNonBlank(actionName, action.getName());
+        String realActionName = StringUtils.firstNonBlank(actionName, action.getName().toLowerCase());
         return String.format(PROMPT_MESSAGE_PATTERN, realActionName, moduleName, instanceName);
     }
 
