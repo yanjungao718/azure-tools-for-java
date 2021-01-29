@@ -39,8 +39,9 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -113,7 +114,6 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         // locate artifact to specified location
         String targetFilePath = dataModel.getTargetPath();
         processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
         // validate dockerfile
         Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
         processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
@@ -126,7 +126,6 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
         );
         Files.write(targetDockerfile, content.getBytes());
-
         // build image
         String imageNameWithTag = String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName());
         processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
@@ -142,14 +141,16 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 targetDockerfile.getFileName().toString(),
                 new DockerProgressHandler(processHandler)
         );
-
         // docker run
-        final String port = getPortFromDockerfile(content);
-        String containerId = DockerUtil.createContainer(
-                docker,
-                String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()),
-                port
-        );
+        String containerServerPort = getPortFromDockerfile(content);
+        if (StringUtils.isBlank(containerServerPort)) {
+            if (StringUtils.endsWith(targetFilePath, MavenConstants.TYPE_WAR)) {
+                containerServerPort = "80";
+            } else {
+                containerServerPort = "8080";
+            }
+        }
+        String containerId = DockerUtil.createContainer(docker, String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), containerServerPort);
         runningContainerId[0] = containerId;
         Container container = DockerUtil.runContainer(docker, containerId);
         // props
@@ -158,7 +159,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         ImmutableList<Container.PortMapping> ports = container.ports();
         if (ports != null) {
             for (Container.PortMapping portMapping : ports) {
-                if (StringUtils.equals(port, String.valueOf(portMapping.privatePort()))) {
+                if (StringUtils.equals(containerServerPort, String.valueOf(portMapping.privatePort()))) {
                     publicPort = String.valueOf(portMapping.publicPort());
                 }
             }

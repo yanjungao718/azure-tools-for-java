@@ -99,10 +99,6 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     private static final String WAIT_ICON_PATH = "VirtualMachineUpdating_16.png";
     private static final String STOP_ICON_PATH = "VirtualMachineStopped_16.png";
     private static final String RUN_ICON_PATH = "VirtualMachineRunning_16.png";
-    public static final String ACTION_DOWNLOAD_RDP_FILE = "Connect Remote Desktop";
-    private static final String ACTION_SHUTDOWN = "Shutdown";
-    private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
-    public static final int REMOTE_DESKTOP_PORT = 3389;
 
     private VirtualMachine virtualMachine;
     private String subscriptionId;
@@ -165,7 +161,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean started = isRunning();
-        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(started);
+        getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(started);
         getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(!started);
         getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(started);
 

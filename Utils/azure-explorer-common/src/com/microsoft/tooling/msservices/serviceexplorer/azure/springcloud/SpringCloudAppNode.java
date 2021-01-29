@@ -25,8 +25,10 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
@@ -193,30 +195,36 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         syncActionState();
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         AzureSpringCloudMvpModel.deleteApp(this.id).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(id, null);
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.START, type = AzureOperation.Type.ACTION)
     private void start() {
         AzureSpringCloudMvpModel.startApp(app.id(), app.properties().activeDeploymentName()).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureSpringCloudMvpModel.stopApp(app.id(), app.properties().activeDeploymentName()).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureSpringCloudMvpModel.restartApp(app.id(), app.properties().activeDeploymentName()).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         openResourcesInPortal(getSubscriptionId(), getAppId());
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
         // add this statement for false updating notice to update Property view
@@ -225,6 +233,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 app, deploy);
     }
 
+    @AzureOperation(value = ActionConstants.SpringCloud.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         if (StringUtils.isNotEmpty(app.properties().url())) {
             DefaultLoader.getUIHelper().openInBrowser(app.properties().url());

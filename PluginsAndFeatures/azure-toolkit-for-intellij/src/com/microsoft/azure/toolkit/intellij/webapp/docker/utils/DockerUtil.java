@@ -66,20 +66,20 @@ public class DockerUtil {
     /**
      * create container with specified ImageName:TagName.
      */
-    public static String createContainer(DockerClient docker, String imageNameWithTag, String port)
+    public static String createContainer(DockerClient docker, String imageNameWithTag, String containerServerPort)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
         PortBinding randomBinding = PortBinding.randomPort("0.0.0.0");
         randomPort.add(randomBinding);
-        portBindings.put(port, randomPort);
+        portBindings.put(containerServerPort, randomPort);
 
         final HostConfig hostConfig = HostConfig.builder().portBindings(portBindings).build();
 
         final ContainerConfig config = ContainerConfig.builder()
                 .hostConfig(hostConfig)
                 .image(imageNameWithTag)
-                .exposedPorts(port)
+                .exposedPorts(containerServerPort)
                 .build();
         final ContainerCreation container = docker.createContainer(config);
         return container.id();

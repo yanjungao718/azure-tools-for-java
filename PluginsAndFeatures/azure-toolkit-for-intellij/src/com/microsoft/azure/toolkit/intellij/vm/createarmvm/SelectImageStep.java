@@ -66,6 +66,11 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     private static final String ERROR_MESSAGE_LIST_IMAGES = "An error occurred while attempting to retrieve images list. \n%s";
     private static final String ERROR_MESSAGE_FILL_SKUS = "An error occurred while attempting to retrieve skus list. \n%s";
     private static final String ERROR_MESSAGE_FILL_OFFER = "An error occurred while attempting to retrieve offers list. \n%s";
+    private static final List<String> SUPPORTED_REGION_LIST = Arrays.asList("eastus", "eastus2", "westus", "centralus", "northcentralus",
+            "southcentralus", "northeurope", "westeurope", "eastasia", "southeastasia", "japaneast", "japanwest", "australiaeast",
+            "australiasoutheast", "australiacentral", "brazilsouth", "southindia", "centralindia", "westindia", "canadacentral",
+            "canadaeast", "westus2", "westcentralus", "uksouth", "ukwest", "koreacentral", "koreasouth", "francecentral", "southafricanorth",
+            "uaenorth", "switzerlandnorth", "germanywestcentral", "norwayeast", "eastus2euap", "centraluseuap");
 
     private JPanel rootPanel;
     private JList createVmStepsList;
@@ -289,7 +294,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
     private void fillRegions() {
         List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(model.getSubscription())
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+                .stream().filter(e -> SUPPORTED_REGION_LIST.contains(e.region().name())).sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
         regionComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
         if (locations.size() > 0) {
             selectRegion();

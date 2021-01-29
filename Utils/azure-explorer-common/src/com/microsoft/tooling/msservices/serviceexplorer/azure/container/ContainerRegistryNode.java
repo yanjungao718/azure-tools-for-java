@@ -22,20 +22,19 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR_OPEN_EXPLORER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR_OPEN_INBROWSER;
-
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,10 +45,6 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
     private final String subscriptionId;
     private final String resourceId;
 
-    // action name
-    private static final String OPEN_EXPLORER_ACTION = "Open ACR Explorer";
-    private static final String OPEN_IN_BROWSER_ACTION = "Open in Portal";
-
     // string formatter
     private static final String AZURE_PORTAL_LINK_FORMAT = "%s/#resource/%s/overview";
 
@@ -59,45 +54,40 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
     public ContainerRegistryNode(ContainerRegistryModule parent, String subscriptionId, String registryId, String
             registryName) {
         super(subscriptionId + registryName, registryName,
-                parent, ICON_PATH, true /*delayActionLoading*/);
+                parent, null, true /*delayActionLoading*/);
         this.subscriptionId = subscriptionId;
         this.resourceId = registryId;
         loadActions();
     }
 
     @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.ContainerRegistry.MODULE;
+    }
+
+    @Override
     protected void loadActions() {
-        addAction(OPEN_EXPLORER_ACTION, null, new WrappedTelemetryNodeActionListener(ACR, ACR_OPEN_EXPLORER,
-            new ShowContainerRegistryPropertyAction()));
-        addAction(OPEN_IN_BROWSER_ACTION, null, new WrappedTelemetryNodeActionListener(ACR, ACR_OPEN_INBROWSER,
-            new OpenInBrowserAction()));
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         super.loadActions();
     }
 
-    // Show Container Registry property
-    private class ShowContainerRegistryPropertyAction extends NodeActionListener {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
-        }
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(WebAppModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
-    // Open in browser action
-    private class OpenInBrowserAction extends NodeActionListener {
+    @AzureOperation(value = ActionConstants.ContainerRegister.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
+    }
 
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            String portalUrl = "";
-            try {
-                portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
-            } catch (Exception exception) {
-                System.out.println(exception.getMessage());
-            }
-            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
-                    ContainerRegistryNode.this.resourceId));
-        }
-
+    @AzureOperation(value = ActionConstants.ContainerRegister.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        String portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+        DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
+                ContainerRegistryNode.this.resourceId));
     }
 
     @Override

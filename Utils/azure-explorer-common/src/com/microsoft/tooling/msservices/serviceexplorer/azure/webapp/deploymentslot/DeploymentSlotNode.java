@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -91,7 +92,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
-        addAction(ACTION_SWAP_WITH_PRODUCTION, initActionBuilder(this::swap).withDoingName("Swapping").withBackgroudable(true).build());
+        addAction(ACTION_SWAP_WITH_PRODUCTION, initActionBuilder(this::swap).withBackgroudable(true).build("Swapping"));
         super.loadActions();
     }
 
@@ -116,40 +117,40 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         this.renderNode(WebAppBaseState.fromString(slot.state()));
     }
 
-    @AzureOperation(value = "start deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.START, type = AzureOperation.Type.ACTION)
     private void start() {
         AzureWebAppMvpModel.getInstance().startDeploymentSlot(subscriptionId, webAppId, slotName);
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(value = "stop deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureWebAppMvpModel.getInstance().stopDeploymentSlot(subscriptionId, webAppId, slotName);
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(value = "restart deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureWebAppMvpModel.getInstance().restartDeploymentSlot(subscriptionId, webAppId, slotName);
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(value = "delete deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getName(), DeploymentSlotNode.this);
     }
 
-    @AzureOperation(value = "swap deployment slot for production", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
     private void swap() {
         AzureWebAppMvpModel.getInstance().swapSlotWithProduction(subscriptionId, webAppId, slotName);
     }
 
-    @AzureOperation(value = "open deployment slot in local browser", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
     }
 
-    @AzureOperation(value = "show properties of deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
     }

@@ -186,6 +186,16 @@ public final class ActionConstants {
         }
     }
 
+    public interface ContainerRegister {
+        String MODULE = "acr";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
+
+        String PUSHIMAGE = OPERATION_PREFIX + "pushimage-acr";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-inbrowser-acr";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "open-explorer-acr";
+
+    }
+
     @AllArgsConstructor
     @Getter
     public static class ActionEntity {

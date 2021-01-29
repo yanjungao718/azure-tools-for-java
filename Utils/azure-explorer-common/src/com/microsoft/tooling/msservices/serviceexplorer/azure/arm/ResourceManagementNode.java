@@ -27,11 +27,13 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -41,22 +43,22 @@ import java.util.List;
 
 public class ResourceManagementNode extends RefreshableNode implements ResourceManagementNodeView {
 
-    private static final String ICON_RESOURCE_MANAGEMENT = "arm_resourcegroup.png";
-    private static final String ACTION_DELETE = "Delete";
-    private static final String DELETE_RESOURCE_GROUP_PROMPT_MESSAGE = "This operation will delete the Resource Group: %s. Are you sure you want to continue?";
-    private static final String DELETE_RESOURCE_GROUP_PROGRESS_MESSAGE = "Deleting Resource Group";
     private final ResourceManagementNodePresenter rmNodePresenter;
     private final String sid;
     private final String rgName;
-    private final Object listenerObj = new Object();
 
     public ResourceManagementNode(ResourceManagementModule parent, String subscriptionId, ResourceGroup resourceGroup) {
-        super(resourceGroup.id(), resourceGroup.name(), parent, ICON_RESOURCE_MANAGEMENT, true);
+        super(resourceGroup.id(), resourceGroup.name(), parent, null, true);
         rmNodePresenter = new ResourceManagementNodePresenter();
         rmNodePresenter.onAttachView(this);
         sid = subscriptionId;
         rgName = resourceGroup.name();
         loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.ResourceManagement.MODULE;
     }
 
     @Override
