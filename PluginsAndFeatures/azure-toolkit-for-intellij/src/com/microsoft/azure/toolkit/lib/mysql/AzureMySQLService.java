@@ -25,7 +25,7 @@ public class AzureMySQLService {
     }
 
     @AzureOperation(
-        value = "create Azure Database for MySQL[%s, rg=%s] in subscription[%s]",
+        name = "create Azure Database for MySQL[%s, rg=%s] in subscription[%s]",
         params = {
             "$config.getServerName()",
             "$config.getResourceGroup().name()",

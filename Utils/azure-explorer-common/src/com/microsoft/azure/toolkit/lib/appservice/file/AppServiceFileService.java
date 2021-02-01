@@ -42,7 +42,7 @@ public class AppServiceFileService {
 
     @Nullable
     @AzureOperation(
-            value = "get files with path[%s] of webapp[%s]",
+            name = "get files with path[%s] of webapp[%s]",
             params = {"$path", "@app.name()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -56,7 +56,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-        value = "list files in directory[%s] of webapp[%s]",
+        name = "list files in directory[%s] of webapp[%s]",
         params = {"$dir", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -72,7 +72,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-        value = "load content of file[%s] of webapp[%s]",
+        name = "load content of file[%s] of webapp[%s]",
         params = {"$path", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -93,7 +93,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-            value = "upload file to path[%s] of webapp[%s]",
+            name = "upload file to path[%s] of webapp[%s]",
             params = {"$path", "@app.name()"},
             type = AzureOperation.Type.SERVICE
     )

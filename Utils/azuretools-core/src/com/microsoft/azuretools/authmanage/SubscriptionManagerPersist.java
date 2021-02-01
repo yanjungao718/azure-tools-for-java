@@ -43,7 +43,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
     }
 
     @Override
-    @AzureOperation(value = "refresh subscriptions cache", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "refresh subscriptions cache", type = AzureOperation.Type.SERVICE)
     protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId()
                 + "SubscriptionManagerPersist.updateAccountSubscriptionList()");
@@ -87,7 +87,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         super.cleanSubscriptions();
     }
 
-    @AzureOperation(value = "clear persistent subscriptions cache from file system", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "clear persistent subscriptions cache from file system", type = AzureOperation.Type.TASK)
     public static synchronized void deleteSubscriptions(String subscriptionsDetailsFileName) {
         System.out.println("cleaning " + subscriptionsDetailsFileName + " file");
         FileStorage fs = null;
@@ -106,7 +106,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         }
     }
 
-    @AzureOperation(value = "reload subscriptions cache from file system", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "reload subscriptions cache from file system", type = AzureOperation.Type.TASK)
     private static List<SubscriptionDetail> loadSubscriptions(String subscriptionsDetailsFileName) {
         System.out.println("SubscriptionManagerPersist.loadSubscriptions()");
 
@@ -128,7 +128,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         }
     }
 
-    @AzureOperation(value = "persist subscriptions cache to file system", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "persist subscriptions cache to file system", type = AzureOperation.Type.TASK)
     private static void saveSubscriptions(List<SubscriptionDetail> sdl, String subscriptionsDetailsFileName)
             throws IOException {
         System.out.println("SubscriptionManagerPersist.saveSubscriptions()");

@@ -60,7 +60,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(value = "create web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "create web app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
         AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
@@ -70,7 +70,7 @@ public class CreateWebAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(value = "open web app creation dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "open web app creation dialog", type = AzureOperation.Type.ACTION)
     private void openDialog(final Project project, @Nullable final WebAppConfig data) {
         final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
         if (Objects.nonNull(data)) {
@@ -94,7 +94,7 @@ public class CreateWebAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(value = "create web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "create web app", type = AzureOperation.Type.ACTION)
     private Single<WebApp> createWebApp(final WebAppConfig config) {
         final AzureTask<WebApp> task = new AzureTask<>(null, operation("webapp.create.title", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
@@ -107,7 +107,7 @@ public class CreateWebAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
         final AzureTask<Void> task = new AzureTask<>(null, operation("webapp.deploy.title", webapp.name()), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
@@ -123,7 +123,7 @@ public class CreateWebAppAction extends NodeActionListener {
         }); // let root exception handler to show the error.
     }
 
-    @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "refresh azure explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(WebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

@@ -42,7 +42,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    @AzureOperation(value = "remove function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "remove function app", type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         functionModulePresenter.onDeleteFunctionApp(sid, id);
         removeDirectChildNode(node);
@@ -57,7 +57,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    @AzureOperation(value = "reload function apps", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "reload function apps", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         functionModulePresenter.onModuleRefresh();
     }

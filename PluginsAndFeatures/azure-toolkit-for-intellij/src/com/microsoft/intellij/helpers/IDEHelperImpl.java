@@ -356,7 +356,7 @@ public class IDEHelperImpl implements IDEHelper {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
     @AzureOperation(
-        value = "open file[%s] in editor",
+        name = "open file[%s] in editor",
         params = {"$target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -438,7 +438,7 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-        value = "save file[%s] to azure",
+        name = "save file[%s] to azure",
         params = {"$appServiceFile.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -467,7 +467,7 @@ public class IDEHelperImpl implements IDEHelper {
      * user is asked to choose where to save the file is @param dest is null
      */
     @AzureOperation(
-        value = "download file[%s] to local",
+        name = "download file[%s] to local",
         params = {"$file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
