@@ -53,7 +53,7 @@ public class FunctionNode extends Node {
     protected void loadActions() {
         addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
             @Override
-            @AzureOperation(name = "trigger function app", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
             }
@@ -62,7 +62,7 @@ public class FunctionNode extends Node {
     }
 
     @AzureOperation(
-        name = "trigger function[%s]",
+        name = "function|trigger.start.detail",
         params = {"@functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -94,7 +94,7 @@ public class FunctionNode extends Node {
 
     // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
     @AzureOperation(
-        name = "start timer trigger for function[%s]",
+        name = "function|trigger.start_timer",
         params = {"@functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
@@ -111,7 +111,7 @@ public class FunctionNode extends Node {
     }
 
     @AzureOperation(
-        name = "start event hub trigger for function[%s]",
+        name = "function|trigger.start_event",
         params = {"@functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
@@ -129,7 +129,7 @@ public class FunctionNode extends Node {
     }
 
     @AzureOperation(
-        name = "start http trigger for function[%s]",
+        name = "function|trigger.start_http",
         params = {"@functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
