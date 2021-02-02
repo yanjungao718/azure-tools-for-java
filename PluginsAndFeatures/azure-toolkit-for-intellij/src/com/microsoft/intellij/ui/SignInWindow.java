@@ -308,7 +308,7 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void call(Callable loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
-        ProgressManager.getInstance().getProgressIndicator().setText2("Signing in...");
+        Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Signing in..."));
 
         try {
             EventUtil.logEvent(EventType.info, operation, properties);
@@ -351,7 +351,7 @@ public class SignInWindow extends AzureDialogWrapper {
             AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
 
-            ProgressManager.getInstance().getProgressIndicator().setText2("Loading subscriptions...");
+            Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Loading subscriptions..."));
             subscriptionManager.getSubscriptionDetails();
 
             SrvPriSettingsDialog d = SrvPriSettingsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
