@@ -72,7 +72,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-        name = "appservice|file.get_content",
+        name = "app_service|file.get_content",
         params = {"$path", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
