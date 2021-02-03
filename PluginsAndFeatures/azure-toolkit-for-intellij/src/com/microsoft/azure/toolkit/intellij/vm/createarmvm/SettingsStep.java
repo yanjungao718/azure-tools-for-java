@@ -198,7 +198,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveVirtualNetworks() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("common.list_virtual_networks");
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_virtual_networks");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -310,7 +310,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveStorageAccounts() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("common.list_storage_accounts");
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_storage_accounts");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -407,7 +407,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrievePublicIpAddresses() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("common.list_public_ips");
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_public_ips");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -485,7 +485,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveNetworkSecurityGroups() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("common.list_security_groups");
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_security_groups");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -554,7 +554,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveAvailabilitySets() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("common.list_availability_sets");
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_availability_sets");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);

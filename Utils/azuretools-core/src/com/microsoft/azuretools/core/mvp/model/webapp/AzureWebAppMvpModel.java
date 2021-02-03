@@ -306,7 +306,7 @@ public class AzureWebAppMvpModel {
      * @throws IOException IOExceptions
      */
     @AzureOperation(
-        name = "dockerapp.create_from_private_image",
+        name = "docker.create_from_private_image",
         params = {
             "$model.getWebAppName()",
             "$model.getSubscriptionId()",
@@ -389,7 +389,7 @@ public class AzureWebAppMvpModel {
      * @return instance of the updated Web App on Linux
      */
     @AzureOperation(
-        name = "dockerapp|image.update",
+        name = "docker|image.update",
         params = {"$webAppId|uri_to_name", "$imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -542,7 +542,7 @@ public class AzureWebAppMvpModel {
      * List app service plan by subscription id and resource group name.
      */
     @AzureOperation(
-        name = "service_plan.list.subscription|rg",
+        name = "appservice|plan.list.subscription|rg",
         params = {"$group", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -555,7 +555,7 @@ public class AzureWebAppMvpModel {
      * List app service plan by subscription id.
      */
     @AzureOperation(
-        name = "service_plan.list.subscription",
+        name = "appservice|plan.list.subscription",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -703,7 +703,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "common.list_web_containers",
+        name = "webapp.list_containers",
         type = AzureOperation.Type.TASK
     )
     public List<WebAppUtils.WebContainerMod> listWebContainers() {
@@ -716,7 +716,7 @@ public class AzureWebAppMvpModel {
      * List available Third Party JDKs.
      */
     @AzureOperation(
-        name = "common.list_jdks",
+        name = "webapp.list_jdks",
         type = AzureOperation.Type.TASK
     )
     public List<JdkModel> listJdks() {
@@ -731,7 +731,7 @@ public class AzureWebAppMvpModel {
      * linux runtimes, do we really need to get the values from Mvp model every time?
      */
     @AzureOperation(
-        name = "common.list_linux_runtime",
+        name = "webapp.list_linux_runtime",
         type = AzureOperation.Type.TASK
     )
     public List<RuntimeStack> getLinuxRuntimes() {
@@ -831,7 +831,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "region.list.subscription|tier",
+        name = "common|region.list.subscription|tier",
         params = {"$pricingTier", "$subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )

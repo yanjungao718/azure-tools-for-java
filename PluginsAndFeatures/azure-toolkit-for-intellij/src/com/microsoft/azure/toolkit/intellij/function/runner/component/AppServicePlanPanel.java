@@ -100,7 +100,7 @@ public class AppServicePlanPanel extends JPanel {
     }
 
     @AzureOperation(
-        name = "service_plan.list.subscription",
+        name = "appservice|plan.list.subscription",
         params = {"$subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
