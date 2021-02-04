@@ -16,7 +16,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
         return new BasicActionBuilder(runnable)
-                .withModuleName(WebAppModule.MODULE_NAME)
+                .withModuleName(ContainerRegistryModule.MODULE_NAME)
                 .withInstanceName(name);
     }
 
