@@ -8,13 +8,9 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.ActionConstants;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.Getter;
 import lombok.Lombok;
@@ -45,6 +41,16 @@ class DelegateActionListener extends NodeActionListener {
     @Override
     public int getGroup() {
         return delegate.getGroup();
+    }
+
+    @Override
+    protected String getServiceName(NodeActionEvent event) {
+        return delegate.getServiceName(event);
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+        return delegate.getOperationName(event);
     }
 
     static final class BackgroundActionListener extends DelegateActionListener {
@@ -118,17 +124,13 @@ class DelegateActionListener extends NodeActionListener {
         }
 
         @Override
-        public void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            sendTelemetry(e);
-            Operation operation = TelemetryManager.createOperation(serviceName, operationName);
-            try {
-                operation.start();
-                Node node = e.getAction().getNode();
-                EventUtil.logEvent(EventType.info, operation, buildProp(node));
-                delegate.actionPerformed(e);
-            } finally {
-                operation.complete();
-            }
+        protected String getServiceName(NodeActionEvent event) {
+            return serviceName;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return operationName;
         }
     }
 
