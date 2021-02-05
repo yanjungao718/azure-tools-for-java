@@ -23,7 +23,7 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     private static final String ICON_PATH = "Slot_16.png";
 
     private final DeploymentSlotModulePresenter presenter;
-    protected static final String MODULE_NAME = "Deployment Slots";
+    public static final String MODULE_NAME = "Deployment Slots";
     protected final String subscriptionId;
     protected final WebApp webapp;
 
