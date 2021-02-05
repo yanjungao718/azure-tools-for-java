@@ -60,8 +60,8 @@
                     </weaveDirectories>
                     <aspectLibraries>
                         <aspectLibrary>
-                            <groupId>com.microsoft.azuretools</groupId>
-                            <artifactId>azuretools-core</artifactId>
+                            <groupId>com.microsoft.azure</groupId>
+                            <artifactId>azure-toolkit-common-lib</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                 </configuration>
@@ -79,11 +79,6 @@
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
-                        <configuration>
-                            <weaveDirectories>
-                                <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
-                            </weaveDirectories>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
