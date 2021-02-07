@@ -16,12 +16,12 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.auth.AzureAuthHelper;
-import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.tools.auth.core.azurecli.AzureCliCredentialRetriever;
+import com.microsoft.azure.tools.auth.exception.LoginFailureException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -42,7 +42,6 @@ import rx.Single;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -212,13 +211,14 @@ public class SignInWindow extends AzureDialogWrapper {
     @Override
     protected void init() {
         super.init();
-        AzureTokenWrapper tokenWrapper = null;
+        boolean isCliLoggedIn = false;
         try {
-            tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
-        } catch (IOException | RuntimeException e) {
+            new AzureCliCredentialRetriever(null).retrieveInternal();
+            isCliLoggedIn = true;
+        } catch (LoginFailureException e) {
             // swallow exception while getting azure cli credential
         }
-        if (tokenWrapper != null) {
+        if (isCliLoggedIn) {
             azureCliPanel.setEnabled(true);
             azureCliRadioButton.setText("Azure CLI");
             azureCliRadioButton.setEnabled(true);

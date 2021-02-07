@@ -5,12 +5,15 @@
 
 package com.microsoft.intellij.actions;
 
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.identity.AzureCliCredentialBuilder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -48,6 +51,11 @@ public class AzureSignInAction extends AzureAnAction {
 
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
+        String s = new AzureCliCredentialBuilder().build().getToken(
+            new TokenRequestContext().addScopes(AzureEnvironment.AZURE.managementEndpoint() + "/.default"))
+                     .block().getToken();
+        System.out.println(s);
+
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
         return true;

@@ -139,7 +139,12 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.azure</groupId>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-auth-lib</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+        <dependency>
+           <groupId>com.azure</groupId>
             <artifactId>azure-storage-queue</artifactId>
         </dependency>
         <dependency>
@@ -169,10 +174,6 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-security-keyvault-certificates</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-auth-helper</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>

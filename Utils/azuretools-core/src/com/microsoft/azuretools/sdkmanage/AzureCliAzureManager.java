@@ -5,12 +5,15 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.auth.AzureAuthHelper;
-import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.azure.core.credential.AccessToken;
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.utils.JsonUtils;
-import com.microsoft.azure.credentials.AzureCliCredentials;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.tools.auth.core.azurecli.AzureCliCredentialRetriever;
+import com.microsoft.azure.tools.auth.exception.LoginFailureException;
+import com.microsoft.azure.tools.auth.model.AzureCredentialWrapper;
+import com.microsoft.azure.tools.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AzureManagerFactory;
@@ -21,8 +24,6 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.utils.CommandUtils;
-import com.microsoft.azuretools.utils.Pair;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -48,6 +49,8 @@ public class AzureCliAzureManager extends AzureManagerBase {
     private static final String CLI_TOKEN_FORMAT_ACCESSOR_RESOURCE = "az account get-access-token --output json -t %s --resource %s";
     private static final String CLI_TOKEN_PROP_ACCESS_TOKEN = "accessToken";
     private static final String CLI_TOKEN_PROP_EXPIRATION = "expiresOn";
+
+    private static final String AZURE_CLI_CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46";
     /**
      * refer https://github.com/Azure/azure-sdk-for-java/blob/e193ac6467cd9c9792ead0e1d242663fe1194fee/sdk/identity/azure-identity/src/main/java/com/azure
      * /identity/implementation/util/ScopeUtil.java#L16
@@ -55,7 +58,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     private static final Pattern PATTERN_RESOURCE = Pattern.compile("^[0-9a-zA-Z-.:/]+$");
     private static final Pattern PATTERN_TENANT = Pattern.compile("^[a-zA-Z_\\-0-9]+$");
 
-    protected Map<String, Pair<String, OffsetDateTime>> tenantTokens = new ConcurrentHashMap<>();
+    protected Map<String, AccessToken> tenantTokens = new ConcurrentHashMap<>();
 
     private String currentTenantId;
     private String currentClientId;
@@ -64,19 +67,21 @@ public class AzureCliAzureManager extends AzureManagerBase {
         settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_AZ);
     }
 
+    private AzureCredentialWrapper credentialWrapper;
+
     @Override
     public @Nullable String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
         if (!this.isSignedIn()) {
             return null;
         }
         final String key = tid + ":" + resource;
-        Pair<String, OffsetDateTime> token = tenantTokens.get(key);
+        AccessToken token = tenantTokens.get(key);
         final OffsetDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault()).toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC);
-        if (Objects.isNull(token) || token.second().isBefore(now)) {
+        if (Objects.isNull(token) || token.isExpired()) {
             token = this.getAccessTokenViaCli(tid, resource);
             tenantTokens.put(key, token);
         }
-        return token.first();
+        return token.getToken();
     }
 
     @Override
@@ -93,7 +98,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     public void drop() {
         this.currentClientId = null;
         this.currentTenantId = null;
-        this.tenantTokens.clear();
+        this.credentialWrapper = null;
         super.drop();
     }
 
@@ -103,28 +108,28 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     public AuthMethodDetails signIn() throws AzureExecutionException {
         try {
-            final AzureTokenWrapper azureTokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
-            if (azureTokenWrapper == null) {
+            credentialWrapper = new AzureCliCredentialRetriever(null).retrieveInternal();
+            if (credentialWrapper == null) {
                 throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);
             }
             // Todo: Deprecate AzureCliCredentials as it will be deprecated soon with azure cli updates
-            final AzureCliCredentials credentials = (AzureCliCredentials) azureTokenWrapper.getAzureTokenCredentials();
-            final Azure.Authenticated authenticated = Azure.configure().authenticate(credentials);
+            final Azure.Authenticated authenticated = Azure.configure().authenticate(credentialWrapper.getAzureTokenCredentials());
             if (authenticated == null) {
                 throw new AzureExecutionException(FAILED_TO_AUTH_WITH_AZURE_CLI);
             }
-            this.currentClientId = credentials.clientId();
-            this.currentTenantId = authenticated.tenantId();
+            AzureEnvironment env = credentialWrapper.getEnv();
+            this.currentClientId = AZURE_CLI_CLIENT_ID;
+            this.currentTenantId = credentialWrapper.getTenantId();
             final Environment environment = ENVIRONMENT_LIST.stream()
-                    .filter(e -> ObjectUtils.equals(credentials.environment(), e.getAzureEnvironment()))
+                    .filter(e -> StringUtils.equals(env.managementEndpoint(), e.getAzureEnvironment().managementEndpoint()))
                     .findAny()
                     .orElse(Environment.GLOBAL);
             CommonSettings.setUpEnvironment(environment);
             final AuthMethodDetails authResult = new AuthMethodDetails();
             authResult.setAuthMethod(AuthMethod.AZ);
-            authResult.setAzureEnv(credentials.environment().toString());
+            authResult.setAzureEnv(AzureEnvironmentUtils.azureEnvironmentToString(credentialWrapper.getEnv()));
             return authResult;
-        } catch (final IOException e) {
+        } catch (final LoginFailureException e) {
             drop();
             throw new AzureExecutionException(FAILED_TO_AUTH_WITH_AZURE_CLI, e);
         }
@@ -160,7 +165,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
      * refer https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/identity/azure-identity/src/main/java/com/azure/
      * identity/implementation/IdentityClient.java#L366
      */
-    private Pair<String, OffsetDateTime> getAccessTokenViaCli(String tid, @Nullable String resource) throws IOException {
+    private AccessToken getAccessTokenViaCli(String tid, @Nullable String resource) throws IOException {
         if (StringUtils.isEmpty(tid) || !PATTERN_TENANT.matcher(tid).matches()) {
             throw new InvalidParameterException(String.format("[%s] is not a valid tenant ID", tid));
         } else if (StringUtils.isNotEmpty(resource) && !PATTERN_RESOURCE.matcher(resource).matches()) {
@@ -180,6 +185,6 @@ public class AzureCliAzureManager extends AzureManagerBase {
         final OffsetDateTime expiresOn = LocalDateTime.parse(decoratedTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                                                       .atZone(ZoneId.systemDefault())
                                                       .toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC);
-        return new Pair<>(strToken, expiresOn);
+        return new AccessToken(strToken, expiresOn);
     }
 }
