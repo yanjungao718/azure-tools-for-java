@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class BasicActionBuilder {
 
@@ -123,14 +124,16 @@ public class BasicActionBuilder {
             delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage(actionName));
         }
         // TODO (Qianjin) : remove after migrate all telemetry data by @AzureOperation annotation.
-        String realActionName = StringUtils.firstNonBlank(actionName, action.getName()).toLowerCase();
+        final String actionName2 = Optional.ofNullable(action).map(AzureActionEnum::getName).orElse(null);
+        String realActionName = StringUtils.firstNonBlank(actionName, actionName2, "unknown").toLowerCase();
         delegate = new DelegateActionListener.TelemetricActionListener(delegate, MODULE_NAME_TO_SERVICE_NAME_MAP.get(moduleName), realActionName);
         return delegate;
     }
 
     private String getProgressMessage(final String doingName) {
         Preconditions.checkArgument(Objects.nonNull(action) || StringUtils.isNotBlank(doingName));
-        String realDoingName = StringUtils.firstNonBlank(doingName, action.getDoingName());
+        final String actionName2 = Optional.ofNullable(action).map(AzureActionEnum::getDoingName).orElse(null);
+        String realDoingName = StringUtils.firstNonBlank(doingName, actionName2);
         if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(instanceName)) {
             return String.format(FULL_PROGRESS_MESSAGE_PATTERN, realDoingName, moduleName, instanceName);
         }
@@ -144,7 +147,8 @@ public class BasicActionBuilder {
     }
 
     private String getPromptMessage(final String actionName) {
-        String realActionName = StringUtils.firstNonBlank(actionName, action.getName()).toLowerCase();
+        final String actionName2 = Optional.ofNullable(action).map(AzureActionEnum::getName).orElse(null);
+        String realActionName = StringUtils.firstNonBlank(actionName, actionName2, "unknown").toLowerCase();
         return String.format(PROMPT_MESSAGE_PATTERN, realActionName, moduleName, instanceName);
     }
 
