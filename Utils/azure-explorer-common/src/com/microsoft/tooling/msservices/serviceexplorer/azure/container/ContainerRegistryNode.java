@@ -16,7 +16,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,16 +56,16 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
         return new BasicActionBuilder(runnable)
-                .withModuleName(WebAppModule.MODULE_NAME)
+                .withModuleName(ContainerRegistryModule.MODULE_NAME)
                 .withInstanceName(name);
     }
 
-    @AzureOperation(value = ActionConstants.ContainerRegister.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.ContainerRegister.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
     }
 
-    @AzureOperation(value = ActionConstants.ContainerRegister.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.ContainerRegister.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,

@@ -18,6 +18,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.tools.auth.core.azurecli.AzureCliCredentialRetriever;
@@ -162,7 +164,8 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     public Single<AuthMethodDetails> login() {
-        final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, "Signing in to Azure...", false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("account.sign_in");
+        final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return this.doLogin();

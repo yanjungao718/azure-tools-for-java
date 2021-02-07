@@ -23,7 +23,7 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     private static final String ICON_PATH = "Slot_16.png";
 
     private final DeploymentSlotModulePresenter presenter;
-    protected static final String MODULE_NAME = "Deployment Slots";
+    public static final String MODULE_NAME = "Deployment Slots";
     protected final String subscriptionId;
     protected final WebApp webapp;
 
@@ -42,14 +42,14 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     }
 
     @Override
-    @AzureOperation(value = "remove deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.delete", params = {"$name", "@webapp.name()"}, type = AzureOperation.Type.ACTION)
     public void removeNode(final String sid, final String name, Node node) {
         presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
         removeDirectChildNode(node);
     }
 
     @Override
-    @AzureOperation(value = "refresh deployment slots", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.reload", params = {"@webapp.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
     }

@@ -6,8 +6,21 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class BasicActionBuilder {
@@ -17,6 +30,7 @@ public class BasicActionBuilder {
     private static final String FULL_PROGRESS_MESSAGE_PATTERN = "%s %s (%s)...";
 
     private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s: %s. Are you sure you want to continue?";
+    private static final Map<String, String> MODULE_NAME_TO_SERVICE_NAME_MAP = new HashMap<>();
 
     private Runnable runnable;
     private AzureActionEnum action;
@@ -29,6 +43,20 @@ public class BasicActionBuilder {
     private boolean backgroundConditionalModal;
 
     private boolean promptable;
+
+    static {
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(WebAppModule.MODULE_NAME, ActionConstants.WebApp.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(DeploymentSlotModule.MODULE_NAME, ActionConstants.WebApp.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(FunctionModule.MODULE_NAME, ActionConstants.FunctionApp.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(MySQLModule.MODULE_NAME, ActionConstants.MySQL.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(SpringCloudModule.MODULE_NAME, ActionConstants.SpringCloud.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(RedisCacheModule.MODULE_NAME, ActionConstants.RedisCache.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(VMArmModule.MODULE_NAME, ActionConstants.VirtualMachine.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(StorageModule.MODULE_NAME, ActionConstants.StorageAccount.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(ResourceManagementModule.MODULE_NAME, ActionConstants.ResourceManagement.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put("Deployment of Resource Management", ActionConstants.ResourceManagement.MODULE);
+        MODULE_NAME_TO_SERVICE_NAME_MAP.put(ContainerRegistryModule.MODULE_NAME, ActionConstants.ContainerRegister.MODULE);
+    }
 
     public BasicActionBuilder(Runnable runnable) {
         Preconditions.checkNotNull(runnable);
@@ -94,6 +122,9 @@ public class BasicActionBuilder {
         if (promptable) {
             delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage(actionName));
         }
+        // TODO (Qianjin) : remove after migrate all telemetry data by @AzureOperation annotation.
+        String realActionName = StringUtils.firstNonBlank(actionName, action.getName()).toLowerCase();
+        delegate = new DelegateActionListener.TelemetricActionListener(delegate, MODULE_NAME_TO_SERVICE_NAME_MAP.get(moduleName), realActionName);
         return delegate;
     }
 
@@ -113,7 +144,7 @@ public class BasicActionBuilder {
     }
 
     private String getPromptMessage(final String actionName) {
-        String realActionName = StringUtils.firstNonBlank(actionName, action.getName().toLowerCase());
+        String realActionName = StringUtils.firstNonBlank(actionName, action.getName()).toLowerCase();
         return String.format(PROMPT_MESSAGE_PATTERN, realActionName, moduleName, instanceName);
     }
 
