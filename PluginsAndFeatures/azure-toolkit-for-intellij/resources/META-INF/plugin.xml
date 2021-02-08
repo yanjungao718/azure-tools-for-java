@@ -24,13 +24,11 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.48.0</h3>
+    <h3>3.49.0</h3>
     <h4>Changed</h4>
     <ul>
-        <li>Update icons in Azure toolkits</li>
-        <li>Update Tomcat base images</li>
-        <li>Using non-blocking UI to replace blocking progress indicator</li>
-        <li>Remove non-functional "cancel" buttons in foreground operations</li>
+      <li>Collect performance metrics data via telemetry for future performance tuning.</li>
+      <li>Update the status text on progress indicator.</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
