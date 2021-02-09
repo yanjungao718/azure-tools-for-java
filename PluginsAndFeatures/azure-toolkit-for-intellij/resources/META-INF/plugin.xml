@@ -29,6 +29,7 @@
     <ul>
       <li>Collect performance metrics data via telemetry for future performance tuning.</li>
       <li>Update the status text on progress indicator.</li>
+      <li>Update context menu icons in Azure Explorer.</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

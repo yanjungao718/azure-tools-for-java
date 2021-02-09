@@ -69,6 +69,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ### Changed
 - Collect performance metrics data via telemetry for future performance tuning.
 - Update the status text on progress indicator.
+- Update context menu icons in Azure Explorer.
 
 ## 3.48.0
 
