@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.link.base;
 
 public enum LinkType {
-    SERVICE_WITH_PROJECT,
+    SERVICE_WITH_MODULE,
     SERVICE_WITH_SERVICE;
 }
 
