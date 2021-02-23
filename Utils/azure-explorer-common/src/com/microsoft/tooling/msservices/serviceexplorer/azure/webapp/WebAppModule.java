@@ -5,7 +5,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
