@@ -20,7 +20,6 @@ public class PasswordSaveComboBox extends AzureComboBox<PasswordSaveType> {
     @Override
     protected List<? extends PasswordSaveType> loadItems() {
         return Arrays.asList(PasswordSaveType.values());
-        // return Arrays.asList(PasswordSaveType.values()).stream().map(e -> e.getName()).collect(Collectors.toList());
     }
 
     @Override

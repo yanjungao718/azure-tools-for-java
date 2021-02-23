@@ -63,13 +63,9 @@ public class TestConnectionUtils {
         testResultButton.setVisible(true);
         testResultTextPane.setText(testResult.get().toString());
         if (connected.get()) {
-            // testResultLabel.setIcon(AllIcons.Actions.Commit);
             testResultLabel.setIcon(AllIcons.General.InspectionsOK);
         } else {
-            // testResultLabel.setIcon(AllIcons.General.Error);
-            // testResultLabel.setIcon(AllIcons.General.NotificationError);
             testResultLabel.setIcon(AllIcons.General.BalloonError);
-            // testResultLabel.setIcon(AllIcons.General.InspectionsError);
         }
     }
 }

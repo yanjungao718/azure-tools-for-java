@@ -136,7 +136,6 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
 
     @Override
     public void setData(PasswordConfig data) {
-        // TODO
         passwordSaveComboBox.setValue(data.getPasswordSaveType());
     }
 
