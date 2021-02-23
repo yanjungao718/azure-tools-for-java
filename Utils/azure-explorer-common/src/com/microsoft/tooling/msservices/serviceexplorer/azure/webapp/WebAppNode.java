@@ -66,7 +66,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, null));
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
     }

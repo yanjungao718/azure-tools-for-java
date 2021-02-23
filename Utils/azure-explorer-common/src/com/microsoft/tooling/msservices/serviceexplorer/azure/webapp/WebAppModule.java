@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -103,8 +104,8 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     @Override
     public void renderChildren(@NotNull final List<IWebApp> resourceExes) {
         for (final IWebApp webApp : resourceExes) {
-            final String sId = webApp.id();
-            final WebAppNode node = new WebAppNode(this, sId, webApp);
+            final String subscriptionId = Utils.getSubscriptionId(webApp.id());
+            final WebAppNode node = new WebAppNode(this, subscriptionId, webApp);
 
             addChildNode(node);
         }
