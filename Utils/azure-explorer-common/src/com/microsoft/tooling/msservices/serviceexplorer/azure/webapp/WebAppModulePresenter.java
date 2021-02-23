@@ -20,6 +20,6 @@ public class WebAppModulePresenter<V extends WebAppModuleView> extends MvpPresen
     }
 
     public void onDeleteWebApp(String sid, String id) {
-        AzureWebAppMvpModel.getInstance().deleteWebApp(sid, id);
+        AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(sid).webapp(id).delete();
     }
 }
