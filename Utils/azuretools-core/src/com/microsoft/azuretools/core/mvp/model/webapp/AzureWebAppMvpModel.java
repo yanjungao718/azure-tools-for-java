@@ -24,6 +24,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -67,6 +68,7 @@ public class AzureWebAppMvpModel {
 
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
+    private final Map<String, List<IWebApp>> webappsCache;
 
     private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS =
         Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
@@ -75,6 +77,7 @@ public class AzureWebAppMvpModel {
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebApps = new ConcurrentHashMap<>();
+        webappsCache = new ConcurrentHashMap<>();
     }
 
     public static AzureWebAppMvpModel getInstance() {
@@ -849,6 +852,7 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.TASK
     )
     public void clearWebAppsCache() {
+        webappsCache.clear();
         subscriptionIdToWebApps.clear();
     }
 
@@ -870,6 +874,45 @@ public class AzureWebAppMvpModel {
         return geoRegionInnerList.stream()
                                  .map(regionInner -> Region.fromName(regionInner.displayName()))
                                  .collect(Collectors.toList());
+    }
+
+    /**
+     * List all the Web Apps in selected subscriptions.
+     * todo: move to app service library
+     */
+    @AzureOperation(
+            name = "webapp.list.subscription|selected",
+            type = AzureOperation.Type.SERVICE
+    )
+    public List<IWebApp> listAzureWebApps(final boolean force) {
+        final List<IWebApp> webApps = new ArrayList<>();
+        final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        if (subs.size() == 0) {
+            return webApps;
+        }
+        Observable.from(subs)
+                .flatMap((sd) ->
+                        Observable.create((subscriber) -> {
+                            synchronized (webApps) {
+                                webApps.addAll(listAzureWebAppsBySubscription(sd.subscriptionId(), force));
+                            }
+                            subscriber.onCompleted();
+                        }).subscribeOn(Schedulers.io()), subs.size())
+                .subscribeOn(Schedulers.io())
+                .toBlocking()
+                .subscribe();
+        return webApps;
+    }
+
+    public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean force) {
+        if (force || !webappsCache.containsKey(subscriptionId)) {
+            webappsCache.put(subscriptionId, getAzureAppServiceClient(subscriptionId).webapps());
+        }
+        return webappsCache.get(subscriptionId);
+    }
+
+    public AzureAppService getAzureAppServiceClient(String subscriptionId) {
+        return AzureAppService.auth(Track2Manager.getAzureResourceManager(subscriptionId));
     }
 
     /**
