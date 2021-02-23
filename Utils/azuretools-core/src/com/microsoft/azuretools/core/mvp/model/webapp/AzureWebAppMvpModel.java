@@ -906,7 +906,10 @@ public class AzureWebAppMvpModel {
 
     public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean force) {
         if (force || !webappsCache.containsKey(subscriptionId)) {
-            webappsCache.put(subscriptionId, getAzureAppServiceClient(subscriptionId).webapps());
+            final List<IWebApp> webApps = getAzureAppServiceClient(subscriptionId)
+                    .webapps()
+                    .parallelStream().filter(webapp -> webapp.getRuntime() != null).collect(Collectors.toList());
+            webappsCache.put(subscriptionId, webApps);
         }
         return webappsCache.get(subscriptionId);
     }
