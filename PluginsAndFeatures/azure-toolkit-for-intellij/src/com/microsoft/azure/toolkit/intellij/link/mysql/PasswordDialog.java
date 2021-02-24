@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
@@ -70,15 +71,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     }
 
     private KeyListener onInputPasswordFieldChanged() {
-        KeyListener listener = new KeyListener() {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
+        KeyListener listener = new KeyAdapter() {
 
             @Override
             public void keyReleased(KeyEvent e) {

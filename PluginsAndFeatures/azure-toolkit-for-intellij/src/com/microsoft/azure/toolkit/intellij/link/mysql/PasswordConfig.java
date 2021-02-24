@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"password"})
 public class PasswordConfig {
 
     private char[] password;
