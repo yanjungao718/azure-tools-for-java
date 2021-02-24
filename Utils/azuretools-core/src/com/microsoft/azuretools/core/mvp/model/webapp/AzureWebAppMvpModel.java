@@ -4,7 +4,11 @@
  */
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
-
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.azure.core.management.exception.ManagementException;
+import com.azure.resourcemanager.AzureResourceManager;
+import com.azure.resourcemanager.resources.models.ResourceGroup;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
@@ -24,7 +28,9 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -912,6 +918,102 @@ public class AzureWebAppMvpModel {
             webappsCache.put(subscriptionId, webApps);
         }
         return webappsCache.get(subscriptionId);
+    }
+
+    /**
+     * API to create new Web App by setting model.
+     */
+    @AzureOperation(
+            name = "webapp.create_detail",
+            params = {"$model.getWebAppName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public IWebApp createWebAppFromSettingModel(@NotNull IWebApp webApp, @NotNull WebAppSettingModel model) {
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model);
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(model);
+        final IWebApp result = webApp.create().withName(model.getWebAppName())
+                .withResourceGroup(resourceGroup.name())
+                .withPlan(appServicePlan.id())
+                .withRuntime(parseRuntimeFromWebAppSettingModel(model))
+                .commit();
+        updateWebAppDiagnosticConfiguration(webApp, model);
+        return result;
+    }
+
+    private Runtime parseRuntimeFromWebAppSettingModel(@NotNull WebAppSettingModel model) {
+        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem os =
+                com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOS().name());
+        if (os == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
+            return Runtime.getRuntimeFromLinuxFxVersion(model.getLinuxRuntime().toString());
+        }
+        final JavaVersion javaVersion = JavaVersion.fromString(model.getJdkVersion().toString());
+        final com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer =
+                com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.fromString(model.getWebContainer());
+        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
+    }
+
+    // todo: Move duplicated codes to azure common library
+    private ResourceGroup getOrCreateResourceGroup(@NotNull WebAppSettingModel model) {
+        final AzureResourceManager az = Track2Manager.getAzureResourceManager(model.getSubscriptionId());
+        try {
+            return az.resourceGroups().getByName(model.getResourceGroup());
+        } catch (ManagementException e) {
+            return az.resourceGroups().define(model.getResourceGroup()).withRegion(model.getRegion()).create();
+        }
+    }
+
+    private IAppServicePlan getOrCreateAppServicePlan(@NotNull WebAppSettingModel model) {
+        final AzureAppService az = getAzureAppServiceClient(model.getSubscriptionId());
+        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
+        if (appServicePlan.exists()) {
+            return appServicePlan;
+        }
+        final String[] tierSize = model.getPricing().split("_");
+        return appServicePlan.create()
+                .withName(model.getAppServicePlanName())
+                .withResourceGroup(model.getResourceGroup())
+                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(model.getRegion()))
+                .withPricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1]))
+                .withOperatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOS().name()))
+                .commit();
+    }
+
+    /**
+     * Update web app diagnostic settings with track2 SDK
+     * todo: move to app service library
+     */
+    public void updateWebAppDiagnosticConfiguration(@NotNull IWebApp webApp, @NotNull WebAppSettingModel model) {
+        final AzureResourceManager azureResourceManager = Track2Manager.getAzureResourceManager(model.getSubscriptionId());
+        com.azure.resourcemanager.appservice.models.WebApp.Update update = azureResourceManager.webApps().getById(webApp.id()).update();
+        if (model.isEnableApplicationLog()) {
+            update = (com.azure.resourcemanager.appservice.models.WebApp.Update) update.updateDiagnosticLogsConfiguration()
+                    .withApplicationLogging()
+                    .withLogLevel(com.azure.resourcemanager.appservice.models.LogLevel.fromString(model.getApplicationLogLevel().toString()))
+                    .withApplicationLogsStoredOnFileSystem().parent();
+        }
+        if (model.isEnableWebServerLogging()) {
+            update = (com.azure.resourcemanager.appservice.models.WebApp.Update) update.updateDiagnosticLogsConfiguration().withWebServerLogging()
+                    .withWebServerLogsStoredOnFileSystem()
+                    .withWebServerFileSystemQuotaInMB(model.getWebServerLogQuota())
+                    .withLogRetentionDays(model.getWebServerRetentionPeriod())
+                    .withDetailedErrorMessages(model.isEnableDetailedErrorMessage())
+                    .withFailedRequestTracing(model.isEnableFailedRequestTracing()).parent();
+        }
+        update.apply();
+    }
+
+    /**
+     * API to create a new Deployment Slot by setting model.
+     */
+    @AzureOperation(
+            name = "webapp|deployment.create",
+            params = {"$model.getNewSlotName()", "$model.getWebAppName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
+        return webApp.deploymentSlot(model.getSlotName()).create()
+                .withName(model.getSlotName())
+                .withConfigurationSource(model.getNewSlotConfigurationSource()).commit();
     }
 
     public AzureAppService getAzureAppServiceClient(String subscriptionId) {
