@@ -51,16 +51,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLServiceP
                 serviceElement.setAttribute("id", service.getId());
                 serviceElement.addContent(new Element("url").setText(service.getUrl()));
                 serviceElement.addContent(new Element("username").setText(service.getUsername()));
-
                 serviceElement.addContent(new Element("passwordSave").setText(service.getPasswordSave().name()));
-                /*Element credentialsElement = new Element(ELEMENT_NAME_CREDENTIALS);
-                for (CredentialPO credential : service.getCredentials()) {
-                    Element credentialElement = new Element(ELEMENT_NAME_CREDENTIAL);
-                    credentialElement.addContent(new Element("username").setText(credential.getUsername()));
-                    credentialElement.addContent(new Element("passwordSave").setText(credential.getPasswordSave().name()));
-                    credentialsElement.addContent(credentialElement);
-                }
-                serviceElement.addContent(credentialsElement);*/
                 servicesElement.addContent(serviceElement);
             }
         }

@@ -24,19 +24,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class AzureLinkerStorage {
+public class AzureLinkStorage {
 
     private Set<LinkPO> linkers = new LinkedHashSet<>();
 
-    private AzureLinkerStorage() {
+    private AzureLinkStorage() {
     }
 
-    public static AzureLinkerStorage getStorage() {
-        return ServiceManager.getService(AzureLinkerStorage.App.class);
+    public static AzureLinkStorage getStorage() {
+        return ServiceManager.getService(AzureLinkStorage.App.class);
     }
 
-    public static AzureLinkerStorage getProjectStorage(Project project) {
-        return ServiceManager.getService(project, AzureLinkerStorage.Prj.class);
+    public static AzureLinkStorage getProjectStorage(Project project) {
+        return ServiceManager.getService(project, AzureLinkStorage.Prj.class);
     }
 
     public boolean addLinker(LinkPO linker) {
@@ -71,7 +71,7 @@ public class AzureLinkerStorage {
         return linkers.stream().filter(e -> StringUtils.equals(targetId, e.getModuleId())).collect(Collectors.toList());
     }
 
-    public static class AzureLinkerStorageStateComponent extends AzureLinkerStorage {
+    public static class AzureLinkerStorageStateComponent extends AzureLinkStorage {
 
         public Element getState() {
             Element rootElement = new Element("azureLinks");
@@ -96,15 +96,6 @@ public class AzureLinkerStorage {
 
         public void loadState(@NotNull Element state) {
             this.readState(state);
-            /*List<Content> contentList = state.getContent();
-            contentList.forEach(e -> {
-                if (e instanceof Element) {
-                    Element contentElement = (Element) e;
-                    if ("linkers".equals(contentElement.getName())) {
-                        this.readState(contentElement);
-                    }
-                }
-            });*/
         }
 
         private void readState(Element linkersElement) {
