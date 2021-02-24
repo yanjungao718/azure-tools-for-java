@@ -29,7 +29,6 @@ public class MySQLServicePO extends BaseServicePO {
     public static class Builder {
         private String id;
         private String url;
-        private CredentialPO credential;
         private String username;
         private PasswordSaveType passwordSave;
 
