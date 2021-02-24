@@ -23,7 +23,8 @@ public class TestConnectionUtils {
             DriverManager.getConnection(url, username, password);
             return true;
         } catch (ClassNotFoundException | SQLException exception) {
-            System.out.println(String.format("Failed to connect to server (%s)", JdbcUrlUtils.parseHostname(url)));
+            JdbcUrlUtils.JdbcUrl jdbcUrl = JdbcUrlUtils.parseUrl(url);
+            System.out.println(String.format("Failed to connect to server (%s)", jdbcUrl.getHostname()));
             return false;
         }
     }
@@ -56,7 +57,8 @@ public class TestConnectionUtils {
                 resultBuilder.append("Message: ").append(exception.getMessage());
             }
         };
-        AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", JdbcUrlUtils.parseHostname(url)), false, runnable);
+        JdbcUrlUtils.JdbcUrl jdbcUrl = JdbcUrlUtils.parseUrl(url);
+        AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHostname()), false, runnable);
         AzureTaskManager.getInstance().runAndWait(task);
         // show result info
         testResultLabel.setVisible(true);
