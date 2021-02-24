@@ -50,9 +50,4 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
         }
         return Collections.emptyList();
     }
-
-    @Override
-    protected String label() {
-        return "Spring Cloud Service";
-    }
 }
