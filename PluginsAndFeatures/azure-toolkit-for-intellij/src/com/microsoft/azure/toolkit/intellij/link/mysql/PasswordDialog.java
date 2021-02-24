@@ -36,7 +36,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private JLabel testResultLabel;
     private JButton testConnectionButton;
     private JButton testResultButton;
-    private JPasswordField inputPasswordField;
+    private JPasswordField passwordField;
     private PasswordSaveComboBox passwordSaveComboBox;
 
     private Project project;
@@ -49,7 +49,8 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
         this.username = username;
         this.url = url;
         setTitle(TITLE);
-        headerTextPane.setText(String.format(HEADER_PATTERN, username, JdbcUrlUtils.parseDatabase(url), JdbcUrlUtils.parseHostname(url)));
+        JdbcUrlUtils.JdbcUrl jdbcUrl = JdbcUrlUtils.parseUrl(url);
+        headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getHostname()));
         testConnectionButton.setEnabled(false);
         testResultLabel.setVisible(false);
         testResultButton.setVisible(false);
@@ -64,7 +65,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     }
 
     private void initListener() {
-        this.inputPasswordField.addKeyListener(this.onInputPasswordFieldChanged());
+        this.passwordField.addKeyListener(this.onInputPasswordFieldChanged());
         this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
         this.testResultButton.addActionListener(this::onCopyButtonClicked);
 
@@ -75,7 +76,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (ArrayUtils.isNotEmpty(inputPasswordField.getPassword())) {
+                if (ArrayUtils.isNotEmpty(passwordField.getPassword())) {
                     testConnectionButton.setEnabled(true);
                 } else {
                     testConnectionButton.setEnabled(false);
@@ -88,7 +89,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
 
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
-        String password = String.valueOf(inputPasswordField.getPassword());
+        String password = String.valueOf(passwordField.getPassword());
         TestConnectionUtils.testConnection(url, username, password, testResultLabel,
                 testResultButton, testResultTextPane);
         testConnectionButton.setEnabled(true);
@@ -123,7 +124,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     public PasswordConfig getData() {
         PasswordConfig config = PasswordConfig.getDefaultConfig();
         config.setPasswordSaveType(passwordSaveComboBox.getValue());
-        config.setPassword(inputPasswordField.getPassword());
+        config.setPassword(passwordField.getPassword());
         return config;
     }
 

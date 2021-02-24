@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
+import com.google.common.base.Preconditions;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -12,27 +15,22 @@ import java.util.Objects;
 
 public class JdbcUrlUtils {
 
-    public static String parseHostname(String jdbcUrl) {
-        URI uri = parseJdbcUri(jdbcUrl);
-        return Objects.nonNull(uri) ? uri.getHost() : null;
-    }
-
-    public static Integer parsePort(String jdbcUrl) {
-        URI uri = parseJdbcUri(jdbcUrl);
-        return Objects.nonNull(uri) ? uri.getPort() : null;
-    }
-
-    public static String parseDatabase(String jdbcUrl) {
-        URI uri = parseJdbcUri(jdbcUrl);
+    public static JdbcUrl parseUrl(String jdbcUrl) {
+        Preconditions.checkArgument(StringUtils.startsWith(jdbcUrl, "jdbc:"), "jdbcUrl is not valid.");
+        URI uri = URI.create(jdbcUrl.substring(5));
+        String hostname = Objects.nonNull(uri) ? uri.getHost() : null;
+        Integer port = Objects.nonNull(uri) ? uri.getPort() : null;
         String path = Objects.nonNull(uri) ? uri.getPath() : null;
-        return StringUtils.startsWith(path, "/") ? path.substring(1) : path;
+        String database = StringUtils.startsWith(path, "/") ? path.substring(1) : path;
+        return new JdbcUrl(hostname, port, database);
     }
 
-    private static URI parseJdbcUri(String jdbcUrl) {
-        if (!StringUtils.startsWith(jdbcUrl, "jdbc:")) {
-            return null;
-        }
-        return URI.create(jdbcUrl.substring(5));
+    @Getter
+    @AllArgsConstructor
+    public static class JdbcUrl {
+        private String hostname;
+        private Integer port;
+        private String database;
     }
 
 }
