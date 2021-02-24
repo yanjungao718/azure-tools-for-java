@@ -20,6 +20,7 @@ public class LinkComposite<S extends BaseLinkConfig, T extends BaseLinkConfig> {
     private String id = UUID.randomUUID().toString().replace("-", "");
     private S service;
     private T module;
+    private String envPrefix;
 
     public LinkComposite(S source, T target) {
         this.service = source;
