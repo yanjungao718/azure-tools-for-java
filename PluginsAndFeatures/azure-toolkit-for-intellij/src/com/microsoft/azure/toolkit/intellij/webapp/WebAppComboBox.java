@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -29,7 +29,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         webAppCreationDialog.setDeploymentVisible(false);
         webAppCreationDialog.setOkActionListener(webAppConfig -> {
             final WebAppComboBoxModel newModel =
-                new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
+                    new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
             newModel.setNewCreateResource(true);
             WebAppComboBox.this.addItem(newModel);
             WebAppComboBox.this.setSelectedItem(newModel);
@@ -40,14 +40,11 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
 
     @NotNull
     @Override
-    @AzureOperation(
-        name = "webapp.list.detail|subscription|selected",
-        type = AzureOperation.Type.SERVICE
-    )
-    protected List<WebAppComboBoxModel> loadAppServiceModels() throws Exception {
-        return AzureWebAppMvpModel.getInstance().listJavaWebApps(false).parallelStream()
-            .map(WebAppComboBoxModel::new)
-            .sorted((app1, app2) -> app1.getAppName().compareToIgnoreCase(app2.getAppName()))
-            .collect(Collectors.toList());
+    protected List<WebAppComboBoxModel> loadItems() throws Exception {
+        final List<IWebApp> webApps = AzureWebAppMvpModel.getInstance().listAzureWebApps(false);
+        return webApps.stream()
+                      .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+                      .map(webApp -> new WebAppComboBoxModel(webApp))
+                      .collect(Collectors.toList());
     }
 }

@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -19,6 +21,21 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
 
     private String runtime;
     private WebAppSettingModel webAppSettingModel;
+
+    // todo: migrate Base Model to service library
+    public WebAppComboBoxModel(final IWebApp webApp){
+        this.resourceId = webApp.id();
+        this.appName = webApp.name();
+        this.resourceGroup = webApp.entity().getResourceGroup();
+        this.os = StringUtils.capitalize(webApp.getRuntime().getOperatingSystem().getValue());
+        this.subscriptionId = webApp.entity().getSubscriptionId();
+        this.isNewCreateResource = false;
+        final Runtime runtime = webApp.getRuntime();
+        this.runtime = String.format("%s-%s-%s",
+                                     runtime.getOperatingSystem().getValue(),
+                                     runtime.getWebContainer().getValue(),
+                                     runtime.getJavaVersion().getValue());
+    }
 
     public WebAppComboBoxModel(final ResourceEx<WebApp> resourceEx) {
         super(resourceEx);
