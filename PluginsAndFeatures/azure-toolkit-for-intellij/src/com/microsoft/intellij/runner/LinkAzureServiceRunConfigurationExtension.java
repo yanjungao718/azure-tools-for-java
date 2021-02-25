@@ -7,11 +7,9 @@ package com.microsoft.intellij.runner;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
-import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunnerSettings;
-import com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,11 +31,9 @@ public class LinkAzureServiceRunConfigurationExtension extends RunConfigurationE
 
     @Override
     public boolean isApplicableFor(@NotNull RunConfigurationBase<?> runConfigurationBase) {
-        if (runConfigurationBase instanceof AbstractRunConfiguration || runConfigurationBase instanceof SpringBootApplicationRunConfiguration) {
-            Boolean linkAzureService = runConfigurationBase.getUserData(LinkAzureServiceBeforeRunProvider.LINK_AZURE_SERVICE);
-            if (Boolean.TRUE.equals(linkAzureService)) {
-                return true;
-            }
+        Boolean linkAzureService = runConfigurationBase.getUserData(LinkAzureServiceBeforeRunProvider.LINK_AZURE_SERVICE);
+        if (Boolean.TRUE.equals(linkAzureService)) {
+            return true;
         }
         return false;
     }

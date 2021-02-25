@@ -16,7 +16,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
@@ -40,7 +39,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -48,6 +52,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
     private static final String NAME = "Link Azure Service";
     private static final String DESCRIPTION = "Link Azure Service Task";
+    private static final String SPRING_BOOT_CONFIGURATION_REF = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     public static final Key<LinkAzureServiceBeforeRunTask> ID = Key.create("LinkAzureServiceBeforeRunProviderId");
     public static final Key<Boolean> LINK_AZURE_SERVICE = Key.create("LinkAzureService");
     public static final Key<Map<String, String>> LINK_AZURE_SERVICE_ENVS = Key.create("LinkAzureServiceEnvs");
@@ -77,7 +82,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     @Override
     public LinkAzureServiceBeforeRunTask createTask(@NotNull RunConfiguration runConfiguration) {
         boolean alwaysEnable = false;
-        if (runConfiguration instanceof SpringBootApplicationRunConfiguration
+        if (StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
         /*|| runConfiguration instanceof com.intellij.javaee.appServers.run.configuration.CommonStrategy*/) {
             alwaysEnable = true;
         }
@@ -89,7 +94,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
                                @NotNull ExecutionEnvironment executionEnvironment, @NotNull LinkAzureServiceBeforeRunTask linkAzureServiceBeforeRunTask) {
         Map<String, String> linkedEnvMap = new LinkedHashMap<>();
         if (runConfiguration instanceof AbstractRunConfiguration
-                || runConfiguration instanceof SpringBootApplicationRunConfiguration
+                || StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
                 || runConfiguration instanceof WebAppConfiguration) {
             String moduleName = "";
             if (runConfiguration instanceof ModuleBasedConfiguration) {
