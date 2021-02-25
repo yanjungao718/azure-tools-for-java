@@ -49,7 +49,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
         this.username = username;
         this.url = url;
         setTitle(TITLE);
-        JdbcUrlUtils.JdbcUrl jdbcUrl = JdbcUrlUtils.parseUrl(url);
+        JdbcUrl jdbcUrl = JdbcUrl.from(url);
         headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getHostname()));
         testConnectionButton.setEnabled(false);
         testResultLabel.setVisible(false);
@@ -76,11 +76,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (ArrayUtils.isNotEmpty(passwordField.getPassword())) {
-                    testConnectionButton.setEnabled(true);
-                } else {
-                    testConnectionButton.setEnabled(false);
-                }
+                testConnectionButton.setEnabled(ArrayUtils.isNotEmpty(passwordField.getPassword()));
             }
 
         };
