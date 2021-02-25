@@ -27,7 +27,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.psi.impl.YAMLKeyValueImpl;
 
 import java.awt.event.MouseEvent;
 import java.util.Objects;
@@ -60,17 +59,6 @@ public class MySQLLineMarkerProvider implements LineMarkerProvider {
                         return lineMarkerInfo;
                     }
                 }
-            }
-        }
-        if (element instanceof YAMLKeyValueImpl) {
-            if (StringUtils.startsWith(element.getText(), "url: ${AZURE")) {
-                System.out.println(element.getText());
-                LineMarkerInfo lineMarkerInfo = new LineMarkerInfo<>(element, element.getTextRange(),
-                        AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
-                        element2 -> "THis is ...",
-                        new AppMgmtNavigationHandler(null),
-                        GutterIconRenderer.Alignment.LEFT);
-                return lineMarkerInfo;
             }
         }
         return null;
