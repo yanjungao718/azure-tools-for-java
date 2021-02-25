@@ -10,14 +10,13 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
@@ -30,16 +29,16 @@ public class WebAppService {
         return WebAppService.instance;
     }
 
-    @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.SERVICE)
-    public WebApp createWebApp(final WebAppConfig config) {
+    @AzureOperation(name = "webapp.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.SERVICE)
+    public IWebApp createWebApp(final WebAppConfig config) {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);
         final Map<String, String> properties = settings.getTelemetryProperties(null);
         final Operation operation = TelemetryManager.createOperation(WEBAPP, CREATE_WEBAPP);
         try {
             operation.start();
-            operation.trackProperties(properties);
-            return AzureWebAppMvpModel.getInstance().createWebApp(settings);
+            EventUtil.logEvent(EventType.info, operation, properties);
+            return AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(settings);
         } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw e;
@@ -86,8 +85,6 @@ public class WebAppService {
             settings.setEnableDetailedErrorMessage(monitorConfig.isEnableDetailedErrorMessage());
             settings.setEnableFailedRequestTracing(monitorConfig.isEnableFailedRequestTracing());
         }
-        settings.setTargetName(config.getApplication() == null ? null : config.getApplication().toFile().getName());
-        settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
         return settings;
     }
 }
