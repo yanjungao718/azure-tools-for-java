@@ -6,6 +6,7 @@
 package com.microsoft.intellij.runner;
 
 import com.intellij.execution.BeforeRunTaskProvider;
+import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -39,12 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -92,33 +88,44 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     @Override
     public boolean executeTask(@NotNull DataContext dataContext, @NotNull RunConfiguration runConfiguration,
                                @NotNull ExecutionEnvironment executionEnvironment, @NotNull LinkAzureServiceBeforeRunTask linkAzureServiceBeforeRunTask) {
+        String moduleName = this.getModuleName(runConfiguration);
+        if (StringUtils.isBlank(moduleName)) {
+            return true;
+        }
         Map<String, String> linkedEnvMap = new LinkedHashMap<>();
-        if (runConfiguration instanceof AbstractRunConfiguration
-                || StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
-                || runConfiguration instanceof WebAppConfiguration) {
-            String moduleName = "";
-            if (runConfiguration instanceof ModuleBasedConfiguration) {
-                ((ModuleBasedConfiguration<?, ?>) runConfiguration).putUserData(LINK_AZURE_SERVICE, true);
-                // Module module = ((ModuleBasedConfiguration<?, ?>) runConfiguration).getDefaultModule();
-                RunConfigurationModule module = ((ModuleBasedConfiguration<?, ?>) runConfiguration).getConfigurationModule();
-                moduleName = module.getModule().getName();
-                retrieveEnvMap(runConfiguration.getProject(), linkedEnvMap, moduleName);
-                if (MapUtils.isNotEmpty(linkedEnvMap)) {
-                    ((ModuleBasedConfiguration<?, ?>) runConfiguration).putUserData(LINK_AZURE_SERVICE_ENVS, linkedEnvMap);
-                }
-            } else if (runConfiguration instanceof WebAppConfiguration) {
-                moduleName = ((WebAppConfiguration) runConfiguration).getName();
-                moduleName = moduleName.substring(moduleName.indexOf(":") + 1);
-                moduleName = moduleName.substring(moduleName.indexOf(":") + 1);
-                retrieveEnvMap(runConfiguration.getProject(), linkedEnvMap, moduleName);
-                if (MapUtils.isNotEmpty(linkedEnvMap)) {
-                    System.out.println(runConfiguration);
-                    IntelliJWebAppSettingModel model = ((WebAppConfiguration) runConfiguration).getModel();
-                    AzureWebAppMvpModel.getInstance().updateWebAppSettings(model.getSubscriptionId(), model.getWebAppId(), linkedEnvMap, new HashSet<>());
-                }
+        retrieveEnvMap(runConfiguration.getProject(), linkedEnvMap, moduleName);
+        if (MapUtils.isNotEmpty(linkedEnvMap)) {
+            // set envs for remote deploy
+            if (runConfiguration instanceof WebAppConfiguration) {
+                IntelliJWebAppSettingModel model = ((WebAppConfiguration) runConfiguration).getModel();
+                AzureWebAppMvpModel.getInstance().updateWebAppSettings(model.getSubscriptionId(), model.getWebAppId(), linkedEnvMap, new HashSet<>());
+            }
+            // set envs for local run
+            if (runConfiguration instanceof AbstractRunConfiguration
+                    || StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
+                    || runConfiguration instanceof ApplicationConfiguration) {
+                ((ModuleBasedConfiguration<?, ?>) runConfiguration).putUserData(LINK_AZURE_SERVICE_ENVS, linkedEnvMap);
             }
         }
         return true;
+    }
+
+    private String getModuleName(@NotNull RunConfiguration runConfiguration) {
+        if (runConfiguration instanceof WebAppConfiguration) {
+            String name = ((WebAppConfiguration) runConfiguration).getName();
+            name = name.substring(name.indexOf(":") + 1);
+            name = name.substring(name.indexOf(":") + 1);
+            return name;
+        }
+        if (runConfiguration instanceof AbstractRunConfiguration
+                || StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)) {
+            RunConfigurationModule module = ((ModuleBasedConfiguration<?, ?>) runConfiguration).getConfigurationModule();
+            return module.getModule().getName();
+        }
+        if (runConfiguration instanceof ApplicationConfiguration) {
+            return ((ApplicationConfiguration) runConfiguration).getConfigurationModule().getModule().getName();
+        }
+        return null;
     }
 
     private void retrieveEnvMap(Project project, Map<String, String> linkedEnvMap, String moduleName) {
