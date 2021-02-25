@@ -68,8 +68,8 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
         }
         webAppConfiguration.setTargetName(file.getName());
-        IAppService deployTarget = getDeployTargetByConfiguration(processHandler);
-        deployArtifactsToAppService(deployTarget, file, processHandler);
+        final IAppService deployTarget = getDeployTargetByConfiguration(processHandler);
+        AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, file, webAppSettingModel.isDeployToRoot(), processHandler);
         return deployTarget;
     }
 
@@ -148,16 +148,11 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
         }
         if (webAppSettingModel.isCreatingNew()) {
             processHandler.setText(message("webapp.deploy.hint.creatingWebApp"));
-            return AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(webApp, webAppSettingModel);
+            return AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(webAppSettingModel);
         } else {
             processHandler.setText(message("appService.deploy.hint.failed"));
             throw new Exception(message("webapp.deploy.error.noWebApp"));
         }
-    }
-
-    private void deployArtifactsToAppService(final IAppService deployTarget, final File file, final RunProcessHandler processHandler) {
-        // todo: support not deploy to root
-        deployTarget.deploy(file);
     }
 
     @AzureOperation(

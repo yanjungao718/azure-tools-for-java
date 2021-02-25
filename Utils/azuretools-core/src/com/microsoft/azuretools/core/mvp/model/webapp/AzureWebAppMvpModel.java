@@ -4,8 +4,7 @@
  */
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+
 import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.AzureResourceManager;
 import com.azure.resourcemanager.resources.models.ResourceGroup;
@@ -28,6 +27,11 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.entity.WebAppEntity;
+import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
@@ -40,8 +44,10 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.Track2Manager;
+import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.extern.java.Log;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
@@ -80,6 +86,10 @@ public class AzureWebAppMvpModel {
         Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
     private static final List<WebAppUtils.WebContainerMod> JAVA_11_JAR_CONTAINERS = Collections.singletonList(
         WebAppUtils.WebContainerMod.Java_SE_11);
+    private static final String STOP_WEB_APP = "Stopping web app...";
+    private static final String STOP_DEPLOYMENT_SLOT = "Stopping deployment slot...";
+    private static final String DEPLOY_SUCCESS_WEB_APP = "Deploy succeed, restarting web app...";
+    private static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebApps = new ConcurrentHashMap<>();
@@ -928,15 +938,17 @@ public class AzureWebAppMvpModel {
             params = {"$model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
-    public IWebApp createWebAppFromSettingModel(@NotNull IWebApp webApp, @NotNull WebAppSettingModel model) {
+    public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
+        final WebAppEntity webAppEntity = WebAppEntity.builder().name(model.getWebAppName()).resourceGroup(model.getResourceGroup()).build();
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model);
         final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(model);
-        final IWebApp result = webApp.create().withName(model.getWebAppName())
+        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(webAppEntity).create()
+                .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
                 .withRuntime(parseRuntimeFromWebAppSettingModel(model))
                 .commit();
-        updateWebAppDiagnosticConfiguration(webApp, model);
+        updateWebAppDiagnosticConfiguration(result, model);
         return result;
     }
 
@@ -1018,6 +1030,47 @@ public class AzureWebAppMvpModel {
 
     public AzureAppService getAzureAppServiceClient(String subscriptionId) {
         return AzureAppService.auth(Track2Manager.getAzureResourceManager(subscriptionId));
+    }
+
+    @AzureOperation(
+            name = "webapp|artifact.upload",
+            params = {"file.getName()", "$deployTarget.name()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public void deployArtifactsToWebApp(@NotNull final IAppService deployTarget, @NotNull final File file,
+                                        boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
+        if (!(deployTarget instanceof IWebApp || deployTarget instanceof IWebAppDeploymentSlot)) {
+            final String error = "the deployment target is not a valid (deployment slot of) Web App";
+            final String action = "select a valid Web App or deployment slot to deploy the artifact";
+            throw new AzureToolkitRuntimeException(error, action);
+        }
+        // stop target app service
+        String stopMessage = deployTarget instanceof IWebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
+        progressIndicator.setText(stopMessage);
+        deployTarget.stop();
+
+        final DeployType deployType = getDeployTypeByWebContainer(deployTarget.getRuntime().getWebContainer());
+        // java se runtime will always deploy to root
+        if (isDeployToRoot || deployTarget.getRuntime().getWebContainer() == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE) {
+            deployTarget.deploy(deployType, file);
+        } else {
+            final String webappPath = String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
+            deployTarget.deploy(deployType, file, webappPath);
+        }
+
+        String successMessage = deployTarget instanceof IWebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
+        progressIndicator.setText(successMessage);
+        deployTarget.start();
+    }
+
+    private DeployType getDeployTypeByWebContainer(com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer) {
+        if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE) {
+            return DeployType.JAR;
+        }
+        if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72) {
+            return DeployType.EAR;
+        }
+        return DeployType.JAR;
     }
 
     /**
