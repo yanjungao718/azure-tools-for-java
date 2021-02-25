@@ -54,6 +54,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private boolean required;
     private T value;
     private boolean valueNotSet = true;
+    @Setter
+    private boolean forceDisable;
 
     public AzureComboBox() {
         this(true);
@@ -180,7 +182,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 this.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
             } else {
-                this.setEnabled(true);
+                this.setEnabled(forceDisable ? false : true);
                 this.setEditor(this.inputEditor);
             }
         });
