@@ -104,6 +104,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
             if (runConfiguration instanceof AbstractRunConfiguration
                     || StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
                     || runConfiguration instanceof ApplicationConfiguration) {
+                ((ModuleBasedConfiguration<?, ?>) runConfiguration).putUserData(LINK_AZURE_SERVICE, true);
                 ((ModuleBasedConfiguration<?, ?>) runConfiguration).putUserData(LINK_AZURE_SERVICE_ENVS, linkedEnvMap);
             }
         }
