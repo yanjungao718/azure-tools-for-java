@@ -5,11 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +26,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PasswordDialog extends AzureDialog<PasswordConfig> implements AzureForm<PasswordConfig> {
 
@@ -86,8 +90,23 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
         String password = String.valueOf(passwordField.getPassword());
-        TestConnectionUtils.testConnection(url, username, password, testResultLabel,
-                testResultButton, testResultTextPane);
+        AtomicReference<MySQLConnectionUtils.ConnectResult> connectResultRef = null;
+        Runnable runnable = () -> {
+            connectResultRef.set(MySQLConnectionUtils.connectWithPing(url, username, password));
+        };
+        JdbcUrl jdbcUrl = JdbcUrl.from(url);
+        AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHostname()), false, runnable);
+        AzureTaskManager.getInstance().runAndWait(task);
+        // show result info
+        testResultLabel.setVisible(true);
+        testResultButton.setVisible(true);
+        MySQLConnectionUtils.ConnectResult connectResult = connectResultRef.get();
+        testResultTextPane.setText(connectResult.getMessage());
+        if (connectResult.isConnected()) {
+            testResultLabel.setIcon(AllIcons.General.InspectionsOK);
+        } else {
+            testResultLabel.setIcon(AllIcons.General.BalloonError);
+        }
         testConnectionButton.setEnabled(true);
     }
 
