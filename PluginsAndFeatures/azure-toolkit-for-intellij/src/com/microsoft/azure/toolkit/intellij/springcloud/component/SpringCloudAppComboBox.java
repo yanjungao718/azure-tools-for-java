@@ -84,9 +84,4 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         });
         dialog.show();
     }
-
-    @Override
-    protected String label() {
-        return "Spring Cloud App";
-    }
 }

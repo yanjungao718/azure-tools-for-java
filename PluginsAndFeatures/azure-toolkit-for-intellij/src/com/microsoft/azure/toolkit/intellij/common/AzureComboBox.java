@@ -36,10 +36,7 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
 import java.awt.event.ItemEvent;
 import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -57,6 +54,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private boolean required;
     private Object value;
     private boolean valueNotSet = true;
+    private String label;
 
     public AzureComboBox() {
         this(true);
@@ -356,8 +354,16 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    protected String label() {
-        return this.getClass().getSimpleName();
+    public void setLabel(final String label){
+        this.label = label;
+    }
+
+    public String getLabel(){
+        return Optional.ofNullable(this.label).orElse("");
+    }
+
+    private String label() {
+        return Optional.ofNullable(this.label).orElse(this.getClass().getSimpleName());
     }
 
     public static class ItemReference<T> {
@@ -372,6 +378,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
 
         public boolean is(Object obj) {
+            if (Objects.isNull(obj)) {
+                return false;
+            }
             return this.predicate.test((T) obj);
         }
     }

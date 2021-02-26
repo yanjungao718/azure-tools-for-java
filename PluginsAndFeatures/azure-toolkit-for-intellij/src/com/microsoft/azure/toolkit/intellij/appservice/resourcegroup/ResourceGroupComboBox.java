@@ -89,9 +89,4 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
         });
         dialog.show();
     }
-
-    @Override
-    protected String label() {
-        return "Resource Group";
-    }
 }
