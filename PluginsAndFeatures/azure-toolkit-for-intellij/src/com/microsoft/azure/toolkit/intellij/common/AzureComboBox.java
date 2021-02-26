@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
@@ -35,11 +36,10 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
 import java.awt.event.ItemEvent;
 import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -52,10 +52,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Getter
     @Setter
     private boolean required;
-    private T value;
+    private Object value;
     private boolean valueNotSet = true;
     @Setter
     private boolean forceDisable;
+    private String label;
 
     public AzureComboBox() {
         this(true);
@@ -110,18 +111,27 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refreshValue();
     }
 
+    public void setValue(final ItemReference<T> val) {
+        this.valueNotSet = false;
+        this.value = val;
+        this.refreshValue();
+    }
+
     private void refreshValue() {
         if (Objects.equals(this.value, this.getSelectedItem())) {
             return;
         }
         final List<T> items = this.getItems();
+        if (!this.valueNotSet && this.value instanceof AzureComboBox.ItemReference) {
+            items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
+        }
         if (this.valueNotSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
         } else if (this.itemContains(items, value)) {
             super.setSelectedItem(this.value);
         } else if (value instanceof Draft) {
             // todo: unify model for custom created resource
-            super.addItem(value);
+            super.addItem((T) value);
             super.setSelectedItem(value);
         } else {
             super.setSelectedItem(null);
@@ -303,7 +313,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = AzureComboBox.this.getItems();
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 
@@ -353,7 +363,34 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    protected String label() {
-        return this.getClass().getSimpleName();
+    public void setLabel(final String label){
+        this.label = label;
+    }
+
+    public String getLabel(){
+        return Optional.ofNullable(this.label).orElse("");
+    }
+
+    private String label() {
+        return Optional.ofNullable(this.label).orElse(this.getClass().getSimpleName());
+    }
+
+    public static class ItemReference<T> {
+        private final Predicate<? super T> predicate;
+
+        public ItemReference(@Nonnull Predicate<? super T> predicate) {
+            this.predicate = predicate;
+        }
+
+        public ItemReference(@Nonnull Object val, Function<T, ?> mapper) {
+            this.predicate = t -> Objects.equals(val, mapper.apply(t));
+        }
+
+        public boolean is(Object obj) {
+            if (Objects.isNull(obj)) {
+                return false;
+            }
+            return this.predicate.test((T) obj);
+        }
     }
 }
