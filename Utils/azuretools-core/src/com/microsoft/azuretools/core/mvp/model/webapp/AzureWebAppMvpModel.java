@@ -1070,7 +1070,7 @@ public class AzureWebAppMvpModel {
         if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72) {
             return DeployType.EAR;
         }
-        return DeployType.JAR;
+        return DeployType.WAR;
     }
 
     /**
