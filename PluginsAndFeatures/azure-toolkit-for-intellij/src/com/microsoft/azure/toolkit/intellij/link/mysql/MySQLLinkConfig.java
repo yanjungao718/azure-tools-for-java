@@ -20,7 +20,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@ToString(exclude = {"password"})
+@ToString
 public class MySQLLinkConfig extends BaseLinkConfig {
 
     // related to Azure MySQL
@@ -28,9 +28,7 @@ public class MySQLLinkConfig extends BaseLinkConfig {
     private Server server;
     private DatabaseInner database;
     private String username;
-    private char[] password;
-    // for persistence
-    private PasswordSaveType passwordSaveType;
+    private PasswordConfig passwordConfig;
     // ext
     private String url;
 
