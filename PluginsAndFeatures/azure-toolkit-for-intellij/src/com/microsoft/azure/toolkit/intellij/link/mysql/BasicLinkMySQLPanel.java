@@ -67,7 +67,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     }
 
     private void init() {
-        Dimension lastColumnSize = new Dimension(106, 38);
+        Dimension lastColumnSize = new Dimension(106, 30);
         passwordSaveComboBox.setPreferredSize(lastColumnSize);
         passwordSaveComboBox.setMaximumSize(lastColumnSize);
         passwordSaveComboBox.setSize(lastColumnSize);

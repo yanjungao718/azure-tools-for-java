@@ -89,10 +89,11 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLServiceP
                 }
                 if (super.getServices().stream().filter(e -> StringUtils.equals(e.getId(), id)).count() <= 0L) {
                     MySQLServicePO service = new MySQLServicePO.Builder()
+                            .id(id)
                             .url(url)
                             .username(username)
                             .passwordSave(PasswordSaveType.valueOf(passwordSave))
-                            .build(id);
+                            .build();
                     super.getServices().add(service);
                 }
             }
