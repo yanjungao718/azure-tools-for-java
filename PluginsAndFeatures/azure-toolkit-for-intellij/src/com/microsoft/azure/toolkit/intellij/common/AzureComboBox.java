@@ -127,7 +127,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
         if (this.valueNotSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
-        } else if (this.itemContains(items, value)) {
+        } else if (items.contains(value)) {
             super.setSelectedItem(this.value);
         } else if (value instanceof Draft) {
             // todo: unify model for custom created resource
@@ -136,13 +136,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         } else {
             super.setSelectedItem(null);
         }
-    }
-
-    protected boolean itemContains(List<T> items, T value) {
-        if (CollectionUtils.isEmpty(items) || value == null) {
-            return false;
-        }
-        return items.contains(value);
     }
 
     @Override

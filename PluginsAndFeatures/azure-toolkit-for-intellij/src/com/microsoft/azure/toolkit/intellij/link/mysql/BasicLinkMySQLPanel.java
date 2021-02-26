@@ -5,11 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ModuleComboBox;
 import com.microsoft.azure.toolkit.intellij.link.LinkComposite;
@@ -29,6 +31,7 @@ import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Getter
@@ -75,23 +78,26 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         envPrefixTextField.setMaximumSize(lastColumnSize);
         envPrefixTextField.setSize(lastColumnSize);
         T config = supplier.get();
-        if (Objects.nonNull(config.getService().getSubscription())) {
-            subscriptionComboBox.setValue(config.getService().getSubscription());
-            subscriptionComboBox.setForceDisable(true);
-            subscriptionComboBox.setEditable(false);
-        }
-        if (Objects.nonNull(config.getService().getServer())) {
-            serverComboBox.setValue(config.getService().getServer());
-            serverComboBox.setForceDisable(true);
-            serverComboBox.setEditable(false);
-        }
+        Optional.ofNullable(config.getService().getSubscription())
+                .ifPresent((subscription -> {
+                    this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscription.subscriptionId(), Subscription::subscriptionId));
+                    subscriptionComboBox.setForceDisable(true);
+                    subscriptionComboBox.setEditable(false);
+                }));
+        Optional.ofNullable(config.getService().getServer())
+                .ifPresent((server -> {
+                    this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(server.fullyQualifiedDomainName(), Server::fullyQualifiedDomainName));
+                    serverComboBox.setForceDisable(true);
+                    serverComboBox.setEditable(false);
+                }));
+        Optional.ofNullable(config.getModule().getModule())
+                .ifPresent((module -> {
+                    this.moduleComboBox.setValue(new AzureComboBox.ItemReference<>(module.getName(), Module::getName));
+                    moduleComboBox.setForceDisable(true);
+                    moduleComboBox.setEditable(false);
+                }));
         if (Objects.nonNull(config.getService().getPasswordSaveType())) {
             passwordSaveComboBox.setValue(config.getService().getPasswordSaveType());
-        }
-        if (Objects.nonNull(config.getModule().getModule())) {
-            moduleComboBox.setValue(config.getModule().getModule());
-            moduleComboBox.setForceDisable(true);
-            moduleComboBox.setEditable(false);
         }
         testResultLabel.setVisible(false);
         testResultButton.setVisible(false);

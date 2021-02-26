@@ -64,16 +64,4 @@ public class ServerComboBox extends AzureComboBox<Server> {
         return true;
     }
 
-    @Override
-    protected boolean itemContains(List<Server> items, Server value) {
-        if (CollectionUtils.isEmpty(items) || value == null) {
-            return false;
-        }
-        for (Server server : items) {
-            if (StringUtils.equals(server.fullyQualifiedDomainName(), value.fullyQualifiedDomainName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
