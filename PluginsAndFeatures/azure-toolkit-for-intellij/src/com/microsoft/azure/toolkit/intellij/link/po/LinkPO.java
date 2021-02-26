@@ -6,23 +6,18 @@
 package com.microsoft.azure.toolkit.intellij.link.po;
 
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode(exclude = {"serviceId"})
+@AllArgsConstructor
 public class LinkPO {
 
     private String serviceId;
     private String moduleId;
     private LinkType type;
     private String envPrefix;
-
-    public LinkPO(String serviceId, String moduleId, LinkType type, String envPrefix) {
-        this.serviceId = serviceId;
-        this.moduleId = moduleId;
-        this.type = type;
-        this.envPrefix = envPrefix;
-    }
 
 }

@@ -56,8 +56,5 @@ public class MySQLServicePO extends BaseServicePO {
             return new MySQLServicePO(id, url, username, passwordSave);
         }
 
-        public MySQLServicePO build(String id) {
-            return new MySQLServicePO(id, url, username, passwordSave);
-        }
     }
 }

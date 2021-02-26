@@ -59,16 +59,16 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_PROJECT: sourceId is the id of the service, and targetId is the id of project or module.
      * For type = SERVICE_TO_SERVICE: sourceId is the id of the first service, and targetId is the id of the second service.
      */
-    public List<LinkPO> getLinkersBySourceId(String sourceId) {
-        return linkers.stream().filter(e -> StringUtils.equals(sourceId, e.getServiceId())).collect(Collectors.toList());
+    public List<LinkPO> getLinkersByServiceId(String serviceId) {
+        return linkers.stream().filter(e -> StringUtils.equals(serviceId, e.getServiceId())).collect(Collectors.toList());
     }
 
     /**
      * For type = SERVICE_TO_PROJECT: targetId is the id of the service, and targetId is the id of project or module.
      * For type = SERVICE_TO_SERVICE: targetId is the id of the first service, and targetId is the id of the second service.
      */
-    public List<LinkPO> getLinkersByTargetId(String targetId) {
-        return linkers.stream().filter(e -> StringUtils.equals(targetId, e.getModuleId())).collect(Collectors.toList());
+    public List<LinkPO> getLinkersByModuleId(String moduleId) {
+        return linkers.stream().filter(e -> StringUtils.equals(moduleId, e.getModuleId())).collect(Collectors.toList());
     }
 
     public static class AzureLinkerStorageStateComponent extends AzureLinkStorage {
