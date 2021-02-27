@@ -32,7 +32,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         webAppCreationDialog.setDeploymentVisible(false);
         webAppCreationDialog.setOkActionListener(webAppConfig -> {
             final WebAppComboBoxModel newModel =
-                    new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
+                new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
             newModel.setNewCreateResource(true);
             WebAppComboBox.this.addItem(newModel);
             WebAppComboBox.this.setSelectedItem(newModel);
@@ -50,9 +50,9 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
     protected List<WebAppComboBoxModel> loadItems() throws Exception {
         final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
         return webApps.stream()
-                      .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-                      .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-                      .map(webAppResourceEx -> new WebAppComboBoxModel(webAppResourceEx))
-                      .collect(Collectors.toList());
+            .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
+            .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
+            .map(WebAppComboBoxModel::new)
+            .collect(Collectors.toList());
     }
 }
