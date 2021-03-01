@@ -36,7 +36,7 @@ public class AzureLinkStorage {
         return ServiceManager.getService(project, AzureLinkStorage.Prj.class);
     }
 
-    public boolean addLinker(LinkPO link) {
+    public synchronized boolean addLinker(LinkPO link) {
         Iterator<LinkPO> iterator = links.iterator();
         while (iterator.hasNext()) {
             LinkPO element = iterator.next();
