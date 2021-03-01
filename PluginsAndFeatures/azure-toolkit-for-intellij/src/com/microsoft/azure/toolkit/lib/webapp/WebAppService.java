@@ -5,13 +5,14 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -58,15 +59,8 @@ public class WebAppService {
         settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().id()));
         settings.setResourceGroup(config.getResourceGroup().name());
         settings.setWebAppName(config.getName());
-        settings.setOS(config.getPlatform().getOs());
         settings.setRegion(config.getRegion().name());
-        if (settings.getOS() == OperatingSystem.LINUX) {
-            settings.setStack(config.getPlatform().getStackOrWebContainer());
-            settings.setVersion(config.getPlatform().getStackVersionOrJavaVersion());
-        } else if (settings.getOS() == OperatingSystem.WINDOWS) {
-            settings.setWebContainer(config.getPlatform().getStackOrWebContainer());
-            settings.setJdkVersion(JavaVersion.fromString(config.getPlatform().getStackVersionOrJavaVersion()));
-        }
+        settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
         // creating if id is empty
         settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().id()));
         if (settings.isCreatingAppServicePlan()) {
@@ -78,7 +72,8 @@ public class WebAppService {
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
             settings.setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
-            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel());
+            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel() == null ? null :
+                                            monitorConfig.getApplicationLogLevel().toString());
             settings.setEnableWebServerLogging(monitorConfig.isEnableWebServerLogging());
             settings.setWebServerLogQuota(monitorConfig.getWebServerLogQuota());
             settings.setWebServerRetentionPeriod(monitorConfig.getWebServerRetentionPeriod());
@@ -86,5 +81,17 @@ public class WebAppService {
             settings.setEnableFailedRequestTracing(monitorConfig.isEnableFailedRequestTracing());
         }
         return settings;
+    }
+
+    private static Runtime getRuntimeFromWebAppConfig(@NotNull final Platform platform) {
+        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem operatingSystem =
+            com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(platform.getOs().name());
+        if (operatingSystem == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
+            return Runtime.getRuntimeFromLinuxFxVersion(String.join(" ", platform.getStackOrWebContainer(), platform.getStackVersionOrJavaVersion()));
+        }
+        final WebContainer webContainer = WebContainer.fromString(platform.getStackOrWebContainer());
+        final com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion javaVersion =
+            com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion.fromString(platform.getStackVersionOrJavaVersion());
+        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
     }
 }
