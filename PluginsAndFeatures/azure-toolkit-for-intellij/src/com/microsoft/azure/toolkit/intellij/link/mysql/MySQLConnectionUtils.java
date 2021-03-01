@@ -25,16 +25,16 @@ public class MySQLConnectionUtils {
 
     public static ConnectResult connectWithPing(String url, String username, String password) {
         boolean connected = false;
-        StringBuilder messageBuilder = new StringBuilder();
+        String errorMessage = null;
         Long pingCost = null;
         String serverVersion = null;
         // refresh property
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            long start = System.currentTimeMillis();
             Connection connection = DriverManager.getConnection(url, username, password);
             connected = true;
             Statement statement = connection.createStatement();
-            long start = System.currentTimeMillis();
             ResultSet resultSet = statement.executeQuery("select 'hi'");
             if (resultSet.next()) {
                 String result = resultSet.getString(1);
@@ -42,14 +42,10 @@ public class MySQLConnectionUtils {
             }
             pingCost = System.currentTimeMillis() - start;
             serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
-            messageBuilder.append("Connected successfully.").append(System.lineSeparator());
-            messageBuilder.append("MySQL version: ").append(serverVersion).append(System.lineSeparator());
-            messageBuilder.append("Ping cost: ").append(pingCost).append("ms");
         } catch (ClassNotFoundException | SQLException exception) {
-            messageBuilder.append("Failed to connect with above parameters.").append(System.lineSeparator());
-            messageBuilder.append("Message: ").append(exception.getMessage());
+            errorMessage = exception.getMessage();
         }
-        return new ConnectResult(connected, messageBuilder.toString(), pingCost, serverVersion);
+        return new ConnectResult(connected, errorMessage, pingCost, serverVersion);
     }
 
     @Getter
