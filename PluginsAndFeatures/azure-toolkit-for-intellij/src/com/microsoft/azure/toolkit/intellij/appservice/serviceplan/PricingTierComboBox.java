@@ -43,9 +43,4 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
     protected List<? extends PricingTier> loadItems() throws Exception {
         return pricingTierList;
     }
-
-    @Override
-    protected String label() {
-        return "Pricing Tier";
-    }
 }
