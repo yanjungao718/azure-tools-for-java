@@ -56,7 +56,7 @@ public class MySQLCompletionContributor extends CompletionContributor {
         @Override
         public void handleInsert(@NotNull InsertionContext insertionContext, @NotNull LookupElement lookupElement) {
             Module module = ModuleUtil.findModuleForFile(insertionContext.getFile().getVirtualFile(), insertionContext.getProject());
-            List<LinkPO> moduleLinkerList = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkersByTargetId(module.getName())
+            List<LinkPO> moduleLinkerList = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkersByModuleId(module.getName())
                     .stream()
                     .filter(e -> LinkType.SERVICE_WITH_MODULE.equals(e.getType()))
                     .collect(Collectors.toList());
