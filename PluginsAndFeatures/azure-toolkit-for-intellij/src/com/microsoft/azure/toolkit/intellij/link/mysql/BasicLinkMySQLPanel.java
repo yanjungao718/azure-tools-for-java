@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @Getter
@@ -54,8 +53,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     private JButton testConnectionButton;
     private ModuleComboBox moduleComboBox;
     private JTextPane testResultTextPane;
-    private JButton testResultButton;
-    private JLabel testResultLabel;
+    private TestConnectionActionPanel testConnectionActionPanel;
     private JTextField portTextField;
 
     private final Supplier<T> supplier;
@@ -101,8 +99,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
                     moduleComboBox.setForceDisable(true);
                     moduleComboBox.setEditable(false);
                 }));
-        testResultLabel.setVisible(false);
-        testResultButton.setVisible(false);
+        testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
     }
@@ -115,7 +112,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         this.envPrefixTextField.addFocusListener(this.onEnvPrefixTextFieldChanged());
         this.urlTextField.addFocusListener(this.onUrlTextFieldChanged());
         this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
-        this.testResultButton.addActionListener(this::onCopyButtonClicked);
+        this.testConnectionActionPanel.getCopyButton().addActionListener(this::onCopyButtonClicked);
     }
 
     private void onTestConnectionButtonClicked(ActionEvent e) {
@@ -123,24 +120,21 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         String url = urlTextField.getText();
         String username = usernameComboBox.getValue();
         String password = String.valueOf(inputPasswordField.getPassword());
-        AtomicReference<MySQLConnectionUtils.ConnectResult> connectResultRef = null;
         Runnable runnable = () -> {
-            connectResultRef.set(MySQLConnectionUtils.connectWithPing(url, username, password));
+            MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(url, username, password);
+            // show result info
+            testConnectionActionPanel.setVisible(true);
+            testResultTextPane.setText(getConnectResultMessage(connectResult));
+            if (connectResult.isConnected()) {
+                testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.InspectionsOK);
+            } else {
+                testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.BalloonError);
+            }
+            testConnectionButton.setEnabled(true);
         };
         JdbcUrl jdbcUrl = JdbcUrl.from(url);
         AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHostname()), false, runnable);
-        AzureTaskManager.getInstance().runAndWait(task);
-        // show result info
-        testResultLabel.setVisible(true);
-        testResultButton.setVisible(true);
-        MySQLConnectionUtils.ConnectResult connectResult = connectResultRef.get();
-        testResultTextPane.setText(getConnectResultMessage(connectResult));
-        if (connectResult.isConnected()) {
-            testResultLabel.setIcon(AllIcons.General.InspectionsOK);
-        } else {
-            testResultLabel.setIcon(AllIcons.General.BalloonError);
-        }
-        testConnectionButton.setEnabled(true);
+        AzureTaskManager.getInstance().runInBackground(task);
     }
 
     private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {

@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.link.mysql;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -27,7 +28,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class PasswordDialog extends AzureDialog<PasswordConfig> implements AzureForm<PasswordConfig> {
 
@@ -38,9 +38,8 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private JLabel headerIconLabel;
     private JTextPane headerTextPane;
     private JTextPane testResultTextPane;
-    private JLabel testResultLabel;
     private JButton testConnectionButton;
-    private JButton testResultButton;
+    private TestConnectionActionPanel testConnectionActionPanel;
     private JPasswordField passwordField;
     private PasswordSaveComboBox passwordSaveComboBox;
 
@@ -57,11 +56,10 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
         JdbcUrl jdbcUrl = JdbcUrl.from(url);
         headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getHostname()));
         testConnectionButton.setEnabled(false);
-        testResultLabel.setVisible(false);
-        testResultButton.setVisible(false);
+        testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testResultTextPane.setText(StringUtils.EMPTY);
-        Dimension lastColumnSize = new Dimension(106, 38);
+        Dimension lastColumnSize = new Dimension(106, 30);
         passwordSaveComboBox.setPreferredSize(lastColumnSize);
         passwordSaveComboBox.setMaximumSize(lastColumnSize);
         passwordSaveComboBox.setSize(lastColumnSize);
@@ -72,7 +70,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private void initListener() {
         this.passwordField.addKeyListener(this.onInputPasswordFieldChanged());
         this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
-        this.testResultButton.addActionListener(this::onCopyButtonClicked);
+        this.testConnectionActionPanel.getCopyButton().addActionListener(this::onCopyButtonClicked);
 
     }
 
@@ -88,27 +86,32 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
         return listener;
     }
 
+    @Override
+    public void doCancelAction() {
+        System.out.println("do cancel......");
+        super.doCancelAction();
+    }
+
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
+        testConnectionButton.setIcon(new AnimatedIcon.Default());
+        testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         String password = String.valueOf(passwordField.getPassword());
-        AtomicReference<MySQLConnectionUtils.ConnectResult> connectResultRef = new AtomicReference<>();
         Runnable runnable = () -> {
-            connectResultRef.set(MySQLConnectionUtils.connectWithPing(url, username, password));
+            MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(url, username, password);
+            testConnectionActionPanel.setVisible(true);
+            testResultTextPane.setText(getConnectResultMessage(connectResult));
+            if (connectResult.isConnected()) {
+                testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.InspectionsOK);
+            } else {
+                testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.BalloonError);
+            }
+            testConnectionButton.setIcon(null);
+            testConnectionButton.setEnabled(true);
         };
         JdbcUrl jdbcUrl = JdbcUrl.from(url);
         AzureTask task = new AzureTask(null, AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getHostname()), false, runnable);
-        AzureTaskManager.getInstance().runAndWait(task);
-        // show result info
-        testResultLabel.setVisible(true);
-        testResultButton.setVisible(true);
-        MySQLConnectionUtils.ConnectResult connectResult = connectResultRef.get();
-        testResultTextPane.setText(getConnectResultMessage(connectResult));
-        if (connectResult.isConnected()) {
-            testResultLabel.setIcon(AllIcons.General.InspectionsOK);
-        } else {
-            testResultLabel.setIcon(AllIcons.General.BalloonError);
-        }
-        testConnectionButton.setEnabled(true);
+        AzureTaskManager.getInstance().runInBackground(task);
     }
 
     private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {

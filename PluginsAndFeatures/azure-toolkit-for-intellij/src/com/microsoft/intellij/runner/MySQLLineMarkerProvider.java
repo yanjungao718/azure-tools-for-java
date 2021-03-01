@@ -38,7 +38,7 @@ public class MySQLLineMarkerProvider implements LineMarkerProvider {
     private static final Pattern MYSQL_PROPERTY_URL_VALUE = Pattern.compile("..");
 
     @Override
-    public LineMarkerInBfo getLineMarkerInfo(@NotNull PsiElement element) {
+    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement element) {
         if (element instanceof PropertyImpl) {
             PropertyImpl property = (PropertyImpl) element;
             String value = property.getValue();
