@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class WebAppRunState extends AzureRunProfileState<IAppService> {
@@ -201,7 +202,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
         // todo: add flag to indicate create new slot or not
         if (app instanceof DeploymentSlot) {
             webAppSettingModel.setSlotName(app.name());
-            webAppSettingModel.setNewSlotConfigurationSource(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+            webAppSettingModel.setNewSlotConfigurationSource(DO_NOT_CLONE_SLOT_CONFIGURATION);
             webAppSettingModel.setNewSlotName("");
             webAppSettingModel.setWebAppId(((DeploymentSlot) app).parent().id());
         } else {

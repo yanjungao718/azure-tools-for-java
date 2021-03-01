@@ -34,6 +34,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -77,6 +78,7 @@ public class AzureWebAppMvpModel {
 
     private static final Logger logger = Logger.getLogger(AzureWebAppMvpModel.class.getName());
 
+    public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
     private final Map<String, List<IWebApp>> webappsCache;
@@ -1011,9 +1013,16 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
+        String configurationSource = model.getNewSlotConfigurationSource();
+        if (StringUtils.equalsIgnoreCase(configurationSource, webApp.name())) {
+            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_PARENT;
+        }
+        if (StringUtils.equalsIgnoreCase(configurationSource, DO_NOT_CLONE_SLOT_CONFIGURATION)) {
+            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_NEW;
+        }
         return webApp.deploymentSlot(model.getSlotName()).create()
-                .withName(model.getSlotName())
-                .withConfigurationSource(model.getNewSlotConfigurationSource()).commit();
+                .withName(model.getNewSlotName())
+                .withConfigurationSource(configurationSource).commit();
     }
 
     public AzureAppService getAzureAppServiceClient(String subscriptionId) {
