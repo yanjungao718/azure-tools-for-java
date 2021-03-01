@@ -19,7 +19,7 @@ public abstract class AzureServiceStorage<T extends BaseServicePO> {
 
     private Set<T> services = new LinkedHashSet<>();
 
-    public boolean addService(T service) {
+    public synchronized boolean addService(T service) {
         Iterator<T> iterator = services.iterator();
         while (iterator.hasNext()) {
             T element = iterator.next();
