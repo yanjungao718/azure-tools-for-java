@@ -5,17 +5,22 @@
 
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ModuleComboBox;
 import com.microsoft.azure.toolkit.intellij.link.LinkComposite;
 import com.microsoft.azure.toolkit.intellij.link.ModuleLinkConfig;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.ui.components.AzureWizardStep;
 import lombok.Getter;
@@ -29,6 +34,8 @@ import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @Getter
@@ -75,23 +82,27 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         envPrefixTextField.setMaximumSize(lastColumnSize);
         envPrefixTextField.setSize(lastColumnSize);
         T config = supplier.get();
-        if (Objects.nonNull(config.getService().getSubscription())) {
-            subscriptionComboBox.setValue(config.getService().getSubscription());
-            subscriptionComboBox.setForceDisable(true);
-            subscriptionComboBox.setEditable(false);
-        }
-        if (Objects.nonNull(config.getService().getServer())) {
-            serverComboBox.setValue(config.getService().getServer());
-            serverComboBox.setForceDisable(true);
-            serverComboBox.setEditable(false);
-        }
-        if (Objects.nonNull(config.getService().getPasswordSaveType())) {
-            passwordSaveComboBox.setValue(config.getService().getPasswordSaveType());
-        }
-        if (Objects.nonNull(config.getModule().getModule())) {
-            moduleComboBox.setValue(config.getModule().getModule());
-            moduleComboBox.setForceDisable(true);
-            moduleComboBox.setEditable(false);
+        Optional.ofNullable(config.getService().getSubscription())
+                .ifPresent((subscription -> {
+                    this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscription.subscriptionId(), Subscription::subscriptionId));
+                    subscriptionComboBox.setForceDisable(true);
+                    subscriptionComboBox.setEditable(false);
+                }));
+        Optional.ofNullable(config.getService().getServer())
+                .ifPresent((server -> {
+                    this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(server.fullyQualifiedDomainName(), Server::fullyQualifiedDomainName));
+                    serverComboBox.setForceDisable(true);
+                    serverComboBox.setEditable(false);
+                }));
+        Optional.ofNullable(config.getModule().getModule())
+                .ifPresent((module -> {
+                    this.moduleComboBox.setValue(new AzureComboBox.ItemReference<>(module.getName(), Module::getName));
+                    moduleComboBox.setForceDisable(true);
+                    moduleComboBox.setEditable(false);
+                }));
+        if (Objects.nonNull(config.getService().getPasswordConfig())
+                && Objects.nonNull(config.getService().getPasswordConfig().getPasswordSaveType())) {
+            passwordSaveComboBox.setValue(config.getService().getPasswordConfig().getPasswordSaveType());
         }
         testResultLabel.setVisible(false);
         testResultButton.setVisible(false);
@@ -115,9 +126,37 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         String url = urlTextField.getText();
         String username = usernameComboBox.getValue();
         String password = String.valueOf(inputPasswordField.getPassword());
-        TestConnectionUtils.testConnection(url, username, password, testResultLabel,
-                testResultButton, testResultTextPane);
+        AtomicReference<MySQLConnectionUtils.ConnectResult> connectResultRef = null;
+        Runnable runnable = () -> {
+            connectResultRef.set(MySQLConnectionUtils.connectWithPing(url, username, password));
+        };
+        JdbcUrl jdbcUrl = JdbcUrl.from(url);
+        AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHostname()), false, runnable);
+        AzureTaskManager.getInstance().runAndWait(task);
+        // show result info
+        testResultLabel.setVisible(true);
+        testResultButton.setVisible(true);
+        MySQLConnectionUtils.ConnectResult connectResult = connectResultRef.get();
+        testResultTextPane.setText(getConnectResultMessage(connectResult));
+        if (connectResult.isConnected()) {
+            testResultLabel.setIcon(AllIcons.General.InspectionsOK);
+        } else {
+            testResultLabel.setIcon(AllIcons.General.BalloonError);
+        }
         testConnectionButton.setEnabled(true);
+    }
+
+    private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {
+        StringBuilder messageBuilder = new StringBuilder();
+        if (result.isConnected()) {
+            messageBuilder.append("Connected successfully.").append(System.lineSeparator());
+            messageBuilder.append("MySQL version: ").append(result.getServerVersion()).append(System.lineSeparator());
+            messageBuilder.append("Ping cost: ").append(result.getPingCost()).append("ms");
+        } else {
+            messageBuilder.append("Failed to connect with above parameters.").append(System.lineSeparator());
+            messageBuilder.append("Message: ").append(result.getMessage());
+        }
+        return messageBuilder.toString();
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
@@ -210,14 +249,16 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         source.setServer(serverComboBox.getValue());
         source.setDatabase(databaseComboBox.getValue());
         source.setUsername(usernameComboBox.getValue());
-        source.setPassword(inputPasswordField.getPassword());
-        source.setPasswordSaveType(passwordSaveComboBox.getValue());
+        PasswordConfig passwordConfig = Objects.nonNull(source.getPasswordConfig()) ? source.getPasswordConfig() : new PasswordConfig();
+        passwordConfig.setPassword(inputPasswordField.getPassword());
+        passwordConfig.setPasswordSaveType(passwordSaveComboBox.getValue());
+        source.setPasswordConfig(passwordConfig);
         source.setUrl(urlTextField.getText());
         source.setId(serverComboBox.getValue().id() + "#" + databaseComboBox.getValue().name());
         ModuleLinkConfig target = config.getModule();
         target.setModule(moduleComboBox.getValue());
         config.setEnvPrefix(envPrefixTextField.getText());
-        config.setId(serverComboBox.getValue().id());
+        // config.setId(serverComboBox.getValue().id());
         return config;
     }
 
@@ -228,8 +269,10 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         this.serverComboBox.setValue(source.getServer());
         this.databaseComboBox.setValue(source.getDatabase());
         this.usernameComboBox.setValue(source.getUsername());
-        this.inputPasswordField.setText(String.valueOf(source.getPassword()));
-        this.passwordSaveComboBox.setValue(source.getPasswordSaveType());
+        if (Objects.nonNull(source.getPasswordConfig())) {
+            this.inputPasswordField.setText(String.valueOf(source.getPasswordConfig().getPassword()));
+            this.passwordSaveComboBox.setValue(source.getPasswordConfig().getPasswordSaveType());
+        }
         ModuleLinkConfig target = data.getModule();
         this.moduleComboBox.setValue(target.getModule());
         this.envPrefixTextField.setText(data.getEnvPrefix());
