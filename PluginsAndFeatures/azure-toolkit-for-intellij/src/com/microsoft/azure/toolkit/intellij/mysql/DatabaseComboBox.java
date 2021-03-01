@@ -59,9 +59,4 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
     public boolean isRequired() {
         return true;
     }
-
-    @Override
-    protected String label() {
-        return "MySQL Database Sever";
-    }
 }

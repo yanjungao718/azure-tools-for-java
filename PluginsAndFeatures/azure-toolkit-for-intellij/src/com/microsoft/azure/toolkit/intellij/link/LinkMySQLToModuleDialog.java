@@ -12,8 +12,8 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.BasicLinkMySQLPanel;
+import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLLinkConfig;
-import com.microsoft.azure.toolkit.intellij.link.mysql.TestConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.ModulePO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
@@ -84,9 +84,9 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLink
             MySQLServicePO mysqlPO = createMySQLPO(linker.getService());
             LinkPO linkerPO = new LinkPO(mysqlPO.getId(), modulePO.getId(), LinkType.SERVICE_WITH_MODULE, linker.getEnvPrefix());
             AzureMySQLStorage.getStorage().addService(mysqlPO);
-            if (ArrayUtils.isNotEmpty(linker.getService().getPassword())) {
-                String inputPassword = String.valueOf(linker.getService().getPassword());
-                if (TestConnectionUtils.testConnection(mysqlPO.getUrl(), mysqlPO.getUsername(), inputPassword)) {
+            if (ArrayUtils.isNotEmpty(linker.getService().getPasswordConfig().getPassword())) {
+                String inputPassword = String.valueOf(linker.getService().getPasswordConfig().getPassword());
+                if (MySQLConnectionUtils.connect(mysqlPO.getUrl(), mysqlPO.getUsername(), inputPassword)) {
                     AzureMySQLStorage.getStorage().savePassword(mysqlPO, mysqlPO.getPasswordSave(), mysqlPO.getUsername(), inputPassword);
                 }
             }
@@ -107,7 +107,7 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLink
                 .id(config.getId())
                 .url(config.getUrl())
                 .username(config.getUsername())
-                .passwordSave(config.getPasswordSaveType())
+                .passwordSave(config.getPasswordConfig().getPasswordSaveType())
                 .build();
         return mysqlPO;
     }
