@@ -85,9 +85,4 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
             setSelectedItem(config);
         }
     }
-
-    @Override
-    protected String label() {
-        return "Application Insight";
-    }
 }
