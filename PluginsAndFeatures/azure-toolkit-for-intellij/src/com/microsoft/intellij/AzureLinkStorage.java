@@ -18,15 +18,12 @@ import org.jdom.Content;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AzureLinkStorage {
 
-    private Set<LinkPO> linkers = new LinkedHashSet<>();
+    private Set<LinkPO> links = new LinkedHashSet<>();
 
     private AzureLinkStorage() {
     }
@@ -39,20 +36,25 @@ public class AzureLinkStorage {
         return ServiceManager.getService(project, AzureLinkStorage.Prj.class);
     }
 
-    public boolean addLinker(LinkPO linker) {
-        if (!linkers.add(linker)) {
-            linkers.remove(linker);
-            return linkers.add(linker);
+    public boolean addLinker(LinkPO link) {
+        Iterator<LinkPO> iterator = links.iterator();
+        while (iterator.hasNext()) {
+            LinkPO element = iterator.next();
+            if (Objects.equals(element.getType(), link.getType())
+                    && StringUtils.equals(element.getModuleId(), link.getModuleId())
+                    && StringUtils.equals(element.getEnvPrefix(), link.getEnvPrefix())) {
+                iterator.remove();
+            }
         }
-        return true;
+        return links.add(link);
     }
 
-    public Set<LinkPO> getLinkers() {
-        return this.linkers;
+    public Set<LinkPO> getLinks() {
+        return this.links;
     }
 
     public List<LinkPO> getLinkersByType(LinkType type) {
-        return linkers.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
+        return links.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
     }
 
     /**
@@ -60,7 +62,7 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_SERVICE: sourceId is the id of the first service, and targetId is the id of the second service.
      */
     public List<LinkPO> getLinkersByServiceId(String serviceId) {
-        return linkers.stream().filter(e -> StringUtils.equals(serviceId, e.getServiceId())).collect(Collectors.toList());
+        return links.stream().filter(e -> StringUtils.equals(serviceId, e.getServiceId())).collect(Collectors.toList());
     }
 
     /**
@@ -68,7 +70,7 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_SERVICE: targetId is the id of the first service, and targetId is the id of the second service.
      */
     public List<LinkPO> getLinkersByModuleId(String moduleId) {
-        return linkers.stream().filter(e -> StringUtils.equals(moduleId, e.getModuleId())).collect(Collectors.toList());
+        return links.stream().filter(e -> StringUtils.equals(moduleId, e.getModuleId())).collect(Collectors.toList());
     }
 
     public static class AzureLinkerStorageStateComponent extends AzureLinkStorage {
@@ -82,7 +84,7 @@ public class AzureLinkStorage {
         }
 
         private void writeState(Element linkersElement) {
-            for (LinkPO linker : super.getLinkers()) {
+            for (LinkPO linker : super.getLinks()) {
                 Element linkerElement = new Element("link");
                 linkerElement.setAttribute("type", linker.getType().name());
                 if (StringUtils.isNotBlank(linker.getEnvPrefix())) {
@@ -128,11 +130,11 @@ public class AzureLinkStorage {
                 }
                 final String finalSourceId = sourceId;
                 final String finalTargetId = targetId;
-                if (super.getLinkers().stream()
+                if (super.getLinks().stream()
                         .filter(e -> StringUtils.equals(e.getServiceId(), finalSourceId) && StringUtils.equals(e.getModuleId(), finalTargetId))
                         .count() <= 0L) {
                     LinkPO linkerPO = new LinkPO(finalSourceId, finalTargetId, linkType, envPrefix);
-                    super.getLinkers().add(linkerPO);
+                    super.getLinks().add(linkerPO);
                 }
             }
         }

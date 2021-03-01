@@ -9,10 +9,7 @@ import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AzureServiceStorage<T extends BaseServicePO> {
@@ -23,11 +20,14 @@ public abstract class AzureServiceStorage<T extends BaseServicePO> {
     private Set<T> services = new LinkedHashSet<>();
 
     public boolean addService(T service) {
-        if (!services.add(service)) {
-            services.remove(service);
-            return services.add(service);
+        Iterator<T> iterator = services.iterator();
+        while (iterator.hasNext()) {
+            T element = iterator.next();
+            if (StringUtils.equals(element.getId(), service.getId())) {
+                iterator.remove();
+            }
         }
-        return true;
+        return services.add(service);
     }
 
     public Set<T> getServices() {
