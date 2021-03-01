@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
