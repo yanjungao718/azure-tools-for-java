@@ -12,6 +12,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
@@ -27,11 +28,8 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.entity.WebAppEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
@@ -236,7 +234,7 @@ public class AzureWebAppMvpModel {
         WebAppDiagnosticLogs.DefinitionStages.WithAttach withAttach = null;
         if (settingModel.isEnableApplicationLog()) {
             withAttach = diagnosticLogs.withApplicationLogging()
-                                       .withLogLevel(settingModel.getApplicationLogLevel())
+                                       .withLogLevel(LogLevel.fromString(settingModel.getApplicationLogLevel()))
                                        .withApplicationLogsStoredOnFileSystem();
         }
         if (settingModel.isEnableWebServerLogging()) {
@@ -947,22 +945,10 @@ public class AzureWebAppMvpModel {
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
-                .withRuntime(parseRuntimeFromWebAppSettingModel(model))
+                .withRuntime(model.getRuntime())
                 .commit();
         updateWebAppDiagnosticConfiguration(result, model);
         return result;
-    }
-
-    private Runtime parseRuntimeFromWebAppSettingModel(@NotNull WebAppSettingModel model) {
-        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem os =
-                com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOS().name());
-        if (os == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
-            return Runtime.getRuntimeFromLinuxFxVersion(model.getLinuxRuntime().toString());
-        }
-        final JavaVersion javaVersion = JavaVersion.fromString(model.getJdkVersion().toString());
-        final com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer =
-                com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.fromString(model.getWebContainer());
-        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
     }
 
     // todo: Move duplicated codes to azure common library
