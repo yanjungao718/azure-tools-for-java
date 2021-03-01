@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
+import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -13,6 +16,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
@@ -24,7 +28,9 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,10 +39,13 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class SpringCloudDeploymentConfigurationPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
     private final Project project;
+    @Setter
+    private SpringCloudDeploymentConfiguration configuration;
 
     @Getter
     private JPanel contentPanel;
@@ -57,13 +66,15 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private JPanel pnlEnvironmentTable;
     private EnvironmentVariableTable environmentVariableTable;
 
-    public SpringCloudDeploymentConfigurationPanel(@NotNull final Project project) {
+    public SpringCloudDeploymentConfigurationPanel(SpringCloudDeploymentConfiguration config, @NotNull final Project project) {
         super();
         this.project = project;
+        this.configuration = config;
         this.init();
     }
 
     private void init() {
+        this.selectorArtifact.addItemListener(this::onArtifactChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
         this.selectorCluster.addItemListener(this::onClusterChanger);
         this.selectorSubscription.setRequired(true);
@@ -74,6 +85,20 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.selectorSubscription.setLabel("Subscription");
         this.selectorCluster.setLabel("Spring Cloud");
         this.selectorApp.setLabel("App");
+    }
+
+    private void onArtifactChanged(final ItemEvent e) {
+        final DataContext context = DataManager.getInstance().getDataContext(getContentPanel());
+        final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);
+        final AzureArtifact artifact = (AzureArtifact) e.getItem();
+        if (Objects.nonNull(editor) && Objects.nonNull(artifact)) {
+            if (e.getStateChange() == ItemEvent.DESELECTED) {
+                BeforeRunTaskUtils.removeBeforeRunTask(editor, artifact);
+            }
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                BeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
+            }
+        }
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
@@ -96,6 +121,12 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.cbMemory.setSelectedItem(Optional.ofNullable(deploymentConfig.getMemoryInGB()).map(String::valueOf).orElse("1"));
         this.cbInstanceCount.setSelectedItem(Optional.ofNullable(deploymentConfig.getInstanceCount()).map(String::valueOf).orElse("1"));
         this.textJvmOptions.setText(deploymentConfig.getJvmOptions());
+        final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
+        Optional.ofNullable(deploymentConfig.getArtifact()).map(a -> ((WrappedAzureArtifact) a))
+            .ifPresent((a -> this.selectorArtifact.setValue(new ItemReference<>(
+                manager.getArtifactIdentifier(a.getArtifact()),
+                manager::getArtifactIdentifier
+            ))));
         Optional.ofNullable(appConfig.getSubscriptionId())
             .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::subscriptionId))));
         Optional.ofNullable(appConfig.getClusterName())
