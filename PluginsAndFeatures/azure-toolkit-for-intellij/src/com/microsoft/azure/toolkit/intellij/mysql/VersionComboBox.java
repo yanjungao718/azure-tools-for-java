@@ -18,9 +18,4 @@ public class VersionComboBox extends AzureComboBox<String> {
     protected List<? extends String> loadItems() {
         return MySQLMvpModel.listSupportedVersions();
     }
-
-    @Override
-    protected String label() {
-        return "MySQL version";
-    }
 }
