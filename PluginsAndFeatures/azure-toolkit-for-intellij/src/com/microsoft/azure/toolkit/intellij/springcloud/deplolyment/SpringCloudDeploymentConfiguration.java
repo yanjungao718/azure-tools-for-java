@@ -123,7 +123,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
 
         Editor(SpringCloudDeploymentConfiguration configuration, Project project) {
             super();
-            this.panel = new SpringCloudDeploymentConfigurationPanel(project);
+            this.panel = new SpringCloudDeploymentConfigurationPanel(configuration, project);
         }
 
         protected void disposeEditor() {
@@ -132,6 +132,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
 
         @Override
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
+            this.panel.setConfiguration(config);
             this.panel.setData(config.appConfig);
         }
 

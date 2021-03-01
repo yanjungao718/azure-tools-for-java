@@ -19,9 +19,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordDialog;
-import com.microsoft.azure.toolkit.intellij.link.mysql.TestConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
@@ -130,7 +130,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     }
 
     private void retrieveEnvMap(Project project, Map<String, String> linkedEnvMap, String moduleName) {
-        List<LinkPO> moduleRelatedLinkerList = AzureLinkStorage.getProjectStorage(project).getLinkersByTargetId(moduleName)
+        List<LinkPO> moduleRelatedLinkerList = AzureLinkStorage.getProjectStorage(project).getLinkersByModuleId(moduleName)
                 .stream()
                 .filter(e -> LinkType.SERVICE_WITH_MODULE.equals(e.getType()))
                 .collect(Collectors.toList());
@@ -159,7 +159,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     private String readPasswordCredentials(Project project, MySQLServicePO service) {
         String storagedPassword = AzureMySQLStorage.getStorage().loadPassword(service, service.getPasswordSave(), service.getUsername());
         if (StringUtils.isNotBlank(storagedPassword)) {
-            if (TestConnectionUtils.testConnection(service.getUrl(), service.getUsername(), storagedPassword)) {
+            if (MySQLConnectionUtils.connect(service.getUrl(), service.getUsername(), storagedPassword)) {
                 return storagedPassword;
             }
         }
@@ -171,7 +171,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
             dialog.setOkActionListener(data -> {
                 dialog.close();
                 String inputPassword = String.valueOf(data.getPassword());
-                if (TestConnectionUtils.testConnection(service.getUrl(), service.getUsername(), inputPassword)) {
+                if (MySQLConnectionUtils.connect(service.getUrl(), service.getUsername(), inputPassword)) {
                     AzureMySQLStorage.getStorage().savePassword(service, data.getPasswordSaveType(), service.getUsername(), inputPassword);
                     if (!Objects.equals(service.getPasswordSave(), data.getPasswordSaveType())) {
                         service.setPasswordSave(data.getPasswordSaveType());
@@ -182,8 +182,11 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
             dialog.show();
         });
         PasswordConfig passwordConfig = passwordConfigReference.get();
-        String inputPassword = String.valueOf(passwordConfig.getPassword());
-        return inputPassword;
+        if (Objects.nonNull(passwordConfig)) {
+            return String.valueOf(passwordConfig.getPassword());
+        } else {
+            return StringUtils.EMPTY;
+        }
     }
 
 }

@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.intellij.ui.messages.AzureBundle;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -90,24 +91,37 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
         String password = String.valueOf(passwordField.getPassword());
-        AtomicReference<MySQLConnectionUtils.ConnectResult> connectResultRef = null;
+        AtomicReference<MySQLConnectionUtils.ConnectResult> connectResultRef = new AtomicReference<>();
         Runnable runnable = () -> {
             connectResultRef.set(MySQLConnectionUtils.connectWithPing(url, username, password));
         };
         JdbcUrl jdbcUrl = JdbcUrl.from(url);
-        AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHostname()), false, runnable);
+        AzureTask task = new AzureTask(null, AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getHostname()), false, runnable);
         AzureTaskManager.getInstance().runAndWait(task);
         // show result info
         testResultLabel.setVisible(true);
         testResultButton.setVisible(true);
         MySQLConnectionUtils.ConnectResult connectResult = connectResultRef.get();
-        testResultTextPane.setText(connectResult.getMessage());
+        testResultTextPane.setText(getConnectResultMessage(connectResult));
         if (connectResult.isConnected()) {
             testResultLabel.setIcon(AllIcons.General.InspectionsOK);
         } else {
             testResultLabel.setIcon(AllIcons.General.BalloonError);
         }
         testConnectionButton.setEnabled(true);
+    }
+
+    private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {
+        StringBuilder messageBuilder = new StringBuilder();
+        if (result.isConnected()) {
+            messageBuilder.append("Connected successfully.").append(System.lineSeparator());
+            messageBuilder.append("MySQL version: ").append(result.getServerVersion()).append(System.lineSeparator());
+            messageBuilder.append("Ping cost: ").append(result.getPingCost()).append("ms");
+        } else {
+            messageBuilder.append("Failed to connect with above parameters.").append(System.lineSeparator());
+            messageBuilder.append("Message: ").append(result.getMessage());
+        }
+        return messageBuilder.toString();
     }
 
     private void onCopyButtonClicked(ActionEvent e) {
