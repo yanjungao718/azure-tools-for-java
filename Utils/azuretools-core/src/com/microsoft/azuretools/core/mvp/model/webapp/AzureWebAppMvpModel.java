@@ -27,6 +27,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.entity.WebAppEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
@@ -976,12 +977,13 @@ public class AzureWebAppMvpModel {
 
     private IAppServicePlan getOrCreateAppServicePlan(@NotNull WebAppSettingModel model) {
         final AzureAppService az = getAzureAppServiceClient(model.getSubscriptionId());
-        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
-        if (appServicePlan.exists()) {
-            return appServicePlan;
+        if (!model.isCreatingAppServicePlan()) {
+            return az.appServicePlan(model.getAppServicePlanId());
         }
+        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
         final String[] tierSize = model.getPricing().split("_");
         return appServicePlan.create()
+                // todo: remove duplicated parameters declared in service plan entity
                 .withName(model.getAppServicePlanName())
                 .withResourceGroup(model.getResourceGroup())
                 .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(model.getRegion()))
