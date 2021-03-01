@@ -172,8 +172,8 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             }
 
             lastSelectedAzureArtifact = azureArtifact;
-            if (Objects.nonNull(lastSelectedAzureArtifact)) {
-                BeforeRunTaskUtils.addBeforeRunTask(editor, lastSelectedAzureArtifact, configuration);
+            if (Objects.nonNull(azureArtifact)) {
+                BeforeRunTaskUtils.addBeforeRunTask(editor, azureArtifact, configuration);
             }
         }
     }
