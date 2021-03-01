@@ -13,12 +13,14 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.intellij.common.*;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBox;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -38,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
@@ -132,7 +135,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         final String defaultConfigurationSource = (String) cbxSlotConfigurationSource.getSelectedItem();
         cbxSlotName.removeAllItems();
         cbxSlotConfigurationSource.removeAllItems();
-        cbxSlotConfigurationSource.addItem(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+        cbxSlotConfigurationSource.addItem(DO_NOT_CLONE_SLOT_CONFIGURATION);
         cbxSlotConfigurationSource.addItem(selectedWebApp.getAppName());
         slotList.stream().filter(slot -> slot != null).forEach(slot -> {
             cbxSlotName.addItem(slot.name());
@@ -184,11 +187,12 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     protected void resetFromConfig(@NotNull WebAppConfiguration configuration) {
-        if (!StringUtils.isAllEmpty(configuration.getWebAppName(), configuration.getWebAppId())) {
-            final WebAppComboBoxModel configModel = new WebAppComboBoxModel(configuration.getModel());
-            comboBoxWebApp.setConfigModel(configModel);
+        final WebAppComboBoxModel configurationModel = new WebAppComboBoxModel(configuration.getModel());
+        if (StringUtils.isAllEmpty(configurationModel.getAppName(), configurationModel.getResourceId())) {
+            comboBoxWebApp.refreshItems();
+        } else {
+            comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel);
         }
-        comboBoxWebApp.refreshItems();
         if (configuration.getAzureArtifactType() != null) {
             lastSelectedAzureArtifact = AzureArtifactManager
                     .getInstance(project)
