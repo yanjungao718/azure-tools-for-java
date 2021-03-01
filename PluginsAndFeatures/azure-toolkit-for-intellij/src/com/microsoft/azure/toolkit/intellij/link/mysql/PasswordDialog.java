@@ -95,7 +95,7 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
             connectResultRef.set(MySQLConnectionUtils.connectWithPing(url, username, password));
         };
         JdbcUrl jdbcUrl = JdbcUrl.from(url);
-        AzureTask task = new AzureTask(null, String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHostname()), false, runnable);
+        AzureTask task = new AzureTask(null, AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getHostname()), false, runnable);
         AzureTaskManager.getInstance().runAndWait(task);
         // show result info
         testResultLabel.setVisible(true);

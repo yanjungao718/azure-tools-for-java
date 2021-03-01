@@ -41,8 +41,9 @@ public class MySQLConnectionUtils {
                 connected = "hi".equals(result);
             }
             pingCost = System.currentTimeMillis() - start;
+            serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
             messageBuilder.append("Connected successfully.").append(System.lineSeparator());
-            messageBuilder.append("MySQL version: ").append(((ConnectionImpl) connection).getServerVersion()).append(System.lineSeparator());
+            messageBuilder.append("MySQL version: ").append(serverVersion).append(System.lineSeparator());
             messageBuilder.append("Ping cost: ").append(pingCost).append("ms");
         } catch (ClassNotFoundException | SQLException exception) {
             messageBuilder.append("Failed to connect with above parameters.").append(System.lineSeparator());
