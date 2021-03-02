@@ -7,17 +7,22 @@ package com.microsoft.azure.toolkit.lib.link;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.link.LinkComposite;
+import com.microsoft.azure.toolkit.intellij.link.ModuleLinkConfig;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
+import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLLinkConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
+import com.microsoft.azure.toolkit.intellij.link.po.ModulePO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -33,6 +38,38 @@ public class AzureLinkService {
 
     private AzureLinkService() {
 
+    }
+
+    public void link(Project project, LinkComposite<MySQLLinkConfig, ModuleLinkConfig> linkComposite) {
+        ModulePO modulePO = createModulePO(linkComposite.getModule());
+        MySQLServicePO resource = createResourcePO(linkComposite.getService());
+        // create link
+        LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
+        // storage mysql
+        AzureMySQLStorage.getStorage().addService(resource);
+        // storage password
+        if (ArrayUtils.isNotEmpty(linkComposite.getService().getPasswordConfig().getPassword())) {
+            String inputPassword = String.valueOf(linkComposite.getService().getPasswordConfig().getPassword());
+            if (MySQLConnectionUtils.connect(resource.getUrl(), resource.getUsername(), inputPassword)) {
+                AzureMySQLStorage.getStorage().savePassword(resource, resource.getPasswordSave(), resource.getUsername(), inputPassword);
+            }
+        }
+        // storage link
+        AzureLinkStorage.getProjectStorage(project).addLinker(linkPO);
+    }
+
+    private ModulePO createModulePO(ModuleLinkConfig config) {
+        return new ModulePO(config.getModule().getName());
+    }
+
+    private MySQLServicePO createResourcePO(MySQLLinkConfig config) {
+        MySQLServicePO mysqlPO = new MySQLServicePO.Builder()
+                .id(config.getId())
+                .url(config.getUrl())
+                .username(config.getUsername())
+                .passwordSave(config.getPasswordConfig().getPasswordSaveType())
+                .build();
+        return mysqlPO;
     }
 
     public Map<String, String> retrieveLinkEnvsByModuleName(Project project, String moduleName) {
