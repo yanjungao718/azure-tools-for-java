@@ -15,8 +15,15 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
@@ -25,9 +32,7 @@ import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
-import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.IntelliJWebAppSettingModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
@@ -98,8 +103,8 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
         if (MapUtils.isNotEmpty(linkedEnvMap)) {
             // set envs for remote deploy
             if (runConfiguration instanceof WebAppConfiguration) {
-                IntelliJWebAppSettingModel model = ((WebAppConfiguration) runConfiguration).getModel();
-                AzureWebAppMvpModel.getInstance().updateWebAppSettings(model.getSubscriptionId(), model.getWebAppId(), linkedEnvMap, new HashSet<>());
+                WebAppConfiguration webAppConfiguration = (WebAppConfiguration) runConfiguration;
+                webAppConfiguration.setApplicationSettings(linkedEnvMap);
             }
             // set envs for local run
             if (runConfiguration instanceof AbstractRunConfiguration
@@ -114,10 +119,12 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
 
     private String getModuleName(@NotNull RunConfiguration runConfiguration) {
         if (runConfiguration instanceof WebAppConfiguration) {
-            String name = ((WebAppConfiguration) runConfiguration).getName();
-            name = name.substring(name.indexOf(":") + 1);
-            name = name.substring(name.indexOf(":") + 1);
-            return name;
+            WebAppConfiguration webAppConfiguration = (WebAppConfiguration) runConfiguration;
+            final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(runConfiguration.getProject())
+                    .getAzureArtifactById(webAppConfiguration.getAzureArtifactType(), webAppConfiguration.getArtifactIdentifier());
+            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(azureArtifact.getTargetPath());
+            Module module = ProjectFileIndex.getInstance(runConfiguration.getProject()).getModuleForFile(virtualFile, false);
+            return Objects.nonNull(module) ? module.getName() : StringUtils.EMPTY;
         }
         if (runConfiguration instanceof AbstractRunConfiguration
                 || StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)) {
