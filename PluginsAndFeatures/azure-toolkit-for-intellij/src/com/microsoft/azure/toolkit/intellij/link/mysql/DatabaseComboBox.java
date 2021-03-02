@@ -32,7 +32,7 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
             return;
         }
         this.subscription = subscription;
-        if (subscription == null) {
+        if (subscription == null || server == null) {
             this.clear();
             return;
         }
@@ -44,7 +44,7 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
             return;
         }
         this.server = server;
-        if (server == null) {
+        if (subscription == null || server == null) {
             this.clear();
             return;
         }
@@ -61,11 +61,11 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
     @Override
     protected List<? extends DatabaseInner> loadItems() {
-        if (Objects.nonNull(subscription)) {
+        if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
         AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-        if (Objects.nonNull(manager)) {
+        if (Objects.isNull(manager)) {
             return new ArrayList<>();
         }
         final MySQLManager mySQLManager = manager.getMySQLManager(subscription.subscriptionId());
