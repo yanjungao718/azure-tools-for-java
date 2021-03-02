@@ -169,37 +169,6 @@
         </constraints>
         <properties/>
       </component>
-      <component id="3caff" class="javax.swing.JButton" binding="testResultButton">
-        <constraints>
-          <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="5" use-parent-layout="false">
-            <minimum-size width="24" height="26"/>
-            <preferred-size width="24" height="26"/>
-          </grid>
-        </constraints>
-        <properties>
-          <actionCommand value=""/>
-          <alignmentX value="0.5"/>
-          <hideActionText value="true"/>
-          <horizontalAlignment value="4"/>
-          <horizontalTextPosition value="10"/>
-          <icon value="general/copyHovered.png"/>
-          <iconTextGap value="0"/>
-          <text value=""/>
-        </properties>
-      </component>
-      <component id="6de2f" class="javax.swing.JLabel" binding="testResultLabel">
-        <constraints>
-          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="5" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <alignmentX value="0.5"/>
-          <horizontalTextPosition value="4"/>
-          <icon value="general/inspectionsOK.png"/>
-          <iconTextGap value="0"/>
-          <inheritsPopupMenu value="true"/>
-          <text value=""/>
-        </properties>
-      </component>
       <component id="4b6c5" class="javax.swing.JTextField" binding="envPrefixTextField">
         <constraints>
           <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
@@ -218,6 +187,11 @@
         </constraints>
         <properties/>
       </component>
+      <nested-form id="8fc3b" form-file="com/microsoft/azure/toolkit/intellij/link/mysql/TestConnectionActionPanel.form" binding="testConnectionActionPanel">
+        <constraints>
+          <grid row="9" column="0" row-span="2" col-span="1" vsize-policy="3" hsize-policy="3" anchor="5" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </nested-form>
     </children>
   </grid>
 </form>
