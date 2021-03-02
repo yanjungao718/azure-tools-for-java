@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.component;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -51,6 +52,11 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
 
     @NotNull
     @Override
+    @AzureOperation(
+        name = "springcloud|app.list.cluster",
+        params = {"@cluster.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     protected List<? extends SpringCloudApp> loadItems() throws Exception {
         final List<SpringCloudApp> apps = new ArrayList<>();
         if (Objects.nonNull(this.cluster)) {
