@@ -9,8 +9,8 @@ import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 @Getter
 public class TestConnectionActionPanel extends JPanel {
@@ -27,16 +27,7 @@ public class TestConnectionActionPanel extends JPanel {
         emptyBorder = BorderFactory.createEmptyBorder();
         copyButton.setBorder(emptyBorder);
         copyButton.setContentAreaFilled(false);
-        copyButton.addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {}
-
-            @Override
-            public void mousePressed(MouseEvent e) {}
-
-            @Override
-            public void mouseReleased(MouseEvent e) {}
+        copyButton.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent e) {

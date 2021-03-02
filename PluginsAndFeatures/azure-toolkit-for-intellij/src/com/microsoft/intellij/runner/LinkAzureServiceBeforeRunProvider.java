@@ -79,7 +79,8 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     public LinkAzureServiceBeforeRunTask createTask(@NotNull RunConfiguration runConfiguration) {
         boolean alwaysEnable = false;
         if (StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
-        /*|| runConfiguration instanceof com.intellij.javaee.appServers.run.configuration.CommonStrategy*/) {
+                || runConfiguration instanceof ApplicationConfiguration
+                || runConfiguration instanceof WebAppConfiguration) {
             alwaysEnable = true;
         }
         return new LinkAzureServiceBeforeRunTask(getId(), alwaysEnable);

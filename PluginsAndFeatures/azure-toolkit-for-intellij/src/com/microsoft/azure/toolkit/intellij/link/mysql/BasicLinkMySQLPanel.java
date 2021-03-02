@@ -114,7 +114,6 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         this.serverComboBox.addItemListener(this::onServerChanged);
         this.databaseComboBox.addItemListener(this::onDatabaseChanged);
         this.inputPasswordField.addKeyListener(this.onInputPasswordFieldChanged());
-        this.envPrefixTextField.addFocusListener(this.onEnvPrefixTextFieldChanged());
         this.urlTextField.addFocusListener(this.onUrlTextFieldChanged());
         this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
         this.testConnectionActionPanel.getCopyButton().addActionListener(this::onCopyButtonClicked);
@@ -159,15 +158,19 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             final Subscription subscription = (Subscription) e.getItem();
             this.serverComboBox.setSubscription(subscription);
             this.databaseComboBox.setSubscription(subscription);
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.serverComboBox.setSubscription(null);
+            this.databaseComboBox.setSubscription(null);
+
         }
     }
 
     private void onServerChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Server) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             if (e.getItem() instanceof Server) {
                 final Server server = (Server) e.getItem();
                 this.databaseComboBox.setServer(server);
@@ -175,31 +178,19 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
                 this.urlTextField.setText(buildUrl(serverComboBox.getValue(), databaseComboBox.getValue()));
                 this.urlTextField.setCaretPosition(0);
             }
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.databaseComboBox.setServer(null);
+            this.usernameComboBox.setServer(null);
         }
     }
 
     private void onDatabaseChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof DatabaseInner) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             if (e.getItem() instanceof DatabaseInner) {
                 this.urlTextField.setText(buildUrl(serverComboBox.getValue(), databaseComboBox.getValue()));
                 this.urlTextField.setCaretPosition(0);
             }
         }
-    }
-
-    private FocusListener onEnvPrefixTextFieldChanged() {
-        FocusListener listener = new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                System.out.println("env prefix starting.. input... " + inputPasswordField.getPassword());
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                System.out.println("envPrefix = " + envPrefixTextField.getText());
-            }
-        };
-        return listener;
     }
 
     private KeyListener onInputPasswordFieldChanged() {
@@ -217,13 +208,10 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     private FocusListener onUrlTextFieldChanged() {
         FocusListener listener = new FocusListener() {
             @Override
-            public void focusGained(FocusEvent e) {
-                System.out.println("url starting.. input... " + inputPasswordField.getPassword());
-            }
+            public void focusGained(FocusEvent e) {}
 
             @Override
             public void focusLost(FocusEvent e) {
-                System.out.println("url = " + envPrefixTextField.getText());
                 parseUrl(urlTextField.getText());
             }
         };
@@ -257,7 +245,6 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         ModuleLinkConfig target = config.getModule();
         target.setModule(moduleComboBox.getValue());
         config.setEnvPrefix(envPrefixTextField.getText());
-        // config.setId(serverComboBox.getValue().id());
         return config;
     }
 
