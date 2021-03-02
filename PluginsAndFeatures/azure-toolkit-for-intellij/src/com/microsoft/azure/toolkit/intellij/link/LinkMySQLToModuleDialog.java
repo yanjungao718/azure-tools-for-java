@@ -48,11 +48,6 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLink
     }
 
     @Override
-    protected void init() {
-        super.init();
-    }
-
-    @Override
     public AzureForm<LinkComposite<MySQLLinkConfig, ModuleLinkConfig>> getForm() {
         return basicPanel;
     }
