@@ -157,10 +157,14 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             final Subscription subscription = (Subscription) e.getItem();
             this.serverComboBox.setSubscription(subscription);
             this.databaseComboBox.setSubscription(subscription);
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.serverComboBox.setSubscription(null);
+            this.databaseComboBox.setSubscription(null);
+
         }
     }
 
@@ -173,6 +177,9 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
                 this.urlTextField.setText(buildUrl(serverComboBox.getValue(), databaseComboBox.getValue()));
                 this.urlTextField.setCaretPosition(0);
             }
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.databaseComboBox.setServer(null);
+            this.usernameComboBox.setServer(null);
         }
     }
 

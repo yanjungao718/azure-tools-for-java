@@ -20,12 +20,23 @@ import java.util.Objects;
 
 public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
-    @Setter
     private Subscription subscription;
     private Server server;
 
     public DatabaseComboBox() {
         super(false);
+    }
+
+    public void setSubscription(Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
+            return;
+        }
+        this.subscription = subscription;
+        if (subscription == null) {
+            this.clear();
+            return;
+        }
+        this.refreshItems();
     }
 
     public void setServer(Server server) {
@@ -50,11 +61,11 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
     @Override
     protected List<? extends DatabaseInner> loadItems() {
-        if (subscription == null) {
+        if (Objects.nonNull(subscription)) {
             return new ArrayList<>();
         }
         AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-        if (manager == null) {
+        if (Objects.nonNull(manager)) {
             return new ArrayList<>();
         }
         final MySQLManager mySQLManager = manager.getMySQLManager(subscription.subscriptionId());
