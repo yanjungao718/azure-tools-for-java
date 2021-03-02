@@ -49,7 +49,7 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
     }
 
     @Override
-    protected List<? extends DatabaseInner> loadItems() throws Exception {
+    protected List<? extends DatabaseInner> loadItems() {
         if (subscription == null) {
             return new ArrayList<>();
         }
