@@ -90,7 +90,6 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLink
         String progressMessage = "Linking Azure Database for MySQL with Module...";
         final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
-        System.out.println("Link MySQL to Project...OK--action....");
     }
 
     private ModulePO createModulePO(ModuleLinkConfig config) {
