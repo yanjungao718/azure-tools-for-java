@@ -9,6 +9,7 @@ package com.microsoft.azure.toolkit.intellij.link.mysql;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.resources.Subscription;
@@ -99,6 +100,10 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
                     moduleComboBox.setForceDisable(true);
                     moduleComboBox.setEditable(false);
                 }));
+        if (Objects.nonNull(config.getService().getPasswordConfig())
+                && Objects.nonNull(config.getService().getPasswordConfig().getPasswordSaveType())) {
+            passwordSaveComboBox.setValue(config.getService().getPasswordConfig().getPasswordSaveType());
+        }
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
@@ -117,6 +122,8 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
 
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
+        testConnectionButton.setIcon(new AnimatedIcon.Default());
+        testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         String url = urlTextField.getText();
         String username = usernameComboBox.getValue();
         String password = String.valueOf(inputPasswordField.getPassword());
@@ -130,6 +137,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
             } else {
                 testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.BalloonError);
             }
+            testConnectionButton.setIcon(null);
             testConnectionButton.setEnabled(true);
         };
         JdbcUrl jdbcUrl = JdbcUrl.from(url);
