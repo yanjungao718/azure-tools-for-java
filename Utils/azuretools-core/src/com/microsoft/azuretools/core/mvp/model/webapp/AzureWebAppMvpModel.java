@@ -599,6 +599,10 @@ public class AzureWebAppMvpModel {
     /**
      * List all the Web Apps on Windows in selected subscriptions.
      */
+    @AzureOperation(
+        name = "webapp.list.windows|subscription|selected",
+        type = AzureOperation.Type.SERVICE
+    )
     public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
@@ -655,6 +659,11 @@ public class AzureWebAppMvpModel {
     /**
      * List web apps on linux by subscription id.
      */
+    @AzureOperation(
+        name = "webapp.list.linux|subscription",
+        params = {"$subscriptionId"},
+        type = AzureOperation.Type.SERVICE
+    )
     public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId, final boolean force) {
         return listWebApps(subscriptionId, force)
             .stream()
@@ -665,6 +674,11 @@ public class AzureWebAppMvpModel {
     /**
      * List web apps on windows by subscription id.
      */
+    @AzureOperation(
+        name = "webapp.list.windows|subscription",
+        params = {"$subscriptionId"},
+        type = AzureOperation.Type.SERVICE
+    )
     public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
         return listWebApps(subscriptionId, force)
             .stream()
@@ -769,6 +783,10 @@ public class AzureWebAppMvpModel {
      * @param force flag indicating whether force to fetch most updated data from server
      * @return list of Web App on Linux
      */
+    @AzureOperation(
+        name = "webapp.list.linux|subscription|selected",
+        type = AzureOperation.Type.SERVICE
+    )
     public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
