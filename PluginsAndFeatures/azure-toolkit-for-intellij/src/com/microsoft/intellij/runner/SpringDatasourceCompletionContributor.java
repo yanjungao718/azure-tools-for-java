@@ -5,7 +5,13 @@
 
 package com.microsoft.intellij.runner;
 
-import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.completion.CompletionContributor;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.codeInsight.completion.CompletionProvider;
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.InsertionContext;
+import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -27,9 +33,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MySQLCompletionContributor extends CompletionContributor {
+public class SpringDatasourceCompletionContributor extends CompletionContributor {
 
-    public MySQLCompletionContributor() {
+    public SpringDatasourceCompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(),
                 new CompletionProvider<CompletionParameters>() {
                     @Override
@@ -56,12 +62,12 @@ public class MySQLCompletionContributor extends CompletionContributor {
         @Override
         public void handleInsert(@NotNull InsertionContext insertionContext, @NotNull LookupElement lookupElement) {
             Module module = ModuleUtil.findModuleForFile(insertionContext.getFile().getVirtualFile(), insertionContext.getProject());
-            List<LinkPO> moduleLinkerList = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkersByModuleId(module.getName())
+            List<LinkPO> moduleLinkList = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkByModuleId(module.getName())
                     .stream()
-                    .filter(e -> LinkType.SERVICE_WITH_MODULE.equals(e.getType()))
+                    .filter(e -> LinkType.SERVICE_WITH_MODULE == e.getType())
                     .collect(Collectors.toList());
             boolean insertRequired = true;
-            if (CollectionUtils.isEmpty(moduleLinkerList)) {
+            if (CollectionUtils.isEmpty(moduleLinkList)) {
                 final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
                 insertRequired = dialog.showAndGet();
             }
@@ -73,16 +79,6 @@ public class MySQLCompletionContributor extends CompletionContributor {
                 EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
             }
         }
-    }
-
-    @Override
-    public void beforeCompletion(@NotNull CompletionInitializationContext context) {
-        super.beforeCompletion(context);
-    }
-
-    @Override
-    public void duringCompletion(@NotNull CompletionInitializationContext context) {
-        super.duringCompletion(context);
     }
 
 }

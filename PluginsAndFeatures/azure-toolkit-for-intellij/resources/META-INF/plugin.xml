@@ -153,7 +153,7 @@
 
     <stepsBeforeRunProvider implementation="com.microsoft.intellij.runner.LinkAzureServiceBeforeRunProvider" id="LinkAzureServiceBeforeRunProviderId"/>
     <runConfigurationExtension implementation="com.microsoft.intellij.runner.LinkAzureServiceRunConfigurationExtension"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.intellij.runner.MySQLCompletionContributor"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.intellij.runner.SpringDatasourceCompletionContributor"/>
     <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.intellij.runner.MySQLLineMarkerProvider"/>
   </extensions>
 

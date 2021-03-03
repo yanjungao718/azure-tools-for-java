@@ -72,7 +72,7 @@ public class AzureLinkService {
 
     public Map<String, String> retrieveLinkEnvsByModuleName(Project project, String moduleName) {
         Map<String, String> linkedEnvMap = new LinkedHashMap<>();
-        List<LinkPO> moduleRelatedLinkerList = AzureLinkStorage.getProjectStorage(project).getLinkersByModuleId(moduleName)
+        List<LinkPO> moduleRelatedLinkerList = AzureLinkStorage.getProjectStorage(project).getLinkByModuleId(moduleName)
                 .stream()
                 .filter(e -> LinkType.SERVICE_WITH_MODULE.equals(e.getType()))
                 .collect(Collectors.toList());
