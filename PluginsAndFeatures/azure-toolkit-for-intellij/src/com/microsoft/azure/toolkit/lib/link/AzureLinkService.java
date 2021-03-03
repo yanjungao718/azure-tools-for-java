@@ -53,7 +53,7 @@ public class AzureLinkService {
             AzureMySQLStorage.getStorage().savePassword(resource, resource.getPasswordSave(), resource.getUsername(), inputPassword);
         }
         // storage link
-        AzureLinkStorage.getProjectStorage(project).addLinker(linkPO);
+        AzureLinkStorage.getProjectStorage(project).addLink(linkPO);
     }
 
     private ModulePO createModulePO(ModuleLinkConfig config) {
@@ -72,21 +72,21 @@ public class AzureLinkService {
 
     public Map<String, String> retrieveLinkEnvsByModuleName(Project project, String moduleName) {
         Map<String, String> linkedEnvMap = new LinkedHashMap<>();
-        List<LinkPO> moduleRelatedLinkerList = AzureLinkStorage.getProjectStorage(project).getLinkByModuleId(moduleName)
+        List<LinkPO> moduleRelatedLinkList = AzureLinkStorage.getProjectStorage(project).getLinkByModuleId(moduleName)
                 .stream()
                 .filter(e -> LinkType.SERVICE_WITH_MODULE.equals(e.getType()))
                 .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(moduleRelatedLinkerList)) {
+        if (CollectionUtils.isEmpty(moduleRelatedLinkList)) {
             return linkedEnvMap;
         }
         // services in application level
         Set<? extends BaseServicePO> serviceSet = AzureMySQLStorage.getStorage().getServices();
         for (BaseServicePO service : serviceSet) {
-            for (LinkPO linker : moduleRelatedLinkerList) {
-                if (!StringUtils.equals(linker.getServiceId(), service.getId())) {
+            for (LinkPO link : moduleRelatedLinkList) {
+                if (!StringUtils.equals(link.getServiceId(), service.getId())) {
                     continue;
                 }
-                String envPrefix = linker.getEnvPrefix();
+                String envPrefix = link.getEnvPrefix();
                 if (ServiceType.AZURE_DATABASE_FOR_MYSQL.equals(service.getType())) {
                     MySQLServicePO mysql = (MySQLServicePO) service;
                     String password = readPasswordCredentials(project, mysql);
