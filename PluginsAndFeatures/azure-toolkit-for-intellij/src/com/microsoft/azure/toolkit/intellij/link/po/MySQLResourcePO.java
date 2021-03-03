@@ -29,6 +29,11 @@ public class MySQLResourcePO extends BaseResourcePO {
         this.passwordSave = passwordSave;
     }
 
+    @Override
+    public String getBusinessUniqueKey() {
+        return super.getBusinessUniqueKey() + "#" + database;
+    }
+
     public static class Builder {
         private String id;
         private String resourceId;

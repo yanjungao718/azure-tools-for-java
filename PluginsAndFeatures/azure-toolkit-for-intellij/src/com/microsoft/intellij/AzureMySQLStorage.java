@@ -35,7 +35,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
     public static class AzureMySQLStorageStateComponent extends AzureMySQLStorage {
 
         public Element getState() {
-            Element rootElement = new Element(ELEMENT_NAME_SERVICES);
+            Element rootElement = new Element(ELEMENT_NAME_RESOURCES);
             this.writeState(rootElement);
             return rootElement;
         }
@@ -45,8 +45,8 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
         }
 
         private void writeState(Element servicesElement) {
-            for (MySQLResourcePO service : super.getServices()) {
-                Element serviceElement = new Element(ELEMENT_NAME_SERVICE);
+            for (MySQLResourcePO service : super.getResources()) {
+                Element serviceElement = new Element(ELEMENT_NAME_RESOURCE);
                 serviceElement.setAttribute("type", service.getType().getName());
                 serviceElement.setAttribute("id", service.getId());
                 serviceElement.addContent(new Element("url").setText(service.getUrl()));
@@ -87,28 +87,28 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                         passwordSave = innerElement.getText();
                     }
                 }
-                if (super.getServices().stream().filter(e -> StringUtils.equals(e.getId(), id)).count() <= 0L) {
+                if (super.getResources().stream().filter(e -> StringUtils.equals(e.getId(), id)).count() <= 0L) {
                     MySQLResourcePO service = new MySQLResourcePO.Builder()
                             .id(id)
                             .url(url)
                             .username(username)
                             .passwordSave(PasswordSaveType.valueOf(passwordSave))
                             .build();
-                    super.getServices().add(service);
+                    super.getResources().add(service);
                 }
             }
         }
     }
 
     @State(
-            name = ELEMENT_NAME_SERVICES,
+            name = ELEMENT_NAME_RESOURCES,
             storages = {@Storage("azure/azureServices.xml")}
     )
     public static class App extends AzureMySQLStorageStateComponent implements PersistentStateComponent<Element> {
     }
 
     @State(
-            name = ELEMENT_NAME_SERVICES,
+            name = ELEMENT_NAME_RESOURCES,
             storages = {@Storage("azure/azureServices.xml")}
     )
     public static class Prj extends AzureMySQLStorageStateComponent implements PersistentStateComponent<Element> {

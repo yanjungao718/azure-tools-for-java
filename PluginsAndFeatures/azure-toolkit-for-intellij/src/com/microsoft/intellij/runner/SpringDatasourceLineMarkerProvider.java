@@ -52,7 +52,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 if (Objects.isNull(link)) {
                     return null;
                 }
-                MySQLResourcePO service = AzureMySQLStorage.getStorage().getServicesById(link.getServiceId());
+                MySQLResourcePO service = AzureMySQLStorage.getStorage().getResourceByResourceId(link.getResourceId());
                 if (Objects.isNull(service)) {
                     return null;
                 }

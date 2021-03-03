@@ -7,10 +7,13 @@ package com.microsoft.azure.toolkit.intellij.link.po;
 
 
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.UUID;
 
 public class ModulePO extends BaseResourcePO {
 
-    public ModulePO(String id) {
-        super(id, ServiceType.IDE_MODULE);
+    public ModulePO(String moduleName) {
+        super(UUID.randomUUID().toString().replace("-", StringUtils.EMPTY), moduleName, ServiceType.IDE_MODULE);
     }
 }

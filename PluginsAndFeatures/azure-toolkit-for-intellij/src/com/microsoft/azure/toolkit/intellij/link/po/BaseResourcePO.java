@@ -18,4 +18,8 @@ public abstract class BaseResourcePO {
     private String id;
     private String resourceId;
     private ServiceType type;
+
+    public String getBusinessUniqueKey() {
+        return type + "#" + resourceId;
+    }
 }

@@ -44,9 +44,9 @@ public class AzureLinkService {
         ModulePO modulePO = createModulePO(linkComposite.getModule());
         MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
         // create link
-        LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
+        LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getResourceId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
         // storage mysql
-        AzureMySQLStorage.getStorage().addService(resource);
+        AzureMySQLStorage.getStorage().addResource(resource);
         // storage password
         if (ArrayUtils.isNotEmpty(linkComposite.getResource().getPasswordConfig().getPassword())) {
             String inputPassword = String.valueOf(linkComposite.getResource().getPasswordConfig().getPassword());
@@ -81,10 +81,10 @@ public class AzureLinkService {
             return linkedEnvMap;
         }
         // services in application level
-        Set<? extends BaseResourcePO> serviceSet = AzureMySQLStorage.getStorage().getServices();
+        Set<? extends BaseResourcePO> serviceSet = AzureMySQLStorage.getStorage().getResources();
         for (BaseResourcePO service : serviceSet) {
             for (LinkPO link : moduleRelatedLinkList) {
-                if (!StringUtils.equals(link.getServiceId(), service.getId())) {
+                if (!StringUtils.equals(link.getResourceId(), service.getId())) {
                     continue;
                 }
                 String envPrefix = link.getEnvPrefix();

@@ -62,7 +62,7 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_SERVICE: sourceId is the id of the first service, and targetId is the id of the second service.
      */
     public List<LinkPO> getLinksByServiceId(String serviceId) {
-        return links.stream().filter(e -> StringUtils.equals(serviceId, e.getServiceId())).collect(Collectors.toList());
+        return links.stream().filter(e -> StringUtils.equals(serviceId, e.getResourceId())).collect(Collectors.toList());
     }
 
     /**
@@ -88,7 +88,7 @@ public class AzureLinkStorage {
                 if (StringUtils.isNotBlank(link.getEnvPrefix())) {
                     linkElement.setAttribute("envPrefix", link.getEnvPrefix());
                 }
-                linkElement.addContent(new Element("serviceId").setText(link.getServiceId()));
+                linkElement.addContent(new Element("serviceId").setText(link.getResourceId()));
                 linkElement.addContent(new Element("moduleId").setText(link.getModuleId()));
                 linksElement.addContent(linkElement);
             }
@@ -129,7 +129,7 @@ public class AzureLinkStorage {
                 final String finalSourceId = sourceId;
                 final String finalTargetId = targetId;
                 if (super.getLinks().stream()
-                        .filter(e -> StringUtils.equals(e.getServiceId(), finalSourceId) && StringUtils.equals(e.getModuleId(), finalTargetId))
+                        .filter(e -> StringUtils.equals(e.getResourceId(), finalSourceId) && StringUtils.equals(e.getModuleId(), finalTargetId))
                         .count() <= 0L) {
                     LinkPO linkPO = new LinkPO(finalSourceId, finalTargetId, linkType, envPrefix);
                     super.getLinks().add(linkPO);
