@@ -31,11 +31,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.MouseEvent;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
-public class MySQLLineMarkerProvider implements LineMarkerProvider {
-
-    private static final Pattern MYSQL_PROPERTY_URL_VALUE = Pattern.compile("..");
+public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement element) {
@@ -63,7 +60,7 @@ public class MySQLLineMarkerProvider implements LineMarkerProvider {
                 LineMarkerInfo lineMarkerInfo = new LineMarkerInfo<>(element, element.getTextRange(),
                         AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
                         element2 -> String.format("Link to Azure Database for MySQL (%s)", url.getHostname()),
-                        new AppMgmtNavigationHandler(service.getId()),
+                        new SpringDatasourceNavigationHandler(service.getId()),
                         GutterIconRenderer.Alignment.LEFT);
                 return lineMarkerInfo;
             }
@@ -78,11 +75,11 @@ public class MySQLLineMarkerProvider implements LineMarkerProvider {
         return StringUtils.EMPTY;
     }
 
-    public class AppMgmtNavigationHandler implements GutterIconNavigationHandler {
+    public class SpringDatasourceNavigationHandler implements GutterIconNavigationHandler {
 
         private String serviceId;
 
-        AppMgmtNavigationHandler(String serviceId) {
+        SpringDatasourceNavigationHandler(String serviceId) {
             this.serviceId = serviceId;
         }
 
