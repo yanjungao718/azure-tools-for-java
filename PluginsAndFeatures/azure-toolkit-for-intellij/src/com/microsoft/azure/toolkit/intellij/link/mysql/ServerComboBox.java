@@ -48,11 +48,11 @@ public class ServerComboBox extends AzureComboBox<Server> {
 
     @Override
     protected List<? extends Server> loadItems() throws Exception {
-        if (subscription == null) {
+        if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
         AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-        if (manager == null) {
+        if (Objects.isNull(manager)) {
             return new ArrayList<>();
         }
         final MySQLManager mySQLManager = manager.getMySQLManager(subscription.subscriptionId());
