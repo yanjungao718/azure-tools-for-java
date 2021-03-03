@@ -10,6 +10,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
@@ -26,11 +28,6 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.intellij.ui.components.AzureArtifact;
-import com.microsoft.intellij.ui.components.AzureArtifactManager;
-import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +41,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
@@ -74,30 +70,25 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
         }
         webAppConfiguration.setTargetName(file.getName());
         final IAppService deployTarget = getDeployTargetByConfiguration(processHandler);
+        updateApplicationSettings(deployTarget, processHandler);
         AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, file, webAppSettingModel.isDeployToRoot(), processHandler);
-        WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
-        // update settings
-        if (MapUtils.isNotEmpty(webAppConfiguration.getApplicationSettings())) {
-            updateApplicationSettings(deployTarget, processHandler);
-        }
-        WebAppUtils.deployArtifactsToAppService(deployTarget, file,
-                webAppConfiguration.isDeployToRoot(), processHandler);
         return deployTarget;
     }
 
-    private void updateApplicationSettings(WebAppBase deployTarget, RunProcessHandler processHandler) {
-        if (deployTarget instanceof WebApp) {
-            processHandler.setText("Updating Application Settings...");
-            WebApp webApp = (WebApp) deployTarget;
-            AzureWebAppMvpModel.getInstance().updateWebAppSettings(webAppSettingModel.getSubscriptionId(),
-                    webApp.id(), webAppConfiguration.getApplicationSettings(), new HashSet<>());
-            processHandler.setText("Updated Application Settings successfully.");
-        } else if (deployTarget instanceof DeploymentSlot) {
-            processHandler.setText("Updating Application Settings...");
-            DeploymentSlot slot = (DeploymentSlot) deployTarget;
-            AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings(webAppSettingModel.getSubscriptionId(),
-                    slot.id(), slot.name(), webAppConfiguration.getApplicationSettings(), new HashSet<>());
-            processHandler.setText("Updated Application Settings successfully.");
+    private void updateApplicationSettings(IAppService deployTarget, RunProcessHandler processHandler) {
+        final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
+        if (MapUtils.isEmpty(applicationSettings)) {
+            return;
+        }
+        if (deployTarget instanceof IWebApp) {
+            processHandler.setText("Updating application settings...");
+            IWebApp webApp = (IWebApp) deployTarget;
+            webApp.update().withAppSettings(applicationSettings).commit();
+            processHandler.setText("Updated application settings successfully.");
+        } else if (deployTarget instanceof IWebAppDeploymentSlot) {
+            processHandler.setText("Updating deployment slot application settings...");
+            AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings((IWebAppDeploymentSlot) deployTarget, applicationSettings);
+            processHandler.setText("Updated deployment slot application settings successfully.");
         }
     }
 
@@ -156,7 +147,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     private IAppService getDeployTargetByConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
         final AzureAppService azureAppService = AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(webAppSettingModel.getSubscriptionId());
         final IWebApp webApp = getOrCreateAzureWebApp(azureAppService, processHandler);
-        if(!isDeployToSlot()) {
+        if (!isDeployToSlot()) {
             return webApp;
         }
         if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
