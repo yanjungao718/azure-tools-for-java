@@ -36,7 +36,7 @@ public class AzureLinkStorage {
         return ServiceManager.getService(project, AzureLinkStorage.Prj.class);
     }
 
-    public synchronized boolean addLinker(LinkPO link) {
+    public synchronized boolean addLink(LinkPO link) {
         Iterator<LinkPO> iterator = links.iterator();
         while (iterator.hasNext()) {
             LinkPO element = iterator.next();
@@ -53,7 +53,7 @@ public class AzureLinkStorage {
         return this.links;
     }
 
-    public List<LinkPO> getLinkersByType(LinkType type) {
+    public List<LinkPO> getLinksByType(LinkType type) {
         return links.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
     }
 
@@ -61,7 +61,7 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_PROJECT: sourceId is the id of the service, and targetId is the id of project or module.
      * For type = SERVICE_TO_SERVICE: sourceId is the id of the first service, and targetId is the id of the second service.
      */
-    public List<LinkPO> getLinkersByServiceId(String serviceId) {
+    public List<LinkPO> getLinksByServiceId(String serviceId) {
         return links.stream().filter(e -> StringUtils.equals(serviceId, e.getServiceId())).collect(Collectors.toList());
     }
 
@@ -69,30 +69,28 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_PROJECT: targetId is the id of the service, and targetId is the id of project or module.
      * For type = SERVICE_TO_SERVICE: targetId is the id of the first service, and targetId is the id of the second service.
      */
-    public List<LinkPO> getLinkersByModuleId(String moduleId) {
+    public List<LinkPO> getLinkByModuleId(String moduleId) {
         return links.stream().filter(e -> StringUtils.equals(moduleId, e.getModuleId())).collect(Collectors.toList());
     }
 
-    public static class AzureLinkerStorageStateComponent extends AzureLinkStorage {
+    public static class AzureLinkStorageStateComponent extends AzureLinkStorage {
 
         public Element getState() {
             Element rootElement = new Element("azureLinks");
-            // Element linkersElement = new Element("linkers");
-            // rootElement.addContent(linkersElement);
             this.writeState(rootElement);
             return rootElement;
         }
 
-        private void writeState(Element linkersElement) {
-            for (LinkPO linker : super.getLinks()) {
-                Element linkerElement = new Element("link");
-                linkerElement.setAttribute("type", linker.getType().name());
-                if (StringUtils.isNotBlank(linker.getEnvPrefix())) {
-                    linkerElement.setAttribute("envPrefix", linker.getEnvPrefix());
+        private void writeState(Element linksElement) {
+            for (LinkPO link : super.getLinks()) {
+                Element linkElement = new Element("link");
+                linkElement.setAttribute("type", link.getType().name());
+                if (StringUtils.isNotBlank(link.getEnvPrefix())) {
+                    linkElement.setAttribute("envPrefix", link.getEnvPrefix());
                 }
-                linkerElement.addContent(new Element("serviceId").setText(linker.getServiceId()));
-                linkerElement.addContent(new Element("moduleId").setText(linker.getModuleId()));
-                linkersElement.addContent(linkerElement);
+                linkElement.addContent(new Element("serviceId").setText(link.getServiceId()));
+                linkElement.addContent(new Element("moduleId").setText(link.getModuleId()));
+                linksElement.addContent(linkElement);
             }
         }
 
@@ -100,24 +98,24 @@ public class AzureLinkStorage {
             this.readState(state);
         }
 
-        private void readState(Element linkersElement) {
-            if (CollectionUtils.isEmpty(linkersElement.getContent())) {
+        private void readState(Element linksElement) {
+            if (CollectionUtils.isEmpty(linksElement.getContent())) {
                 return;
             }
-            for (Content content : linkersElement.getContent()) {
+            for (Content content : linksElement.getContent()) {
                 if (!(content instanceof Element)) {
                     continue;
                 }
-                Element linkerElement = (Element) content;
-                String envPrefix = linkerElement.getAttributeValue("envPrefix");
-                String linkTypeName = linkerElement.getAttributeValue("type");
+                Element linkElement = (Element) content;
+                String envPrefix = linkElement.getAttributeValue("envPrefix");
+                String linkTypeName = linkElement.getAttributeValue("type");
                 LinkType linkType = LinkType.valueOf(linkTypeName);
-                if (CollectionUtils.size(linkerElement.getContent()) != 2) {
+                if (CollectionUtils.size(linkElement.getContent()) != 2) {
                     continue;
                 }
                 String sourceId = null;
                 String targetId = null;
-                for (Content innerContent : linkerElement.getContent()) {
+                for (Content innerContent : linkElement.getContent()) {
                     if (!(content instanceof Element)) {
                         continue;
                     }
@@ -133,8 +131,8 @@ public class AzureLinkStorage {
                 if (super.getLinks().stream()
                         .filter(e -> StringUtils.equals(e.getServiceId(), finalSourceId) && StringUtils.equals(e.getModuleId(), finalTargetId))
                         .count() <= 0L) {
-                    LinkPO linkerPO = new LinkPO(finalSourceId, finalTargetId, linkType, envPrefix);
-                    super.getLinks().add(linkerPO);
+                    LinkPO linkPO = new LinkPO(finalSourceId, finalTargetId, linkType, envPrefix);
+                    super.getLinks().add(linkPO);
                 }
             }
         }
@@ -144,14 +142,14 @@ public class AzureLinkStorage {
             name = "azureLinks",
             storages = {@Storage("azure/azureLinks.xml")}
     )
-    public static class App extends AzureLinkerStorageStateComponent implements PersistentStateComponent<Element> {
+    public static class App extends AzureLinkStorageStateComponent implements PersistentStateComponent<Element> {
     }
 
     @State(
             name = "azureLinks",
             storages = {@Storage("azure/azureLinks.xml")}
     )
-    public static class Prj extends AzureLinkerStorageStateComponent implements PersistentStateComponent<Element> {
+    public static class Prj extends AzureLinkStorageStateComponent implements PersistentStateComponent<Element> {
     }
 
 }
