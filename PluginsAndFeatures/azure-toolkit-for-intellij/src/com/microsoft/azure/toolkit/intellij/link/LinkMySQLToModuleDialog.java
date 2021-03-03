@@ -47,7 +47,7 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
 
     @Override
     protected String getDialogTitle() {
-        return "Link Azure Database for MySQL";
+        return "Connect Azure Database for MySQL";
     }
 
     @Override
