@@ -11,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class LinkAzureServiceBeforeRunTask extends BeforeRunTask<LinkAzureServiceBeforeRunTask> {
 
-    protected LinkAzureServiceBeforeRunTask(@NotNull Key<LinkAzureServiceBeforeRunTask> providerId, boolean alwaysEnable) {
+    protected LinkAzureServiceBeforeRunTask(@NotNull Key<LinkAzureServiceBeforeRunTask> providerId, boolean enable) {
         super(providerId);
-        setEnabled(alwaysEnable);
+        setEnabled(enable);
     }
 }

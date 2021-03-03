@@ -12,7 +12,6 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
-import java.util.Objects;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,9 +24,9 @@ public class JdbcUrl {
     public static JdbcUrl from(String jdbcUrl) {
         Preconditions.checkArgument(StringUtils.startsWith(jdbcUrl, "jdbc:"), "jdbcUrl is not valid.");
         URI uri = URI.create(jdbcUrl.substring(5));
-        String hostname = Objects.nonNull(uri) ? uri.getHost() : null;
-        Integer port = Objects.nonNull(uri) ? uri.getPort() : null;
-        String path = Objects.nonNull(uri) ? uri.getPath() : null;
+        String hostname = uri.getHost();
+        Integer port = uri.getPort();
+        String path = uri.getPath();
         String database = StringUtils.startsWith(path, "/") ? path.substring(1) : path;
         return new JdbcUrl(hostname, port, database);
     }
