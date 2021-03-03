@@ -23,6 +23,7 @@ import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.link.LinkMySQLToModuleDialog;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
+import com.microsoft.azure.toolkit.lib.link.AzureLinkService;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -66,21 +67,26 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                     .stream()
                     .filter(e -> LinkType.SERVICE_WITH_MODULE == e.getType())
                     .collect(Collectors.toList());
-            boolean insertRequired = true;
-            if (CollectionUtils.isEmpty(moduleLinkList)) {
-                final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
-                insertRequired = dialog.showAndGet();
-            }
-            if (insertRequired) {
+            if (CollectionUtils.isNotEmpty(moduleLinkList)) {
                 String envPrefix = moduleLinkList.get(0).getEnvPrefix();
-                StringBuilder builder = new StringBuilder();
-                builder.append("=${").append(envPrefix).append("URL}").append(StringUtils.LF)
-                        .append("spring.datasource.username=${").append(envPrefix).append("USERNAME}").append(StringUtils.LF)
-                        .append("spring.datasource.password=${").append(envPrefix).append("PASSWORD}").append(StringUtils.LF);
-                EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), builder.toString(), true);
+                this.insertSpringDatasourceProperties(envPrefix, insertionContext);
             } else {
-                EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
+                final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
+                String envPrefix = dialog.showAndGetEnvPrefix();
+                if (StringUtils.isNotBlank(envPrefix)) {
+                    this.insertSpringDatasourceProperties(envPrefix, insertionContext);
+                } else {
+                    EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
+                }
             }
+        }
+
+        private void insertSpringDatasourceProperties(String envPrefix, @NotNull InsertionContext insertionContext) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("=${").append(envPrefix).append("URL}").append(StringUtils.LF)
+                    .append("spring.datasource.username=${").append(envPrefix).append("USERNAME}").append(StringUtils.LF)
+                    .append("spring.datasource.password=${").append(envPrefix).append("PASSWORD}").append(StringUtils.LF);
+            EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), builder.toString(), true);
         }
     }
 

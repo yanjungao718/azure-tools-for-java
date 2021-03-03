@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.link.AzureLinkService;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -45,6 +46,11 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
         return basicPanel;
     }
 
+    public String showAndGetEnvPrefix() {
+        boolean exitWithOkButton = this.showAndGet();
+        return exitWithOkButton ? basicPanel.getData().getEnvPrefix() : StringUtils.EMPTY;
+    }
+
     @Override
     protected String getDialogTitle() {
         return "Connect Azure Database for MySQL";
@@ -59,16 +65,16 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
         // TODO: place custom component creation code here
         MySQLResourceConfig source = MySQLResourceConfig.getDefaultConfig(node);
         ModuleResourceConfig target = ModuleResourceConfig.getDefaultConfig(module);
-        LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite = new LinkConfig<>(source, target);
-        basicPanel = new BasicLinkMySQLPanel(project, () -> linkComposite);
+        LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkConfig = new LinkConfig<>(source, target);
+        basicPanel = new BasicLinkMySQLPanel(project, () -> linkConfig);
     }
 
-    private void doLink(LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite, Project project, LinkMySQLToModuleDialog dialog) {
+    private void doLink(LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkConfig, Project project, LinkMySQLToModuleDialog dialog) {
+        dialog.close(0);
         final Runnable runnable = () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
-            DefaultLoader.getIdeHelper().invokeLater(dialog::close);
-            AzureLinkService.getInstance().link(project, linkComposite);
+            AzureLinkService.getInstance().link(project, linkConfig);
         };
         String progressMessage = "Linking Azure Database for MySQL with Module...";
         final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
