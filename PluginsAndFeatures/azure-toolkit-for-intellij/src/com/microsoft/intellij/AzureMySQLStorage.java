@@ -96,7 +96,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                     continue;
                 }
                 if (super.getResources().stream().filter(e -> StringUtils.equals(e.getId(), id)).count() <= 0L) {
-                    MySQLResourcePO service = new MySQLResourcePO.Builder()
+                    MySQLResourcePO service = MySQLResourcePO.builder()
                             .id(id)
                             .resourceId(resourceId)
                             .url(url)

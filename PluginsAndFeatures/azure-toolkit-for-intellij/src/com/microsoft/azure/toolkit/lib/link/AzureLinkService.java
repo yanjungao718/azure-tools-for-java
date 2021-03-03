@@ -7,12 +7,12 @@ package com.microsoft.azure.toolkit.lib.link;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.link.LinkComposite;
-import com.microsoft.azure.toolkit.intellij.link.ModuleLinkConfig;
+import com.microsoft.azure.toolkit.intellij.link.LinkConfig;
+import com.microsoft.azure.toolkit.intellij.link.ModuleResourceConfig;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
-import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLLinkConfig;
+import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLResourceConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
@@ -40,7 +40,7 @@ public class AzureLinkService {
 
     }
 
-    public void link(Project project, LinkComposite<MySQLLinkConfig, ModuleLinkConfig> linkComposite) {
+    public void link(Project project, LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite) {
         ModulePO modulePO = createModulePO(linkComposite.getModule());
         MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
         // create link
@@ -56,19 +56,19 @@ public class AzureLinkService {
         AzureLinkStorage.getProjectStorage(project).addLink(linkPO);
     }
 
-    private ModulePO createModulePO(ModuleLinkConfig config) {
+    private ModulePO createModulePO(ModuleResourceConfig config) {
         return new ModulePO(config.getModule().getName());
     }
 
-    private MySQLResourcePO createResourcePO(MySQLLinkConfig config) {
-        MySQLResourcePO mysqlPO = new MySQLResourcePO.Builder()
+    private MySQLResourcePO createResourcePO(MySQLResourceConfig config) {
+        MySQLResourcePO resourcePO = MySQLResourcePO.builder()
                 .id(config.getId())
                 .resourceId(config.getServer().id())
                 .url(config.getUrl())
                 .username(config.getUsername())
                 .passwordSave(config.getPasswordConfig().getPasswordSaveType())
                 .build();
-        return mysqlPO;
+        return resourcePO;
     }
 
     public Map<String, String> retrieveLinkEnvsByModuleName(Project project, String moduleName) {

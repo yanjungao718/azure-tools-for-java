@@ -17,8 +17,8 @@ import com.microsoft.azure.toolkit.intellij.appservice.subscription.Subscription
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ModuleComboBox;
-import com.microsoft.azure.toolkit.intellij.link.LinkComposite;
-import com.microsoft.azure.toolkit.intellij.link.ModuleLinkConfig;
+import com.microsoft.azure.toolkit.intellij.link.LinkConfig;
+import com.microsoft.azure.toolkit.intellij.link.ModuleResourceConfig;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -41,7 +41,7 @@ import java.util.function.Supplier;
 
 @Getter
 @Setter
-public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, ModuleLinkConfig>> extends JPanel implements AzureFormPanel<T> {
+public class BasicLinkMySQLPanel<T extends LinkConfig<MySQLResourceConfig, ModuleResourceConfig>> extends JPanel implements AzureFormPanel<T> {
     private SubscriptionComboBox subscriptionComboBox;
     private ServerComboBox serverComboBox;
     private DatabaseComboBox databaseComboBox;
@@ -235,7 +235,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     @Override
     public T getData() {
         final T config = supplier.get();
-        MySQLLinkConfig source = config.getResource();
+        MySQLResourceConfig source = config.getResource();
         source.setSubscription(subscriptionComboBox.getValue());
         source.setServer(serverComboBox.getValue());
         source.setDatabase(databaseComboBox.getValue());
@@ -245,7 +245,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         passwordConfig.setPasswordSaveType(passwordSaveComboBox.getValue());
         source.setPasswordConfig(passwordConfig);
         source.setUrl(urlTextField.getText());
-        ModuleLinkConfig target = config.getModule();
+        ModuleResourceConfig target = config.getModule();
         target.setModule(moduleComboBox.getValue());
         config.setEnvPrefix(envPrefixTextField.getText());
         return config;
@@ -253,7 +253,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
 
     @Override
     public void setData(T data) {
-        MySQLLinkConfig source = data.getResource();
+        MySQLResourceConfig source = data.getResource();
         this.subscriptionComboBox.setValue(source.getSubscription());
         this.serverComboBox.setValue(source.getServer());
         this.databaseComboBox.setValue(source.getDatabase());
@@ -262,7 +262,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
             this.inputPasswordField.setText(String.valueOf(source.getPasswordConfig().getPassword()));
             this.passwordSaveComboBox.setValue(source.getPasswordConfig().getPasswordSaveType());
         }
-        ModuleLinkConfig target = data.getModule();
+        ModuleResourceConfig target = data.getModule();
         this.moduleComboBox.setValue(target.getModule());
         this.envPrefixTextField.setText(data.getEnvPrefix());
     }

@@ -14,12 +14,12 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ModuleLinkConfig extends BaseLinkConfig {
+public class ModuleResourceConfig extends BaseResourceConfig {
 
     private Module module;
 
-    public static ModuleLinkConfig getDefaultConfig(Module module) {
-        ModuleLinkConfig config = new ModuleLinkConfig();
+    public static ModuleResourceConfig getDefaultConfig(Module module) {
+        ModuleResourceConfig config = new ModuleResourceConfig();
         config.setModule(module);
         return config;
     }
