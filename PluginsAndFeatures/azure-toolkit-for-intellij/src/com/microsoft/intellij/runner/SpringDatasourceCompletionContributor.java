@@ -72,9 +72,12 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                 insertRequired = dialog.showAndGet();
             }
             if (insertRequired) {
-                EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=${AZURE_MYSQL_URL}" + StringUtils.LF +
-                        "spring.datasource.username=${AZURE_MYSQL_USERNAME}" + StringUtils.LF +
-                        "spring.datasource.password=${AZURE_MYSQL_PASSWORD}" + StringUtils.LF, true);
+                String envPrefix = moduleLinkList.get(0).getEnvPrefix();
+                StringBuilder builder = new StringBuilder();
+                builder.append("=${").append(envPrefix).append("URL}").append(StringUtils.LF)
+                        .append("spring.datasource.username=${").append(envPrefix).append("USERNAME}").append(StringUtils.LF)
+                        .append("spring.datasource.password=${").append(envPrefix).append("PASSWORD}").append(StringUtils.LF);
+                EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), builder.toString(), true);
             } else {
                 EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
             }
