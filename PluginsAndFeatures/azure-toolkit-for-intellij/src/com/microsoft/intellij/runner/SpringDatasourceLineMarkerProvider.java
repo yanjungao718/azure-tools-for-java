@@ -18,7 +18,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
-import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
+import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
@@ -52,7 +52,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 if (Objects.isNull(link)) {
                     return null;
                 }
-                MySQLServicePO service = AzureMySQLStorage.getStorage().getServicesById(link.getServiceId());
+                MySQLResourcePO service = AzureMySQLStorage.getStorage().getServicesById(link.getServiceId());
                 if (Objects.isNull(service)) {
                     return null;
                 }
@@ -60,7 +60,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 LineMarkerInfo lineMarkerInfo = new LineMarkerInfo<>(element, element.getTextRange(),
                         AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
                         element2 -> String.format("Link to Azure Database for MySQL (%s)", url.getHostname()),
-                        new SpringDatasourceNavigationHandler(service.getId()),
+                        new SpringDatasourceNavigationHandler(service.getResourceId()),
                         GutterIconRenderer.Alignment.LEFT);
                 return lineMarkerInfo;
             }
@@ -77,19 +77,18 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
 
     public class SpringDatasourceNavigationHandler implements GutterIconNavigationHandler {
 
-        private String serviceId;
+        private String resourceId;
 
-        SpringDatasourceNavigationHandler(String serviceId) {
-            this.serviceId = serviceId;
+        SpringDatasourceNavigationHandler(String resourceId) {
+            this.resourceId = resourceId;
         }
 
         @Override
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
-            String[] serviceIdSegments = serviceId.split("#");
-            ResourceId resourceId = ResourceId.fromString(serviceIdSegments[0]);
-            Server server = MySQLMvpModel.findServer(resourceId.subscriptionId(), resourceId.resourceGroupName(), resourceId.name());
+            ResourceId resourceIdObject = ResourceId.fromString(resourceId);
+            Server server = MySQLMvpModel.findServer(resourceIdObject.subscriptionId(), resourceIdObject.resourceGroupName(), resourceIdObject.name());
             if (Objects.nonNull(server)) {
-                final MySQLNode node = new MySQLNode(null, resourceId.subscriptionId(), server) {
+                final MySQLNode node = new MySQLNode(null, resourceIdObject.subscriptionId(), server) {
                     @Override
                     public Object getProject() {
                         return psiElement.getProject();

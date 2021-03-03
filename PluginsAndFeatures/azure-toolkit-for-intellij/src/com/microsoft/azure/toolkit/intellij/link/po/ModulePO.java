@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.link.po;
 
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 
-public class ModulePO extends BaseServicePO {
+public class ModulePO extends BaseResourcePO {
 
     public ModulePO(String id) {
         super(id, ServiceType.IDE_MODULE);

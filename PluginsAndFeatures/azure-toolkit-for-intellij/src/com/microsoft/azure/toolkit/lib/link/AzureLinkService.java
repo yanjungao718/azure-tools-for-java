@@ -15,10 +15,10 @@ import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLLinkConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordDialog;
-import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
+import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.ModulePO;
-import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
+import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
 import org.apache.commons.collections4.CollectionUtils;
@@ -42,14 +42,14 @@ public class AzureLinkService {
 
     public void link(Project project, LinkComposite<MySQLLinkConfig, ModuleLinkConfig> linkComposite) {
         ModulePO modulePO = createModulePO(linkComposite.getModule());
-        MySQLServicePO resource = createResourcePO(linkComposite.getService());
+        MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
         // create link
         LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
         // storage mysql
         AzureMySQLStorage.getStorage().addService(resource);
         // storage password
-        if (ArrayUtils.isNotEmpty(linkComposite.getService().getPasswordConfig().getPassword())) {
-            String inputPassword = String.valueOf(linkComposite.getService().getPasswordConfig().getPassword());
+        if (ArrayUtils.isNotEmpty(linkComposite.getResource().getPasswordConfig().getPassword())) {
+            String inputPassword = String.valueOf(linkComposite.getResource().getPasswordConfig().getPassword());
             AzureMySQLStorage.getStorage().savePassword(resource, resource.getPasswordSave(), resource.getUsername(), inputPassword);
         }
         // storage link
@@ -60,9 +60,10 @@ public class AzureLinkService {
         return new ModulePO(config.getModule().getName());
     }
 
-    private MySQLServicePO createResourcePO(MySQLLinkConfig config) {
-        MySQLServicePO mysqlPO = new MySQLServicePO.Builder()
+    private MySQLResourcePO createResourcePO(MySQLLinkConfig config) {
+        MySQLResourcePO mysqlPO = new MySQLResourcePO.Builder()
                 .id(config.getId())
+                .resourceId(config.getServer().id())
                 .url(config.getUrl())
                 .username(config.getUsername())
                 .passwordSave(config.getPasswordConfig().getPasswordSaveType())
@@ -80,15 +81,15 @@ public class AzureLinkService {
             return linkedEnvMap;
         }
         // services in application level
-        Set<? extends BaseServicePO> serviceSet = AzureMySQLStorage.getStorage().getServices();
-        for (BaseServicePO service : serviceSet) {
+        Set<? extends BaseResourcePO> serviceSet = AzureMySQLStorage.getStorage().getServices();
+        for (BaseResourcePO service : serviceSet) {
             for (LinkPO link : moduleRelatedLinkList) {
                 if (!StringUtils.equals(link.getServiceId(), service.getId())) {
                     continue;
                 }
                 String envPrefix = link.getEnvPrefix();
                 if (ServiceType.AZURE_DATABASE_FOR_MYSQL.equals(service.getType())) {
-                    MySQLServicePO mysql = (MySQLServicePO) service;
+                    MySQLResourcePO mysql = (MySQLResourcePO) service;
                     String password = readPasswordCredentials(project, mysql);
                     linkedEnvMap.put(envPrefix + "URL", mysql.getUrl());
                     linkedEnvMap.put(envPrefix + "USERNAME", mysql.getUsername());
@@ -99,7 +100,7 @@ public class AzureLinkService {
         return linkedEnvMap;
     }
 
-    private String readPasswordCredentials(Project project, MySQLServicePO service) {
+    private String readPasswordCredentials(Project project, MySQLResourcePO service) {
         String storagedPassword = AzureMySQLStorage.getStorage().loadPassword(service, service.getPasswordSave(), service.getUsername());
         if (StringUtils.isNotBlank(storagedPassword)) {
             if (MySQLConnectionUtils.connect(service.getUrl(), service.getUsername(), storagedPassword)) {

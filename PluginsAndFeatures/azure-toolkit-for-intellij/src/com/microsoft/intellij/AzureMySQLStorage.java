@@ -12,14 +12,14 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordSaveType;
-import com.microsoft.azure.toolkit.intellij.link.po.MySQLServicePO;
+import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Content;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
-public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLServicePO> {
+public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResourcePO> {
 
     private AzureMySQLStorage() {
     }
@@ -45,7 +45,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLServiceP
         }
 
         private void writeState(Element servicesElement) {
-            for (MySQLServicePO service : super.getServices()) {
+            for (MySQLResourcePO service : super.getServices()) {
                 Element serviceElement = new Element(ELEMENT_NAME_SERVICE);
                 serviceElement.setAttribute("type", service.getType().getName());
                 serviceElement.setAttribute("id", service.getId());
@@ -88,7 +88,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLServiceP
                     }
                 }
                 if (super.getServices().stream().filter(e -> StringUtils.equals(e.getId(), id)).count() <= 0L) {
-                    MySQLServicePO service = new MySQLServicePO.Builder()
+                    MySQLResourcePO service = new MySQLResourcePO.Builder()
                             .id(id)
                             .url(url)
                             .username(username)

@@ -7,27 +7,31 @@ package com.microsoft.azure.toolkit.intellij.link.po;
 
 
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordSaveType;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class MySQLServicePO extends BaseServicePO {
+public class MySQLResourcePO extends BaseResourcePO {
 
     private String url;
     private String username;
+    private String database;
     @Setter
     private PasswordSaveType passwordSave;
 
-    private MySQLServicePO(String id, String url, String username, PasswordSaveType passwordSave) {
-        super(id, ServiceType.AZURE_DATABASE_FOR_MYSQL);
+    private MySQLResourcePO(String id, String resourceId, String url, String username, PasswordSaveType passwordSave) {
+        super(id, resourceId, ServiceType.AZURE_DATABASE_FOR_MYSQL);
         this.url = url;
         this.username = username;
+        this.database = JdbcUrl.from(url).getDatabase();
         this.passwordSave = passwordSave;
     }
 
     public static class Builder {
         private String id;
+        private String resourceId;
         private String url;
         private String username;
         private PasswordSaveType passwordSave;
@@ -35,6 +39,10 @@ public class MySQLServicePO extends BaseServicePO {
         public Builder id(String id) {
             this.id = id;
             return this;
+        }
+
+        public Builder resourceId(String resourceId) {
+            this.resourceId = resourceId;
         }
 
         public Builder url(String url) {
@@ -52,8 +60,8 @@ public class MySQLServicePO extends BaseServicePO {
             return this;
         }
 
-        public MySQLServicePO build() {
-            return new MySQLServicePO(id, url, username, passwordSave);
+        public MySQLResourcePO build() {
+            return new MySQLResourcePO(id, resourceId, url, username, passwordSave);
         }
 
     }

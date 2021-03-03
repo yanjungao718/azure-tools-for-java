@@ -13,8 +13,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
-public abstract class BaseServicePO {
+public abstract class BaseResourcePO {
 
     private String id;
+    private String resourceId;
     private ServiceType type;
 }

@@ -6,13 +6,13 @@
 package com.microsoft.intellij;
 
 import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
-import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
+import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AzureServiceStorage<T extends BaseServicePO> {
+public abstract class AzureServiceStorage<T extends BaseResourcePO> {
 
     protected static final String ELEMENT_NAME_SERVICES = "services";
     protected static final String ELEMENT_NAME_SERVICE = "service";
