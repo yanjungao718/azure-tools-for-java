@@ -32,9 +32,6 @@ public class LinkAzureServiceRunConfigurationExtension extends RunConfigurationE
     @Override
     public boolean isApplicableFor(@NotNull RunConfigurationBase<?> runConfigurationBase) {
         Boolean linkAzureService = runConfigurationBase.getUserData(LinkAzureServiceBeforeRunProvider.LINK_AZURE_SERVICE);
-        if (Boolean.TRUE.equals(linkAzureService)) {
-            return true;
-        }
-        return false;
+        return Boolean.TRUE.equals(linkAzureService);
     }
 }

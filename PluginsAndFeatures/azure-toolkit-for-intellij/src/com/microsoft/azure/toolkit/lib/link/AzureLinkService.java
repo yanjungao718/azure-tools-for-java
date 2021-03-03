@@ -33,7 +33,7 @@ public class AzureLinkService {
     private static final AzureLinkService instance = new AzureLinkService();
 
     public static AzureLinkService getInstance() {
-        return AzureLinkService.instance;
+        return instance;
     }
 
     private AzureLinkService() {
@@ -50,9 +50,7 @@ public class AzureLinkService {
         // storage password
         if (ArrayUtils.isNotEmpty(linkComposite.getService().getPasswordConfig().getPassword())) {
             String inputPassword = String.valueOf(linkComposite.getService().getPasswordConfig().getPassword());
-            if (MySQLConnectionUtils.connect(resource.getUrl(), resource.getUsername(), inputPassword)) {
-                AzureMySQLStorage.getStorage().savePassword(resource, resource.getPasswordSave(), resource.getUsername(), inputPassword);
-            }
+            AzureMySQLStorage.getStorage().savePassword(resource, resource.getPasswordSave(), resource.getUsername(), inputPassword);
         }
         // storage link
         AzureLinkStorage.getProjectStorage(project).addLinker(linkPO);
