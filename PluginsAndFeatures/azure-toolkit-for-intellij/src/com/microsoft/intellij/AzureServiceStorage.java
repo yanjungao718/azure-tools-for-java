@@ -5,7 +5,7 @@
 
 package com.microsoft.intellij;
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +34,7 @@ public abstract class AzureServiceStorage<T extends BaseResourcePO> {
         return this.resources;
     }
 
-    public List<T> getResourcesByType(ServiceType type) {
+    public List<T> getResourcesByType(ResourceType type) {
         return resources.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
     }
 

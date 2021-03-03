@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.link.LinkComposite;
 import com.microsoft.azure.toolkit.intellij.link.ModuleLinkConfig;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLLinkConfig;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
@@ -88,7 +88,7 @@ public class AzureLinkService {
                     continue;
                 }
                 String envPrefix = link.getEnvPrefix();
-                if (ServiceType.AZURE_DATABASE_FOR_MYSQL.equals(service.getType())) {
+                if (ResourceType.AZURE_DATABASE_FOR_MYSQL.equals(service.getType())) {
                     MySQLResourcePO mysql = (MySQLResourcePO) service;
                     String password = readPasswordCredentials(project, mysql);
                     linkedEnvMap.put(envPrefix + "URL", mysql.getUrl());

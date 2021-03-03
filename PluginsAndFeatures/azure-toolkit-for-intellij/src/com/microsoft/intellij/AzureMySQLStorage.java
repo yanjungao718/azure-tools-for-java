@@ -10,7 +10,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordSaveType;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
 import org.apache.commons.collections4.CollectionUtils;
@@ -68,7 +68,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                 Element serviceElement = (Element) content;
                 final String id = serviceElement.getAttributeValue("id");
                 String serviceTypeName = serviceElement.getAttributeValue("type");
-                ServiceType serviceType = ServiceType.parseTypeByName(serviceTypeName);
+                ResourceType serviceType = ResourceType.parseTypeByName(serviceTypeName);
                 if (CollectionUtils.size(serviceElement.getContent()) != 3) {
                     continue;
                 }

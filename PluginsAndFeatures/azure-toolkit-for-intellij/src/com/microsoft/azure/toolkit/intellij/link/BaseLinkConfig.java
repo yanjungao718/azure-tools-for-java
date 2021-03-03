@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.link;
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,6 +21,6 @@ public abstract class BaseLinkConfig {
 
     private String id = UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
 
-    protected abstract ServiceType getType();
+    protected abstract ResourceType getType();
 
 }

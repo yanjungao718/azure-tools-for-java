@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.link.po;
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,7 +17,7 @@ public abstract class BaseResourcePO {
 
     private String id;
     private String resourceId;
-    private ServiceType type;
+    private ResourceType type;
 
     public String getBusinessUniqueKey() {
         return type + "#" + resourceId;

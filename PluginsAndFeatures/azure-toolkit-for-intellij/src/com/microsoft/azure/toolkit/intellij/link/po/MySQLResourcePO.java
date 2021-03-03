@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.link.po;
 
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordSaveType;
 import lombok.Getter;
@@ -22,7 +22,7 @@ public class MySQLResourcePO extends BaseResourcePO {
     private PasswordSaveType passwordSave;
 
     private MySQLResourcePO(String id, String resourceId, String url, String username, PasswordSaveType passwordSave) {
-        super(id, resourceId, ServiceType.AZURE_DATABASE_FOR_MYSQL);
+        super(id, resourceId, ResourceType.AZURE_DATABASE_FOR_MYSQL);
         this.url = url;
         this.username = username;
         this.database = JdbcUrl.from(url).getDatabase();

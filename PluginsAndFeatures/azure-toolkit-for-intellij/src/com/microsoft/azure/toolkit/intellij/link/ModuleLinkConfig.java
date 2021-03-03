@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.link;
 
 import com.intellij.openapi.module.Module;
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,8 +25,8 @@ public class ModuleLinkConfig extends BaseLinkConfig {
     }
 
     @Override
-    public ServiceType getType() {
-        return ServiceType.IDE_MODULE;
+    public ResourceType getType() {
+        return ResourceType.IDE_MODULE;
     }
 
 }

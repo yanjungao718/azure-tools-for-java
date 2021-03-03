@@ -9,7 +9,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.link.BaseLinkConfig;
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import lombok.Getter;
@@ -44,7 +44,7 @@ public class MySQLLinkConfig extends BaseLinkConfig {
     }
 
     @Override
-    public ServiceType getType() {
-        return ServiceType.AZURE_DATABASE_FOR_MYSQL;
+    public ResourceType getType() {
+        return ResourceType.AZURE_DATABASE_FOR_MYSQL;
     }
 }
