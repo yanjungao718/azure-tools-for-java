@@ -1074,6 +1074,23 @@ public class AzureWebAppMvpModel {
     }
 
     /**
+     * Update app settings of deployment slot.
+     * todo: move to app service library
+     */
+    @AzureOperation(
+            name = "webapp|deployment.update_settings",
+            params = {"$slot.entity().getName()", "$slot.entity().getWebappName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
+        final AzureResourceManager azureResourceManager =
+                Track2Manager.getAzureResourceManager(slot.entity().getSubscriptionId());
+        final com.azure.resourcemanager.appservice.models.DeploymentSlot slotClient =
+                azureResourceManager.webApps().getById(slot.webApp().id()).deploymentSlots().getById(slot.id());
+        slotClient.update().withAppSettings(toUpdate).apply();
+    }
+
+    /**
      * Work Around:
      * When a web app is created from Azure Portal, there are hidden tags associated with the app.
      * It will be messed up when calling "update" API.
