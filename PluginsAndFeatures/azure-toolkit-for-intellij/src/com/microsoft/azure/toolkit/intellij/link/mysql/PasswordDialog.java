@@ -86,12 +86,6 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
         return listener;
     }
 
-    @Override
-    public void doCancelAction() {
-        System.out.println("do cancel......");
-        super.doCancelAction();
-    }
-
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
         testConnectionButton.setIcon(new AnimatedIcon.Default());

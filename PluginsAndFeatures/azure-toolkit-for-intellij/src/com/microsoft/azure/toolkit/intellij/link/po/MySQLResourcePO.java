@@ -48,6 +48,7 @@ public class MySQLResourcePO extends BaseResourcePO {
 
         public Builder resourceId(String resourceId) {
             this.resourceId = resourceId;
+            return this;
         }
 
         public Builder url(String url) {
