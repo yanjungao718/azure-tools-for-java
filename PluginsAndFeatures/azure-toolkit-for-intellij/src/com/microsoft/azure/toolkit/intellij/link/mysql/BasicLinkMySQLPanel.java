@@ -82,13 +82,13 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         envPrefixTextField.setMaximumSize(lastColumnSize);
         envPrefixTextField.setSize(lastColumnSize);
         T config = supplier.get();
-        Optional.ofNullable(config.getService().getSubscription())
+        Optional.ofNullable(config.getResource().getSubscription())
                 .ifPresent((subscription -> {
                     this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscription.subscriptionId(), Subscription::subscriptionId));
                     subscriptionComboBox.setForceDisable(true);
                     subscriptionComboBox.setEditable(false);
                 }));
-        Optional.ofNullable(config.getService().getServer())
+        Optional.ofNullable(config.getResource().getServer())
                 .ifPresent((server -> {
                     this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(server.fullyQualifiedDomainName(), Server::fullyQualifiedDomainName));
                     serverComboBox.setForceDisable(true);
@@ -100,9 +100,9 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
                     moduleComboBox.setForceDisable(true);
                     moduleComboBox.setEditable(false);
                 }));
-        if (Objects.nonNull(config.getService().getPasswordConfig())
-                && Objects.nonNull(config.getService().getPasswordConfig().getPasswordSaveType())) {
-            passwordSaveComboBox.setValue(config.getService().getPasswordConfig().getPasswordSaveType());
+        if (Objects.nonNull(config.getResource().getPasswordConfig())
+                && Objects.nonNull(config.getResource().getPasswordConfig().getPasswordSaveType())) {
+            passwordSaveComboBox.setValue(config.getResource().getPasswordConfig().getPasswordSaveType());
         }
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
@@ -235,7 +235,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
     @Override
     public T getData() {
         final T config = supplier.get();
-        MySQLLinkConfig source = config.getService();
+        MySQLLinkConfig source = config.getResource();
         source.setSubscription(subscriptionComboBox.getValue());
         source.setServer(serverComboBox.getValue());
         source.setDatabase(databaseComboBox.getValue());
@@ -245,7 +245,6 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         passwordConfig.setPasswordSaveType(passwordSaveComboBox.getValue());
         source.setPasswordConfig(passwordConfig);
         source.setUrl(urlTextField.getText());
-        source.setId(serverComboBox.getValue().id() + "#" + databaseComboBox.getValue().name());
         ModuleLinkConfig target = config.getModule();
         target.setModule(moduleComboBox.getValue());
         config.setEnvPrefix(envPrefixTextField.getText());
@@ -254,7 +253,7 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
 
     @Override
     public void setData(T data) {
-        MySQLLinkConfig source = data.getService();
+        MySQLLinkConfig source = data.getResource();
         this.subscriptionComboBox.setValue(source.getSubscription());
         this.serverComboBox.setValue(source.getServer());
         this.databaseComboBox.setValue(source.getDatabase());

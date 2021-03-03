@@ -13,14 +13,14 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class LinkComposite<S extends BaseLinkConfig, T extends BaseLinkConfig> {
+public class LinkComposite<R extends BaseLinkConfig, T extends BaseLinkConfig> {
 
-    private S service;
+    private R resource;
     private T module;
     private String envPrefix;
 
-    public LinkComposite(S source, T target) {
-        this.service = source;
+    public LinkComposite(R resource, T target) {
+        this.resource = resource;
         this.module = target;
     }
 
