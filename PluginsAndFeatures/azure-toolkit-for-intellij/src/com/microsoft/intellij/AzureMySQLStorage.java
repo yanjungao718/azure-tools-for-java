@@ -49,6 +49,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                 Element serviceElement = new Element(ELEMENT_NAME_RESOURCE);
                 serviceElement.setAttribute("type", service.getType().getName());
                 serviceElement.setAttribute("id", service.getId());
+                serviceElement.addContent(new Element("resourceId").setText(service.getResourceId()));
                 serviceElement.addContent(new Element("url").setText(service.getUrl()));
                 serviceElement.addContent(new Element("username").setText(service.getUsername()));
                 serviceElement.addContent(new Element("passwordSave").setText(service.getPasswordSave().name()));
@@ -71,6 +72,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                 if (CollectionUtils.size(serviceElement.getContent()) != 3) {
                     continue;
                 }
+                String resourceId = null;
                 String url = null;
                 String username = null;
                 String passwordSave = null;
@@ -79,6 +81,9 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                         continue;
                     }
                     Element innerElement = (Element) innerContent;
+                    if ("resourceId".equals(innerElement.getName())) {
+                        resourceId = innerElement.getText();
+                    }
                     if ("url".equals(innerElement.getName())) {
                         url = innerElement.getText();
                     } else if ("username".equals(innerElement.getName())) {
@@ -87,9 +92,13 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                         passwordSave = innerElement.getText();
                     }
                 }
+                if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(url) || StringUtils.isBlank(username)) {
+                    continue;
+                }
                 if (super.getResources().stream().filter(e -> StringUtils.equals(e.getId(), id)).count() <= 0L) {
                     MySQLResourcePO service = new MySQLResourcePO.Builder()
                             .id(id)
+                            .resourceId(resourceId)
                             .url(url)
                             .username(username)
                             .passwordSave(PasswordSaveType.valueOf(passwordSave))

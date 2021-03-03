@@ -88,7 +88,7 @@ public class AzureLinkStorage {
                 if (StringUtils.isNotBlank(link.getEnvPrefix())) {
                     linkElement.setAttribute("envPrefix", link.getEnvPrefix());
                 }
-                linkElement.addContent(new Element("serviceId").setText(link.getResourceId()));
+                linkElement.addContent(new Element("resourceId").setText(link.getResourceId()));
                 linkElement.addContent(new Element("moduleId").setText(link.getModuleId()));
                 linksElement.addContent(linkElement);
             }
@@ -113,25 +113,28 @@ public class AzureLinkStorage {
                 if (CollectionUtils.size(linkElement.getContent()) != 2) {
                     continue;
                 }
-                String sourceId = null;
-                String targetId = null;
+                String resourceId = null;
+                String moduleId = null;
                 for (Content innerContent : linkElement.getContent()) {
                     if (!(content instanceof Element)) {
                         continue;
                     }
                     Element innerElement = (Element) innerContent;
-                    if ("serviceId".equals(innerElement.getName())) {
-                        sourceId = innerElement.getText();
+                    if ("resourceId".equals(innerElement.getName())) {
+                        resourceId = innerElement.getText();
                     } else if ("moduleId".equals(innerElement.getName())) {
-                        targetId = innerElement.getText();
+                        moduleId = innerElement.getText();
                     }
                 }
-                final String finalSourceId = sourceId;
-                final String finalTargetId = targetId;
+                if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(moduleId)) {
+                    continue;
+                }
+                final String finalResourceId = resourceId;
+                final String finalModuleId = moduleId;
                 if (super.getLinks().stream()
-                        .filter(e -> StringUtils.equals(e.getResourceId(), finalSourceId) && StringUtils.equals(e.getModuleId(), finalTargetId))
+                        .filter(e -> StringUtils.equals(e.getResourceId(), finalResourceId) && StringUtils.equals(e.getModuleId(), finalModuleId))
                         .count() <= 0L) {
-                    LinkPO linkPO = new LinkPO(finalSourceId, finalTargetId, linkType, envPrefix);
+                    LinkPO linkPO = new LinkPO(finalResourceId, finalModuleId, linkType, envPrefix);
                     super.getLinks().add(linkPO);
                 }
             }
