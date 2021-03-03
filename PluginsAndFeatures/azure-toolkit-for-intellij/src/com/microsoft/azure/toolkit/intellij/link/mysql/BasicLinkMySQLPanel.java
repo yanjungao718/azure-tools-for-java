@@ -212,7 +212,11 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
 
             @Override
             public void focusLost(FocusEvent e) {
-                parseUrl(urlTextField.getText());
+                String url = urlTextField.getText();
+                String hostname = serverComboBox.getValue().fullyQualifiedDomainName();
+                urlHead = url.substring(0, url.indexOf(hostname));
+                String databaseName = databaseComboBox.getValue().name();
+                urlTail = url.substring(url.indexOf(databaseName) + databaseName.length());
             }
         };
         return listener;
@@ -285,13 +289,6 @@ public class BasicLinkMySQLPanel<T extends LinkComposite<MySQLLinkConfig, Module
         }
         builder.append(urlTail);
         return builder.toString();
-    }
-
-    private void parseUrl(String url) {
-        String hostname = serverComboBox.getValue().fullyQualifiedDomainName();
-        urlHead = url.substring(0, url.indexOf(hostname));
-        String databaseName = databaseComboBox.getValue().name();
-        urlTail = url.substring(url.indexOf(databaseName) + databaseName.length());
     }
 
     private void createUIComponents() {

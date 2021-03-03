@@ -69,7 +69,7 @@ public class AzureLinkStorage {
      * For type = SERVICE_TO_PROJECT: targetId is the id of the service, and targetId is the id of project or module.
      * For type = SERVICE_TO_SERVICE: targetId is the id of the first service, and targetId is the id of the second service.
      */
-    public List<LinkPO> getLinkersByModuleId(String moduleId) {
+    public List<LinkPO> getLinkByModuleId(String moduleId) {
         return links.stream().filter(e -> StringUtils.equals(moduleId, e.getModuleId())).collect(Collectors.toList());
     }
 

@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.mysql.action;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.link.*;
+import com.microsoft.azure.toolkit.intellij.link.LinkMySQLToModuleDialog;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -35,7 +36,16 @@ public class LinkMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(project, node, null);
-        dialog.showAndGet();
+        dialog.show();
     }
 
+    @Override
+    protected String getServiceName(NodeActionEvent event) {
+        return ActionConstants.parse(ActionConstants.MySQL.LINK_TO_MODULE).getServiceName();
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+        return ActionConstants.parse(ActionConstants.MySQL.LINK_TO_MODULE).getOperationName();
+    }
 }
