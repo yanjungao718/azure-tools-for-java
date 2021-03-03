@@ -5,23 +5,22 @@
 
 package com.microsoft.azure.toolkit.intellij.link;
 
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.UUID;
 
 
 @Getter
 @Setter
 @ToString
-public class LinkComposite<S extends BaseLinkConfig, T extends BaseLinkConfig> {
+public abstract class BaseResourceConfig {
 
-    private S service;
-    private T module;
-    private String envPrefix;
+    private String id = UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
 
-    public LinkComposite(S source, T target) {
-        this.service = source;
-        this.module = target;
-    }
+    protected abstract ResourceType getType();
 
 }

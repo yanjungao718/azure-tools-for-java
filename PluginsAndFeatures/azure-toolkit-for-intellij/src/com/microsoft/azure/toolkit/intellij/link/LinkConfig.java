@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.link;
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,10 +13,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public abstract class BaseLinkConfig {
+public class LinkConfig<R extends BaseResourceConfig, T extends BaseResourceConfig> {
 
-    private String id;
+    private R resource;
+    private T module;
+    private String envPrefix;
 
-    protected abstract ServiceType getType();
+    public LinkConfig(R resource, T target) {
+        this.resource = resource;
+        this.module = target;
+    }
 
 }

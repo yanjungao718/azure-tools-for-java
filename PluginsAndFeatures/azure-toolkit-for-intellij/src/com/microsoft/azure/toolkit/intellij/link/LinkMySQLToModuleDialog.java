@@ -11,7 +11,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.link.mysql.BasicLinkMySQLPanel;
-import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLLinkConfig;
+import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLResourceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLinkConfig, ModuleLinkConfig>> {
+public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourceConfig, ModuleResourceConfig>> {
     private JPanel rootPanel;
     private BasicLinkMySQLPanel basicPanel;
 
@@ -41,7 +41,7 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLink
     }
 
     @Override
-    public AzureForm<LinkComposite<MySQLLinkConfig, ModuleLinkConfig>> getForm() {
+    public AzureForm<LinkConfig<MySQLResourceConfig, ModuleResourceConfig>> getForm() {
         return basicPanel;
     }
 
@@ -57,13 +57,13 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkComposite<MySQLLink
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        MySQLLinkConfig source = MySQLLinkConfig.getDefaultConfig(node);
-        ModuleLinkConfig target = ModuleLinkConfig.getDefaultConfig(module);
-        LinkComposite<MySQLLinkConfig, ModuleLinkConfig> linkComposite = new LinkComposite<>(source, target);
+        MySQLResourceConfig source = MySQLResourceConfig.getDefaultConfig(node);
+        ModuleResourceConfig target = ModuleResourceConfig.getDefaultConfig(module);
+        LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite = new LinkConfig<>(source, target);
         basicPanel = new BasicLinkMySQLPanel(project, () -> linkComposite);
     }
 
-    private void doLink(LinkComposite<MySQLLinkConfig, ModuleLinkConfig> linkComposite, Project project, LinkMySQLToModuleDialog dialog) {
+    private void doLink(LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite, Project project, LinkMySQLToModuleDialog dialog) {
         final Runnable runnable = () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
