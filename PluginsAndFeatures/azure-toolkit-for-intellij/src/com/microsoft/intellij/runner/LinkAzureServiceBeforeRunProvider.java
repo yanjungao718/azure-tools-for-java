@@ -68,13 +68,13 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
     @Nullable
     @Override
     public LinkAzureServiceBeforeRunTask createTask(@NotNull RunConfiguration runConfiguration) {
-        boolean alwaysEnable = false;
+        boolean enable = false;
         if (StringUtils.equals(runConfiguration.getClass().getName(), SPRING_BOOT_CONFIGURATION_REF)
                 || runConfiguration instanceof ApplicationConfiguration
                 || runConfiguration instanceof WebAppConfiguration) {
-            alwaysEnable = true;
+            enable = true;
         }
-        return new LinkAzureServiceBeforeRunTask(getId(), alwaysEnable);
+        return new LinkAzureServiceBeforeRunTask(getId(), enable);
     }
 
     @Override
