@@ -36,7 +36,7 @@ public class LinkMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(project, node, null);
-        dialog.showAndGet();
+        dialog.show();
     }
 
     @Override
