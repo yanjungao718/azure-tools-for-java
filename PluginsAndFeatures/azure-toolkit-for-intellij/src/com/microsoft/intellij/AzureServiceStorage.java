@@ -38,8 +38,12 @@ public abstract class AzureServiceStorage<T extends BaseResourcePO> {
         return resources.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
     }
 
-    public T getResourceByResourceId(String resourceId) {
-        return resources.stream().filter(e -> StringUtils.equals(e.getResourceId(), resourceId)).findFirst().orElse(null);
+    public T getResourceById(String id) {
+        return resources.stream().filter(e -> StringUtils.equals(e.getId(), id)).findFirst().orElse(null);
+    }
+
+    public T getResourceByBusinessUniqueKey(String businessUniqueKey) {
+        return resources.stream().filter(e -> StringUtils.equals(e.getBusinessUniqueKey(), businessUniqueKey)).findFirst().orElse(null);
     }
 
 }

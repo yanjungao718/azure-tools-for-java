@@ -32,6 +32,10 @@ public class MySQLResourcePO extends BaseResourcePO {
 
     @Override
     public String getBusinessUniqueKey() {
-        return super.getBusinessUniqueKey() + "#" + database;
+        return getBusinessUniqueKey(getResourceId(), database);
+    }
+
+    public static String getBusinessUniqueKey(String resourceId, String database) {
+        return ResourceType.AZURE_DATABASE_FOR_MYSQL + "#" + resourceId + "#" + database;
     }
 }

@@ -69,7 +69,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                 final String id = serviceElement.getAttributeValue("id");
                 String serviceTypeName = serviceElement.getAttributeValue("type");
                 ResourceType serviceType = ResourceType.parseTypeByName(serviceTypeName);
-                if (CollectionUtils.size(serviceElement.getContent()) != 3) {
+                if (CollectionUtils.size(serviceElement.getContent()) != 4) {
                     continue;
                 }
                 String resourceId = null;
@@ -83,8 +83,7 @@ public class AzureMySQLStorage extends AzureSecurityServiceStorage<MySQLResource
                     Element innerElement = (Element) innerContent;
                     if ("resourceId".equals(innerElement.getName())) {
                         resourceId = innerElement.getText();
-                    }
-                    if ("url".equals(innerElement.getName())) {
+                    } else if ("url".equals(innerElement.getName())) {
                         url = innerElement.getText();
                     } else if ("username".equals(innerElement.getName())) {
                         username = innerElement.getText();

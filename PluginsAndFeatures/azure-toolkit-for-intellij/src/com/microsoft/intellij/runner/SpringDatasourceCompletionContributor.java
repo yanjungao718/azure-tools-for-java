@@ -15,6 +15,8 @@ import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -31,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SpringDatasourceCompletionContributor extends CompletionContributor {
@@ -62,25 +65,35 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
         @Override
         public void handleInsert(@NotNull InsertionContext insertionContext, @NotNull LookupElement lookupElement) {
             Module module = ModuleUtil.findModuleForFile(insertionContext.getFile().getVirtualFile(), insertionContext.getProject());
-            List<LinkPO> moduleLinkList = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkByModuleId(module.getName())
+            LinkPO moduleLink = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkByModuleId(module.getName())
                     .stream()
                     .filter(e -> LinkType.SERVICE_WITH_MODULE == e.getType())
-                    .collect(Collectors.toList());
-            boolean insertRequired = true;
-            if (CollectionUtils.isEmpty(moduleLinkList)) {
-                final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
-                insertRequired = dialog.showAndGet();
-            }
-            if (insertRequired) {
-                String envPrefix = moduleLinkList.get(0).getEnvPrefix();
-                StringBuilder builder = new StringBuilder();
-                builder.append("=${").append(envPrefix).append("URL}").append(StringUtils.LF)
-                        .append("spring.datasource.username=${").append(envPrefix).append("USERNAME}").append(StringUtils.LF)
-                        .append("spring.datasource.password=${").append(envPrefix).append("PASSWORD}").append(StringUtils.LF);
-                EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), builder.toString(), true);
+                    .findFirst().orElse(null);
+            if (Objects.nonNull(moduleLink)) {
+                String envPrefix = moduleLink.getEnvPrefix();
+                this.insertSpringDatasourceProperties(envPrefix, insertionContext);
             } else {
-                EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
+                    String envPrefix = dialog.showAndGetEnvPrefix();
+                    WriteCommandAction.runWriteCommandAction(insertionContext.getProject(), () -> {
+                        if (StringUtils.isNotBlank(envPrefix)) {
+                            this.insertSpringDatasourceProperties(envPrefix, insertionContext);
+                        } else {
+                            EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
+                        }
+                    });
+                });
+
             }
+        }
+
+        private void insertSpringDatasourceProperties(String envPrefix, @NotNull InsertionContext insertionContext) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("=${").append(envPrefix).append("URL}").append(StringUtils.LF)
+                    .append("spring.datasource.username=${").append(envPrefix).append("USERNAME}").append(StringUtils.LF)
+                    .append("spring.datasource.password=${").append(envPrefix).append("PASSWORD}").append(StringUtils.LF);
+            EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), builder.toString(), true);
         }
     }
 

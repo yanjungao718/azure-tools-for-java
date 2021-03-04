@@ -11,10 +11,7 @@ import com.microsoft.azure.toolkit.intellij.link.LinkConfig;
 import com.microsoft.azure.toolkit.intellij.link.ModuleResourceConfig;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
-import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLConnectionUtils;
-import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLResourceConfig;
-import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordConfig;
-import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordDialog;
+import com.microsoft.azure.toolkit.intellij.link.mysql.*;
 import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.ModulePO;
@@ -42,6 +39,7 @@ public class AzureLinkService {
 
     public void link(Project project, LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite) {
         ModulePO modulePO = createModulePO(linkComposite.getModule());
+        // create resource
         MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
         // create link
         LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getResourceId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
@@ -61,8 +59,12 @@ public class AzureLinkService {
     }
 
     private MySQLResourcePO createResourcePO(MySQLResourceConfig config) {
+        JdbcUrl jdbcUrl = JdbcUrl.from(config.getUrl());
+        String businessUniqueKey = MySQLResourcePO.getBusinessUniqueKey(config.getServer().id(), jdbcUrl.getDatabase());
+        MySQLResourcePO existedResourcePO = AzureMySQLStorage.getStorage().getResourceByBusinessUniqueKey(businessUniqueKey);
+        String id = Objects.nonNull(existedResourcePO) ? existedResourcePO.getId() : UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
         MySQLResourcePO resourcePO = MySQLResourcePO.builder()
-                .id(config.getId())
+                .id(id)
                 .resourceId(config.getServer().id())
                 .url(config.getUrl())
                 .username(config.getUsername())
