@@ -1,6 +1,11 @@
 <!-- Version: 3.47.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.50.0
+
+### Added
+- Azure MySQL resource connector
+
 ## 3.49.0
 
 ### Changed
