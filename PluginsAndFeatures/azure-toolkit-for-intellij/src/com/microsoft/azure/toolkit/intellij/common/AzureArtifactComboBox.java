@@ -101,7 +101,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         final AzureArtifact artifact = this.getValue();
         if (info == AzureValidationInfo.OK && Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
             final VirtualFile referencedObject = (VirtualFile) artifact.getReferencedObject();
-            if (!this.fileFilter.value(referencedObject)) {
+            if (Objects.nonNull(this.fileFilter) && !this.fileFilter.value(referencedObject)) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(this).message(message("common.artifact.artifactNotSupport")).type(AzureValidationInfo.Type.ERROR).build();
             }

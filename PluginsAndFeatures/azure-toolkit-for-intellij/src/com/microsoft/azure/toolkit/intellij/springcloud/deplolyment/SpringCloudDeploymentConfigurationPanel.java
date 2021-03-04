@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -32,6 +33,7 @@ import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,6 +76,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     private void init() {
+        this.selectorArtifact.setFileFilter(virtualFile -> StringUtils.equalsIgnoreCase("jar", FileNameUtils.getExtension(virtualFile.getPath())));
         this.selectorArtifact.addItemListener(this::onArtifactChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
         this.selectorCluster.addItemListener(this::onClusterChanger);
