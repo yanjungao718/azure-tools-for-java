@@ -28,13 +28,10 @@ import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class SpringDatasourceCompletionContributor extends CompletionContributor {
 
@@ -51,7 +48,7 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                                 .withInsertHandler(new MyInsertHandler())
                                 .withBoldness(true)
                                 .withTypeText("String")
-                                .withTailText(" (Link Azure Datasource for MySQL Service)")
+                                .withTailText(" (Connect to Azure Datasource for MySQL)")
                                 .withAutoCompletionPolicy(AutoCompletionPolicy.SETTINGS_DEPENDENT)
                         );
                     }
