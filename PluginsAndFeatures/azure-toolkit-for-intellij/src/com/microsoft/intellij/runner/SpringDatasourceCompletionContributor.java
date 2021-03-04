@@ -15,6 +15,8 @@ import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -23,7 +25,6 @@ import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.link.LinkMySQLToModuleDialog;
 import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
-import com.microsoft.azure.toolkit.lib.link.AzureLinkService;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -71,13 +72,18 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                 String envPrefix = moduleLinkList.get(0).getEnvPrefix();
                 this.insertSpringDatasourceProperties(envPrefix, insertionContext);
             } else {
-                final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
-                String envPrefix = dialog.showAndGetEnvPrefix();
-                if (StringUtils.isNotBlank(envPrefix)) {
-                    this.insertSpringDatasourceProperties(envPrefix, insertionContext);
-                } else {
-                    EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
-                }
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(insertionContext.getProject(), null, module);
+                    String envPrefix = dialog.showAndGetEnvPrefix();
+                    WriteCommandAction.runWriteCommandAction(insertionContext.getProject(), () -> {
+                        if (StringUtils.isNotBlank(envPrefix)) {
+                            this.insertSpringDatasourceProperties(envPrefix, insertionContext);
+                        } else {
+                            EditorModificationUtil.insertStringAtCaret(insertionContext.getEditor(), "=", true);
+                        }
+                    });
+                });
+
             }
         }
 
