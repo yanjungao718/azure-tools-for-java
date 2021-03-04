@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SpringDatasourceCompletionContributor extends CompletionContributor {
@@ -64,12 +65,12 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
         @Override
         public void handleInsert(@NotNull InsertionContext insertionContext, @NotNull LookupElement lookupElement) {
             Module module = ModuleUtil.findModuleForFile(insertionContext.getFile().getVirtualFile(), insertionContext.getProject());
-            List<LinkPO> moduleLinkList = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkByModuleId(module.getName())
+            LinkPO moduleLink = AzureLinkStorage.getProjectStorage(insertionContext.getProject()).getLinkByModuleId(module.getName())
                     .stream()
                     .filter(e -> LinkType.SERVICE_WITH_MODULE == e.getType())
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(moduleLinkList)) {
-                String envPrefix = moduleLinkList.get(0).getEnvPrefix();
+                    .findFirst().orElse(null);
+            if (Objects.nonNull(moduleLink)) {
+                String envPrefix = moduleLink.getEnvPrefix();
                 this.insertSpringDatasourceProperties(envPrefix, insertionContext);
             } else {
                 ApplicationManager.getApplication().invokeLater(() -> {
