@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.link.po.ModulePO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,14 +38,16 @@ public class AzureLinkService {
 
     }
 
-    public void link(Project project, LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite) {
+    public void link(Project project, LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite, boolean storageResource) {
         ModulePO modulePO = createModulePO(linkComposite.getModule());
         // create resource
         MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
         // create link
         LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getResourceId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
         // storage mysql
-        AzureMySQLStorage.getStorage().addResource(resource);
+        if (storageResource) {
+            AzureMySQLStorage.getStorage().addResource(resource);
+        }
         // storage password
         if (ArrayUtils.isNotEmpty(linkComposite.getResource().getPasswordConfig().getPassword())) {
             String inputPassword = String.valueOf(linkComposite.getResource().getPasswordConfig().getPassword());
@@ -62,7 +65,7 @@ public class AzureLinkService {
         JdbcUrl jdbcUrl = JdbcUrl.from(config.getUrl());
         String businessUniqueKey = MySQLResourcePO.getBusinessUniqueKey(config.getServer().id(), jdbcUrl.getDatabase());
         MySQLResourcePO existedResourcePO = AzureMySQLStorage.getStorage().getResourceByBusinessUniqueKey(businessUniqueKey);
-        String id = Objects.nonNull(existedResourcePO) ? existedResourcePO.getId() : UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
+        String id = Objects.nonNull(existedResourcePO) ? existedResourcePO.getId() : DigestUtils.md5Hex(businessUniqueKey);
         MySQLResourcePO resourcePO = MySQLResourcePO.builder()
                 .id(id)
                 .resourceId(config.getServer().id())
