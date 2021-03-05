@@ -68,7 +68,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ## 3.50.0
 
 ### Added
-- Azure MySQL resource connector feature
+- Development workflow for Azure Database for MySQL
+  - Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file
+  - Automatically inject datasource connection properties into runtime environment for local run
+  - Publish Azure Web App with datasource connection properties in application settings
 
 ## 3.49.0
 
