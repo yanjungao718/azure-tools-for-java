@@ -19,6 +19,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +44,9 @@ public class BeforeRunTaskUtils {
     public static void addBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
         final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
         final BeforeRunTask<?> task = createBuildTask(artifact, config);
-        addTask(editor, tasks, task, config);
+        if(Objects.nonNull(task)){ // task is null if artifact is File type.
+            addTask(editor, tasks, task, config);
+        }
     }
 
     public static void removeBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
@@ -59,11 +62,13 @@ public class BeforeRunTaskUtils {
                 return getGradleAssembleTasks(editor, (ExternalProjectPojo) artifact.getReferencedObject());
             case Artifact:
                 return getIntellijBuildTasks(editor, (Artifact) artifact.getReferencedObject());
+            case File:
+                return Collections.emptyList();
         }
         throw new AzureToolkitRuntimeException("unsupported project/artifact type");
     }
 
-    public static BeforeRunTask<?> createBuildTask(@Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
+    public static @Nullable BeforeRunTask<?> createBuildTask(@Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
         switch (artifact.getType()) {
             case Maven:
                 return createMavenPackageTask((MavenProject) artifact.getReferencedObject(), config);
@@ -71,6 +76,8 @@ public class BeforeRunTaskUtils {
                 return createGradleAssembleTask((ExternalProjectPojo) artifact.getReferencedObject(), config);
             case Artifact:
                 return createIntellijBuildTask((Artifact) artifact.getReferencedObject(), config);
+            case File:
+                return null;
         }
         throw new AzureToolkitRuntimeException("unsupported project/artifact type");
     }
