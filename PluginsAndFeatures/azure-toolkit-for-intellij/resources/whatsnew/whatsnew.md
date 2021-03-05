@@ -4,7 +4,12 @@
 ## 3.50.0
 
 ### Added
-- Azure MySQL resource connector
+<img src="https://user-images.githubusercontent.com/19339116/109937625-11666400-7d0a-11eb-9850-82a62d65f3fa.gif" width="840" height="525" />
+
+- Development workflow for Azure Database for MySQL
+  - Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file
+  - Automatically inject datasource connection properties into runtime environment for local run
+  - Publish Azure Web App with datasource connection properties in application settings
 
 ## 3.49.0
 
