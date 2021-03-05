@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.49.0</version>
+        <version>3.50.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -73,15 +73,23 @@
                     <verbose>false</verbose>
                     <outxml>true</outxml>
                     <forceAjcCompile>true</forceAjcCompile>
-                    <sources/><!-- this is important!-->
-                    <weaveDirectories>
-                        <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
-                    </weaveDirectories>
+                    <sources /><!-- this is important!-->
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>com.microsoft.azure</groupId>
+                            <artifactId>azure-toolkit-common-lib</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
                 </configuration>
                 <executions>
                     <execution>
                         <id>compile-with-aspectj</id>
                         <phase>process-classes</phase>
+                        <configuration>
+                            <weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                            </weaveDirectories>
+                        </configuration>
                         <goals>
                             <goal>compile</goal>
                         </goals>
@@ -89,14 +97,14 @@
                     <execution>
                         <id>test-compile-with-aspectj</id>
                         <phase>process-classes</phase>
-                        <goals>
-                            <goal>test-compile</goal>
-                        </goals>
                         <configuration>
                             <weaveDirectories>
                                 <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
                             </weaveDirectories>
                         </configuration>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -264,15 +272,20 @@
             <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
             <artifactId>azure-mgmt-appplatform</artifactId>
         </dependency>
-	<dependency>
-        <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>
-		<artifactId>azure-mgmt-mysql</artifactId>
-        <version>1.0.0-beta</version>
-	</dependency>
+        <dependency>
+            <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>
+            <artifactId>azure-mgmt-mysql</artifactId>
+            <version>1.0.0-beta</version>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-tools-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-common-lib</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
