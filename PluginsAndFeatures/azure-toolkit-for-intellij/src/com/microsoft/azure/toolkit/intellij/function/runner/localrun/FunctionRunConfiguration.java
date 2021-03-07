@@ -149,6 +149,14 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         this.appSettingsJsonObject = appSettingsJsonObject;
     }
 
+    public String getAppSettingsStorageKey() {
+        return functionRunModel.getAppSettingsStorageKey();
+    }
+
+    public void setAppSettingsStorageKey(String appSettingsStorageKey) {
+        functionRunModel.setAppSettingsStorageKey(appSettingsStorageKey);
+    }
+
     public void saveModule(Module module) {
         if (module == null) {
             return;

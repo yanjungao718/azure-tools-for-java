@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.intellij.function.runner;
 
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IFunctionContext;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -37,7 +37,10 @@ public class IntelliJFunctionContext implements IFunctionContext {
 
     private String deployment;
 
+    @Deprecated
     private Map<String, String> appSettings = new HashMap<>();
+
+    private String appSettingsStorageKey;
 
     private String moduleName;
 

@@ -34,6 +34,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -73,6 +74,22 @@ public class FunctionUtils {
         //initialize required attributes, which will be saved to function.json even if it equals to its default value
         REQUIRED_ATTRIBUTE_MAP.put(BindingEnum.EventHubTrigger, Arrays.asList("cardinality"));
         REQUIRED_ATTRIBUTE_MAP.put(BindingEnum.HttpTrigger, Arrays.asList("authLevel"));
+    }
+
+    public static void saveAppSettingsToSecurityStorage(String key, Map<String, String> appSettings) {
+        if (StringUtils.isEmpty(key)) {
+            return;
+        }
+        final String securitySaveValue = JsonUtils.toJsonString(appSettings);
+        IdeaSecureStore.getInstance().savePassword(FunctionApp.class.getName(), key, securitySaveValue);
+    }
+
+    public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {
+        if (StringUtils.isEmpty(key)) {
+            return Collections.emptyMap();
+        }
+        final String value = IdeaSecureStore.getInstance().loadPassword(FunctionApp.class.getName(), key);
+        return StringUtils.isEmpty(value) ? Collections.EMPTY_MAP : JsonUtils.fromJson(value, Map.class);
     }
 
     public static String getFunctionJavaVersion(FunctionApp functionApp) {

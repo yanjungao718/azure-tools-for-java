@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.microsoft.intellij.CommonConst.EMPTY_TEXT;
 import static com.microsoft.intellij.CommonConst.LOADING_TEXT;
@@ -46,6 +47,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private FunctionAppComboBox functionAppComboBox;
     private AppSettingsTable appSettingsTable;
     private FunctionAppComboBoxModel appSettingsFunctionApp;
+    private String appSettingsStorageKey = UUID.randomUUID().toString();
 
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
@@ -124,6 +126,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
+        if (StringUtils.isNotEmpty(configuration.getAppSettingsStorageKey())) {
+            this.appSettingsStorageKey = configuration.getAppSettingsStorageKey();
+            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsStorageKey));
+        }
         if (StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
             functionAppComboBox.refreshItems();
         } else {
@@ -147,7 +153,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
         configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
-        configuration.setAppSettings(appSettingsTable.getAppSettings());
+        FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsStorageKey, appSettingsTable.getAppSettings());
+        // save app settings storage key instead of real value
+        configuration.setAppSettings(Collections.EMPTY_MAP);
+        configuration.setAppSettingsStorageKey(appSettingsStorageKey);
         final FunctionAppComboBoxModel functionModel = functionAppComboBox.getValue();
         if (functionModel != null) {
             configuration.saveModel(functionModel);

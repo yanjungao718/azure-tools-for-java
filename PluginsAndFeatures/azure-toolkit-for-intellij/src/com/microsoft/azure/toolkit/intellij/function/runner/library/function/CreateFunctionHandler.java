@@ -30,6 +30,7 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -85,9 +86,12 @@ public class CreateFunctionHandler {
             final String action = "confirm if the web app is properly configured";
             throw new AzureToolkitRuntimeException(error, e, action);
         }
-        bindingApplicationInsights();
         configureApplicationLog(withCreate);
-        configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
+
+        final Map<String, String> appSettings = getAppSettingsWithDefaultValue();
+        appSettings.putAll(bindingApplicationInsights());
+        withCreate.withAppSettings(appSettings);
+
         FunctionApp result = withCreate.create();
         Log.prompt(message("function.create.hint.functionCreated", ctx.getAppName()));
         return result;
@@ -108,9 +112,9 @@ public class CreateFunctionHandler {
         params = {"@ctx.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private void bindingApplicationInsights() {
+    private Map<String, String> bindingApplicationInsights() {
         if (StringUtils.isAllEmpty(ctx.getInsightsName(), ctx.getInstrumentationKey())) {
-            return;
+            return Collections.emptyMap();
         }
         String instrumentationKey = ctx.getInstrumentationKey();
         if (StringUtils.isEmpty(instrumentationKey)) {
@@ -123,13 +127,7 @@ public class CreateFunctionHandler {
                 Log.prompt(message("function.create.error.createApplicationInsightsFailed", ctx.getAppName()));
             }
         }
-        ctx.getAppSettings().put(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
-    }
-
-    private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
-        if (appSettings != null && !appSettings.isEmpty()) {
-            withAppSettings.accept(appSettings);
-        }
+        return Collections.singletonMap(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
     }
 
     // endregion
@@ -215,11 +213,12 @@ public class CreateFunctionHandler {
 
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
-        final Map settings = ctx.getAppSettings();
+        final Map settings =
+            com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.loadAppSettingsFromSecurityStorage(ctx.getAppSettingsStorageKey());
         overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
-                FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
+                                  FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
-                FUNCTIONS_EXTENSION_VERSION_VALUE);
+                             FUNCTIONS_EXTENSION_VERSION_VALUE);
         return settings;
     }
 }

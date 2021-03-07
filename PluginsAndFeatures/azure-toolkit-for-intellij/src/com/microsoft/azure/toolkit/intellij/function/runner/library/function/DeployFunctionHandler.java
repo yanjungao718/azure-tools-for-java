@@ -194,7 +194,8 @@ public class DeployFunctionHandler {
 
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
-        final Map settings = model.getAppSettings();
+        final Map settings =
+            com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.loadAppSettingsFromSecurityStorage(model.getAppSettingsStorageKey());
         overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
                                   FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
