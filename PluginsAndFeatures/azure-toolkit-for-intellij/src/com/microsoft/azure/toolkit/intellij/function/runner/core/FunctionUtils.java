@@ -86,10 +86,10 @@ public class FunctionUtils {
 
     public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {
         if (StringUtils.isEmpty(key)) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
         final String value = IdeaSecureStore.getInstance().loadPassword(FunctionApp.class.getName(), key);
-        return StringUtils.isEmpty(value) ? Collections.EMPTY_MAP : JsonUtils.fromJson(value, Map.class);
+        return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 
     public static String getFunctionJavaVersion(FunctionApp functionApp) {
