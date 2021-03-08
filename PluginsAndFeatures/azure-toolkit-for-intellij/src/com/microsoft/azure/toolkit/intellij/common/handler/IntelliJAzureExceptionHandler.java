@@ -17,7 +17,7 @@ import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureToolkitErrorDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;

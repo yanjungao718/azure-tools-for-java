@@ -19,7 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptio
 import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
