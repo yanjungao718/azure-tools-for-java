@@ -16,7 +16,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLMana
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
+import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
