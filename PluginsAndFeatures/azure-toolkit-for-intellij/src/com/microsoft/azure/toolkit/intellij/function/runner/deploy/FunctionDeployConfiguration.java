@@ -216,6 +216,14 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         return functionDeployModel.getInsightsName();
     }
 
+    public String getAppSettingsKey() {
+        return functionDeployModel.getAppSettingsKey();
+    }
+
+    public void setAppSettingsKey(String appSettingsStorageKey) {
+        functionDeployModel.setAppSettingsKey(appSettingsStorageKey);
+    }
+
     public void saveModel(FunctionAppComboBoxModel functionAppComboBoxModel) {
         if (functionAppComboBoxModel.getFunctionDeployModel() != null) {
             setFunctionDeployModel(functionAppComboBoxModel.getFunctionDeployModel());

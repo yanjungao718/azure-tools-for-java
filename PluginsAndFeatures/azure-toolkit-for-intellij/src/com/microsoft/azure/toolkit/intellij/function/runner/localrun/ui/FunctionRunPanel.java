@@ -30,6 +30,8 @@ import javax.swing.JPanel;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -41,6 +43,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
     private AppSettingsTable appSettingsTable;
+    private String appSettingsKey = UUID.randomUUID().toString();
 
     private FunctionRunConfiguration functionRunConfiguration;
 
@@ -85,6 +88,10 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
+        if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
+            this.appSettingsKey = configuration.getAppSettingsKey();
+            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
+        }
         // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
         appSettingsTable.loadRequiredSettings();
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
@@ -102,8 +109,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     @Override
     protected void apply(@NotNull FunctionRunConfiguration configuration) {
         configuration.setFuncPath(txtFunc.getText());
-        configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.saveModule((Module) cbFunctionModule.getSelectedItem());
+        FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
+        // save app settings storage key instead of real value
+        configuration.setAppSettings(Collections.EMPTY_MAP);
+        configuration.setAppSettingsKey(appSettingsKey);
     }
 
     @NotNull
