@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -214,7 +213,7 @@ public class CreateFunctionHandler {
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
         final Map settings =
-            com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.loadAppSettingsFromSecurityStorage(ctx.getAppSettingsStorageKey());
+            com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.loadAppSettingsFromSecurityStorage(ctx.getAppSettingsKey());
         overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
                                   FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),

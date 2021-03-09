@@ -80,8 +80,8 @@ public class FunctionUtils {
         if (StringUtils.isEmpty(key)) {
             return;
         }
-        final String securitySaveValue = JsonUtils.toJsonString(appSettings);
-        IdeaSecureStore.getInstance().savePassword(FunctionApp.class.getName(), key, securitySaveValue);
+        final String appSettingsJsonValue = JsonUtils.toJsonString(appSettings);
+        IdeaSecureStore.getInstance().savePassword(FunctionApp.class.getName(), key, appSettingsJsonValue);
     }
 
     public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {

@@ -43,7 +43,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
     private AppSettingsTable appSettingsTable;
-    private String appSettingsStorageKey = UUID.randomUUID().toString();
+    private String appSettingsKey = UUID.randomUUID().toString();
 
     private FunctionRunConfiguration functionRunConfiguration;
 
@@ -88,9 +88,9 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
-        if (StringUtils.isNotEmpty(configuration.getAppSettingsStorageKey())) {
-            this.appSettingsStorageKey = configuration.getAppSettingsStorageKey();
-            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsStorageKey));
+        if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
+            this.appSettingsKey = configuration.getAppSettingsKey();
+            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
         // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
         appSettingsTable.loadRequiredSettings();
@@ -110,10 +110,10 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     protected void apply(@NotNull FunctionRunConfiguration configuration) {
         configuration.setFuncPath(txtFunc.getText());
         configuration.saveModule((Module) cbFunctionModule.getSelectedItem());
-        FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsStorageKey, appSettingsTable.getAppSettings());
+        FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
         // save app settings storage key instead of real value
         configuration.setAppSettings(Collections.EMPTY_MAP);
-        configuration.setAppSettingsStorageKey(appSettingsStorageKey);
+        configuration.setAppSettingsKey(appSettingsKey);
     }
 
     @NotNull

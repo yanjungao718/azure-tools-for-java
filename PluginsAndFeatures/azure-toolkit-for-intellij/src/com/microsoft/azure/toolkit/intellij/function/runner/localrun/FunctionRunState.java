@@ -284,7 +284,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             try {
                 Map<String, FunctionConfiguration> configMap =
                     FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionRunConfiguration.getModule(), methods);
-                final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsStorageKey());
+                final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
                 FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
 
                 final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);

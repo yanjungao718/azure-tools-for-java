@@ -37,10 +37,11 @@ public class IntelliJFunctionContext implements IFunctionContext {
 
     private String deployment;
 
+    // todo: remove app settings and related codes
     @Deprecated
     private Map<String, String> appSettings = new HashMap<>();
 
-    private String appSettingsStorageKey;
+    private String appSettingsKey;
 
     private String moduleName;
 
