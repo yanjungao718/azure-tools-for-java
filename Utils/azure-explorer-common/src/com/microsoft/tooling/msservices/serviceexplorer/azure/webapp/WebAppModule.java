@@ -5,12 +5,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
@@ -80,10 +81,13 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                     WebAppUtils.WebAppDetails webAppDetails = (WebAppUtils.WebAppDetails) event.object;
                     switch (event.opsType) {
                         case ADD:
+                            final IWebApp newWebApp = AzureWebAppMvpModel.getInstance()
+                                    .getAzureAppServiceClient(webAppDetails.subscriptionDetail.getSubscriptionId())
+                                    .webapp(webAppDetails.webApp.id());
                             DefaultLoader.getIdeHelper().invokeLater(() -> {
                                 addChildNode(new WebAppNode(WebAppModule.this,
                                         ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                        webAppDetails.webApp));
+                                        newWebApp));
                             });
                             break;
                         case UPDATE:
@@ -98,11 +102,10 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
-    public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
-        for (final ResourceEx<WebApp> resourceEx : resourceExes) {
-            final WebApp app = resourceEx.getResource();
-            final String sId = resourceEx.getSubscriptionId();
-            final WebAppNode node = new WebAppNode(this, sId, app);
+    public void renderChildren(@NotNull final List<IWebApp> resourceExes) {
+        for (final IWebApp webApp : resourceExes) {
+            final String subscriptionId = Utils.getSubscriptionId(webApp.id());
+            final WebAppNode node = new WebAppNode(this, subscriptionId, webApp);
 
             addChildNode(node);
         }

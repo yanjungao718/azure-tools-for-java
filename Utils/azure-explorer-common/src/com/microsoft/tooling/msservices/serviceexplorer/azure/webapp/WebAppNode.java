@@ -6,6 +6,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -31,18 +33,21 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public static final String SSH_INTO = "SSH into Web App (Preview)";
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
-    private final WebApp webapp;
+    // todo: migrate file service to track2 SDK
+    private final WebApp webapp; // Track one client, keep for file service
+    private final IWebApp webappManager;
 
-    public WebAppNode(WebAppModule parent, String subscriptionId, WebApp delegate) {
-        super(delegate.id(), delegate.name(), LABEL, parent, subscriptionId, delegate.defaultHostName(),
-              delegate.operatingSystem().toString(), delegate.state());
-        this.webapp = delegate;
+    public WebAppNode(WebAppModule parent, String subscriptionId, IWebApp webAppManager) {
+        super(webAppManager.id(), webAppManager.name(), LABEL, parent, subscriptionId, webAppManager.hostName(),
+              webAppManager.getRuntime().getOperatingSystem().toString(), webAppManager.state());
+        this.webapp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppManager.id());
+        this.webappManager = webAppManager;
         loadActions();
     }
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean isLinux = OS_LINUX.equalsIgnoreCase(webapp.operatingSystem().toString());
+        boolean isLinux = webappManager.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
         boolean running = WebAppBaseState.RUNNING.equals(state);
         boolean updating = WebAppBaseState.UPDATING.equals(state);
         if (isLinux) {
@@ -61,7 +66,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp));
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
     }
@@ -87,7 +92,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.webapp.regionName());
+        properties.put(AppInsightsConstants.Region, this.webappManager.entity().getRegion().getName());
         return properties;
     }
 
@@ -122,25 +127,25 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @AzureOperation(name = ActionConstants.WebApp.START, type = AzureOperation.Type.ACTION)
     private void start() {
-        AzureWebAppMvpModel.getInstance().startWebApp(this.subscriptionId, this.webapp.id());
+        this.webappManager.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(name = ActionConstants.WebApp.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
-        AzureWebAppMvpModel.getInstance().stopWebApp(this.subscriptionId, this.webapp.id());
+        this.webappManager.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
     @AzureOperation(name = ActionConstants.WebApp.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
-        AzureWebAppMvpModel.getInstance().restartWebApp(this.subscriptionId, this.webapp.id());
+        this.webappManager.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(name = ActionConstants.WebApp.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
+        DefaultLoader.getUIHelper().openInBrowser("http://" + this.webappManager.hostName());
     }
 
     @AzureOperation(name = ActionConstants.WebApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
