@@ -27,7 +27,13 @@
     <h3>3.50.0</h3>
     <h4>Added</h4>
     <ul>
-      <li>Add Azure MySQL resource connector</li>
+      <li>Development workflow for Azure Database for MySQL
+        <ul>
+          <li>Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file</li>
+          <li>Automatically inject datasource connection properties into runtime environment for local run</li>
+          <li>Publish Azure Web App with datasource connection properties in application settings</li>
+        </ul>
+      </li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

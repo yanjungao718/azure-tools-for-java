@@ -59,7 +59,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 JdbcUrl url = JdbcUrl.from(service.getUrl());
                 LineMarkerInfo lineMarkerInfo = new LineMarkerInfo<>(element, element.getTextRange(),
                         AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
-                        element2 -> String.format("Link to Azure Database for MySQL (%s)", url.getHostname()),
+                        element2 -> String.format("Connect to Azure Database for MySQL (%s)", url.getHostname()),
                         new SpringDatasourceNavigationHandler(service.getResourceId()),
                         GutterIconRenderer.Alignment.LEFT);
                 return lineMarkerInfo;
