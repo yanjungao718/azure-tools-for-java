@@ -155,7 +155,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                                                                                }
                                                                            });
 
-    public SpringCloudAppPropertiesEditor(Project project, String clusterId, String appId) {
+    public SpringCloudAppPropertiesEditor(Project project, String clusterId, String appId, @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.project = project;
         this.clusterId = clusterId;
         this.appId = appId;

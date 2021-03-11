@@ -23,7 +23,7 @@ public class SpringCloudAppPropertiesEditorProvider implements FileEditorProvide
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final String clusterId = virtualFile.getUserData(UIHelperImpl.CLUSTER_ID);
         final String appId = virtualFile.getUserData(UIHelperImpl.APP_ID);
-        return new SpringCloudAppPropertiesEditor(project, clusterId, appId);
+        return new SpringCloudAppPropertiesEditor(project, clusterId, appId, virtualFile);
     }
 
     @NotNull
