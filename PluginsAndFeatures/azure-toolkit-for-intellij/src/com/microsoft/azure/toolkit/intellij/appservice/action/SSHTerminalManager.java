@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.jediterm.terminal.TerminalDataStream;
+import com.jediterm.terminal.emulator.Emulator;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.intellij.util.PatternUtils;
@@ -135,7 +136,8 @@ public enum SSHTerminalManager {
     }
 
     private void waitForInputPassword(ShellTerminalWidget shellTerminalWidget, int timeout) throws IllegalAccessException {
-        TerminalDataStream terminalDataStream = (TerminalDataStream) FieldUtils.readField(shellTerminalWidget.getTerminalStarter(), "myDataStream", true);
+        final Emulator emulator = (Emulator) FieldUtils.readField(shellTerminalWidget.getTerminalStarter(), "myEmulator", true);
+        final TerminalDataStream terminalDataStream = (TerminalDataStream) FieldUtils.readField(emulator, "myDataStream", true);
         char[] myBuf = (char[]) FieldUtils.readField(terminalDataStream, "myBuf", true);
         int count = 0;
         int interval = 100;
