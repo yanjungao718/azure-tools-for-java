@@ -5,12 +5,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -34,6 +34,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected final String label;
     protected WebAppBaseState state;
 
+    // todo: refactor constructor after function track2 migration
     public WebAppBaseNode(final String id, final String name, final String label, final AzureRefreshableNode parent,
                           final String subscriptionId, final String hostName, final String os, final String state) {
         super(id, name, parent, getIcon(os, label, WebAppBaseState.fromString(state)), true);

@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -43,18 +43,16 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private final String webAppName;
     private final String subscriptionId;
     private final String resourceGroupName;
-    private final String os;
-    private final WebApp app;
+    private final Runtime runtime;
 
     public SSHIntoWebAppAction(WebAppNode webAppNode) {
         super();
-        this.app = webAppNode.getWebapp();
         this.project = (Project) webAppNode.getProject();
         this.resourceId = webAppNode.getId();
         this.webAppName = webAppNode.getWebAppName();
         this.subscriptionId = webAppNode.getSubscriptionId();
         this.resourceGroupName = PatternUtils.parseWordByPatternAndPrefix(resourceId, RESOURCE_ELEMENT_PATTERN, RESOURCE_GROUP_PATH_PREFIX);
-        this.os = webAppNode.getOs();
+        this.runtime = webAppNode.getWebAppRuntime();
     }
 
     @Override
@@ -64,12 +62,12 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         final IAzureOperationTitle title = title("webapp|ssh.connect", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             // check these conditions to ssh into web app
-            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
+            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, runtime)) {
                 return;
             }
             // build proxy between remote and local
             SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
-                    AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
+                AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
             logger.info(message("webapp.ssh.hint.sshConnectionDone", connectionInfo.getOutputMessage()));
             // ssh to local proxy and open terminal.
             AzureTaskManager.getInstance().runAndWait(() -> {
