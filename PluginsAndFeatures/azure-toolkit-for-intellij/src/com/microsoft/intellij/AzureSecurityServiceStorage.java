@@ -6,7 +6,7 @@
 package com.microsoft.intellij;
 
 import com.microsoft.azure.toolkit.intellij.link.mysql.PasswordSaveType;
-import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
+import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AzureSecurityServiceStorage<T extends BaseServicePO> extends AzureServiceStorage<T> {
+public abstract class AzureSecurityServiceStorage<T extends BaseResourcePO> extends AzureServiceStorage<T> {
 
     private final Map<CredentialAttributes, String> memoryCache = new HashMap<>();
 

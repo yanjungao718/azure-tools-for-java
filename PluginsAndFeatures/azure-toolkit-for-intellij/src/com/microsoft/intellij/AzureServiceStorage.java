@@ -5,41 +5,45 @@
 
 package com.microsoft.intellij;
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
-import com.microsoft.azure.toolkit.intellij.link.po.BaseServicePO;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
+import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AzureServiceStorage<T extends BaseServicePO> {
+public abstract class AzureServiceStorage<T extends BaseResourcePO> {
 
-    protected static final String ELEMENT_NAME_SERVICES = "services";
-    protected static final String ELEMENT_NAME_SERVICE = "service";
+    protected static final String ELEMENT_NAME_RESOURCES = "resources";
+    protected static final String ELEMENT_NAME_RESOURCE = "resource";
 
-    private Set<T> services = new LinkedHashSet<>();
+    private Set<T> resources = new LinkedHashSet<>();
 
-    public synchronized boolean addService(T service) {
-        Iterator<T> iterator = services.iterator();
+    public synchronized boolean addResource(T resource) {
+        Iterator<T> iterator = resources.iterator();
         while (iterator.hasNext()) {
             T element = iterator.next();
-            if (StringUtils.equals(element.getId(), service.getId())) {
+            if (StringUtils.equals(element.getBusinessUniqueKey(), resource.getBusinessUniqueKey())) {
                 iterator.remove();
             }
         }
-        return services.add(service);
+        return resources.add(resource);
     }
 
-    public Set<T> getServices() {
-        return this.services;
+    public Set<T> getResources() {
+        return this.resources;
     }
 
-    public List<T> getServicesByType(ServiceType type) {
-        return services.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
+    public List<T> getResourcesByType(ResourceType type) {
+        return resources.stream().filter(e -> Objects.equals(e.getType(), type)).collect(Collectors.toList());
     }
 
-    public T getServicesById(String id) {
-        return services.stream().filter(e -> StringUtils.equals(e.getId(), id)).findFirst().orElse(null);
+    public T getResourceById(String id) {
+        return resources.stream().filter(e -> StringUtils.equals(e.getId(), id)).findFirst().orElse(null);
+    }
+
+    public T getResourceByBusinessUniqueKey(String businessUniqueKey) {
+        return resources.stream().filter(e -> StringUtils.equals(e.getBusinessUniqueKey(), businessUniqueKey)).findFirst().orElse(null);
     }
 
 }

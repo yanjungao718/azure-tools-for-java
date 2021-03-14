@@ -9,7 +9,6 @@ import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -31,13 +30,13 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
     private ConsoleViewStatus status;
     private ExecutorService executorService;
 
-    private String resourceId;
+    private final String resourceName;
     private InputStream logInputStream;
 
-    public SpringCloudStreamingLogConsoleView(@NotNull Project project, String resourceId) {
+    public SpringCloudStreamingLogConsoleView(@NotNull Project project, String resourceName) {
         super(project, true);
         this.status = ConsoleViewStatus.STOPPED;
-        this.resourceId = resourceId;
+        this.resourceName = resourceName;
     }
 
     public ConsoleViewStatus getStatus() {
@@ -95,7 +94,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             }
             setStatus(ConsoleViewStatus.STOPPING);
         }
-        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.close", ResourceUtils.nameFromResourceId(resourceId));
+        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.close", resourceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), title, false, () -> {
             try {
                 if (logInputStream != null) {
@@ -118,6 +117,6 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
     public void dispose() {
         super.dispose();
         shutdown();
-        SpringCloudStreamingLogManager.getInstance().removeConsoleView(resourceId);
+        SpringCloudStreamingLogManager.getInstance().removeConsoleView(resourceName);
     }
 }
