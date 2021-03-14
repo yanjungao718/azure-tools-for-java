@@ -29,7 +29,7 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
         this.resourceGroup = webApp.entity().getResourceGroup();
         this.subscriptionId = webApp.entity().getSubscriptionId();
         this.isNewCreateResource = false;
-        this.runtime = getRuntimePromptingString(webApp.getRuntime());
+        this.runtime = getRuntimeDisplayName(webApp.getRuntime());
     }
 
     public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
@@ -43,10 +43,10 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
         this.subscriptionId = webAppSettingModel.getSubscriptionId();
         this.isNewCreateResource = webAppSettingModel.isCreatingNew();
         this.webAppSettingModel = webAppSettingModel;
-        this.runtime = getRuntimePromptingString(webAppSettingModel.getRuntime());
+        this.runtime = getRuntimeDisplayName(webAppSettingModel.getRuntime());
     }
 
-    private static String getRuntimePromptingString(Runtime runtime) {
+    private static String getRuntimeDisplayName(Runtime runtime) {
         return String.format("%s-%s-%s", runtime.getOperatingSystem().getValue(),
                              runtime.getWebContainer().getValue(), runtime.getJavaVersion().getValue());
     }
