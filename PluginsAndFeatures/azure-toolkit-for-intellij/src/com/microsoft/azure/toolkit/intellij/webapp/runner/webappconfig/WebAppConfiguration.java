@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -118,7 +119,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             throw new ConfigurationException(message("webapp.deploy.validate.invalidTomcatArtifact"));
         } else if (StringUtils.containsIgnoreCase(webContainer, JBOSS) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
             throw new ConfigurationException(message("webapp.deploy.validate.invalidJbossArtifact"));
-        } else if (StringUtils.containsIgnoreCase(webContainer, JAVA) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
+        } else if (runtime.getWebContainer() == WebContainer.JAVA_SE && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
             throw new ConfigurationException(message("webapp.deploy.validate.invalidJavaSeArtifact"));
         }
         if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
