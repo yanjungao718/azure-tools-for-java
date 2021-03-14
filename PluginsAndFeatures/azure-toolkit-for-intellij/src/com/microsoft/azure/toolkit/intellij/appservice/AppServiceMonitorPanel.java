@@ -92,7 +92,7 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     public MonitorConfig getData() {
         MonitorConfig config = MonitorConfig.builder().build();
         final ApplicationInsightsConfig insightsConfig =
-                (rdoEnableApplicationInsights.isSelected() && titleAppServiceLog.isVisible()) ? applicationInsightsComboBox.getValue() : null;
+                (rdoEnableApplicationInsights.isSelected() && titleApplicationInsights.isVisible()) ? applicationInsightsComboBox.getValue() : null;
         config.setApplicationInsightsConfig(insightsConfig);
         config.setEnableWebServerLogging(rdoEnableWebServerLog.isSelected() && lblWebServerLog.isVisible());
         config.setWebServerLogQuota(txtQuota.getValue());

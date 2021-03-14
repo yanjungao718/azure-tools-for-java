@@ -44,6 +44,10 @@ public class JsonUtils {
         }
     }
 
+    public static String toJsonString(Object o) {
+        return GSON.toJson(o);
+    }
+
     public static <T> T fromJsonString(String jsonString, Class<T> clz) {
         return GSON.fromJson(jsonString, clz);
     }

@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.50.0](#3500)
   - [3.49.0](#3490)
   - [3.48.0](#3480)
   - [3.47.0](#3470)
@@ -63,6 +64,14 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.50.0
+
+### Added
+- Development workflow for Azure Database for MySQL
+  - Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file
+  - Automatically inject datasource connection properties into runtime environment for local run
+  - Publish Azure Web App with datasource connection properties in application settings
 
 ## 3.49.0
 
