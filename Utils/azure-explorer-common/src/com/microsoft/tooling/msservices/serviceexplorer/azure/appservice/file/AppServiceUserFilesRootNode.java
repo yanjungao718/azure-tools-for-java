@@ -5,34 +5,29 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
-import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import javax.swing.*;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
-public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
+public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
     private static final String ROOT_PATH = "/site/wwwroot";
 
+    protected WebAppBase app;
+    protected Supplier<WebAppBase> supplier;
+
     protected final String subscriptionId;
-    protected final WebAppBase app;
     private AppServiceFileService fileService;
 
     public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
@@ -45,20 +40,28 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
         this.app = app;
     }
 
+    // Lazy load for WebAppBase
+    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+        this(MODULE_NAME, parent, subscriptionId, supplier);
+    }
+
+    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+        super(MODULE_ID, name, parent, null);
+        this.subscriptionId = subscriptionId;
+        this.supplier = supplier;
+    }
+
     @Override
     public void removeNode(final String sid, final String name, Node node) {
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.list", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.list", params = {"@app.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        EventUtil.executeWithLog(getServiceName(), TelemetryConstants.LIST_FILE, operation -> {
-            operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
-            final AppServiceFileService service = this.getFileService();
-            service.getFilesInDirectory(getRootPath()).stream()
-                    .map(file -> new AppServiceFileNode(file, this, service))
-                    .forEach(this::addChildNode);
-        });
+        final AppServiceFileService service = this.getFileService();
+        service.getFilesInDirectory(getRootPath()).stream()
+                .map(file -> new AppServiceFileNode(file, this, service))
+                .forEach(this::addChildNode);
     }
 
     @NotNull
@@ -68,19 +71,16 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
 
     public AppServiceFileService getFileService() {
         if (Objects.isNull(this.fileService)) {
-            this.fileService = AppServiceFileService.forApp(app);
+            this.fileService = AppServiceFileService.forApp(getTargetAppService());
         }
         return this.fileService;
     }
 
-    @Override
-    public String getServiceName() {
-        return app instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
-    }
-
-    @Override
-    public Map<String, String> toProperties() {
-        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(app.id()));
+    private WebAppBase getTargetAppService() {
+        if (app == null) {
+            app = supplier.get();
+        }
+        return app;
     }
 
     @Override
