@@ -17,7 +17,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 @Name(LinkMySQLAction.ACTION_NAME)
 public class LinkMySQLAction extends NodeActionListener {
 
-    public static final String ACTION_NAME = "Link to Project";
+    public static final String ACTION_NAME = "Connect to Project";
 
     private final MySQLNode node;
     private final Project project;

@@ -11,11 +11,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
-@EqualsAndHashCode(exclude = {"serviceId"})
+@EqualsAndHashCode(exclude = {"resourceId"})
 @AllArgsConstructor
 public class LinkPO {
 
-    private String serviceId;
+    private String resourceId;
     private String moduleId;
     private LinkType type;
     private String envPrefix;

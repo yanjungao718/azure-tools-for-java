@@ -10,15 +10,15 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 @AllArgsConstructor
-public enum ServiceType {
+public enum ResourceType {
     IDE_MODULE("Module"),
     AZURE_DATABASE_FOR_MYSQL("Microsoft.DBforMySQL");
 
     @Getter
     private String name;
 
-    public static ServiceType parseTypeByName(String name) {
-        for (ServiceType type : ServiceType.values()) {
+    public static ResourceType parseTypeByName(String name) {
+        for (ResourceType type : ResourceType.values()) {
             if (StringUtils.equals(type.name, name)) {
                 return type;
             }

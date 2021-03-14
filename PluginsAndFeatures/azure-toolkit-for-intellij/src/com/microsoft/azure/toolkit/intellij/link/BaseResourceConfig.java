@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.link;
 
-import com.microsoft.azure.toolkit.intellij.link.base.ServiceType;
+import com.microsoft.azure.toolkit.intellij.link.base.ResourceType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,10 +14,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public abstract class BaseLinkConfig {
+public abstract class BaseResourceConfig {
 
-    private String id;
-
-    protected abstract ServiceType getType();
+    protected abstract ResourceType getType();
 
 }

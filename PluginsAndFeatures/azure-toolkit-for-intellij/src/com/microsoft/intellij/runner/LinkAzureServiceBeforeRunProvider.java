@@ -37,8 +37,8 @@ import java.util.Objects;
 
 public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<LinkAzureServiceBeforeRunTask> {
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
-    private static final String NAME = "Link Azure Service";
-    private static final String DESCRIPTION = "Link Azure Service Task";
+    private static final String NAME = "Connect Azure Resource";
+    private static final String DESCRIPTION = "Connect Azure Resource";
     private static final String SPRING_BOOT_CONFIGURATION_REF = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     public static final Key<LinkAzureServiceBeforeRunTask> ID = Key.create("LinkAzureServiceBeforeRunProviderId");
     public static final Key<Boolean> LINK_AZURE_SERVICE = Key.create("LinkAzureService");
