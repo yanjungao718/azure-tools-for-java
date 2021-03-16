@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.50.0</version>
+  <version>3.50.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,16 +24,13 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.50.0</h3>
-    <h4>Added</h4>
+    <h3>3.50.1</h3>
+    <h4>Fixes</h4>
     <ul>
-      <li>Development workflow for Azure Database for MySQL
-        <ul>
-          <li>Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file</li>
-          <li>Automatically inject datasource connection properties into runtime environment for local run</li>
-          <li>Publish Azure Web App with datasource connection properties in application settings</li>
-        </ul>
-      </li>
+      <li>Fixes: Can't deploy to Azure Web App when there is "Connect Azure Resource" in before launch</li>
+      <li>Fixes: InvalidParameterException occurs when close a streaming log</li>
+      <li>Fixes: Failed when select file to deploy to Azure Web App</li>
+      <li>Fixes: Failed to create MySQL instance as resource provider is not registered</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
