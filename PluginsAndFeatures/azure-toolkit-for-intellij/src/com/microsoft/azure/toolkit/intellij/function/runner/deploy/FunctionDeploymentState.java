@@ -146,11 +146,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected String getDeployTarget() {
-        return "FUNCTION";
-    }
-
-    @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         telemetryMap.putAll(functionDeployConfiguration.getModel().getTelemetryProperties(telemetryMap));
     }

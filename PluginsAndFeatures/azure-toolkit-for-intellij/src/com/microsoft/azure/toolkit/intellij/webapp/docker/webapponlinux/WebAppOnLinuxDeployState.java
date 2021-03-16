@@ -43,11 +43,6 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     }
 
     @Override
-    protected String getDeployTarget() {
-        return "Web App for Containers";
-    }
-
-    @Override
     @AzureOperation(name = "docker.deploy_image.state", type = AzureOperation.Type.ACTION)
     public WebApp executeSteps(@NotNull RunProcessHandler processHandler,
                                @NotNull Map<String, String> telemetryMap) throws Exception {
