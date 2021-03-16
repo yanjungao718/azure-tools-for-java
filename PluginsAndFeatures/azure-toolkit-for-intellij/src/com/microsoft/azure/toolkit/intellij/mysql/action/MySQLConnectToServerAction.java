@@ -9,6 +9,7 @@ import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
@@ -59,6 +60,16 @@ public class MySQLConnectToServerAction extends NodeActionListener {
         AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
             this.doActionPerformed(e, isSuccess, project);
         });
+    }
+
+    @Override
+    protected String getServiceName(NodeActionEvent event) {
+        return ActionConstants.parse(ActionConstants.MySQL.CONNECT_TO_SERVER).getServiceName();
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+        return ActionConstants.parse(ActionConstants.MySQL.CONNECT_TO_SERVER).getOperationName();
     }
 
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
