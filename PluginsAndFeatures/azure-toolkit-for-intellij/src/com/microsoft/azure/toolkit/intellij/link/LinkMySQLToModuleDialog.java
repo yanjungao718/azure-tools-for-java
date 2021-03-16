@@ -101,7 +101,8 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             AzureLinkService.getInstance().link(project, linkConfig, finalStorageResource);
-            final String message = String.format("Connect database %s to project %s successfully.", resourceConfig.getDatabase().name(), project.getName());
+            final String message = String.format("The connection between database %s and project %s is created successfully.",
+                                                 resourceConfig.getDatabase().name(), project.getName());
             DefaultLoader.getUIHelper().showInfoNotification(LinkMySQLAction.ACTION_NAME, message);
         };
         final IAzureOperationTitle title = AzureOperationBundle.title("azure-mysql.azure-mysql-link-to-module");
