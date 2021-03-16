@@ -37,6 +37,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -95,11 +96,9 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.loadData(this.services, filters);
     }
 
-    public void refresh() {
-        final AzureSdkLibraryService service = AzureSdkLibraryService.getInstance();
+    public void refresh(Boolean... force) {
         try {
-            service.reloadAzureSDKArtifacts();
-            this.services = service.getServices();
+            this.services = AzureSdkLibraryService.loadAzureSdkServices(force);
             this.filter.debounce();
             Optional.ofNullable(this.lastNodePath).ifPresent(p -> TreeUtil.selectPath(this.tree, p));
         } catch (final IOException e) {
@@ -176,7 +175,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             this.loading = true;
             ActivityTracker.getInstance().inc();
             AzureTaskManager.getInstance().runLater(() -> {
-                AzureSdkTreePanel.this.refresh();
+                AzureSdkTreePanel.this.reload();
                 this.loading = false;
             });
         }
