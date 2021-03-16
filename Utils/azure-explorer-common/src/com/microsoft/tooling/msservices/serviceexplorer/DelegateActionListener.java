@@ -77,6 +77,7 @@ class DelegateActionListener extends NodeActionListener {
                 }
             };
             final Object project = e.getAction().getNode().getProject();
+            // todo: Add titles properties for services in common library
             AzureTask task = new AzureTask(project, new IAzureOperationTitle.Simple(progressMessage) {
                 @Override
                 public String getName() {
