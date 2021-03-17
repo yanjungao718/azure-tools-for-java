@@ -139,6 +139,11 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         final Map<String, String> props = new HashMap<>();
         props.put("runtime", config.getAppConfig().getRuntimeVersion());
         props.put("subscriptionId", config.getAppConfig().getSubscriptionId());
+        props.put("public", String.valueOf(config.getAppConfig().isPublic()));
+        props.put("jvmOptions", String.valueOf(StringUtils.isEmpty(config.getAppConfig().getDeployment().getJvmOptions())));
+        props.put("instanceCount", String.valueOf(config.getAppConfig().getDeployment().getInstanceCount()));
+        props.put("memory", String.valueOf(config.getAppConfig().getDeployment().getMemoryInGB()));
+        props.put("cpu", String.valueOf(config.getAppConfig().getDeployment().getCpu()));
         telemetryMap.putAll(props);
     }
 

@@ -9,20 +9,18 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResource
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
+public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, TelemetryProperties {
 
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final Map<DeploymentResourceStatus, AzureIconSymbol> STATUS_TO_ICON_MAP = new HashMap<>();
@@ -108,6 +106,13 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     public String getSubscriptionId() {
         return subscriptionId;
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(TelemetryConstants.SUBSCRIPTIONID, this.subscriptionId);
+        return properties;
     }
 
     @Override
