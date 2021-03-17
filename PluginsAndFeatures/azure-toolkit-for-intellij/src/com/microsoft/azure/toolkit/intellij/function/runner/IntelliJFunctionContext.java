@@ -10,6 +10,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IFunctionContext;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,9 +85,8 @@ public class IntelliJFunctionContext implements IFunctionContext {
     public Map<String, String> getTelemetryProperties() {
         final HashMap result = new HashMap();
         try {
-            result.put("runtime", this.getRuntime().getOs());
+            result.put("runtime", this.getOs());
             result.put("subscriptionId", this.getSubscription());
-            result.put("pricingTier", this.getPricingTier());
             result.put("region", this.getRegion());
             result.put("functionJavaVersion", this.getJavaVersion());
         } catch (Exception e) {
