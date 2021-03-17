@@ -11,6 +11,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
@@ -32,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,8 +53,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
     }
 
     @Override
-    public String executeSteps(@NotNull RunProcessHandler processHandler,
-                               @NotNull Map<String, String> telemetryMap) throws Exception {
+    public String executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         final String[] runningContainerId = {null};
 
         processHandler.addProcessListener(new ProcessListener() {
@@ -159,14 +160,9 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         processHandler.setText("Container started.");
     }
 
-    @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-        String fileName = dataModel.getTargetName();
-        if (null != fileName) {
-            telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(fileName));
-        } else {
-            telemetryMap.put("FileType", "");
-        }
+    protected Map<String, String> getTelemetryMap() {
+        final String fileType = dataModel.getTargetName() == null ? StringUtils.EMPTY : MavenRunTaskUtil.getFileType(dataModel.getTargetName());
+        return Collections.singletonMap(TelemetryConstants.FILETYPE, fileType);
     }
 
     private String getPortFromDockerfile(@NotNull String dockerFileContent) {

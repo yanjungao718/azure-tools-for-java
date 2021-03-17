@@ -12,6 +12,10 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.function.runner.library.function.CreateFunctionHandler;
+import com.microsoft.azure.toolkit.intellij.function.runner.library.function.DeployFunctionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -21,11 +25,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.function.runner.library.function.CreateFunctionHandler;
-import com.microsoft.azure.toolkit.intellij.function.runner.library.function.DeployFunctionHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,9 +54,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @Nullable
     @Override
     @AzureOperation(name = "function.deploy.state", type = AzureOperation.Type.ACTION)
-    public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
-            , @NotNull Map<String, String> telemetryMap) throws Exception {
-        updateTelemetryMap(telemetryMap);
+    public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Update run time information by function app
         final FunctionApp functionApp;
         if (deployModel.isNewResource()) {
@@ -146,7 +144,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-        telemetryMap.putAll(functionDeployConfiguration.getModel().getTelemetryProperties(telemetryMap));
+    protected Map<String, String> getTelemetryMap() {
+        return functionDeployConfiguration.getModel().getTelemetryProperties();
     }
 }

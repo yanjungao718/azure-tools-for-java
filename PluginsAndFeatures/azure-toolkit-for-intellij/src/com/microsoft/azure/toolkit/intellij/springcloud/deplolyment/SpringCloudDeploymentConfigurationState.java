@@ -53,10 +53,9 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
 
     @Nullable
     @Override
-    public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
+    public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812811
         // prepare the jar to be deployed
-        updateTelemetryMap(telemetryMap);
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         final File artifactFile = appConfig.getDeployment().getArtifact().getFile();
         final boolean enableDisk = appConfig.getDeployment() != null && appConfig.getDeployment().isEnablePersistentStorage();
@@ -135,7 +134,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
     }
 
     @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+    protected Map<String, String> getTelemetryMap() {
         final Map<String, String> props = new HashMap<>();
         props.put("runtime", config.getAppConfig().getRuntimeVersion());
         props.put("subscriptionId", config.getAppConfig().getSubscriptionId());
@@ -144,7 +143,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         props.put("instanceCount", String.valueOf(config.getAppConfig().getDeployment().getInstanceCount()));
         props.put("memory", String.valueOf(config.getAppConfig().getDeployment().getMemoryInGB()));
         props.put("cpu", String.valueOf(config.getAppConfig().getDeployment().getCpu()));
-        telemetryMap.putAll(props);
+        return props;
     }
 
     private void printPublicUrl(final SpringCloudApp app, @NotNull RunProcessHandler processHandler) {

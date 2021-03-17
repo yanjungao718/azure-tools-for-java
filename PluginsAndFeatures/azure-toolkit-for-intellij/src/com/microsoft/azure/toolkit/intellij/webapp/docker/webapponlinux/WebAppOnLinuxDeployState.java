@@ -8,6 +8,10 @@ package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerProgressHandler;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -17,21 +21,17 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerProgressHandler;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
@@ -44,8 +44,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
 
     @Override
     @AzureOperation(name = "docker.deploy_image.state", type = AzureOperation.Type.ACTION)
-    public WebApp executeSteps(@NotNull RunProcessHandler processHandler,
-                               @NotNull Map<String, String> telemetryMap) throws Exception {
+    public WebApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         processHandler.setText("Starting job ...  ");
         String basePath = project.getBasePath();
         if (basePath == null) {
@@ -134,8 +133,8 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         }
     }
 
-    @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+    protected Map<String, String> getTelemetryMap() {
+        final Map<String, String> telemetryMap = new HashMap<>();
         telemetryMap.put("SubscriptionId", deployModel.getSubscriptionId());
         telemetryMap.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
         telemetryMap.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
@@ -145,6 +144,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
             fileType = MavenRunTaskUtil.getFileType(deployModel.getTargetName());
         }
         telemetryMap.put("FileType", fileType);
+        return telemetryMap;
     }
 
     private void updateConfigurationDataModel(WebApp app) {

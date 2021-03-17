@@ -81,13 +81,9 @@ public class IntelliJFunctionContext implements IFunctionContext {
         return null;
     }
 
-    public Map<String, String> getTelemetryProperties(Map<String, String> properties) {
-        HashMap result = new HashMap();
-
+    public Map<String, String> getTelemetryProperties() {
+        final HashMap result = new HashMap();
         try {
-            if (properties != null) {
-                result.putAll(properties);
-            }
             result.put("runtime", this.getRuntime().getOs());
             result.put("subscriptionId", this.getSubscription());
             result.put("pricingTier", this.getPricingTier());
@@ -96,7 +92,6 @@ public class IntelliJFunctionContext implements IFunctionContext {
         } catch (Exception e) {
             // swallow exception as telemetry should not break users operation
         }
-
         return result;
     }
 }
