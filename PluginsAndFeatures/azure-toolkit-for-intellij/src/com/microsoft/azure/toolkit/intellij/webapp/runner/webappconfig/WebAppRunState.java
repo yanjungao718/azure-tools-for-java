@@ -37,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -59,8 +60,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     @Nullable
     @Override
     @AzureOperation(name = "webapp.deploy_artifact", params = {"@webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
-    public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
-        , @NotNull Map<String, String> telemetryMap) throws Exception {
+    public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         File file = new File(getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
@@ -130,8 +130,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-        telemetryMap.putAll(webAppSettingModel.getTelemetryProperties(null));
+    protected Map<String, String> getTelemetryMap() {
+        return webAppSettingModel.getTelemetryProperties(Collections.EMPTY_MAP);
     }
 
     @NotNull
