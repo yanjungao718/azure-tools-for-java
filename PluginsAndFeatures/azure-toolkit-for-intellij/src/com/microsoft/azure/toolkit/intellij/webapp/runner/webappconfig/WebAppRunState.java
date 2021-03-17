@@ -69,7 +69,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
         }
         webAppConfiguration.setTargetName(file.getName());
-        final IAppService deployTarget = getDeployTargetByConfiguration(processHandler);
+        final IAppService deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
         updateApplicationSettings(deployTarget, processHandler);
         AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, file, webAppSettingModel.isDeployToRoot(), processHandler);
         return deployTarget;
@@ -84,11 +84,11 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
             processHandler.setText("Updating application settings...");
             IWebApp webApp = (IWebApp) deployTarget;
             webApp.update().withAppSettings(applicationSettings).commit();
-            processHandler.setText("Updated application settings successfully.");
+            processHandler.setText("Update application settings successfully.");
         } else if (deployTarget instanceof IWebAppDeploymentSlot) {
             processHandler.setText("Updating deployment slot application settings...");
             AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings((IWebAppDeploymentSlot) deployTarget, applicationSettings);
-            processHandler.setText("Updated deployment slot application settings successfully.");
+            processHandler.setText("Update deployment slot application settings successfully.");
         }
     }
 
@@ -144,9 +144,9 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     }
 
     @NotNull
-    private IAppService getDeployTargetByConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
+    private IAppService getOrCreateDeployTargetFromAppSettingModel(@NotNull RunProcessHandler processHandler) throws Exception {
         final AzureAppService azureAppService = AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(webAppSettingModel.getSubscriptionId());
-        final IWebApp webApp = getOrCreateAzureWebApp(azureAppService, processHandler);
+        final IWebApp webApp = getOrCreateWebappFromAppSettingModel(azureAppService, processHandler);
         if (!isDeployToSlot()) {
             return webApp;
         }
@@ -157,7 +157,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
         }
     }
 
-    private IWebApp getOrCreateAzureWebApp(AzureAppService azureAppService, RunProcessHandler processHandler) throws Exception {
+    private IWebApp getOrCreateWebappFromAppSettingModel(AzureAppService azureAppService, RunProcessHandler processHandler) throws Exception {
         final WebAppEntity entity = WebAppEntity.builder().id(webAppSettingModel.getWebAppId())
                                                 .resourceGroup(webAppSettingModel.getResourceGroup())
                                                 .name(webAppSettingModel.getWebAppName()).build();
