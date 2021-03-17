@@ -1081,7 +1081,7 @@ public class AzureWebAppMvpModel {
         deployTarget.start();
     }
 
-    private DeployType getDeployTypeByWebContainer(com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer) {
+    private static DeployType getDeployTypeByWebContainer(com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer) {
         if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE) {
             return DeployType.JAR;
         }
