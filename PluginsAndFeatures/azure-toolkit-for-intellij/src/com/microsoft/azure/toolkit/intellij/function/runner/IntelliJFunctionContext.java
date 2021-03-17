@@ -10,6 +10,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IFunctionContext;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,6 +90,7 @@ public class IntelliJFunctionContext implements IFunctionContext {
             result.put("pricingTier", this.getPricingTier());
             result.put("region", this.getRegion());
             result.put("functionJavaVersion", this.getJavaVersion());
+            result.put("disableappinsights", StringUtils.isAllEmpty(getInsightsName(), getInstrumentationKey()));
         } catch (Exception e) {
             // swallow exception as telemetry should not break users operation
         }
