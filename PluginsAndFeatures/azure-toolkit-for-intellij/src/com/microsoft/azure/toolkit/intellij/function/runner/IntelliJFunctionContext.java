@@ -92,6 +92,7 @@ public class IntelliJFunctionContext implements IFunctionContext {
             result.put("subscriptionId", this.getSubscription());
             result.put("pricingTier", this.getPricingTier());
             result.put("region", this.getRegion());
+            result.put("functionJavaVersion", this.getJavaVersion());
         } catch (Exception e) {
             // swallow exception as telemetry should not break users operation
         }

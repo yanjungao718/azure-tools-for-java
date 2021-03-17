@@ -9,12 +9,15 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -27,13 +30,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.TRIGGER_FUNCTION;
 
-public class FunctionNode extends Node {
+public class FunctionNode extends Node implements TelemetryProperties {
 
     private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
@@ -62,6 +66,14 @@ public class FunctionNode extends Node {
             }
         }));
         // todo: find whether there is sdk to enable/disable trigger
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(functionApp.id()));
+        properties.put(AppInsightsConstants.Region, functionApp.regionName());
+        return properties;
     }
 
     @AzureOperation(
