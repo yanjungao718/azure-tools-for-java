@@ -80,6 +80,8 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
 
         final boolean toCreateApp = !app.exists();
         final boolean toCreateDeployment = !deployment.exists();
+        operation.trackProperty("isCreateNewApp", String.valueOf(toCreateApp));
+        operation.trackProperty("isCreateNewDeployment", String.valueOf(toCreateDeployment));
         final List<AzureTask<?>> tasks = new ArrayList<>();
         if (toCreateApp) {
             setText(processHandler, String.format("Creating app(%s)...", app.name()));
@@ -139,7 +141,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         props.put("runtime", config.getAppConfig().getRuntimeVersion());
         props.put("subscriptionId", config.getAppConfig().getSubscriptionId());
         props.put("public", String.valueOf(config.getAppConfig().isPublic()));
-        props.put("jvmOptions", String.valueOf(StringUtils.isEmpty(config.getAppConfig().getDeployment().getJvmOptions())));
+        props.put("jvmOptions", String.valueOf(StringUtils.isNotEmpty(config.getAppConfig().getDeployment().getJvmOptions())));
         props.put("instanceCount", String.valueOf(config.getAppConfig().getDeployment().getInstanceCount()));
         props.put("memory", String.valueOf(config.getAppConfig().getDeployment().getMemoryInGB()));
         props.put("cpu", String.valueOf(config.getAppConfig().getDeployment().getCpu()));

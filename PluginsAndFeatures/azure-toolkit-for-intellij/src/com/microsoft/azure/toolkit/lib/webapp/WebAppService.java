@@ -36,7 +36,7 @@ public class WebAppService {
         final Operation operation = TelemetryManager.createOperation(WEBAPP, CREATE_WEBAPP);
         try {
             operation.start();
-            EventUtil.logEvent(EventType.info, operation, properties);
+            operation.trackProperties(properties);
             return AzureWebAppMvpModel.getInstance().createWebApp(settings);
         } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
@@ -84,6 +84,7 @@ public class WebAppService {
             settings.setEnableDetailedErrorMessage(monitorConfig.isEnableDetailedErrorMessage());
             settings.setEnableFailedRequestTracing(monitorConfig.isEnableFailedRequestTracing());
         }
+        settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
         return settings;
     }
 }
