@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
+import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
@@ -14,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
@@ -103,6 +105,11 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         return file.getType() == AppServiceFile.Type.DIRECTORY ?
                String.format("Type: %s Date modified: %s", file.getMime(), file.getMtime()) :
                String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), file.getMtime());
+    }
+
+    @Override
+    public String getServiceName() {
+        return file.getApp() instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
     }
 
     @Override
