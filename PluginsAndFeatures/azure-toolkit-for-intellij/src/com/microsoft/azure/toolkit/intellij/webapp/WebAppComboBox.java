@@ -6,14 +6,12 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.List;
@@ -48,11 +46,10 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         type = AzureOperation.Type.SERVICE
     )
     protected List<WebAppComboBoxModel> loadItems() throws Exception {
-        final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
+        final List<IWebApp> webApps = AzureWebAppMvpModel.getInstance().listAzureWebApps(false);
         return webApps.stream()
-            .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-            .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-            .map(WebAppComboBoxModel::new)
-            .collect(Collectors.toList());
+                      .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+                      .map(webApp -> new WebAppComboBoxModel(webApp))
+                      .collect(Collectors.toList());
     }
 }

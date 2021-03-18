@@ -12,6 +12,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
@@ -29,12 +30,11 @@ import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.WebAppEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -73,11 +73,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Log
 public class AzureWebAppMvpModel {
 
     private static final Logger logger = Logger.getLogger(AzureWebAppMvpModel.class.getName());
 
+    public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
     private final Map<String, List<IWebApp>> webappsCache;
@@ -235,7 +237,7 @@ public class AzureWebAppMvpModel {
         WebAppDiagnosticLogs.DefinitionStages.WithAttach withAttach = null;
         if (settingModel.isEnableApplicationLog()) {
             withAttach = diagnosticLogs.withApplicationLogging()
-                                       .withLogLevel(settingModel.getApplicationLogLevel())
+                                       .withLogLevel(LogLevel.fromString(settingModel.getApplicationLogLevel()))
                                        .withApplicationLogsStoredOnFileSystem();
         }
         if (settingModel.isEnableWebServerLogging()) {
@@ -964,22 +966,10 @@ public class AzureWebAppMvpModel {
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
-                .withRuntime(parseRuntimeFromWebAppSettingModel(model))
+                .withRuntime(model.getRuntime())
                 .commit();
         updateWebAppDiagnosticConfiguration(result, model);
         return result;
-    }
-
-    private Runtime parseRuntimeFromWebAppSettingModel(@NotNull WebAppSettingModel model) {
-        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem os =
-                com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOS().name());
-        if (os == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
-            return Runtime.getRuntimeFromLinuxFxVersion(model.getLinuxRuntime().toString());
-        }
-        final JavaVersion javaVersion = JavaVersion.fromString(model.getJdkVersion().toString());
-        final com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer =
-                com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.fromString(model.getWebContainer());
-        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
     }
 
     // todo: Move duplicated codes to azure common library
@@ -994,12 +984,13 @@ public class AzureWebAppMvpModel {
 
     private IAppServicePlan getOrCreateAppServicePlan(@NotNull WebAppSettingModel model) {
         final AzureAppService az = getAzureAppServiceClient(model.getSubscriptionId());
-        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
-        if (appServicePlan.exists()) {
-            return appServicePlan;
+        if (!model.isCreatingAppServicePlan()) {
+            return az.appServicePlan(model.getAppServicePlanId());
         }
+        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
         final String[] tierSize = model.getPricing().split("_");
         return appServicePlan.create()
+                // todo: remove duplicated parameters declared in service plan entity
                 .withName(model.getAppServicePlanName())
                 .withResourceGroup(model.getResourceGroup())
                 .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(model.getRegion()))
@@ -1041,9 +1032,16 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
+        String configurationSource = model.getNewSlotConfigurationSource();
+        if (StringUtils.equalsIgnoreCase(configurationSource, webApp.name())) {
+            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_PARENT;
+        }
+        if (StringUtils.equalsIgnoreCase(configurationSource, DO_NOT_CLONE_SLOT_CONFIGURATION)) {
+            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_NEW;
+        }
         return webApp.deploymentSlot(model.getSlotName()).create()
-                .withName(model.getSlotName())
-                .withConfigurationSource(model.getNewSlotConfigurationSource()).commit();
+                .withName(model.getNewSlotName())
+                .withConfigurationSource(configurationSource).commit();
     }
 
     public AzureAppService getAzureAppServiceClient(String subscriptionId) {
@@ -1088,7 +1086,7 @@ public class AzureWebAppMvpModel {
         if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72) {
             return DeployType.EAR;
         }
-        return DeployType.JAR;
+        return DeployType.WAR;
     }
 
     /**

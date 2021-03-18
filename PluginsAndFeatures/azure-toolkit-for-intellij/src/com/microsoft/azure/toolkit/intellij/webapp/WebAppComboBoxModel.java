@@ -5,11 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -18,34 +18,37 @@ import org.apache.commons.lang3.StringUtils;
 public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
 
     private String runtime;
+    private IWebApp webApp;
     private WebAppSettingModel webAppSettingModel;
 
-    public WebAppComboBoxModel(final ResourceEx<WebApp> resourceEx) {
-        super(resourceEx);
-        final WebApp webApp = resourceEx.getResource();
-        this.runtime = webApp.operatingSystem() == OperatingSystem.WINDOWS ?
-                       String.format("%s-%s-%s", "Windows", webApp.javaContainer(), webApp.javaVersion()) :
-                       String.format("%s-%s %s", "Linux", webApp.linuxFxVersion().split("\\|")[0],
-                                     webApp.linuxFxVersion().split("\\|")[1]);
+    // todo: migrate Base Model to service library
+    public WebAppComboBoxModel(final IWebApp webApp) {
+        this.webApp = webApp;
+        this.resourceId = webApp.id();
+        this.appName = webApp.name();
+        this.resourceGroup = webApp.entity().getResourceGroup();
+        this.subscriptionId = webApp.entity().getSubscriptionId();
+        this.isNewCreateResource = false;
+        this.runtime = getRuntimeDisplayName(webApp.getRuntime());
     }
 
     public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
         this.resourceId = webAppSettingModel.getWebAppId();
         // In case recover from configuration, get the app name from resource id
         this.appName =
-                StringUtils.isEmpty(webAppSettingModel.getWebAppName()) && StringUtils.isNotEmpty(resourceId) ?
-                AzureMvpModel.getSegment(resourceId, "sites") :
-                webAppSettingModel.getWebAppName();
+            StringUtils.isEmpty(webAppSettingModel.getWebAppName()) && StringUtils.isNotEmpty(resourceId) ?
+            AzureMvpModel.getSegment(resourceId, "sites") :
+            webAppSettingModel.getWebAppName();
         this.resourceGroup = webAppSettingModel.getResourceGroup();
-        this.os = webAppSettingModel.getOS().name();
-        this.runtime = webAppSettingModel.getOS() == OperatingSystem.WINDOWS ?
-                       String.format("%s-%s-%s", "Windows", webAppSettingModel.getWebContainer(), webAppSettingModel.getJdkVersion()) :
-                       String.format("%s-%s %s", "Linux", webAppSettingModel.getLinuxRuntime().stack(), webAppSettingModel.getLinuxRuntime().version());
-        this.runtime = webAppSettingModel.getOS() == OperatingSystem.LINUX ?
-                       webAppSettingModel.getLinuxRuntime().toString() : webAppSettingModel.getWebContainer();
         this.subscriptionId = webAppSettingModel.getSubscriptionId();
         this.isNewCreateResource = webAppSettingModel.isCreatingNew();
         this.webAppSettingModel = webAppSettingModel;
+        this.runtime = getRuntimeDisplayName(webAppSettingModel.getRuntime());
+    }
+
+    private static String getRuntimeDisplayName(Runtime runtime) {
+        return String.format("%s-%s-%s", runtime.getOperatingSystem().getValue(),
+                             runtime.getWebContainer().getValue(), runtime.getJavaVersion().getValue());
     }
 
 }

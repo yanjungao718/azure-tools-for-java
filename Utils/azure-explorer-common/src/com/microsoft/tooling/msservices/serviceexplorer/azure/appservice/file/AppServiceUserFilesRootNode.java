@@ -17,14 +17,17 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 
 import javax.swing.*;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
     private static final String ROOT_PATH = "/site/wwwroot";
 
+    protected WebAppBase app;
+    protected Supplier<WebAppBase> supplier;
+
     protected final String subscriptionId;
-    protected final WebAppBase app;
     private AppServiceFileService fileService;
 
     public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
@@ -37,6 +40,17 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
         this.app = app;
     }
 
+    // Lazy load for WebAppBase
+    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+        this(MODULE_NAME, parent, subscriptionId, supplier);
+    }
+
+    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+        super(MODULE_ID, name, parent, null);
+        this.subscriptionId = subscriptionId;
+        this.supplier = supplier;
+    }
+
     @Override
     public void removeNode(final String sid, final String name, Node node) {
     }
@@ -46,8 +60,8 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     protected void refreshItems() {
         final AppServiceFileService service = this.getFileService();
         service.getFilesInDirectory(getRootPath()).stream()
-               .map(file -> new AppServiceFileNode(file, this, service))
-               .forEach(this::addChildNode);
+                .map(file -> new AppServiceFileNode(file, this, service))
+                .forEach(this::addChildNode);
     }
 
     @NotNull
@@ -57,9 +71,16 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
 
     public AppServiceFileService getFileService() {
         if (Objects.isNull(this.fileService)) {
-            this.fileService = AppServiceFileService.forApp(app);
+            this.fileService = AppServiceFileService.forApp(getTargetAppService());
         }
         return this.fileService;
+    }
+
+    private WebAppBase getTargetAppService() {
+        if (app == null) {
+            app = supplier.get();
+        }
+        return app;
     }
 
     @Override

@@ -7,6 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
@@ -34,13 +35,12 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
     // todo: migrate file service to track2 SDK
-    private final WebApp webapp; // Track one client, keep for file service
+    private WebApp webapp; // Track one client, keep for file service
     private final IWebApp webappManager;
 
     public WebAppNode(WebAppModule parent, String subscriptionId, IWebApp webAppManager) {
         super(webAppManager.id(), webAppManager.name(), LABEL, parent, subscriptionId, webAppManager.hostName(),
               webAppManager.getRuntime().getOperatingSystem().toString(), webAppManager.state());
-        this.webapp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppManager.id());
         this.webappManager = webAppManager;
         loadActions();
     }
@@ -67,8 +67,8 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
-        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
-        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this::getWebapp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this::getWebapp));
     }
 
     @Override
@@ -97,15 +97,20 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     public String getWebAppId() {
-        return this.webapp.id();
+        return this.webappManager.id();
     }
 
     public String getWebAppName() {
-        return this.webapp.name();
+        return this.webappManager.name();
     }
 
+    @Deprecated
     public String getFxVersion() {
-        return this.webapp.linuxFxVersion();
+        return getWebapp().linuxFxVersion();
+    }
+
+    public Runtime getWebAppRuntime() {
+        return this.webappManager.getRuntime();
     }
 
     @Override
@@ -116,7 +121,11 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return super.getNodeActions();
     }
 
+    @Deprecated
     public WebApp getWebapp() {
+        if (webapp == null) {
+            webapp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webappManager.id());
+        }
         return webapp;
     }
 

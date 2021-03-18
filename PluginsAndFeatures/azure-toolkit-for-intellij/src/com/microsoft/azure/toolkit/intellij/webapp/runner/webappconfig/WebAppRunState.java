@@ -9,7 +9,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
@@ -44,6 +43,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class WebAppRunState extends AzureRunProfileState<IAppService> {
@@ -150,7 +150,8 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
         if (!isDeployToSlot()) {
             return webApp;
         }
-        if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+        // todo: add new boolean indicator instead of comparing string values
+        if (StringUtils.equals(webAppSettingModel.getSlotName(), Constants.CREATE_NEW_SLOT)) {
             return createDeploymentSlot(webApp, processHandler);
         } else {
             return webApp.deploymentSlot(webAppSettingModel.getSlotName());
@@ -218,11 +219,11 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     private void updateConfigurationDataModel(@NotNull IAppService app) {
         webAppSettingModel.setCreatingNew(false);
         // todo: add flag to indicate create new slot or not
-        if (app instanceof DeploymentSlot) {
+        if (app instanceof IWebAppDeploymentSlot) {
             webAppSettingModel.setSlotName(app.name());
-            webAppSettingModel.setNewSlotConfigurationSource(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+            webAppSettingModel.setNewSlotConfigurationSource(DO_NOT_CLONE_SLOT_CONFIGURATION);
             webAppSettingModel.setNewSlotName("");
-            webAppSettingModel.setWebAppId(((DeploymentSlot) app).parent().id());
+            webAppSettingModel.setWebAppId(((IWebAppDeploymentSlot) app).webApp().id());
         } else {
             webAppSettingModel.setWebAppId(app.id());
         }
