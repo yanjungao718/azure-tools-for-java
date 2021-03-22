@@ -107,8 +107,8 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
             WebAppConfiguration webAppConfiguration = (WebAppConfiguration) runConfiguration;
             final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(runConfiguration.getProject())
                     .getAzureArtifactById(webAppConfiguration.getAzureArtifactType(), webAppConfiguration.getArtifactIdentifier());
-            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(azureArtifact.getTargetPath());
-            Module module = ProjectFileIndex.getInstance(runConfiguration.getProject()).getModuleForFile(virtualFile, false);
+            final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(azureArtifact.getTargetPath());
+            final Module module = virtualFile == null ? null : ProjectFileIndex.getInstance(runConfiguration.getProject()).getModuleForFile(virtualFile, false);
             return Objects.nonNull(module) ? module.getName() : StringUtils.EMPTY;
         }
         if (runConfiguration instanceof AbstractRunConfiguration
