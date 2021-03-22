@@ -114,7 +114,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.clean_staging_folder",
-        params = {"$stagingFolder.getName()"},
+        params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static void cleanUpStagingFolder(File stagingFolder) {
@@ -129,7 +129,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.list_function_modules",
-        params = {"$project.getName()"},
+        params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static Module[] listFunctionModules(Project project) {
@@ -154,7 +154,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "common|function.validate_project",
-        params = {"$project.getName()"},
+        params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static boolean isFunctionProject(Project project) {
@@ -173,7 +173,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.list_function_methods",
-        params = {"$model.getName"},
+        params = {"module.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
@@ -208,7 +208,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.copy_settings",
-        params = {"$model.getName"},
+        params = {"localSettingJson", "stagingFolder"},
         type = AzureOperation.Type.TASK
     )
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,

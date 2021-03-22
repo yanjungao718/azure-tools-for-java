@@ -95,7 +95,7 @@ public class CreateWebAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(name = "webapp.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<WebApp> createWebApp(final WebAppConfig config) {
         final IAzureOperationTitle title = title("webapp.create_detail", config.getName());
         final AzureTask<WebApp> task = new AzureTask<>(null, title, false, () -> {
@@ -109,7 +109,7 @@ public class CreateWebAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(name = "webapp.deploy_artifact", params = {"$webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.deploy_artifact", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
         final IAzureOperationTitle title = title("webapp.deploy_artifact", webapp.name());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {

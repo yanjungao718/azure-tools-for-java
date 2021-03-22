@@ -126,7 +126,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     @Override
     @AzureOperation(
         name = "webapp.complete_deployment.state",
-        params = {"@deployModel.getWebAppName()"},
+        params = {"this.deployModel.getWebAppName()"},
         type = AzureOperation.Type.TASK
     )
     protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {

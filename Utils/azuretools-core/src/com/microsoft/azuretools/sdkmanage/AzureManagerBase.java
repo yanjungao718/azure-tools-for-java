@@ -92,7 +92,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    @AzureOperation(name = "account|subscription.get_tenant", params = {"$subscriptionId"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|subscription.get_tenant", params = {"subscriptionId"}, type = AzureOperation.Type.TASK)
     public String getTenantIdBySubscription(String subscriptionId) {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
@@ -255,7 +255,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
-    @AzureOperation(name = "account|subscription.list.tenant", params = {"$authentication.tenantId()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|subscription.list.tenant", params = {"authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
         return authentication.subscriptions().listAsync()
                 .toList()
@@ -271,7 +271,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
-    @AzureOperation(name = "account|tenant.auth", params = {"$tenantId"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|tenant.auth", params = {"tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()

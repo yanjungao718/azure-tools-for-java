@@ -49,7 +49,7 @@ public class AzureArtifactManager {
 
     @AzureOperation(
         name = "common|artifact.get_id",
-        params = {"$artifact.getName()"},
+        params = {"artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
     public String getArtifactIdentifier(AzureArtifact artifact) {
@@ -69,7 +69,7 @@ public class AzureArtifactManager {
 
     @AzureOperation(
         name = "common|artifact.get_file",
-        params = {"$artifact.getName()"},
+        params = {"artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
     public String getFileForDeployment(AzureArtifact artifact) {

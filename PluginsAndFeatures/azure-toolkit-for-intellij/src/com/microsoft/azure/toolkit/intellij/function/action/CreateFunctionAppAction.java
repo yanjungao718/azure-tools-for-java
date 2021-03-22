@@ -89,7 +89,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(name = "function.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
         final IAzureOperationTitle title = title("function.create_detail", config.getName());
         final AzureTask<FunctionApp> task = new AzureTask<>(null, title, false, () -> {

@@ -59,7 +59,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
-    @AzureOperation(name = "webapp.deploy_artifact", params = {"@webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.deploy_artifact", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
@@ -175,7 +175,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @AzureOperation(
         name = "webapp|artifact.get.state",
-        params = {"@webAppConfiguration.getName()"},
+        params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private String getTargetPath() throws AzureExecutionException {
@@ -191,7 +191,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @AzureOperation(
         name = "webapp.create_detail",
-        params = {"@webAppConfiguration.getName()"},
+        params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private WebApp createWebApp(@NotNull RunProcessHandler processHandler) {
@@ -206,7 +206,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @AzureOperation(
         name = "webapp|deployment.create.state",
-        params = {"@webAppConfiguration.getName()"},
+        params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private DeploymentSlot createDeploymentSlot(@NotNull RunProcessHandler processHandler) {
