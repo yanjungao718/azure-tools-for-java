@@ -10,12 +10,10 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
-
-import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 
 import javax.swing.*;
 
@@ -63,9 +61,7 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
 
     @Override
     public Icon getIcon() {
-        return PluginUtil.getIcon(IconPathBuilder
-                .custom(CommonConst.OpenSparkUIIconName)
-                .build());
+        return AzureIconLoader.loadIcon(AzureIconSymbol.HDInsight.MODULE);
     }
 
     @NotNull

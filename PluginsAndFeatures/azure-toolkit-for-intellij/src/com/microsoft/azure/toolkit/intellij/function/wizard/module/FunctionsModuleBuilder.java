@@ -17,7 +17,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.startup.StartupManager;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,10 +28,11 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azure.toolkit.intellij.function.wizard.AzureFunctionsConstants;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +70,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
     @Override
     public Icon getNodeIcon() {
-        return IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH, AzureFunctionSupportConfigurationType.class);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE);
     }
 
     @Override

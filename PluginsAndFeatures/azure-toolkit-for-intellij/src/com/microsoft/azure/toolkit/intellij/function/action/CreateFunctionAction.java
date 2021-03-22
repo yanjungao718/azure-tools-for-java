@@ -19,7 +19,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.util.ClassUtil;
@@ -36,8 +35,9 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.*;
-import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
@@ -56,8 +56,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
 
     public CreateFunctionAction() {
         super(message("function.createFunction.action.title"),
-                "newPage.dialog.prompt", IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH,
-                        AzureFunctionSupportConfigurationType.class));
+                "newPage.dialog.prompt", AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE));
     }
 
     @Override
