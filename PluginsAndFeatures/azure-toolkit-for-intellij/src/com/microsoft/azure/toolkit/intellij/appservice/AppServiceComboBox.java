@@ -39,6 +39,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         unsubscribeSubscription(subscription);
         this.setLoading(true);
         this.removeAllItems();
+        this.setValue(defaultValue); // workaround to skip `refreshValue()` om AzureComboBox
         this.addItem(defaultValue);
         subscription = this.loadItemsAsync()
             .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
@@ -58,12 +59,12 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
             .findFirst().orElse(null);
         if (model != null) {
             this.setSelectedItem(model);
-            this.removeItem(defaultValue);
         } else if (defaultValue.isNewCreateResource()) {
+            this.addItem(defaultValue);
+            this.setSelectedItem(defaultValue);
             return;
         } else {
             this.setSelectedItem(null);
-            this.removeItem(defaultValue);
         }
     }
 
