@@ -130,14 +130,12 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             this.appSettingsKey = configuration.getAppSettingsKey();
             appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
-        if (StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
-            functionAppComboBox.refreshItems();
-        } else {
-            final FunctionAppComboBoxModel functionAppComboBoxModel =
-                    new FunctionAppComboBoxModel(configuration.getModel());
+        if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
+            final FunctionAppComboBoxModel functionAppComboBoxModel = new FunctionAppComboBoxModel(configuration.getModel());
             appSettingsFunctionApp = functionAppComboBoxModel;
-            functionAppComboBox.refreshItemsWithDefaultValue(functionAppComboBoxModel);
+            functionAppComboBox.setValue(functionAppComboBoxModel);
         }
+        functionAppComboBox.refreshItems();
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
             for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {

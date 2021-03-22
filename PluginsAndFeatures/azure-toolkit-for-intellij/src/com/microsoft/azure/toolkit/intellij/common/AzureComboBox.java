@@ -133,13 +133,17 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             super.setSelectedItem(items.get(0));
         } else if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
-        } else if (value instanceof Draft) {
+        } else if (isDraftItem(this.value)) {
             // todo: unify model for custom created resource
             super.addItem((T) value);
             super.setSelectedItem(value);
         } else {
             super.setSelectedItem(null);
         }
+    }
+
+    protected boolean isDraftItem(Object value) {
+        return value instanceof Draft;
     }
 
     @Override
