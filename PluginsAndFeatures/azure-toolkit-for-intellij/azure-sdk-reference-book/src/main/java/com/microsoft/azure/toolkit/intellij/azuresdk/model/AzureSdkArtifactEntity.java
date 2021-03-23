@@ -17,6 +17,9 @@ import java.util.Map;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureSdkArtifactEntity {
+    public static final String DEPENDENCY_TYPE_MAVEN = "Maven";
+    public static final String DEPENDENCY_TYPE_GRADLE = "Gradle";
+
     private String artifactId;
     private String groupId;
     private String versionGA;
@@ -24,13 +27,16 @@ public class AzureSdkArtifactEntity {
     private String type;
     private Map<String, String> links;
 
-    public String generateMavenDependencySnippet(String version) {
+    public String generateDependencySnippet(String type, String version) {
+        if (DEPENDENCY_TYPE_GRADLE.equals(type)) {
+            return String.format("implementation '%s:%s:%s'", this.groupId, this.artifactId, version);
+        }
         return String.join("",
-                "<dependency>\n",
-                "    <groupId>", this.groupId, "</groupId>\n",
-                "    <artifactId>", this.artifactId, "</artifactId>\n",
-                "    <version>", version, "</version>\n",
-                "</dependency>"
+            "<dependency>\n",
+            "    <groupId>", this.groupId, "</groupId>\n",
+            "    <artifactId>", this.artifactId, "</artifactId>\n",
+            "    <version>", version, "</version>\n",
+            "</dependency>"
         );
     }
 

@@ -8,6 +8,7 @@ group 'com.microsoft.azuretools'
 intellij {
     version = intellij_version
     downloadSources = Boolean.valueOf(true)
+    plugins = ['java', 'maven', 'gradle']
 }
 
 repositories {

@@ -19,7 +19,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
+import icons.GradleIcons;
+import icons.MavenIcons;
+import icons.OpenapiIcons;
 import lombok.Getter;
+import org.gradle.api.internal.plugins.GroovyJarFile;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -28,6 +32,7 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AzureSdkArtifactGroupPanel {
     @Getter
@@ -37,6 +42,9 @@ public class AzureSdkArtifactGroupPanel {
     private ActionToolbarImpl toolbar;
     private ButtonGroup artifactsGroup;
     private final List<AzureSdkArtifactDetailPanel> artifactPnls = new ArrayList<>();
+    private AzureSdkArtifactEntity pkg;
+    private String version;
+    private String type;
 
     public void setData(@Nonnull final List<? extends AzureSdkArtifactEntity> artifacts) {
         this.clear();
@@ -58,7 +66,14 @@ public class AzureSdkArtifactGroupPanel {
     }
 
     private void onPackageOrVersionSelected(AzureSdkArtifactEntity pkg, String version) {
-        this.viewer.setText(pkg.generateMavenDependencySnippet(version));
+        this.pkg = pkg;
+        this.version = version;
+        this.viewer.setText(pkg.generateDependencySnippet(type, version));
+    }
+
+    private void onDependencyTypeSelected(String type) {
+        this.type = type;
+        this.viewer.setText(pkg.generateDependencySnippet(type, version));
     }
 
     private EditorTextField buildCodeViewer() {
@@ -81,6 +96,7 @@ public class AzureSdkArtifactGroupPanel {
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
         });
+        group.add(new ShowDependencyTypeListAction(this::onDependencyTypeSelected));
         return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, false);
     }
 
@@ -109,4 +125,41 @@ public class AzureSdkArtifactGroupPanel {
         this.toolbar.setForceMinimumSize(true);
         this.toolbar.setTargetComponent(this.viewer);
     }
+
+    /**
+     * referred com.intellij.application.options.schemes.AbstractSchemesPanel.ShowSchemesActionsListAction
+     *
+     * @see com.intellij.application.options.schemes.AbstractSchemesPanel
+     */
+    private static class ShowDependencyTypeListAction extends DefaultActionGroup {
+        private String selected;
+
+        private ShowDependencyTypeListAction(Consumer<? super String> onTypeSelected) {
+            super();
+            setPopup(true);
+            final Consumer<String> onSelected = (type) -> {
+                onTypeSelected.accept(type);
+                this.selected = type;
+            };
+            final AnAction maven = createAction(AzureSdkArtifactEntity.DEPENDENCY_TYPE_MAVEN, OpenapiIcons.RepositoryLibraryLogo, onSelected);
+            final AnAction gradle = createAction(AzureSdkArtifactEntity.DEPENDENCY_TYPE_GRADLE, GradleIcons.Gradle, onSelected);
+            this.addAll(maven, gradle);
+        }
+
+        @Override
+        public void update(@NotNull final AnActionEvent e) {
+            final Icon icon = AzureSdkArtifactEntity.DEPENDENCY_TYPE_GRADLE.equals(selected) ? GradleIcons.Gradle : OpenapiIcons.RepositoryLibraryLogo;
+            e.getPresentation().setIcon(icon);
+        }
+
+        private AnAction createAction(final String type, final Icon icon, final Consumer<? super String> onTypeSelected) {
+            return new AnAction(type, null, icon) {
+                @Override
+                public void actionPerformed(@NotNull final AnActionEvent e) {
+                    onTypeSelected.accept(type);
+                }
+            };
+        }
+    }
+
 }
