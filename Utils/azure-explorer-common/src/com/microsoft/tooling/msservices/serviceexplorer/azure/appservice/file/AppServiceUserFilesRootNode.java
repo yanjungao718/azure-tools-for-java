@@ -15,6 +15,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -51,10 +52,13 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
     @Override
     @AzureOperation(name = "appservice|file.list", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        final AppServiceFileService service = this.getFileService();
-        service.getFilesInDirectory(getRootPath()).stream()
-               .map(file -> new AppServiceFileNode(file, this, service))
-               .forEach(this::addChildNode);
+        EventUtil.executeWithLog(getServiceName(), TelemetryConstants.LIST_FILE, operation -> {
+            operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
+            final AppServiceFileService service = this.getFileService();
+            service.getFilesInDirectory(getRootPath()).stream()
+                    .map(file -> new AppServiceFileNode(file, this, service))
+                    .forEach(this::addChildNode);
+        });
     }
 
     @NotNull
