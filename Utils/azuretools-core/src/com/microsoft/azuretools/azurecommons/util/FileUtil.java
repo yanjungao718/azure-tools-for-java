@@ -139,7 +139,7 @@ public class FileUtil {
      */
     @AzureOperation(
         name = "common|artifact.zip_files",
-        params = {"$targetZipFile.getName()"},
+        params = {"targetZipFile.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static void zipFiles(@NotNull final File[] sourceFiles,

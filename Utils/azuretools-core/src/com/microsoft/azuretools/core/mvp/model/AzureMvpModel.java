@@ -59,7 +59,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "account|subscription.get_detail",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
     public Subscription getSubscriptionById(String sid) {
@@ -139,7 +139,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "arm|rg.delete",
-        params = {"$rgName"},
+        params = {"rgName"},
         type = AzureOperation.Type.SERVICE
     )
     public void deleteResourceGroup(String rgName, String sid) {
@@ -156,7 +156,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "arm|rg.list.subscription",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceGroup> getResourceGroupsBySubscriptionId(String sid) {
@@ -172,7 +172,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "arm|rg.get.subscription",
-        params = {"$name", "$sid"},
+        params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
@@ -210,7 +210,7 @@ public class AzureMvpModel {
 
     @AzureOperation(
         name = "deployment.list.subscription",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<Deployment> listDeploymentsBySid(String sid) {
@@ -227,7 +227,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "deployment.list.subscription|rg",
-        params = {"$name", "$sid"},
+        params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<Deployment>> getDeploymentByRgName(String sid, String rgName) {
@@ -248,7 +248,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "common|region.list.subscription",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<Location> listLocationsBySubscriptionId(String sid) {
@@ -270,7 +270,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "common.list_tiers",
-        params = {"$name", "$sid"},
+        params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<PricingTier> listPricingTier() {

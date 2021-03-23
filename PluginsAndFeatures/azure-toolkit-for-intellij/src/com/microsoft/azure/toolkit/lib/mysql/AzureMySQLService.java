@@ -27,8 +27,8 @@ public class AzureMySQLService {
     @AzureOperation(
         name = "mysql.create",
         params = {
-            "$config.getServerName()",
-            "$config.getSubscription().displayName()"
+            "config.getServerName()",
+            "config.getSubscription().displayName()"
         },
         type = AzureOperation.Type.SERVICE
     )
