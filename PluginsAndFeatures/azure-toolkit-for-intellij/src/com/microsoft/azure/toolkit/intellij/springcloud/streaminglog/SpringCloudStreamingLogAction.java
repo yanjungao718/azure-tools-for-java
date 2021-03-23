@@ -100,6 +100,16 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
     }
 
     @Override
+    protected String getServiceName(final NodeActionEvent event) {
+        return SPRING_CLOUD;
+    }
+
+    @Override
+    protected String getOperationName(final NodeActionEvent event) {
+        return START_STREAMING_LOG_SPRING_CLOUD_APP;
+    }
+
+    @Override
     public int getGroup() {
         return Groupable.DIAGNOSTIC_GROUP;
     }

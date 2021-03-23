@@ -12,6 +12,10 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -20,12 +24,7 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -132,11 +131,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-        telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
-        telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
-        telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
-        telemetryMap.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
-        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
+        telemetryMap.putAll(webAppSettingModel.getTelemetryProperties(null));
     }
 
     @NotNull
