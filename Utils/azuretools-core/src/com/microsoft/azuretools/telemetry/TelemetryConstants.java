@@ -11,6 +11,7 @@ import java.util.Map;
 public class TelemetryConstants {
 
     // production name
+    public static final String APP_SERVICE = "appservice";
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
     public static final String SPRING_CLOUD = "springcloud";
@@ -98,6 +99,8 @@ public class TelemetryConstants {
     public static final String BROWSE_DOCKER_CONTAINER = "browser-docker-container";
     public static final String DELETE_DOCKER_CONTAINER = "delete-docker-container";
     public static final String DELETE_DOCKER_IMAGE = "delete-docker-image";
+    public static final String GET_PUBLISH_FILE = "get-publish-file";
+    public static final String SAVE_APP_SERVICE = "save-appservice";
     public static final String DEPLOY_WEBAPP_DOCKERLOCAL = "deploy-webapp-dockerlocal";
     public static final String DEPLOY_WEBAPP_DOCKERHOST = "deploy-webapp-dockerhost";
     public static final String DEPLOY_WEBAPP_CONTAINER = "deploy-webapp-container";
