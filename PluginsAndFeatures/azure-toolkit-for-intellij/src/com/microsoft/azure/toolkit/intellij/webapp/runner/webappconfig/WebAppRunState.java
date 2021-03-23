@@ -37,10 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -131,7 +128,10 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected Map<String, String> getTelemetryMap() {
-        return webAppSettingModel.getTelemetryProperties(Collections.EMPTY_MAP);
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("artifactType", webAppConfiguration.getAzureArtifactType() == null ? null : webAppConfiguration.getAzureArtifactType().name());
+        properties.putAll(webAppSettingModel.getTelemetryProperties(Collections.EMPTY_MAP));
+        return properties;
     }
 
     @NotNull

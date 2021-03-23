@@ -197,6 +197,7 @@ public class TelemetryConstants {
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
     public static final String AZURE_ENVIRONMENT = "azureEnvironment";
+    public static final String PRICING_TIER = "pricingTier";
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();
