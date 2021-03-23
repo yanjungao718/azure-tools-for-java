@@ -65,7 +65,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Override
     @AzureOperation(
         name = "common|artifact.list.project",
-        params = {"@project.getName()"},
+        params = {"this.project.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AzureArtifact> loadItems() throws Exception {

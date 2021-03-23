@@ -130,7 +130,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @AzureOperation(
         name = "function.validate_runtime",
-        params = {"@functionRunConfiguration.getFuncPath()"},
+        params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
     private void validateFunctionRuntime(RunProcessHandler processHandler) {
@@ -164,7 +164,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @AzureOperation(
         name = "function.get_version",
-        params = {"@functionRunConfiguration.getFuncPath()"},
+        params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
     private ComparableVersion getFuncVersion() throws IOException {
@@ -199,7 +199,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @AzureOperation(
         name = "function|cli.run",
-        params = {"$stagingFolder.getName()"},
+        params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
@@ -272,7 +272,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @AzureOperation(
         name = "function.prepare_staging_folder_detail",
-        params = {"$stagingFolder.getName()", "@functionRunConfiguration.getFuncPath()"},
+        params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
@@ -352,7 +352,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     @Override
     @AzureOperation(
         name = "function.complete_local_run",
-        params = {"@functionRunConfiguration.getFuncPath()"},
+        params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {

@@ -153,7 +153,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @AzureOperation(
         name = "common|combobox.load_items",
-        params = {"@label()"},
+        params = {"this.label()"},
         type = AzureOperation.Type.ACTION
     )
     private void doRefreshItems() {

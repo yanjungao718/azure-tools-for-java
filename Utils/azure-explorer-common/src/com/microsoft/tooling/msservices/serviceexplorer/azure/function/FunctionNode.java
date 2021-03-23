@@ -66,7 +66,7 @@ public class FunctionNode extends Node {
 
     @AzureOperation(
         name = "function|trigger.start.detail",
-        params = {"@functionApp.name()"},
+        params = {"this.functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
     private void trigger() {
@@ -98,7 +98,7 @@ public class FunctionNode extends Node {
     // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
     @AzureOperation(
         name = "function|trigger.start_timer",
-        params = {"@functionApp.name()"},
+        params = {"this.functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
     private void triggerTimerTrigger() {
@@ -115,7 +115,7 @@ public class FunctionNode extends Node {
 
     @AzureOperation(
         name = "function|trigger.start_event",
-        params = {"@functionApp.name()"},
+        params = {"this.functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
     private void triggerEventHubTrigger() {
@@ -133,7 +133,7 @@ public class FunctionNode extends Node {
 
     @AzureOperation(
         name = "function|trigger.start_http",
-        params = {"@functionApp.name()"},
+        params = {"this.functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
     private void triggerHttpTrigger(Map binding) {
