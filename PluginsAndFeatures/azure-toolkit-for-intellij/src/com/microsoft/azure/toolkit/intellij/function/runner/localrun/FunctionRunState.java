@@ -90,11 +90,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         this.functionRunConfiguration = functionRunConfiguration;
     }
 
-    @Override
-    protected String getDeployTarget() {
-        return "null";
-    }
-
     @AzureOperation(name = "function.launch_debugger", type = AzureOperation.Type.TASK)
     private void launchDebugger(final Project project, int debugPort) {
         final Runnable runnable = () -> {

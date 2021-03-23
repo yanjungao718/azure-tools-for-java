@@ -131,11 +131,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected String getDeployTarget() {
-        return isDeployToSlot() ? "DeploymentSlot" : "WebApp";
-    }
-
-    @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
         telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));

@@ -32,15 +32,9 @@ import java.util.Map;
 public class PushImageRunState extends AzureRunProfileState<String> {
     private final PushImageRunModel dataModel;
 
-
     public PushImageRunState(Project project, PushImageRunModel pushImageRunModel) {
         super(project);
         this.dataModel = pushImageRunModel;
-    }
-
-    @Override
-    protected String getDeployTarget() {
-        return "Container Registry";
     }
 
     @Override

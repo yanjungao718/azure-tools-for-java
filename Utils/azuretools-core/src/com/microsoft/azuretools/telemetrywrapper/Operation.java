@@ -5,7 +5,11 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+
 import java.io.Closeable;
+import java.util.Map;
 
 /**
  * The operation is used for trace the request. The typical usage is:
@@ -39,4 +43,9 @@ public interface Operation extends Closeable {
     void start();
 
     void complete();
+
+    // Add a context property that will be set in all later events
+    void trackProperty(@NotNull String key, @Nullable String value);
+
+    void trackProperties(@NotNull Map<String, String> properties);
 }
