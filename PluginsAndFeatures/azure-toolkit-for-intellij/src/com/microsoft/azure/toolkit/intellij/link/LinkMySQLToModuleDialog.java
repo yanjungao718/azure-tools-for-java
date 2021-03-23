@@ -15,9 +15,11 @@ import com.microsoft.azure.toolkit.intellij.link.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLResourceConfig;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.link.AzureLinkService;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.intellij.AzureMySQLStorage;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
@@ -100,7 +102,12 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
             AzureLinkService.getInstance().link(project, linkConfig, finalStorageResource);
         };
         String progressMessage = "Connecting Azure Database for MySQL with Module...";
-        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
+        final AzureTask task = new AzureTask(null, new IAzureOperationTitle.Simple(progressMessage) {
+            @Override
+            public String getName() {
+                return ActionConstants.MySQL.LINK_TO_MODULE;
+            }
+        }, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }
 

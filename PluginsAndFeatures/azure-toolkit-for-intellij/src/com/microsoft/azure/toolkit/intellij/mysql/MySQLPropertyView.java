@@ -14,10 +14,14 @@ import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLProperty;
@@ -28,7 +32,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpView {
 
@@ -155,6 +161,12 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             Boolean changed = MySQLPropertyView.this.changed();
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             MySQLPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
+            final Map<String, String> properties = new HashMap<>();
+            properties.put(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
+            properties.put("allowAccessToLocal", String.valueOf(allowAccessToLocal));
+            properties.put("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
+            EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.SAVE).getServiceName(),
+                               ActionConstants.parse(ActionConstants.MySQL.SAVE).getOperationName(), properties);
         };
         AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
     }
