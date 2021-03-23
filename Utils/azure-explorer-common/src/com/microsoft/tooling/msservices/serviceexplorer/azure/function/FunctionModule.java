@@ -42,7 +42,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    @AzureOperation(name = "function.delete", params = {"$id|uri_to_name", "$sid"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.delete", params = {"nameFromResourceId(id)", "sid"}, type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         functionModulePresenter.onDeleteFunctionApp(sid, id);
         removeDirectChildNode(node);
