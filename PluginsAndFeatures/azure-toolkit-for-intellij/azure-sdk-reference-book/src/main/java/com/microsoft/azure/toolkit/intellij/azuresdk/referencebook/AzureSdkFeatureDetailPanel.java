@@ -12,7 +12,6 @@ import com.intellij.ui.components.JBTabbedPane;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -34,19 +33,17 @@ public class AzureSdkFeatureDetailPanel {
     private JBLabel descLabel;
 
     public void setData(final AzureSdkFeatureEntity feature) {
-        AzureTaskManager.getInstance().runLater(() -> {
-            this.titleLabel.setText(feature.getName());
-            SwingUtils.setTextAndEnableAutoWrap(this.descLabel, feature.getDescription());
+        this.titleLabel.setText(feature.getName());
+        SwingUtils.setTextAndEnableAutoWrap(this.descLabel, feature.getDescription());
 
-            this.featureDocLink.setVisible(false);
-            Optional.ofNullable(feature.getMsdocs()).ifPresent(link -> {
-                this.featureDocLink.setHyperlinkText("Product documentation");
-                this.featureDocLink.setHyperlinkTarget(link);
-                this.featureDocLink.setVisible(true);
-            });
-
-            this.buildTabs(feature);
+        this.featureDocLink.setVisible(false);
+        Optional.ofNullable(feature.getMsdocs()).ifPresent(link -> {
+            this.featureDocLink.setHyperlinkText("Product documentation");
+            this.featureDocLink.setHyperlinkTarget(link);
+            this.featureDocLink.setVisible(true);
         });
+
+        this.buildTabs(feature);
     }
 
     private void buildTabs(AzureSdkFeatureEntity feature) {
