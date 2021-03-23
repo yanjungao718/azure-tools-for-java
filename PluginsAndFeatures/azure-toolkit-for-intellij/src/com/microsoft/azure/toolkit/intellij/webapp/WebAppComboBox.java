@@ -47,7 +47,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         name = "webapp.list.detail|subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    protected List<WebAppComboBoxModel> loadItems() throws Exception {
+    protected List<WebAppComboBoxModel> loadAppServiceModels() throws Exception {
         final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
         return webApps.stream()
             .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))

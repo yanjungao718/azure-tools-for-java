@@ -12,6 +12,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
@@ -130,14 +131,13 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             this.appSettingsKey = configuration.getAppSettingsKey();
             appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
-        if (StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
-            functionAppComboBox.refreshItems();
-        } else {
-            final FunctionAppComboBoxModel functionAppComboBoxModel =
-                    new FunctionAppComboBoxModel(configuration.getModel());
-            appSettingsFunctionApp = functionAppComboBoxModel;
-            functionAppComboBox.refreshItemsWithDefaultValue(functionAppComboBoxModel);
+        if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
+            final FunctionAppComboBoxModel configModel = new FunctionAppComboBoxModel(configuration.getModel());
+            appSettingsFunctionApp = configModel;
+            functionAppComboBox.setConfigModel(configModel);
+            functionAppComboBox.setValue(new AzureComboBox.ItemReference<>(value -> AppServiceComboBoxModel.isSameApp(value, configModel)));
         }
+        functionAppComboBox.refreshItems();
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
             for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {

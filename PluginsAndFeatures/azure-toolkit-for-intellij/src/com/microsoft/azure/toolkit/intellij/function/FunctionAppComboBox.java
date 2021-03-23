@@ -44,7 +44,7 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
         name = "function.list.detail|subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends FunctionAppComboBoxModel> loadItems() throws Exception {
+    protected List<FunctionAppComboBoxModel> loadAppServiceModels() throws Exception {
         final List<ResourceEx<FunctionApp>> functions = AzureFunctionMvpModel.getInstance().listAllFunctions(false);
         return functions.stream()
             .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
