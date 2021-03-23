@@ -6,12 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
 import com.intellij.ui.components.JBScrollPane;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
 import lombok.Getter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 public class AzureSdkReferenceBookPanel {
     @Getter
@@ -24,7 +22,7 @@ public class AzureSdkReferenceBookPanel {
     public AzureSdkReferenceBookPanel() {
         this.contentPanel.setPreferredSize(new Dimension(800, 600));
         this.initListeners();
-        this.servicesTreePanel.reload();
+        this.servicesTreePanel.refresh();
     }
 
     private void initListeners() {
