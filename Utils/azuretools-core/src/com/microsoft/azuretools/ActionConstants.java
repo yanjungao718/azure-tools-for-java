@@ -103,6 +103,8 @@ public final class ActionConstants {
         String BIND_INTO = OPERATION_PREFIX + "bind-into";
         String LINK_TO_MODULE = OPERATION_PREFIX + "link-to-module";
         String DO_SERVICE_LINK = OPERATION_PREFIX + "do-link";
+        String TEST_CONNECTION = OPERATION_PREFIX + "test-connection";
+        String UPDATE_PASSWORD = OPERATION_PREFIX + "update-password";
     }
 
     public interface SpringCloud {
