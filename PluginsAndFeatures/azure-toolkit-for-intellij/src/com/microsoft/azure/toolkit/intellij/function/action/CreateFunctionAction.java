@@ -82,9 +82,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                     PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
                     String newName = packageName.replace('.', '/');
                     bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
-                    EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_TRIGGER, new HashMap<String, String>() {{
-                            put("triggerType", triggerType);
-                        }});
+                    operation.trackProperty("triggerType", triggerType);
                     if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                         if (StringUtils.isBlank(connectionName)) {
                             throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));

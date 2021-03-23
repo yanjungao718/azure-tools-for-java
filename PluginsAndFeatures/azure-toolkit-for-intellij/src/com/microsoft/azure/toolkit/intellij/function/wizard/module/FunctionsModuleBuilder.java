@@ -119,10 +119,8 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
                 final String version = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_VERSION_KEY);
                 final String packageName = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_PACKAGE_NAME_KEY);
                 final String[] triggers = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_TRIGGERS_KEY);
-                EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_PROJECT, new HashMap<String, String>() {{
-                    put("tool", tool);
-                    put("triggerType", StringUtils.join(triggers, ","));
-                }});
+                operation.trackProperty("tool", tool);
+                operation.trackProperty("triggerType", StringUtils.join(triggers, ","));
                 File tempProjectFolder = null;
                 try {
                     tempProjectFolder = AzureFunctionsUtils.createFunctionProjectToTempFolder(groupId, artifactId, version, tool);
