@@ -52,32 +52,25 @@ public class AzureSdkFeatureDetailPanel {
         final List<AzureSdkArtifactEntity> managementArtifacts = feature.getArtifacts(AzureSdkArtifactEntity.Type.MANAGEMENT);
         this.tabPane.removeAll();
         if (CollectionUtils.isNotEmpty(clientArtifacts)) {
-            final int index = this.addGroup("Client SDK", clientArtifacts);
-            this.setTips(index, CLIENT_TIP);
+            this.addGroup("Client SDK", CLIENT_TIP, clientArtifacts);
         }
         if (CollectionUtils.isNotEmpty(springArtifacts)) {
-            final int index = this.addGroup("Spring", springArtifacts);
-            this.setTips(index, SPRING_TIP);
+            this.addGroup("Spring", SPRING_TIP, springArtifacts);
         }
         if (CollectionUtils.isNotEmpty(managementArtifacts)) {
-            final int index = this.addGroup("Management SDK", managementArtifacts);
-            this.setTips(index, MANAGEMENT_TIP);
+            this.addGroup("Management SDK", MANAGEMENT_TIP, managementArtifacts);
         }
     }
 
-    private void setTips(final int index, final String tip) {
-        final JLabel tabHeader = (JLabel) this.tabPane.getTabComponentAt(index);
-        tabHeader.setIcon(AllIcons.General.ContextHelp);
-        tabHeader.setToolTipText(SPRING_TIP);
-        tabHeader.setHorizontalTextPosition(SwingConstants.LEFT);
-        tabHeader.repaint();
-    }
-
-    private int addGroup(final String title, final List<? extends AzureSdkArtifactEntity> clientArtifacts) {
+    private void addGroup(final String title, final String tooltip, final List<? extends AzureSdkArtifactEntity> clientArtifacts) {
         final int index = this.tabPane.getTabCount();
         final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
         this.tabPane.insertTab(title, null, clientPanel.getContentPanel(), "", index);
         clientPanel.setData(clientArtifacts);
-        return index;
+        final JLabel tabHeader = (JLabel) this.tabPane.getTabComponentAt(index);
+        tabHeader.setIcon(AllIcons.General.ContextHelp);
+        tabHeader.setToolTipText(tooltip);
+        tabHeader.setHorizontalTextPosition(SwingConstants.LEFT);
+        tabHeader.repaint();
     }
 }
