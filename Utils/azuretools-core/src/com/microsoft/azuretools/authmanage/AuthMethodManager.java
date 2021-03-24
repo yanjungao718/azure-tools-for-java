@@ -9,6 +9,7 @@ package com.microsoft.azuretools.authmanage;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
@@ -148,6 +149,7 @@ public class AuthMethodManager {
     }
 
     @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
+    @CacheEvict() // evict all caches on signing out
     public void signOut() {
         cleanAll();
         notifySignOutEventListener();

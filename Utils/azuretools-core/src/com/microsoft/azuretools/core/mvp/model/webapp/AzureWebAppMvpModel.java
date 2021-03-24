@@ -12,6 +12,9 @@ import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
+import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
+import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -29,7 +32,6 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,16 +43,12 @@ public class AzureWebAppMvpModel {
     private static final Logger logger = Logger.getLogger(AzureWebAppMvpModel.class.getName());
 
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
 
     private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS =
         Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
     private static final List<WebAppUtils.WebContainerMod> JAVA_11_JAR_CONTAINERS = Collections.singletonList(
         WebAppUtils.WebContainerMod.Java_SE_11);
-
-    private AzureWebAppMvpModel() {
-        subscriptionIdToWebApps = new ConcurrentHashMap<>();
-    }
+    public static final String CACHE_SUBSCRIPTION_WEBAPPS = "subscription-webapps";
 
     public static AzureWebAppMvpModel getInstance() {
         return SingletonHolder.INSTANCE;
@@ -291,9 +289,9 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
+    @CacheEvict(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$sid")
     public void deleteWebApp(String sid, String appId) {
         AuthMethodManager.getInstance().getAzureClient(sid).webApps().deleteById(appId);
-        subscriptionIdToWebApps.remove(sid);
     }
 
     /**
@@ -607,7 +605,7 @@ public class AzureWebAppMvpModel {
         name = "webapp.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
+    public List<ResourceEx<WebApp>> listAllWebApps(final boolean... force) {
         return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
             .flatMap((sd) -> listWebApps(sd.subscriptionId(), force).stream())
             .collect(Collectors.toList());
@@ -618,7 +616,8 @@ public class AzureWebAppMvpModel {
         name = "webapp.list.java|subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<WebApp>> listJavaWebApps(final boolean force) {
+    @Preload
+    public List<ResourceEx<WebApp>> listJavaWebApps(final boolean... force) {
         return this.listAllWebApps(force).parallelStream()
             .filter(app -> WebAppUtils.isJavaWebApp(app.getResource()))
             .collect(Collectors.toList());
@@ -663,20 +662,14 @@ public class AzureWebAppMvpModel {
         params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
-        if (!force && subscriptionIdToWebApps.containsKey(subscriptionId)) {
-            return subscriptionIdToWebApps.get(subscriptionId);
-        }
+    @Cacheable(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$subscriptionId", condition = "!(force&&force[0])")
+    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean... force) {
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-        final Predicate<SiteInner> filter = inner -> inner.kind() == null || !Arrays.asList(inner.kind().split(","))
-                                                                                    .contains("functionapp");
-        final List<ResourceEx<WebApp>> webapps = azure.appServices().webApps()
-                                                      .inner().list().stream().parallel().filter(filter)
-                                                      .map(inner -> new WebAppWrapper(subscriptionId, inner))
-                                                      .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
-                                                      .collect(Collectors.toList());
-        subscriptionIdToWebApps.put(subscriptionId, webapps);
-        return webapps;
+        final Predicate<SiteInner> filter = inner -> inner.kind() == null || !Arrays.asList(inner.kind().split(",")).contains("functionapp");
+        return azure.appServices().webApps().inner().list().stream().parallel().filter(filter)
+                  .map(inner -> new WebAppWrapper(subscriptionId, inner))
+                  .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
+                  .collect(Collectors.toList());
     }
 
     /**
@@ -831,14 +824,6 @@ public class AzureWebAppMvpModel {
 
     public static void enableHttpLog(WebAppBase.Update webApp) {
         webApp.withContainerLoggingEnabled().apply();
-    }
-
-    @AzureOperation(
-        name = "webapp.clear_cache",
-        type = AzureOperation.Type.TASK
-    )
-    public void clearWebAppsCache() {
-        subscriptionIdToWebApps.clear();
     }
 
     @AzureOperation(
