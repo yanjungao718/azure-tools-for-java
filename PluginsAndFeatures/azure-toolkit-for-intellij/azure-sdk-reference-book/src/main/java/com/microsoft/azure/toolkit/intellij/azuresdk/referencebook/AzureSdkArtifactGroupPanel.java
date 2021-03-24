@@ -14,11 +14,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.editor.impl.DocumentImpl;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType;
 import icons.GradleIcons;
 import icons.OpenapiIcons;
 import lombok.Getter;
@@ -32,6 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.GRADLE;
+import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.MAVEN;
+
 public class AzureSdkArtifactGroupPanel {
     @Getter
     private JPanel contentPanel;
@@ -42,7 +48,7 @@ public class AzureSdkArtifactGroupPanel {
     private final List<AzureSdkArtifactDetailPanel> artifactPnls = new ArrayList<>();
     private AzureSdkArtifactEntity pkg;
     private String version;
-    private String type;
+    private DependencyType type = MAVEN;
 
     public void setData(@Nonnull final List<? extends AzureSdkArtifactEntity> artifacts) {
         this.clear();
@@ -66,12 +72,13 @@ public class AzureSdkArtifactGroupPanel {
     private void onPackageOrVersionSelected(AzureSdkArtifactEntity pkg, String version) {
         this.pkg = pkg;
         this.version = version;
-        this.viewer.setText(pkg.generateDependencySnippet(type, version));
+        this.viewer.setText(pkg.getDependencySnippet(type, version));
     }
 
-    private void onDependencyTypeSelected(String type) {
+    private void onDependencyTypeSelected(DependencyType type) {
         this.type = type;
-        this.viewer.setText(pkg.generateDependencySnippet(type, version));
+        final FileType fileType = FileTypeManagerEx.getInstance().getFileTypeByExtension(type.getFileExt());
+        this.viewer.setNewDocumentAndFileType(fileType, new DocumentImpl(pkg.getDependencySnippet(type, version)));
     }
 
     private EditorTextField buildCodeViewer() {
@@ -130,34 +137,34 @@ public class AzureSdkArtifactGroupPanel {
      * @see com.intellij.application.options.schemes.AbstractSchemesPanel
      */
     private static class DependencyTypeSelector extends DefaultActionGroup {
-        private final Consumer<? super String> onTypeSelected;
-        private String selectedType;
+        private final Consumer<? super DependencyType> onTypeSelected;
+        private DependencyType selectedType;
 
-        private DependencyTypeSelector(Consumer<? super String> onTypeSelected) {
+        private DependencyTypeSelector(Consumer<? super DependencyType> onTypeSelected) {
             super();
             setPopup(true);
             this.onTypeSelected = onTypeSelected;
-            final AnAction maven = createAction(AzureSdkArtifactEntity.DEPENDENCY_TYPE_MAVEN, OpenapiIcons.RepositoryLibraryLogo, this::setSelectedType);
-            final AnAction gradle = createAction(AzureSdkArtifactEntity.DEPENDENCY_TYPE_GRADLE, GradleIcons.Gradle, this::setSelectedType);
+            final AnAction maven = createAction(MAVEN.getName(), OpenapiIcons.RepositoryLibraryLogo, () -> this.setSelectedType(MAVEN));
+            final AnAction gradle = createAction(GRADLE.getName(), GradleIcons.Gradle, () -> this.setSelectedType(GRADLE));
             this.addAll(maven, gradle);
         }
 
-        private void setSelectedType(String type) {
+        private void setSelectedType(DependencyType type) {
             this.selectedType = type;
             this.onTypeSelected.accept(type);
         }
 
         @Override
         public void update(@NotNull final AnActionEvent e) {
-            final Icon icon = AzureSdkArtifactEntity.DEPENDENCY_TYPE_GRADLE.equals(selectedType) ? GradleIcons.Gradle : OpenapiIcons.RepositoryLibraryLogo;
+            final Icon icon = GRADLE == selectedType ? GradleIcons.Gradle : OpenapiIcons.RepositoryLibraryLogo;
             e.getPresentation().setIcon(icon);
         }
 
-        private AnAction createAction(final String type, final Icon icon, final Consumer<? super String> onTypeSelected) {
-            return new AnAction(type, null, icon) {
+        private AnAction createAction(final String name, final Icon icon, final Runnable onSelected) {
+            return new AnAction(name, null, icon) {
                 @Override
                 public void actionPerformed(@NotNull final AnActionEvent e) {
-                    onTypeSelected.accept(type);
+                    onSelected.run();
                 }
             };
         }
