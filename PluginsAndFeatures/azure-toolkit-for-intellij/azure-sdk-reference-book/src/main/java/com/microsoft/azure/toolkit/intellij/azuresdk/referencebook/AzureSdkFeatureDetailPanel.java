@@ -55,22 +55,21 @@ public class AzureSdkFeatureDetailPanel {
             this.addGroup("Client SDK", CLIENT_TIP, clientArtifacts);
         }
         if (CollectionUtils.isNotEmpty(springArtifacts)) {
-            this.addGroup("Spring", SPRING_TIP, springArtifacts);
+            final int index = this.addGroup("Spring", SPRING_TIP, springArtifacts);
+            final JLabel tabHeader = (JLabel) this.tabPane.getTabComponentAt(index);
+            tabHeader.setHorizontalTextPosition(SwingConstants.LEFT);
+            tabHeader.setIcon(AllIcons.General.ContextHelp);
         }
         if (CollectionUtils.isNotEmpty(managementArtifacts)) {
             this.addGroup("Management SDK", MANAGEMENT_TIP, managementArtifacts);
         }
     }
 
-    private void addGroup(final String title, final String tooltip, final List<? extends AzureSdkArtifactEntity> clientArtifacts) {
+    private int addGroup(final String title, final String tooltip, final List<? extends AzureSdkArtifactEntity> clientArtifacts) {
         final int index = this.tabPane.getTabCount();
         final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
-        this.tabPane.insertTab(title, null, clientPanel.getContentPanel(), "", index);
+        this.tabPane.insertTab(title, null, clientPanel.getContentPanel(), tooltip, index);
         clientPanel.setData(clientArtifacts);
-        final JLabel tabHeader = (JLabel) this.tabPane.getTabComponentAt(index);
-        tabHeader.setIcon(AllIcons.General.ContextHelp);
-        tabHeader.setToolTipText(tooltip);
-        tabHeader.setHorizontalTextPosition(SwingConstants.LEFT);
-        tabHeader.repaint();
+        return index;
     }
 }
