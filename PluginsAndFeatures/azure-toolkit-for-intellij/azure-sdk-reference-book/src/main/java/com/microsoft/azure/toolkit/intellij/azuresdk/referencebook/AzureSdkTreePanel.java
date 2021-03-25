@@ -37,15 +37,16 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
@@ -60,6 +61,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
     private SearchTextField searchBox;
     private DefaultTreeModel model;
     private List<? extends AzureSdkServiceEntity> services;
+    private TreePath lastNodePath;
 
     public AzureSdkTreePanel() {
         this.initEventListeners();
@@ -71,6 +73,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.tree.addTreeSelectionListener(e -> {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tree.getLastSelectedPathComponent();
             if (Objects.nonNull(node) && node.isLeaf() && node.getUserObject() instanceof AzureSdkFeatureEntity) {
+                this.lastNodePath = TreeUtil.getPathFromRoot(node);
                 selectFeature((AzureSdkFeatureEntity) node.getUserObject());
             }
         });
@@ -92,20 +95,17 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.loadData(this.services, filters);
     }
 
-    public void reload() {
+    public void refresh() {
         final AzureSdkLibraryService service = AzureSdkLibraryService.getInstance();
         try {
             service.reloadAzureSDKArtifacts();
-            this.setData(service.getServices());
+            this.services = service.getServices();
+            this.filter.debounce();
+            Optional.ofNullable(this.lastNodePath).ifPresent(p -> TreeUtil.selectPath(this.tree, p));
         } catch (final IOException e) {
             //TODO: messager.warning(...)
             e.printStackTrace();
         }
-    }
-
-    public void setData(@Nonnull final List<? extends AzureSdkServiceEntity> services) {
-        this.services = services;
-        this.loadData(this.services);
     }
 
     private void loadData(final List<? extends AzureSdkServiceEntity> services, String... filters) {
@@ -176,7 +176,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             this.loading = true;
             ActivityTracker.getInstance().inc();
             AzureTaskManager.getInstance().runLater(() -> {
-                AzureSdkTreePanel.this.reload();
+                AzureSdkTreePanel.this.refresh();
                 this.loading = false;
             });
         }

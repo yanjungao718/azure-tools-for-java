@@ -5,13 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class AzureSdkFeatureDetailPanel {
+    private final static String SPRING_TIP = "Spring libraries help you interact with already-provisioned services using native Spring idiomatic expressions.";
+    private final static String MANAGEMENT_TIP = "Management libraries help you create, provision and otherwise manage Azure resources.";
+    private final static String CLIENT_TIP = "Client libraries help you interact with already-provisioned services.";
+
     private JBLabel titleLabel;
     private JPanel descPanel;
     @Getter
@@ -29,17 +33,17 @@ public class AzureSdkFeatureDetailPanel {
     private JBLabel descLabel;
 
     public void setData(final AzureSdkFeatureEntity feature) {
-        AzureTaskManager.getInstance().runLater(() -> {
-            this.titleLabel.setText(feature.getName());
-            SwingUtils.setTextAndEnableAutoWrap(this.descLabel, feature.getDescription());
+        this.titleLabel.setText(feature.getName());
+        SwingUtils.setTextAndEnableAutoWrap(this.descLabel, feature.getDescription());
 
-            Optional.ofNullable(feature.getMsdocs()).ifPresent(link -> {
-                this.featureDocLink.setHyperlinkText("Product documentation");
-                this.featureDocLink.setHyperlinkTarget(link);
-            });
-
-            this.buildTabs(feature);
+        this.featureDocLink.setVisible(false);
+        Optional.ofNullable(feature.getMsdocs()).ifPresent(link -> {
+            this.featureDocLink.setHyperlinkText("Product documentation");
+            this.featureDocLink.setHyperlinkTarget(link);
+            this.featureDocLink.setVisible(true);
         });
+
+        this.buildTabs(feature);
     }
 
     private void buildTabs(AzureSdkFeatureEntity feature) {
@@ -48,19 +52,25 @@ public class AzureSdkFeatureDetailPanel {
         final List<AzureSdkArtifactEntity> managementArtifacts = feature.getArtifacts(AzureSdkArtifactEntity.Type.MANAGEMENT);
         this.tabPane.removeAll();
         if (CollectionUtils.isNotEmpty(clientArtifacts)) {
-            final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
-            this.tabPane.insertTab("Client SDK", null, clientPanel.getContentPanel(), "", this.tabPane.getTabCount());
-            clientPanel.setData(clientArtifacts);
+            this.addGroup("Client SDK", CLIENT_TIP, clientArtifacts);
         }
         if (CollectionUtils.isNotEmpty(springArtifacts)) {
-            final AzureSdkArtifactGroupPanel springPanel = new AzureSdkArtifactGroupPanel();
-            this.tabPane.insertTab("Spring SDK", null, springPanel.getContentPanel(), "", this.tabPane.getTabCount());
-            springPanel.setData(springArtifacts);
+            this.addGroup("Spring", SPRING_TIP, springArtifacts);
         }
         if (CollectionUtils.isNotEmpty(managementArtifacts)) {
-            final AzureSdkArtifactGroupPanel managementSdkPanel = new AzureSdkArtifactGroupPanel();
-            this.tabPane.insertTab("Management SDK", null, managementSdkPanel.getContentPanel(), "", this.tabPane.getTabCount());
-            managementSdkPanel.setData(managementArtifacts);
+            this.addGroup("Management SDK", MANAGEMENT_TIP, managementArtifacts);
         }
+    }
+
+    private void addGroup(final String title, final String tooltip, final List<? extends AzureSdkArtifactEntity> clientArtifacts) {
+        final int index = this.tabPane.getTabCount();
+        final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
+        this.tabPane.insertTab(title, null, clientPanel.getContentPanel(), "", index);
+        clientPanel.setData(clientArtifacts);
+        final JLabel tabHeader = (JLabel) this.tabPane.getTabComponentAt(index);
+        tabHeader.setIcon(AllIcons.General.ContextHelp);
+        tabHeader.setToolTipText(tooltip);
+        tabHeader.setHorizontalTextPosition(SwingConstants.LEFT);
+        tabHeader.repaint();
     }
 }
