@@ -76,7 +76,7 @@ public class AzureSdkArtifactDetailPanel {
             if (this.artifactId.isSelected()) {
                 this.onArtifactOrVersionSelected.accept(this.artifact, this.version.getSelectedItem());
             }
-        });
+        }, true);
         this.version.setForeground(JBColor.BLACK);
     }
 
