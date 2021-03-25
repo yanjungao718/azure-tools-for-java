@@ -5,7 +5,10 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -15,15 +18,19 @@ import com.microsoft.intellij.util.MavenUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.common.AzureArtifactType.File;
 
 public class AzureArtifactManager {
     private static Map<Project, AzureArtifactManager> projectAzureArtifactManagerMap = new HashMap<>();
@@ -93,7 +100,7 @@ public class AzureArtifactManager {
     }
 
     public AzureArtifact getAzureArtifactById(AzureArtifactType azureArtifactType, String artifactId) {
-        return azureArtifactType == AzureArtifactType.File ? AzureArtifact.createFromFile(artifactId) :
+        return azureArtifactType == File ? AzureArtifact.createFromFile(artifactId) :
                getAllSupportedAzureArtifacts().stream().filter(artifact -> StringUtils.equals(getArtifactIdentifier(
                 artifact), artifactId)).findFirst().orElse(null);
     }
@@ -119,6 +126,28 @@ public class AzureArtifactManager {
             return artifact1 == artifact2;
         }
         return StringUtils.equals(getArtifactIdentifier(artifact1), getArtifactIdentifier(artifact2));
+    }
+
+    @Nullable
+    @AzureOperation(
+        name = "common|artifact.get_module",
+        type = AzureOperation.Type.TASK
+    )
+    public Module getModuleFromAzureArtifact(AzureArtifact azureArtifact) {
+        if (azureArtifact == null || azureArtifact.getReferencedObject() == null) {
+            return null;
+        }
+        switch (azureArtifact.getType()) {
+            case Gradle:
+                final String gradleModulePath = ((ExternalProjectPojo) azureArtifact.getReferencedObject()).getPath();
+                final VirtualFile gradleVirtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(gradleModulePath));
+                return ProjectFileIndex.getInstance(project).getModuleForFile(gradleVirtualFile);
+            case Maven:
+                return ProjectFileIndex.getInstance(project).getModuleForFile(((MavenProject) azureArtifact.getReferencedObject()).getFile());
+            default:
+                // IntelliJ artifact is bind to project, can not get the related module, same for File artifact
+                return null;
+        }
     }
 
     private String getGradleProjectId(ExternalProjectPojo gradleProjectPojo) {

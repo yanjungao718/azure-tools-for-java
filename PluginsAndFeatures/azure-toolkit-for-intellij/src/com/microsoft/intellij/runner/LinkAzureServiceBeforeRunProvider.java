@@ -15,10 +15,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
@@ -107,8 +104,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
             WebAppConfiguration webAppConfiguration = (WebAppConfiguration) runConfiguration;
             final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(runConfiguration.getProject())
                     .getAzureArtifactById(webAppConfiguration.getAzureArtifactType(), webAppConfiguration.getArtifactIdentifier());
-            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(azureArtifact.getTargetPath());
-            Module module = ProjectFileIndex.getInstance(runConfiguration.getProject()).getModuleForFile(virtualFile, false);
+            final Module module = AzureArtifactManager.getInstance(runConfiguration.getProject()).getModuleFromAzureArtifact(azureArtifact);
             return Objects.nonNull(module) ? module.getName() : StringUtils.EMPTY;
         }
         if (runConfiguration instanceof AbstractRunConfiguration
