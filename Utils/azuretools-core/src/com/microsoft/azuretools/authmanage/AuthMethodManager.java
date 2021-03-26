@@ -149,7 +149,7 @@ public class AuthMethodManager {
     }
 
     @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
-    @CacheEvict() // evict all caches on signing out
+    @CacheEvict(CacheEvict.ALL) // evict all caches on signing out
     public void signOut() {
         cleanAll();
         notifySignOutEventListener();
