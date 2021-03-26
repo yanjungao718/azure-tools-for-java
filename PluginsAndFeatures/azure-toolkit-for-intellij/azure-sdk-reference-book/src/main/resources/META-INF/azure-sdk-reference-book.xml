@@ -2,6 +2,7 @@
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.AzurePreloadingActivity"/>
     </extensions>
     <actions>
