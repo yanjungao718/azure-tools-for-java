@@ -121,10 +121,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refreshValue();
     }
 
-    protected ItemReference<T> getItemReference() {
-        return this.value instanceof ItemReference ? (ItemReference<T>) this.value : null;
-    }
-
     private void refreshValue() {
         if (Objects.equals(this.value, this.getSelectedItem())) {
             return;

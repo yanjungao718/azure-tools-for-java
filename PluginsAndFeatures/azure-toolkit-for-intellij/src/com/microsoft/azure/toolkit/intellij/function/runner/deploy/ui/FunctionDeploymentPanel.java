@@ -135,7 +135,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             final FunctionAppComboBoxModel configModel = new FunctionAppComboBoxModel(configuration.getModel());
             appSettingsFunctionApp = configModel;
             functionAppComboBox.setConfigModel(configModel);
-            functionAppComboBox.setValue(new AzureComboBox.ItemReference<>(value -> AppServiceComboBoxModel.isSameApp(value, configModel)));
         }
         functionAppComboBox.refreshItems();
         final Module previousModule = configuration.getModule();

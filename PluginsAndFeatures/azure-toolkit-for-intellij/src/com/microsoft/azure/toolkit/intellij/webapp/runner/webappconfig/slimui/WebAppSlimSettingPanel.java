@@ -187,7 +187,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (!StringUtils.isAllEmpty(configuration.getWebAppName(), configuration.getWebAppId())) {
             final WebAppComboBoxModel configModel = new WebAppComboBoxModel(configuration.getModel());
             comboBoxWebApp.setConfigModel(configModel);
-            comboBoxWebApp.setValue(new AzureComboBox.ItemReference<>(value -> AppServiceComboBoxModel.isSameApp(value, configModel)));
         }
         comboBoxWebApp.refreshItems();
         if (configuration.getAzureArtifactType() != null) {

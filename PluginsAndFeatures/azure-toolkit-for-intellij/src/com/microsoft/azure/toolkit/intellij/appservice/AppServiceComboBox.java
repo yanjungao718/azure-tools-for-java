@@ -12,8 +12,6 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
@@ -26,8 +24,6 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
     protected Project project;
     protected Subscription subscription;
 
-    @Getter
-    @Setter
     private T configModel;
 
     public AppServiceComboBox(final Project project) {
@@ -36,13 +32,18 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         this.setRenderer(new AppCombineBoxRender(this));
     }
 
+    public void setConfigModel(T configModel) {
+        this.configModel = configModel;
+        setValue(new ItemReference<>(item -> AppServiceComboBoxModel.isSameApp(item, configModel)));
+    }
+
     @NotNull
     @Override
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
-        if (super.getItemReference() != null && configModel != null && configModel.isNewCreateResource()) {
-            final T target = items.stream().filter(model -> getItemReference().is(model)).findAny().orElse(null);
-            if (target == null) {
+        if (configModel != null && configModel.isNewCreateResource()) {
+            final boolean exist = items.stream().anyMatch(item -> AppServiceComboBoxModel.isSameApp(item, configModel));
+            if (!exist) {
                 items.add(configModel);
             }
         }
