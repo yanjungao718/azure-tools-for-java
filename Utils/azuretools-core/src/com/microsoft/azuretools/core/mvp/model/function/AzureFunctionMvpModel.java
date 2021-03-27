@@ -40,7 +40,7 @@ public class AzureFunctionMvpModel {
     @NotNull
     @AzureOperation(
         name = "function.get",
-        params = {"$id|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(id)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public FunctionApp getFunctionById(String sid, String id) throws AzureToolkitRuntimeException {
@@ -55,7 +55,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.get",
-        params = {"$name", "$sid"},
+        params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public FunctionApp getFunctionByName(String sid, String resourceGroup, String name) {
@@ -64,7 +64,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.delete",
-        params = {"$appId|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(appId)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void deleteFunction(String sid, String appId) {
@@ -74,7 +74,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.restart",
-        params = {"$appId|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(appId)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void restartFunction(String sid, String appId) {
@@ -83,7 +83,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.start",
-        params = {"$appId|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(appId)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void startFunction(String sid, String appId) {
@@ -92,7 +92,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.stop",
-        params = {"$appId|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(appId)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void stopFunction(String sid, String appId) {
@@ -104,7 +104,7 @@ public class AzureFunctionMvpModel {
      */
     @AzureOperation(
         name = "appservice|plan.list.subscription|rg",
-        params = {"$group", "$sid"},
+        params = {"group", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
@@ -121,7 +121,7 @@ public class AzureFunctionMvpModel {
      */
     @AzureOperation(
         name = "appservice|plan.list.subscription",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) {
@@ -157,7 +157,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function|envelops.list",
-        params = {"$id|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(id)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<FunctionEnvelope> listFunctionEnvelopeInFunctionApp(String sid, String id) {
@@ -169,7 +169,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.get_publishing_profile",
-        params = {"$functionAppId|uri_to_name"},
+        params = {"nameFromResourceId(functionAppId)"},
         type = AzureOperation.Type.SERVICE
     )
     public boolean getPublishingProfileXmlWithSecrets(String sid, String functionAppId, String filePath) {
@@ -179,7 +179,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.update_setting",
-        params = {"$functionAppId|uri_to_name"},
+        params = {"nameFromResourceId(functionAppId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void updateWebAppSettings(String sid, String functionAppId, Map<String, String> toUpdate, Set<String> toRemove) {
@@ -218,7 +218,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.turn_on_logs",
-        params = {"$functionApp.name()"},
+        params = {"functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
     public static void enableApplicationLog(FunctionApp functionApp) {
@@ -236,7 +236,7 @@ public class AzureFunctionMvpModel {
     @NotNull
     @AzureOperation(
         name = "function.list.subscription",
-        params = {"$subscriptionId"},
+        params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
     private List<ResourceEx<FunctionApp>> listFunctionsInSubscription(final String subscriptionId, final boolean forceReload) {

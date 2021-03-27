@@ -6,25 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudUtils;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentEntity;
+import com.microsoft.azure.toolkit.lib.springcloud.*;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.model.ScaleSettings;
 import com.microsoft.azure.tools.utils.RxUtils;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -32,7 +23,6 @@ import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -145,15 +135,15 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
     }
 
     @Override
-    protected String getDeployTarget() {
-        return "SPRING_CLOUD";
-    }
-
-    @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         final Map<String, String> props = new HashMap<>();
         props.put("runtime", config.getAppConfig().getRuntimeVersion());
         props.put("subscriptionId", config.getAppConfig().getSubscriptionId());
+        props.put("public", String.valueOf(config.getAppConfig().isPublic()));
+        props.put("jvmOptions", String.valueOf(StringUtils.isEmpty(config.getAppConfig().getDeployment().getJvmOptions())));
+        props.put("instanceCount", String.valueOf(config.getAppConfig().getDeployment().getInstanceCount()));
+        props.put("memory", String.valueOf(config.getAppConfig().getDeployment().getMemoryInGB()));
+        props.put("cpu", String.valueOf(config.getAppConfig().getDeployment().getCpu()));
         telemetryMap.putAll(props);
     }
 

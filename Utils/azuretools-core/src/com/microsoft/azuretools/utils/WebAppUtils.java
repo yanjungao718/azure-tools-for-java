@@ -286,7 +286,7 @@ public class WebAppUtils {
      */
     @AzureOperation(
         name = "webapp|artifact.upload",
-        params = {"$artifact.getName()", "$deployTarget.name()"},
+        params = {"artifact.getName()", "deployTarget.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public static void deployArtifactsToAppService(WebAppBase deployTarget
@@ -344,7 +344,7 @@ public class WebAppUtils {
 
     @AzureOperation(
         name = "webapp|artifact.zip",
-        params = {"$artifact.getName()"},
+        params = {"artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
     private static File prepareZipPackage(WebAppBase deployTarget, File artifact, IProgressIndicator progressIndicator) {
@@ -450,7 +450,7 @@ public class WebAppUtils {
 
     @AzureOperation(
         name = "webapp.delete_detail",
-        params = {"$webAppDetails.webApp.name()"},
+        params = {"webAppDetails.webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public static void deleteAppService(WebAppDetails webAppDetails) {
@@ -469,7 +469,7 @@ public class WebAppUtils {
 
     @AzureOperation(
         name = "webapp|artifact.update",
-        params = {"$webApp.name()"},
+        params = {"webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public static void uploadWebConfig(WebApp webApp, InputStream fileStream, IProgressIndicator indicator) throws IOException {
@@ -501,7 +501,7 @@ public class WebAppUtils {
 
     @AzureOperation(
         name = "webapp|artifact.upload",
-        params = {"$fileName", "$webApp.name()"},
+        params = {"fileName", "webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public static int uploadToRemoteServer(WebAppBase webApp, String fileName, InputStream ins,

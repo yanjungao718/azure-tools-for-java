@@ -71,7 +71,7 @@ public class CreateFunctionHandler {
 
     @AzureOperation(
         name = "function.create_detail",
-        params = {"@ctx.getAppName()"},
+        params = {"this.ctx.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     private FunctionApp createFunctionApp() {
@@ -108,7 +108,7 @@ public class CreateFunctionHandler {
 
     @AzureOperation(
         name = "function|ai.create",
-        params = {"@ctx.getAppName()"},
+        params = {"this.ctx.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     private Map<String, String> bindingApplicationInsights() {
@@ -198,7 +198,7 @@ public class CreateFunctionHandler {
 
     @AzureOperation(
         name = "function.get.rg",
-        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()"},
+        params = {"this.ctx.getAppName()", "this.ctx.getResourceGroup()"},
         type = AzureOperation.Type.TASK
     )
     private FunctionApp getFunctionApp() {

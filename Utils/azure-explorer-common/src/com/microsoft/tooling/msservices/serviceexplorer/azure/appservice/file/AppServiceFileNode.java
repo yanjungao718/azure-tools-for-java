@@ -7,21 +7,30 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.Map;
 
 @Log
-public class AppServiceFileNode extends AzureRefreshableNode {
+public class AppServiceFileNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final long SIZE_20MB = 20 * 1024 * 1024;
     private final AppServiceFileService fileService;
@@ -45,13 +54,13 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         });
     }
 
-    @AzureOperation(name = "appservice|file.download", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.download", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.refresh", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.refresh", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             return;
@@ -61,7 +70,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
                         .forEach(this::addChildNode);
     }
 
-    @AzureOperation(name = "appservice|file.open", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.open", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
     }
@@ -94,5 +103,10 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         return file.getType() == AppServiceFile.Type.DIRECTORY ?
                String.format("Type: %s Date modified: %s", file.getMime(), file.getMtime()) :
                String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), file.getMtime());
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(file.getApp().id()));
     }
 }

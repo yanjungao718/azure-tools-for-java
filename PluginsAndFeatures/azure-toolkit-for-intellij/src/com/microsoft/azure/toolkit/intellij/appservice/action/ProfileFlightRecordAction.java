@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.jfr.RunFlightRecorderDial
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderStarterBase;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -66,6 +67,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
                                  "start-flight-recorder", op -> {
+                op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(appService.id()));
                 final IAzureOperationTitle title = AzureOperationBundle.title("appservice|flight_recorder.profile");
                 final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
                 AzureTaskManager.getInstance().runInBackground(task);

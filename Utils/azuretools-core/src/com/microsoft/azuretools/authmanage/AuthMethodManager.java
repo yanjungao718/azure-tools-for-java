@@ -61,7 +61,7 @@ public class AuthMethodManager {
     @NotNull
     @AzureOperation(
         name = "common|rest_client.create",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.TASK
     )
     public Azure getAzureClient(String sid) {
@@ -80,7 +80,7 @@ public class AuthMethodManager {
 
     @AzureOperation(
         name = "common|rest_client.create_asc",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.TASK
     )
     public AppPlatformManager getAzureSpringCloudClient(String sid) {
@@ -95,7 +95,7 @@ public class AuthMethodManager {
 
     @AzureOperation(
         name = "common|rest_client.create_mysql",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.TASK
     )
     public MySQLManager getMySQLManager(String sid) {
