@@ -51,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -283,6 +284,14 @@ public class FunctionUtils {
 
     public static String getFuncPath() throws IOException, InterruptedException {
         return FunctionCliResolver.resolveFunc();
+    }
+
+    public static List<String> getFunctionBindingList(Map<String, FunctionConfiguration> configMap) {
+        return configMap.values().stream().flatMap(configuration -> configuration.getBindings().stream())
+                        .map(Binding::getType)
+                        .sorted()
+                        .distinct()
+                        .collect(Collectors.toList());
     }
 
     private static void writeFunctionJsonFile(File file, FunctionConfiguration config) throws IOException {
