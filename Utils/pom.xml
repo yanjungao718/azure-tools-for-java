@@ -167,7 +167,7 @@
                         </execution>
                         <execution>
                             <id>test-compile-with-aspectj</id>
-                            <phase>process-classes</phase>
+                            <phase>process-test-classes</phase>
                             <goals>
                                 <goal>test-compile</goal>
                             </goals>
