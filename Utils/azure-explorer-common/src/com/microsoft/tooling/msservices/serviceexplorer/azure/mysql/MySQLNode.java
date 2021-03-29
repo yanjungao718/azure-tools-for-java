@@ -11,6 +11,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -22,9 +24,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-public class MySQLNode extends Node {
+public class MySQLNode extends Node implements TelemetryProperties {
 
     private static final ServerState SERVER_UPDATING = ServerState.fromString("Updating");
 
@@ -123,4 +127,8 @@ public class MySQLNode extends Node {
         DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
     }
 
+    @Override
+    public Map<String, String> toProperties() {
+        return Collections.singletonMap(TelemetryConstants.SUBSCRIPTIONID, this.subscriptionId);
+    }
 }

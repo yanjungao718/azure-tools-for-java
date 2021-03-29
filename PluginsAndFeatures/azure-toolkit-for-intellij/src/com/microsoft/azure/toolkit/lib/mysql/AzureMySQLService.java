@@ -14,8 +14,11 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.*;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class AzureMySQLService {
     private static final AzureMySQLService instance = new AzureMySQLService();
@@ -36,10 +39,11 @@ public class AzureMySQLService {
         final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();
-            String subscrptionId = config.getSubscription().subscriptionId();
+            final String subscriptionId = config.getSubscription().subscriptionId();
+            EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(TelemetryConstants.SUBSCRIPTIONID, subscriptionId));
             // create resource group if necessary.
             if (config.getResourceGroup() instanceof Draft) {
-                Azure azure = AuthMethodManager.getInstance().getAzureClient(subscrptionId);
+                Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
                 ResourceGroup newResourceGroup = azure.resourceGroups().define(config.getResourceGroup().name()).withRegion(config.getRegion()).create();
                 config.setResourceGroup(newResourceGroup);
             }
@@ -48,13 +52,14 @@ public class AzureMySQLService {
             parameters.withAdministratorLogin(config.getAdminUsername())
                     .withAdministratorLoginPassword(String.valueOf(config.getPassword()))
                     .withVersion(config.getVersion());
-            Server server = MySQLMvpModel.create(subscrptionId, config.getResourceGroup().name(), config.getServerName(), config.getRegion(), parameters);
+            Server server = MySQLMvpModel.create(subscriptionId, config.getResourceGroup().name(), config.getServerName(), config.getRegion(), parameters);
             // update access from azure services
-            MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessFromAzureServices(subscrptionId, server, config.isAllowAccessFromAzureServices());
+            MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessFromAzureServices(subscriptionId, server, config.isAllowAccessFromAzureServices());
             // update access from local machine
-            MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessToLocalMachine(subscrptionId, server, config.isAllowAccessFromLocalMachine());
+            MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessToLocalMachine(subscriptionId, server, config.isAllowAccessFromLocalMachine());
             return server;
         } catch (final RuntimeException e) {
+            EventUtil.logError(operation, ErrorType.systemError, e, null, null);
             throw e;
         } finally {
             operation.complete();
