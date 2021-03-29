@@ -8,6 +8,7 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.intellij.execution.Executor;
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,7 @@ public class SparkBatchJobRunExecutor extends Executor {
 
     @Override
     public Icon getToolWindowIcon() {
-        return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobRunIcon_13x_Path))
+        return Optional.ofNullable(PluginUtil.getIcon(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobRunIcon_13x_Path))
                 .map(Icon.class::cast)
                 .orElse(AllIcons.Actions.Upload);
     }
@@ -33,7 +34,7 @@ public class SparkBatchJobRunExecutor extends Executor {
     @NotNull
     @Override
     public Icon getIcon() {
-        return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobRunIcon_16x_Path))
+        return Optional.ofNullable(PluginUtil.getIcon(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobRunIcon_16x_Path))
                 .map(Icon.class::cast)
                 .orElse(AllIcons.Actions.Upload);
     }

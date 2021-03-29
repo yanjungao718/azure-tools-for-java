@@ -10,6 +10,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +29,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
 
     @Override
     public Icon getToolWindowIcon() {
-        return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_13x_Path))
+        return Optional.ofNullable(PluginUtil.getIcon(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_13x_Path))
                 .map(Icon.class::cast)
                 .orElse(AllIcons.RunConfigurations.RemoteDebug);
     }
@@ -36,7 +37,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
     @NotNull
     @Override
     public Icon getIcon() {
-        return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_16x_Path))
+        return Optional.ofNullable(PluginUtil.getIcon(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_16x_Path))
                 .map(Icon.class::cast)
                 .orElse(AllIcons.RunConfigurations.RemoteDebug);
     }
