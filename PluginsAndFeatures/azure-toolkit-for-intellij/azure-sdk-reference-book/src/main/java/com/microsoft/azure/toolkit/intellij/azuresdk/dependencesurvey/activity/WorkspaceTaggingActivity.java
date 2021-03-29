@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
-    private static final Pattern PATTERN = Pattern.compile("(Gradle|Maven): (.*):(.*):(.*)");
+    private static final Pattern PATTERN = Pattern.compile("(Gradle|Maven): (.+):(.+):(.+)");
     private static final String WORKSPACE_TAGGING = "workspace-tagging";
     private static final String OPERATION_NAME = "operationName";
     private static final String SERVICE_NAME = "serviceName";
@@ -38,7 +38,10 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
     private void trackProjectDependencies(@NotNull final Project project) {
         final Set<String> tagSet = new java.util.HashSet<>();
         OrderEnumerator.orderEntries(project).forEachLibrary(library -> {
-            final Matcher matcher = PATTERN.matcher(StringUtils.isEmpty(library.getName()) ? StringUtils.EMPTY : library.getName());
+            if (StringUtils.isEmpty(library.getName())) {
+                return true;
+            }
+            final Matcher matcher = PATTERN.matcher(library.getName());
             if (matcher.matches()) {
                 final String tag = WorkspaceTaggingService.getWorkspaceTag(matcher.group(2), matcher.group(3));
                 if (StringUtils.isNotEmpty(tag)) {
