@@ -20,7 +20,7 @@
 	{ "groupId": "org.redisson", "artifactId": "redisson", "tag": "redis" },
 	{ "groupId": "io.lettuce", "artifactId": "lettuce-core", "tag": "redis" },
 	// spring boot
-	{ "groupId": "org.springframework.boot", "artifactId": ".*", "tag": "springboot" },
+	{ "groupId": "org.springframework.boot", "artifactId": "", "tag": "springboot" },
 	// sql
 	{ "groupId": "org.jooq", "artifactId": "jooq", "tag": "sql" },
 	{ "groupId": "org.mybatis", "artifactId": "mybatis", "tag": "sql" },

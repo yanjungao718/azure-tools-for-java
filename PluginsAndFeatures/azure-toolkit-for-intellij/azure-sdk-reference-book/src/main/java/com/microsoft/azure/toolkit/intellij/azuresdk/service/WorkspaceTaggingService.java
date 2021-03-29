@@ -37,12 +37,12 @@ public class WorkspaceTaggingService {
         if (StringUtils.isAnyEmpty(groupId, artifactId)) {
             return null;
         }
-        return ObjectUtils.firstNonNull(getAzureArtifactTag(groupId, artifactId), getDependencyTag(groupId, artifactId));
+        return ObjectUtils.firstNonNull(getAzureDependencyTag(groupId, artifactId), getExternalDependencyTag(groupId, artifactId));
     }
 
-    private static String getAzureArtifactTag(final String groupId, final String artifactId) {
+    private static String getAzureDependencyTag(final String groupId, final String artifactId) {
         try {
-            return getAzureSDKArtifacts()
+            return getAzureSDKEntities()
                 .stream()
                 .filter(entity -> StringUtils.isNotEmpty(entity.getType())
                     && StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId)
@@ -55,12 +55,12 @@ public class WorkspaceTaggingService {
         }
     }
 
-    private static String getDependencyTag(final String groupId, final String artifactId) {
+    private static String getExternalDependencyTag(final String groupId, final String artifactId) {
         try {
             return getWorkspaceTagEntities()
                 .stream()
-                .filter(entity -> (StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId) || entity.getGroupId().matches(groupId))
-                    && (StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId) || entity.getArtifactId().matches(artifactId)))
+                .filter(entity -> (StringUtils.isEmpty(entity.getGroupId()) || StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId))
+                    && (StringUtils.isEmpty(entity.getArtifactId()) || StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId)))
                 .map(WorkspaceTagEntity::getTag)
                 .findFirst().orElse(null);
         } catch (IOException e) {
@@ -80,7 +80,7 @@ public class WorkspaceTaggingService {
 
     @Preload
     @Cacheable(value = "workspace-tag-azure", condition = "!(force&&force[0])")
-    public static List<AzureJavaSdkEntity> getAzureSDKArtifacts(boolean... force) throws IOException {
+    public static List<AzureJavaSdkEntity> getAzureSDKEntities(boolean... force) throws IOException {
         final URL destination = new URL(SDK_METADATA_URL);
         final CsvSchema schema = CsvSchema.emptySchema().withHeader();
         final MappingIterator<AzureJavaSdkEntity> mappingIterator = CSV_MAPPER.readerFor(AzureJavaSdkEntity.class).with(schema).readValues(destination);
