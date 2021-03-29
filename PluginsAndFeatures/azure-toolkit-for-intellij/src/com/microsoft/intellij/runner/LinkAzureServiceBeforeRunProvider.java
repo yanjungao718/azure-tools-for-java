@@ -15,14 +15,15 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.link.AzureLinkService;
+import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -86,6 +88,8 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
         }
         Map<String, String> linkedEnvMap = AzureLinkService.getInstance().retrieveLinkEnvsByModuleName(runConfiguration.getProject(), moduleName);
         if (MapUtils.isNotEmpty(linkedEnvMap)) {
+            EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.DO_SERVICE_LINK).getServiceName(),
+                               ActionConstants.parse(ActionConstants.MySQL.DO_SERVICE_LINK).getOperationName(), null);
             // set envs for remote deploy
             if (runConfiguration instanceof WebAppConfiguration) {
                 WebAppConfiguration webAppConfiguration = (WebAppConfiguration) runConfiguration;
@@ -107,8 +111,7 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
             WebAppConfiguration webAppConfiguration = (WebAppConfiguration) runConfiguration;
             final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(runConfiguration.getProject())
                     .getAzureArtifactById(webAppConfiguration.getAzureArtifactType(), webAppConfiguration.getArtifactIdentifier());
-            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(azureArtifact.getTargetPath());
-            Module module = ProjectFileIndex.getInstance(runConfiguration.getProject()).getModuleForFile(virtualFile, false);
+            final Module module = AzureArtifactManager.getInstance(runConfiguration.getProject()).getModuleFromAzureArtifact(azureArtifact);
             return Objects.nonNull(module) ? module.getName() : StringUtils.EMPTY;
         }
         if (runConfiguration instanceof AbstractRunConfiguration

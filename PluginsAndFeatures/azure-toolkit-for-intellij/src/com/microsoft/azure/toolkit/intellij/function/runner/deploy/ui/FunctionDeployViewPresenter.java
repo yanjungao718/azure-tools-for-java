@@ -25,7 +25,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
 
     @AzureOperation(
         name = "function.load_setting",
-        params = {"$functionApp.name()"},
+        params = {"functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public void loadAppSettings(FunctionApp functionApp) {

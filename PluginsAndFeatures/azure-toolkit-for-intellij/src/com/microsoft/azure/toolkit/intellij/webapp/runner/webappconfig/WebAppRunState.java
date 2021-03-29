@@ -27,7 +27,6 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +39,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -61,9 +62,8 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
 
     @Nullable
     @Override
-    @AzureOperation(name = "webapp.deploy_artifact", params = {"@webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
-    public IAppService executeSteps(@NotNull RunProcessHandler processHandler
-        , @NotNull Map<String, String> telemetryMap) throws Exception {
+    @AzureOperation(name = "webapp.deploy_artifact", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
+    public IAppService executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         File file = new File(getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
@@ -130,17 +130,11 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     }
 
     @Override
-    protected String getDeployTarget() {
-        return isDeployToSlot() ? "DeploymentSlot" : "WebApp";
-    }
-
-    @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-        telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
-        telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
-        telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
-        telemetryMap.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
-        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
+    protected Map<String, String> getTelemetryMap() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("artifactType", webAppConfiguration.getAzureArtifactType() == null ? null : webAppConfiguration.getAzureArtifactType().name());
+        properties.putAll(webAppSettingModel.getTelemetryProperties(Collections.EMPTY_MAP));
+        return properties;
     }
 
     @NotNull
@@ -177,7 +171,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
 
     @AzureOperation(
         name = "webapp|artifact.get.state",
-        params = {"@webAppConfiguration.getName()"},
+        params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private String getTargetPath() throws AzureExecutionException {
@@ -193,7 +187,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
 
     @AzureOperation(
         name = "webapp|deployment.create.state",
-        params = {"@webAppConfiguration.getName()"},
+        params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private IWebAppDeploymentSlot createDeploymentSlot(final IWebApp webApp,

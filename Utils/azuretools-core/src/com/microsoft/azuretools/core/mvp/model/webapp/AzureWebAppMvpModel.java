@@ -35,6 +35,9 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
+import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
+import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -50,7 +53,6 @@ import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import java.io.File;
@@ -68,6 +70,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,7 +84,6 @@ public class AzureWebAppMvpModel {
 
     public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
     private final Map<String, List<IWebApp>> webappsCache;
 
     private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS =
@@ -94,9 +96,9 @@ public class AzureWebAppMvpModel {
     private static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
 
     private AzureWebAppMvpModel() {
-        subscriptionIdToWebApps = new ConcurrentHashMap<>();
         webappsCache = new ConcurrentHashMap<>();
     }
+    public static final String CACHE_SUBSCRIPTION_WEBAPPS = "subscription-webapps";
 
     public static AzureWebAppMvpModel getInstance() {
         return SingletonHolder.INSTANCE;
@@ -108,7 +110,7 @@ public class AzureWebAppMvpModel {
     @NotNull
     @AzureOperation(
         name = "webapp.get",
-        params = {"$id|uri_to_name", "$sid"},
+        params = {"nameFromResourceId(id)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp getWebAppById(String sid, String id) throws AzureToolkitRuntimeException {
@@ -132,7 +134,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         name = "webapp.get",
-        params = {"$appName", "$sid"},
+        params = {"appName", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp getWebAppByName(String sid, String resourceGroup, String appName) {
@@ -145,7 +147,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp.create_detail",
-        params = {"$model.getWebAppName()"},
+        params = {"model.getWebAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp createWebApp(@NotNull WebAppSettingModel model) {
@@ -164,7 +166,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp|deployment.create",
-        params = {"$model.getNewSlotName()", "$model.getWebAppName()"},
+        params = {"model.getNewSlotName()", "model.getWebAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     public DeploymentSlot createDeploymentSlot(@NotNull WebAppSettingModel model) {
@@ -337,6 +339,7 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
+    @CacheEvict(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$sid")
     public void deleteWebApp(String sid, String appId) {
         AzureAppService.auth(Track2Manager.getAzureResourceManager(sid)).webapp(appId).delete();
     }
@@ -351,9 +354,9 @@ public class AzureWebAppMvpModel {
     @AzureOperation(
         name = "docker.create_from_private_image",
         params = {
-            "$model.getWebAppName()",
-            "$model.getSubscriptionId()",
-            "$model.getPrivateRegistryImageSetting().getImageNameWithTag()"
+            "model.getWebAppName()",
+            "model.getSubscriptionId()",
+            "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
         },
         type = AzureOperation.Type.SERVICE
     )
@@ -433,7 +436,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "docker|image.update",
-        params = {"$webAppId|uri_to_name", "$imageSetting.getImageNameWithTag()"},
+        params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) {
@@ -463,7 +466,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp.update_settings",
-        params = {"$webAppId|uri_to_name"},
+        params = {"nameFromResourceId(webAppId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void updateWebAppSettings(String sid, String webAppId, Map<String, String> toUpdate, Set<String> toRemove) {
@@ -482,7 +485,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp|deployment.update_settings",
-        params = {"$slotName", "$webAppId|uri_to_name"},
+        params = {"slotName", "nameFromResourceId(webAppId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void updateDeploymentSlotAppSettings(final String subsciptionId, final String webAppId,
@@ -515,7 +518,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         name = "webapp|deployment.start",
-        params = {"$slotName", "$appId|uri_to_name"},
+        params = {"slotName", "nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void startDeploymentSlot(final String subscriptionId, final String appId,
@@ -526,7 +529,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         name = "webapp|deployment.stop",
-        params = {"$slotName", "$appId|uri_to_name"},
+        params = {"slotName", "nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void stopDeploymentSlot(final String subscriptionId, final String appId,
@@ -537,7 +540,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         name = "webapp|deployment.restart",
-        params = {"$slotName", "$appId|uri_to_name"},
+        params = {"slotName", "nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void restartDeploymentSlot(final String subscriptionId, final String appId,
@@ -548,7 +551,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         name = "webapp|deployment.swap",
-        params = {"$slotName", "$appId|uri_to_name"},
+        params = {"slotName", "nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void swapSlotWithProduction(final String subscriptionId, final String appId,
@@ -558,7 +561,7 @@ public class AzureWebAppMvpModel {
         slot.swap("production");
     }
 
-    @AzureOperation(name = "webapp|deployment.delete", params = {"$slotName", "$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "webapp|deployment.delete", params = {"slotName", "nameFromResourceId(appId)"}, type = AzureOperation.Type.SERVICE)
     public void deleteDeploymentSlotNode(final String subscriptionId, final String appId,
                                          final String slotName) {
         final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
@@ -568,7 +571,7 @@ public class AzureWebAppMvpModel {
     /**
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
-    @AzureOperation(name = "webapp|deployment.list", params = {"$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "webapp|deployment.list", params = {"nameFromResourceId(appId)"}, type = AzureOperation.Type.SERVICE)
     public @Nullable List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) {
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
@@ -586,7 +589,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "appservice|plan.list.subscription|rg",
-        params = {"$group", "$sid"},
+        params = {"group", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
@@ -599,7 +602,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "appservice|plan.list.subscription",
-        params = {"$sid"},
+        params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) {
@@ -652,26 +655,22 @@ public class AzureWebAppMvpModel {
         name = "webapp.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (subs.size() == 0) {
-            return webApps;
-        }
-        Observable.from(subs)
-                  .flatMap((sd) ->
-                               Observable.create((subscriber) -> {
-                                   final List<ResourceEx<WebApp>> webAppList = listWebApps(sd.subscriptionId(),
-                                                                                           force);
-                                   synchronized (webApps) {
-                                       webApps.addAll(webAppList);
-                                   }
-                                   subscriber.onCompleted();
-                               }).subscribeOn(Schedulers.io()), subs.size())
-                  .subscribeOn(Schedulers.io())
-                  .toBlocking()
-                  .subscribe();
-        return webApps;
+    public List<ResourceEx<WebApp>> listAllWebApps(final boolean... force) {
+        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listWebApps(sd.subscriptionId(), force).stream())
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    @AzureOperation(
+        name = "webapp.list.java|subscription|selected",
+        type = AzureOperation.Type.SERVICE
+    )
+    @Preload
+    public List<ResourceEx<WebApp>> listJavaWebApps(final boolean... force) {
+        return this.listAllWebApps(force).parallelStream()
+            .filter(app -> WebAppUtils.isJavaWebApp(app.getResource()))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -679,7 +678,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp.list.linux|subscription",
-        params = {"$subscriptionId"},
+        params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId, final boolean force) {
@@ -694,7 +693,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp.list.windows|subscription",
-        params = {"$subscriptionId"},
+        params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
@@ -710,23 +709,17 @@ public class AzureWebAppMvpModel {
     @NotNull
     @AzureOperation(
         name = "webapp.list.subscription",
-        params = {"$subscriptionId"},
+        params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
-        if (!force && subscriptionIdToWebApps.get(subscriptionId) != null) {
-            return subscriptionIdToWebApps.get(subscriptionId);
-        }
+    @Cacheable(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$subscriptionId", condition = "!(force&&force[0])")
+    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean... force) {
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-        final Predicate<SiteInner> filter = inner -> inner.kind() == null || !Arrays.asList(inner.kind().split(","))
-                                                                                    .contains("functionapp");
-        final List<ResourceEx<WebApp>> webapps = azure.appServices().webApps()
-                                                      .inner().list().stream().filter(filter)
-                                                      .map(inner -> new WebAppWrapper(subscriptionId, inner))
-                                                      .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
-                                                      .collect(Collectors.toList());
-        subscriptionIdToWebApps.put(subscriptionId, webapps);
-        return webapps;
+        final Predicate<SiteInner> filter = inner -> inner.kind() == null || !Arrays.asList(inner.kind().split(",")).contains("functionapp");
+        return azure.appServices().webApps().inner().list().stream().parallel().filter(filter)
+                  .map(inner -> new WebAppWrapper(subscriptionId, inner))
+                  .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
+                  .collect(Collectors.toList());
     }
 
     /**
@@ -824,7 +817,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp.get_publishing_profile",
-        params = {"$webAppId|uri_to_name"},
+        params = {"nameFromResourceId(webAppId)"},
         type = AzureOperation.Type.SERVICE
     )
     public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) {
@@ -837,7 +830,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         name = "webapp|deployment.get_publishing_profile",
-        params = {"$slotName", "$webAppId|uri_to_name"},
+        params = {"slotName", "nameFromResourceId(webAppId)"},
         type = AzureOperation.Type.SERVICE
     )
     public boolean getSlotPublishingProfileXmlWithSecrets(final String sid,
@@ -889,12 +882,11 @@ public class AzureWebAppMvpModel {
     )
     public void clearWebAppsCache() {
         webappsCache.clear();
-        subscriptionIdToWebApps.clear();
     }
 
     @AzureOperation(
         name = "common|region.list.subscription|tier",
-        params = {"$pricingTier", "$subscriptionId"},
+        params = {"pricingTier", "subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
     public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) {
@@ -926,9 +918,9 @@ public class AzureWebAppMvpModel {
         if (subs.size() == 0) {
             return webApps;
         }
-        Observable.from(subs)
+        rx.Observable.from(subs)
                 .flatMap((sd) ->
-                        Observable.create((subscriber) -> {
+                        rx.Observable.create((subscriber) -> {
                             synchronized (webApps) {
                                 webApps.addAll(listAzureWebAppsBySubscription(sd.subscriptionId(), force));
                             }

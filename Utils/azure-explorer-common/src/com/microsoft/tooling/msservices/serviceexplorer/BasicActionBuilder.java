@@ -116,6 +116,10 @@ public class BasicActionBuilder {
                 runnable.run();
             }
         };
+        // TODO (Qianjin) : remove after migrate all telemetry data by @AzureOperation annotation.
+        final String actionName2 = Optional.ofNullable(action).map(AzureActionEnum::getName).orElse(null);
+        String realActionName = StringUtils.firstNonBlank(actionName, actionName2, "unknown").toLowerCase();
+        delegate = new DelegateActionListener.TelemetricActionListener(delegate, MODULE_NAME_TO_SERVICE_NAME_MAP.get(moduleName), realActionName);
         if (backgroundable) {
             delegate = new DelegateActionListener.BackgroundActionListener(delegate,
                     getProgressMessage(doingName), backgroundCancellable, backgroundConditionalModal);
@@ -123,10 +127,6 @@ public class BasicActionBuilder {
         if (promptable) {
             delegate = new DelegateActionListener.PromptActionListener(delegate, getPromptMessage(actionName));
         }
-        // TODO (Qianjin) : remove after migrate all telemetry data by @AzureOperation annotation.
-        final String actionName2 = Optional.ofNullable(action).map(AzureActionEnum::getName).orElse(null);
-        String realActionName = StringUtils.firstNonBlank(actionName, actionName2, "unknown").toLowerCase();
-        delegate = new DelegateActionListener.TelemetricActionListener(delegate, MODULE_NAME_TO_SERVICE_NAME_MAP.get(moduleName), realActionName);
         return delegate;
     }
 

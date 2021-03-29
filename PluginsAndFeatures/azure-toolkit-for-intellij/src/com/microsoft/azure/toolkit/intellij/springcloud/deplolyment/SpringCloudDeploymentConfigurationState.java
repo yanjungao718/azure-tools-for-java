@@ -6,25 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudUtils;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentEntity;
+import com.microsoft.azure.toolkit.lib.springcloud.*;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.model.ScaleSettings;
 import com.microsoft.azure.tools.utils.RxUtils;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -32,7 +23,6 @@ import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,10 +53,9 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
 
     @Nullable
     @Override
-    public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
+    public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812811
         // prepare the jar to be deployed
-        updateTelemetryMap(telemetryMap);
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         final File artifactFile = appConfig.getDeployment().getArtifact().getFile();
         final boolean enableDisk = appConfig.getDeployment() != null && appConfig.getDeployment().isEnablePersistentStorage();
@@ -91,6 +80,8 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
 
         final boolean toCreateApp = !app.exists();
         final boolean toCreateDeployment = !deployment.exists();
+        operation.trackProperty("isCreateNewApp", String.valueOf(toCreateApp));
+        operation.trackProperty("isCreateNewDeployment", String.valueOf(toCreateDeployment));
         final List<AzureTask<?>> tasks = new ArrayList<>();
         if (toCreateApp) {
             setText(processHandler, String.format("Creating app(%s)...", app.name()));
@@ -145,16 +136,17 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
     }
 
     @Override
-    protected String getDeployTarget() {
-        return "SPRING_CLOUD";
-    }
-
-    @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+    protected Map<String, String> getTelemetryMap() {
         final Map<String, String> props = new HashMap<>();
         props.put("runtime", config.getAppConfig().getRuntimeVersion());
         props.put("subscriptionId", config.getAppConfig().getSubscriptionId());
-        telemetryMap.putAll(props);
+        props.put("public", String.valueOf(config.getAppConfig().isPublic()));
+        props.put("jvmOptions", String.valueOf(StringUtils.isNotEmpty(config.getAppConfig().getDeployment().getJvmOptions())));
+        props.put("instanceCount", String.valueOf(config.getAppConfig().getDeployment().getInstanceCount()));
+        props.put("memory", String.valueOf(config.getAppConfig().getDeployment().getMemoryInGB()));
+        props.put("cpu", String.valueOf(config.getAppConfig().getDeployment().getCpu()));
+        props.put("persistentStorage", String.valueOf(config.getAppConfig().getDeployment().getEnablePersistentStorage()));
+        return props;
     }
 
     private void printPublicUrl(final SpringCloudApp app, @NotNull RunProcessHandler processHandler) {

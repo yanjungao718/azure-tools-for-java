@@ -45,7 +45,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         name = "webapp.list.detail|subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    protected List<WebAppComboBoxModel> loadItems() throws Exception {
+    protected List<WebAppComboBoxModel> loadAppServiceModels() throws Exception {
         final List<IWebApp> webApps = AzureWebAppMvpModel.getInstance().listAzureWebApps(false);
         return webApps.stream()
                       .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))

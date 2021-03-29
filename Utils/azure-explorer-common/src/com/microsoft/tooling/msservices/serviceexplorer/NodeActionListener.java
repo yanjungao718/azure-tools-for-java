@@ -63,14 +63,8 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
 
     protected Map<String, String> buildProp(Node node) {
         final Map<String, String> properties = new HashMap<>();
-        properties.put("Node", node.getId());
-        properties.put("Name", node.getName());
         if (node instanceof TelemetryProperties) {
             properties.putAll(((TelemetryProperties) node).toProperties());
-        }
-        if (node.getParent() != null) {
-            properties.put("Parent", node.getParent().getName());
-            properties.put("ParentType", node.getParent().getClass().getSimpleName());
         }
         return properties;
     }
@@ -93,7 +87,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         try {
             operation.start();
             Node node = e.getAction().getNode();
-            EventUtil.logEvent(EventType.info, operation, buildProp(node));
+            operation.trackProperties(buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
         } catch (AzureCmdException | RuntimeException ex) {

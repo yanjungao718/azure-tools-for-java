@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
-import com.google.common.base.Preconditions;
 import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.appservice.DeployTargetType;
 import com.microsoft.azure.common.appservice.DeploymentType;
@@ -26,12 +25,14 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IPrompter;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,11 +60,12 @@ public class DeployFunctionHandler {
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private FunctionDeployModel model;
     private IPrompter prompter;
+    private Operation operation;
 
-    public DeployFunctionHandler(FunctionDeployModel model, IPrompter prompter) {
-        Preconditions.checkNotNull(model);
+    public DeployFunctionHandler(@NotNull FunctionDeployModel model, @NotNull IPrompter prompter, @NotNull Operation operation) {
         this.model = model;
         this.prompter = prompter;
+        this.operation = operation;
     }
 
     @AzureOperation(name = "function.deploy_artifact", type = AzureOperation.Type.SERVICE)
@@ -132,7 +134,7 @@ public class DeployFunctionHandler {
      */
     @AzureOperation(
         name = "function|trigger.list",
-        params = {"@model.getAppName()"},
+        params = {"this.model.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     private List<FunctionResource> listFunctions() {
@@ -227,8 +229,8 @@ public class DeployFunctionHandler {
 
     private ArtifactHandler getArtifactHandler() throws AzureExecutionException {
         final ArtifactHandlerBase.Builder builder;
-
         final DeploymentType deploymentType = getDeploymentType();
+        operation.trackProperty("deploymentType", deploymentType.name());
         switch (deploymentType) {
             case MSDEPLOY:
                 builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.model.getAppName());

@@ -29,25 +29,28 @@ import com.microsoft.azure.common.function.template.FunctionTemplate;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
+import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.intellij.function.CreateFunctionForm;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.*;
-import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
-import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_TRIGGER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateFunctionAction extends CreateElementActionBase {
@@ -82,9 +85,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                     PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
                     String newName = packageName.replace('.', '/');
                     bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
-                    EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_TRIGGER, new HashMap<String, String>() {{
-                            put("triggerType", triggerType);
-                        }});
+                    operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, triggerType);
                     if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                         if (StringUtils.isBlank(connectionName)) {
                             throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));

@@ -359,7 +359,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @AzureOperation(
         name = "appservice|file.open",
-        params = {"$target.getName()"},
+        params = {"target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
@@ -441,7 +441,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @AzureOperation(
         name = "appservice|file.save",
-        params = {"$appServiceFile.getName()"},
+        params = {"appServiceFile.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
@@ -471,7 +471,7 @@ public class IDEHelperImpl implements IDEHelper {
      */
     @AzureOperation(
         name = "appservice|file.download",
-        params = {"$file.getName()"},
+        params = {"file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows

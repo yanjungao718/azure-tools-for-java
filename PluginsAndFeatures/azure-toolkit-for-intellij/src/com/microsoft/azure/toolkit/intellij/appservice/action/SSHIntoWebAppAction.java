@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -87,5 +88,15 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     @Override
     public int getGroup() {
         return Groupable.DIAGNOSTIC_GROUP;
+    }
+
+    @Override
+    protected String getServiceName(final NodeActionEvent event) {
+        return TelemetryConstants.WEBAPP;
+    }
+
+    @Override
+    protected String getOperationName(final NodeActionEvent event) {
+        return TelemetryConstants.WEBAPP_SSHINTO;
     }
 }

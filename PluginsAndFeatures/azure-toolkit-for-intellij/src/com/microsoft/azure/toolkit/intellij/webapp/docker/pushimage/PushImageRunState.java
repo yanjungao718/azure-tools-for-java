@@ -21,17 +21,18 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
 
 public class PushImageRunState extends AzureRunProfileState<String> {
     private final PushImageRunModel dataModel;
-
 
     public PushImageRunState(Project project, PushImageRunModel pushImageRunModel) {
         super(project);
@@ -39,13 +40,7 @@ public class PushImageRunState extends AzureRunProfileState<String> {
     }
 
     @Override
-    protected String getDeployTarget() {
-        return "Container Registry";
-    }
-
-    @Override
-    public String executeSteps(@NotNull RunProcessHandler processHandler,
-                               @NotNull Map<String, String> telemetryMap) throws Exception {
+    public String executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         processHandler.setText("Starting job ...  ");
         String basePath = project.getBasePath();
         if (basePath == null) {
@@ -103,12 +98,8 @@ public class PushImageRunState extends AzureRunProfileState<String> {
     }
 
     @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-        String fileName = dataModel.getTargetName();
-        if (null != fileName) {
-            telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(fileName));
-        } else {
-            telemetryMap.put("FileType", "");
-        }
+    protected Map<String, String> getTelemetryMap() {
+        final String fileType = dataModel.getTargetName() == null ? StringUtils.EMPTY : MavenRunTaskUtil.getFileType(dataModel.getTargetName());
+        return Collections.singletonMap(TelemetryConstants.FILETYPE, fileType);
     }
 }

@@ -9,9 +9,11 @@ import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -61,6 +63,17 @@ public class MySQLConnectToServerAction extends NodeActionListener {
         });
     }
 
+    @Override
+    protected String getServiceName(NodeActionEvent event) {
+        return ActionConstants.parse(ActionConstants.MySQL.CONNECT_TO_SERVER).getServiceName();
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+        return ActionConstants.parse(ActionConstants.MySQL.CONNECT_TO_SERVER).getOperationName();
+    }
+
+    @AzureOperation(name = ActionConstants.MySQL.CONNECT_TO_SERVER, type = AzureOperation.Type.ACTION)
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
         try {
             if (!isLoggedIn ||
