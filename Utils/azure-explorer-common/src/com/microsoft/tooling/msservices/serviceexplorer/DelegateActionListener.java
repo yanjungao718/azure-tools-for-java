@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ActionConstants;
@@ -76,7 +77,13 @@ class DelegateActionListener extends NodeActionListener {
                 }
             };
             final Object project = e.getAction().getNode().getProject();
-            AzureTask task = new AzureTask(project, progressMessage, cancellable, runnable);
+            // todo: Add titles properties for services in common library
+            AzureTask task = new AzureTask(project, new IAzureOperationTitle.Simple(progressMessage) {
+                @Override
+                public String getName() {
+                    return String.format("%s.%s", BackgroundActionListener.super.getServiceName(e), BackgroundActionListener.super.getOperationName(e));
+                }
+            }, cancellable, runnable);
             if (conditionalModal) {
                 AzureTaskManager.getInstance().runInModal(task);
             } else {
@@ -88,7 +95,7 @@ class DelegateActionListener extends NodeActionListener {
 
     static final class PromptActionListener extends DelegateActionListener {
         private static final String PROMPT_TITLE = "Azure Explorer";
-        private static final String[] PROMPT_OPTIONS = new String[] {"Yes", "No"};
+        private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
 
         private String promptMessage;
 

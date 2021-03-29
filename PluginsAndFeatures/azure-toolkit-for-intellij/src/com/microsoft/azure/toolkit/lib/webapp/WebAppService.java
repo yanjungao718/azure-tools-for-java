@@ -28,7 +28,7 @@ public class WebAppService {
         return WebAppService.instance;
     }
 
-    @AzureOperation(name = "webapp.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.SERVICE)
     public WebApp createWebApp(final WebAppConfig config) {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);

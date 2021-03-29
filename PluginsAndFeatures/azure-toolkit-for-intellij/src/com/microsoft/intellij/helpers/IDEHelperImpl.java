@@ -44,7 +44,7 @@ import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
@@ -359,7 +359,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @AzureOperation(
         name = "appservice|file.open",
-        params = {"$target.getName()"},
+        params = {"target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
@@ -441,7 +441,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @AzureOperation(
         name = "appservice|file.save",
-        params = {"$appServiceFile.getName()"},
+        params = {"appServiceFile.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
@@ -471,7 +471,7 @@ public class IDEHelperImpl implements IDEHelper {
      */
     @AzureOperation(
         name = "appservice|file.download",
-        params = {"$file.getName()"},
+        params = {"file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows

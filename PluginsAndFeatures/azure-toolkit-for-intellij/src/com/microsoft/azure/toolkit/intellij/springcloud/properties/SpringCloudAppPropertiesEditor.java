@@ -22,6 +22,7 @@ import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2020_07_01.AppResourceProperties;
 import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceProperties;
@@ -359,6 +360,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             final String message = String.format("%s app (%s)", actionName, this.appName);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, message, false, () -> {
                 EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
+                    logOperation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(clusterId));
                     action.accept(changes);
                 });
                 refreshData();

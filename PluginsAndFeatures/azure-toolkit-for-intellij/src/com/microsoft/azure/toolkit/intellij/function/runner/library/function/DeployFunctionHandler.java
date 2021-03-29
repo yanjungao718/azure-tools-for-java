@@ -132,7 +132,7 @@ public class DeployFunctionHandler {
      */
     @AzureOperation(
         name = "function|trigger.list",
-        params = {"@model.getAppName()"},
+        params = {"this.model.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     private List<FunctionResource> listFunctions() {
