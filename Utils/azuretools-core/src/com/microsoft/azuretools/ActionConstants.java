@@ -96,11 +96,13 @@ public final class ActionConstants {
         String START = OPERATION_PREFIX + "start";
         String STOP = OPERATION_PREFIX + "stop";
         String RESTART = OPERATION_PREFIX + "restart";
+        String SAVE = OPERATION_PREFIX + "save";
         String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-in-portal";
         String SHOW_PROPERTIES = OPERATION_PREFIX + "show-properties";
         String CONNECT_TO_SERVER = OPERATION_PREFIX + "connect-to-server";
         String BIND_INTO = OPERATION_PREFIX + "bind-into";
         String LINK_TO_MODULE = OPERATION_PREFIX + "link-to-module";
+        String DO_SERVICE_LINK = OPERATION_PREFIX + "do-link";
     }
 
     public interface SpringCloud {
