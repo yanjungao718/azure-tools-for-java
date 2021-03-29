@@ -47,11 +47,6 @@ public class AzureArtifactManager {
         return prepareAzureArtifacts(packaging -> StringUtils.equals(packaging, MavenConstants.TYPE_JAR));
     }
 
-    @AzureOperation(
-        name = "common|artifact.get_id",
-        params = {"artifact.getName()"},
-        type = AzureOperation.Type.TASK
-    )
     public String getArtifactIdentifier(AzureArtifact artifact) {
         switch (artifact.getType()) {
             case Gradle:
