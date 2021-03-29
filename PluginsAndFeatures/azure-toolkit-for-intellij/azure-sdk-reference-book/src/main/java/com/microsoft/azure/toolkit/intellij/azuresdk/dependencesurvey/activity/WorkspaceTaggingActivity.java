@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.startup.StartupActivity;
@@ -31,8 +32,7 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull final Project project) {
-        ApplicationManager.getApplication().runReadAction(() -> trackProjectDependencies(project));
-
+        ApplicationManager.getApplication().executeOnPooledThread(() -> ReadAction.nonBlocking(() -> trackProjectDependencies(project)).executeSynchronously());
     }
 
     private void trackProjectDependencies(@NotNull final Project project) {
