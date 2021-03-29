@@ -10,6 +10,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
@@ -36,6 +38,8 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
         return this.getForm().getData();
     }
 
+
+    @AzureOperation(name = "appservice.toggle", type = AzureOperation.Type.TASK)
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
         final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();
