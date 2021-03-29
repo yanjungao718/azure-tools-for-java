@@ -18,11 +18,13 @@ import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 public class WorkspaceTaggingService {
@@ -33,7 +35,7 @@ public class WorkspaceTaggingService {
     private static final String WORKSPACE_TAG_JSON = "/workspaceTag.json";
 
     @Nullable
-    public static String getWorkspaceTag(String groupId, final String artifactId) {
+    public static String getWorkspaceTag(@Nonnull String groupId, @Nonnull final String artifactId) {
         if (StringUtils.isAnyEmpty(groupId, artifactId)) {
             return null;
         }
@@ -41,49 +43,45 @@ public class WorkspaceTaggingService {
     }
 
     private static String getAzureDependencyTag(final String groupId, final String artifactId) {
-        try {
-            return getAzureSDKEntities()
-                .stream()
-                .filter(entity -> StringUtils.isNotEmpty(entity.getType())
-                    && StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId)
-                    && StringUtils.equalsIgnoreCase(entity.getPackageName(), artifactId))
-                .map(AzureJavaSdkEntity::getType)
-                .findFirst().orElse(null);
-        } catch (IOException e) {
-            // swallow exception for workspace tagging
-            return null;
-        }
+        return getAzureSDKEntities()
+            .stream()
+            .filter(entity -> StringUtils.isNotEmpty(entity.getType())
+                && StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId)
+                && StringUtils.equalsIgnoreCase(entity.getPackageName(), artifactId))
+            .map(AzureJavaSdkEntity::getType)
+            .findFirst().orElse(null);
     }
 
     private static String getExternalDependencyTag(final String groupId, final String artifactId) {
-        try {
-            return getWorkspaceTagEntities()
-                .stream()
-                .filter(entity -> (StringUtils.isEmpty(entity.getGroupId()) || StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId))
-                    && (StringUtils.isEmpty(entity.getArtifactId()) || StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId)))
-                .map(WorkspaceTagEntity::getTag)
-                .findFirst().orElse(null);
-        } catch (IOException e) {
-            // swallow exception for workspace tagging
-            return null;
-        }
+        return getWorkspaceTagEntities()
+            .stream()
+            .filter(entity -> (StringUtils.isEmpty(entity.getGroupId()) || StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId))
+                && (StringUtils.isEmpty(entity.getArtifactId()) || StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId)))
+            .map(WorkspaceTagEntity::getTag)
+            .findFirst().orElse(null);
     }
 
     @Preload
     @Cacheable(value = "workspace-tag", condition = "!(force&&force[0])")
-    public static List<WorkspaceTagEntity> getWorkspaceTagEntities(boolean... force) throws IOException {
+    public static List<WorkspaceTagEntity> getWorkspaceTagEntities(boolean... force) {
         try (final InputStream stream = WorkspaceTaggingService.class.getResourceAsStream(WORKSPACE_TAG_JSON)) {
             final MappingIterator<WorkspaceTagEntity> iterator = JSON_MAPPER.readerFor(WorkspaceTagEntity.class).readValues(stream);
             return iterator.readAll();
+        } catch (IOException exception) {
+            return Collections.emptyList();
         }
     }
 
     @Preload
     @Cacheable(value = "workspace-tag-azure", condition = "!(force&&force[0])")
-    public static List<AzureJavaSdkEntity> getAzureSDKEntities(boolean... force) throws IOException {
-        final URL destination = new URL(SDK_METADATA_URL);
-        final CsvSchema schema = CsvSchema.emptySchema().withHeader();
-        final MappingIterator<AzureJavaSdkEntity> mappingIterator = CSV_MAPPER.readerFor(AzureJavaSdkEntity.class).with(schema).readValues(destination);
-        return mappingIterator.readAll();
+    public static List<AzureJavaSdkEntity> getAzureSDKEntities(boolean... force) {
+        try {
+            final URL destination = new URL(SDK_METADATA_URL);
+            final CsvSchema schema = CsvSchema.emptySchema().withHeader();
+            final MappingIterator<AzureJavaSdkEntity> mappingIterator = CSV_MAPPER.readerFor(AzureJavaSdkEntity.class).with(schema).readValues(destination);
+            return mappingIterator.readAll();
+        } catch (IOException e) {
+            return Collections.emptyList();
+        }
     }
 }
