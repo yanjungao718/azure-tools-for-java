@@ -57,7 +57,7 @@ task buildToolkitsLib {
 
     maven {
         goals = "install"
-        pom = file("${tempDir}/pom.xml")
+        pom = file("${tempDir}/azure-toolkit-libs/pom.xml")
     }
 }
 
