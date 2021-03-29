@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.intellij.common.operation;
 
 import com.intellij.AbstractBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import org.jetbrains.annotations.NotNull;
 
 public class IntellijAzureOperationTitleProvider extends AbstractBundle implements AzureOperationBundle.Provider {
 
@@ -31,6 +32,11 @@ public class IntellijAzureOperationTitleProvider extends AbstractBundle implemen
 
     private IntellijAzureOperationTitleProvider() {
         super(AzureOperationBundle.TITLES);
+    }
+
+    @Override
+    public @NotNull String getMessage(@NotNull final String key, final Object @NotNull ... params) {
+        return super.messageOrDefault(key, String.format("!%s!", key), params);
     }
 
     public static void register() {

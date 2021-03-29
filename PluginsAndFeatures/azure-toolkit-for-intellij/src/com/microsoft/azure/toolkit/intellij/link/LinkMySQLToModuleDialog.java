@@ -14,10 +14,13 @@ import com.microsoft.azure.toolkit.intellij.link.mysql.BasicLinkMySQLPanel;
 import com.microsoft.azure.toolkit.intellij.link.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.link.mysql.MySQLResourceConfig;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
+import com.microsoft.azure.toolkit.intellij.mysql.action.LinkMySQLAction;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.link.AzureLinkService;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.intellij.AzureMySQLStorage;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
@@ -30,7 +33,7 @@ import java.util.Objects;
 public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourceConfig, ModuleResourceConfig>> {
 
     private static final String PROMPT_TITLE = "Azure Explorer";
-    private static final String[] PROMPT_OPTIONS = new String[] {"Yes", "No"};
+    private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
     private static final String PROMPT_MESSAGE = "This resource already existed in your local environment. Do you want to override it?";
     private JPanel rootPanel;
     private BasicLinkMySQLPanel basicPanel;
@@ -87,8 +90,8 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
         boolean storageResource = true;
         if (Objects.nonNull(existedResourcePO)) {
             if (!StringUtils.equals(resourceConfig.getUrl(), existedResourcePO.getUrl()) ||
-                    !StringUtils.equals(resourceConfig.getUsername(), existedResourcePO.getUsername()) ||
-                    resourceConfig.getPasswordConfig().getPasswordSaveType() != existedResourcePO.getPasswordSave()) {
+                !StringUtils.equals(resourceConfig.getUsername(), existedResourcePO.getUsername()) ||
+                resourceConfig.getPasswordConfig().getPasswordSaveType() != existedResourcePO.getPasswordSave()) {
                 storageResource = DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE, PROMPT_TITLE, PROMPT_OPTIONS, null);
             }
         }
@@ -98,9 +101,17 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             AzureLinkService.getInstance().link(project, linkConfig, finalStorageResource);
+            final String message = String.format("The connection between database (%s/%s) and project (%s) has been successfully created.",
+                                                 resourceConfig.getServer().name(), resourceConfig.getDatabase().name(), project.getName());
+            DefaultLoader.getUIHelper().showInfoNotification(LinkMySQLAction.ACTION_NAME, message);
         };
         String progressMessage = "Connecting Azure Database for MySQL with Module...";
-        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
+        final AzureTask task = new AzureTask(null, new IAzureOperationTitle.Simple(progressMessage) {
+            @Override
+            public String getName() {
+                return ActionConstants.MySQL.LINK_TO_MODULE;
+            }
+        }, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }
 

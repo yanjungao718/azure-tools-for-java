@@ -81,14 +81,14 @@ public class FunctionUtils {
             return;
         }
         final String appSettingsJsonValue = JsonUtils.toJsonString(appSettings);
-        IdeaSecureStore.getInstance().savePassword(FunctionApp.class.getName(), key, appSettingsJsonValue);
+        IdeaSecureStore.getInstance().savePassword(key, appSettingsJsonValue);
     }
 
     public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {
         if (StringUtils.isEmpty(key)) {
             return new HashMap<>();
         }
-        final String value = IdeaSecureStore.getInstance().loadPassword(FunctionApp.class.getName(), key);
+        final String value = IdeaSecureStore.getInstance().loadPassword(key);
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 
