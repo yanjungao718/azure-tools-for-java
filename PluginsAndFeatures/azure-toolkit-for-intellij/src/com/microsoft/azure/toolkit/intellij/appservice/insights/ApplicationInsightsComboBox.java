@@ -51,7 +51,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
     @Override
     @AzureOperation(
         name = "ai.list.subscription",
-        params = {"@subscription.subscriptionId()"},
+        params = {"this.subscription.subscriptionId()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends ApplicationInsightsConfig> loadItems() throws Exception {

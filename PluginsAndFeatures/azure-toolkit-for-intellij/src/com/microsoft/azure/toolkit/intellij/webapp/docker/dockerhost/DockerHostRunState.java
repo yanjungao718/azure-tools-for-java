@@ -50,10 +50,6 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         this.dataModel = dataModel;
     }
 
-    protected String getDeployTarget() {
-        return "Docker";
-    }
-
     @Override
     public String executeSteps(@NotNull RunProcessHandler processHandler,
                                @NotNull Map<String, String> telemetryMap) throws Exception {

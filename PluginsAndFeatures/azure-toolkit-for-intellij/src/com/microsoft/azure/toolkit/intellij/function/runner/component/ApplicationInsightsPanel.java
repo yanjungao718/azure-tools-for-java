@@ -60,7 +60,7 @@ public class ApplicationInsightsPanel extends JPanel {
 
     @AzureOperation(
         name = "ai.list.subscription",
-        params = {"$subscriptionId"},
+        params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
     public void loadApplicationInsights(String subscriptionId) {

@@ -1,7 +1,8 @@
-<idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
+<idea-plugin url="https://github.com/Microsoft/azure-tools-for-java"
+             xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.50.0</version>
+  <version>3.51.0-SNAPSHOT</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,16 +25,13 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.50.0</h3>
-    <h4>Added</h4>
+    <h3>3.50.1</h3>
+    <h4>Fixes</h4>
     <ul>
-      <li>Development workflow for Azure Database for MySQL
-        <ul>
-          <li>Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file</li>
-          <li>Automatically inject datasource connection properties into runtime environment for local run</li>
-          <li>Publish Azure Web App with datasource connection properties in application settings</li>
-        </ul>
-      </li>
+      <li>Fixes: Can't deploy to Azure Web App when there is "Connect Azure Resource" in before launch</li>
+      <li>Fixes: InvalidParameterException occurs when close a streaming log</li>
+      <li>Fixes: Failed when select file to deploy to Azure Web App</li>
+      <li>Fixes: Failed to create MySQL instance as resource provider is not registered</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
@@ -42,7 +40,7 @@
   </change-notes>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="202.6397.20" until-build="202.*"/>
+  <idea-version since-build="202.6397.94" until-build="202.*"/>
   <resource-bundle>com.microsoft.azure.toolkit.operation.titles</resource-bundle>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
@@ -53,6 +51,8 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
+  <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -330,6 +330,8 @@
       <reference ref="AzureToolkit.AzureSignIn"/>
       <separator/>
       <reference ref="AzureToolkit.ValidateCertificate"/>
+      <separator/>
+      <reference ref="AzureToolkit.OpenSdkReferenceBook"/>
       <separator/>
       <reference ref="AzureToolkit.GithubIssue"/>
       <reference ref="AzureToolkit.FeatureRequest"/>

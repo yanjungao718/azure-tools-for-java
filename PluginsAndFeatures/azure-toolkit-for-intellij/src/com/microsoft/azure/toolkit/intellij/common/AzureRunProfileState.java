@@ -19,9 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptio
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.RunProcessHandler;
@@ -52,10 +50,6 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         Observable.fromCallable(
             () -> {
                 try {
-                    if (operation != null) {
-                        operation.start();
-                        EventUtil.logEvent(EventType.info, operation, telemetryMap);
-                    }
                     return this.executeSteps(processHandler, telemetryMap);
                 } finally {
                     // Once the operation done, whether success or not, `setText` should not throw new exception
@@ -63,35 +57,15 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                 }
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
-                    if (operation != null) {
-                        operation.complete();
-                    }
-                    this.sendTelemetry(telemetryMap, true, null);
+                    this.sendTelemetry(operation, telemetryMap, null);
                     this.onSuccess(res, processHandler);
                 },
                 (err) -> {
                     err.printStackTrace();
-                    if (operation != null) {
-                        EventUtil.logError(operation, ErrorType.userError, new Exception(err.getMessage(), err),
-                                           telemetryMap, null);
-                        operation.complete();
-                    }
+                    this.sendTelemetry(operation, telemetryMap, err);
                     this.onFail(err, processHandler);
-                    this.sendTelemetry(telemetryMap, false, err.getMessage());
                 });
         return new DefaultExecutionResult(consoleView, processHandler);
-    }
-
-    protected Operation createOperation() {
-        return null;
-    }
-
-    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
-        final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
-                                    String.format("Failed to %s", error.getMessage()) : error.getMessage();
-        processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
-        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
     }
 
     protected void setText(RunProcessHandler runProcessHandler, String text) {
@@ -100,24 +74,30 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         }
     }
 
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-    }
-
-    private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
+    private void sendTelemetry(Operation operation, @NotNull Map<String, String> telemetryMap, Throwable exception) {
         updateTelemetryMap(telemetryMap);
-        telemetryMap.put("Success", String.valueOf(success));
-        if (!success) {
-            telemetryMap.put("ErrorMsg", errorMsg);
+        operation.trackProperties(telemetryMap);
+        if (exception != null) {
+            EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), telemetryMap, null);
         }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action
-                , getDeployTarget(), "Deploy", telemetryMap);
+        operation.complete();
     }
-
-    protected abstract String getDeployTarget();
 
     protected abstract T executeSteps(@NotNull RunProcessHandler processHandler
-            , @NotNull Map<String, String> telemetryMap) throws Exception;
+        , @NotNull Map<String, String> telemetryMap) throws Exception;
+
+    @NotNull
+    protected abstract Operation createOperation();
+
+    protected abstract void updateTelemetryMap(@NotNull Map<String, String> telemetryMap);
 
     protected abstract void onSuccess(T result, @NotNull RunProcessHandler processHandler);
+
+    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
+        final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
+                                    String.format("Failed to %s", error.getMessage()) : error.getMessage();
+        processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
+        processHandler.notifyComplete();
+        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
+    }
 }
