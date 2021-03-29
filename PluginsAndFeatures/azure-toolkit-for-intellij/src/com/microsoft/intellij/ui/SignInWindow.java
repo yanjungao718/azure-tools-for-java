@@ -30,10 +30,7 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -297,14 +294,14 @@ public class SignInWindow extends AzureDialogWrapper {
         Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Signing in..."));
 
         try {
-            EventUtil.logEvent(EventType.info, operation, properties);
             operation.start();
+            operation.trackProperties(properties);
+            operation.trackProperty(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
             loginCallable.call();
         } catch (Exception e) {
+            EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
         } finally {
-            EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
-                AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
             operation.complete();
         }
     }

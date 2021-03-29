@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
@@ -26,6 +27,7 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.RunProcessHandler;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,7 +72,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         // Deploy function to Azure
         stagingFolder = FunctionUtils.getTempStagingFolder();
         deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());
-        prepareStagingFolder(stagingFolder, processHandler);
+        prepareStagingFolder(stagingFolder, processHandler, operation);
         final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, message -> {
             if (processHandler.isProcessRunning()) {
                 processHandler.setText(message);
@@ -101,13 +103,17 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         params = {"stagingFolder.getName()", "this.deployModel.getAppName()"},
         type = AzureOperation.Type.TASK
     )
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) {
+    private void prepareStagingFolder(File stagingFolder,
+                                      RunProcessHandler processHandler,
+                                      final @NotNull Operation operation) {
         AzureTaskManager.getInstance().read(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
             final Path folder = stagingFolder.toPath();
             try {
-                FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionDeployConfiguration.getModule(), methods);
+                final Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionDeployConfiguration.getModule(), methods);
+                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
             } catch (final AzureExecutionException | IOException e) {
                 final String error = String.format("failed prepare staging folder[%s]", folder);
                 throw new AzureToolkitRuntimeException(error, e);

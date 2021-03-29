@@ -16,6 +16,9 @@ import com.microsoft.azure.toolkit.intellij.link.po.BaseResourcePO;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.ModulePO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
+import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -128,6 +131,8 @@ public class AzureLinkService {
                 passwordConfigReference.set(data);
             });
             dialog.show();
+            EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.UPDATE_PASSWORD).getServiceName(),
+                               ActionConstants.parse(ActionConstants.MySQL.UPDATE_PASSWORD).getOperationName(), null);
         });
         PasswordConfig passwordConfig = passwordConfigReference.get();
         if (Objects.nonNull(passwordConfig)) {

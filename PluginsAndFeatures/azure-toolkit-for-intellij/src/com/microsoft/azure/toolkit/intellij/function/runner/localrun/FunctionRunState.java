@@ -116,7 +116,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         validateFunctionRuntime(processHandler);
         stagingFolder = FunctionUtils.getTempStagingFolder();
         addProcessTerminatedListener(processHandler);
-        prepareStagingFolder(stagingFolder, processHandler);
+        prepareStagingFolder(stagingFolder, processHandler, operation);
         // Run Function Host
         runFunctionCli(processHandler, stagingFolder);
         return null;
@@ -269,7 +269,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
+    private void prepareStagingFolder(File stagingFolder,
+                                      RunProcessHandler processHandler,
+                                      final @NotNull Operation operation) throws Exception {
         AzureTaskManager.getInstance().read(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
@@ -278,6 +280,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             try {
                 Map<String, FunctionConfiguration> configMap =
                     FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionRunConfiguration.getModule(), methods);
+                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
                 final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
                 FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
 

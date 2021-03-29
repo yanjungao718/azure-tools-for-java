@@ -145,6 +145,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         props.put("instanceCount", String.valueOf(config.getAppConfig().getDeployment().getInstanceCount()));
         props.put("memory", String.valueOf(config.getAppConfig().getDeployment().getMemoryInGB()));
         props.put("cpu", String.valueOf(config.getAppConfig().getDeployment().getCpu()));
+        props.put("persistentStorage", String.valueOf(config.getAppConfig().getDeployment().getEnablePersistentStorage()));
         return props;
     }
 
