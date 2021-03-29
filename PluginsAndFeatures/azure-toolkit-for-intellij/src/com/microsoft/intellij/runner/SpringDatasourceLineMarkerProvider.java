@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.link.base.LinkType;
 import com.microsoft.azure.toolkit.intellij.link.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.link.po.LinkPO;
 import com.microsoft.azure.toolkit.intellij.link.po.MySQLResourcePO;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
@@ -36,6 +37,10 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement element) {
+        // Do not show azure line marker if not signed in
+        if (!AuthMethodManager.getInstance().isSignedIn()) {
+            return null;
+        }
         if (element instanceof PropertyImpl) {
             PropertyImpl property = (PropertyImpl) element;
             String value = property.getValue();
@@ -85,6 +90,12 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
 
         @Override
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
+            if (!AuthMethodManager.getInstance().isSignedIn()) {
+                final String resourceName = ResourceId.fromString(resourceId).name();
+                final String message = String.format("Failed to connect Azure Database for MySQL (%s) , please sign in Azure first.", resourceName);
+                DefaultLoader.getUIHelper().showError(message, "Connect to Azure Datasource for MySQL");
+                return;
+            }
             ResourceId resourceIdObject = ResourceId.fromString(resourceId);
             Server server = MySQLMvpModel.findServer(resourceIdObject.subscriptionId(), resourceIdObject.resourceGroupName(), resourceIdObject.name());
             if (Objects.nonNull(server)) {
