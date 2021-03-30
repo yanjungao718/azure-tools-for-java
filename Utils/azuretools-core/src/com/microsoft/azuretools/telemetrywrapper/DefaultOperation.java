@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
@@ -108,6 +109,16 @@ public class DefaultOperation implements Operation {
         } finally {
             clear();
         }
+    }
+
+    @Override
+    public void trackProperty(String key, @Nullable String value) {
+        properties.put(key, value);
+    }
+
+    @Override
+    public void trackProperties(Map<String, String> properties) {
+        this.properties.putAll(properties);
     }
 
     @Override

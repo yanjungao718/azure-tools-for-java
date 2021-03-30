@@ -5,11 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.function.wizard.module;
 
-import com.intellij.ide.util.projectWizard.JavaModuleBuilder;
-import com.intellij.ide.util.projectWizard.ModuleNameLocationSettings;
-import com.intellij.ide.util.projectWizard.ModuleWizardStep;
-import com.intellij.ide.util.projectWizard.SettingsStep;
-import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbService;
@@ -17,37 +13,37 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.startup.StartupManager;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.util.DisposeAwareRunnable;
+import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
+import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.function.wizard.AzureFunctionsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
+
 import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azure.toolkit.intellij.function.wizard.AzureFunctionsConstants;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import javax.swing.Icon;
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.HashMap;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_PROJECT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
 
 public class FunctionsModuleBuilder extends JavaModuleBuilder {
     private WizardContext wizardContext;
@@ -70,7 +66,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
     @Override
     public Icon getNodeIcon() {
-        return IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH, AzureFunctionSupportConfigurationType.class);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE);
     }
 
     @Override
@@ -119,10 +115,8 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
                 final String version = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_VERSION_KEY);
                 final String packageName = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_PACKAGE_NAME_KEY);
                 final String[] triggers = wizardContext.getUserData(AzureFunctionsConstants.WIZARD_TRIGGERS_KEY);
-                EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_PROJECT, new HashMap<String, String>() {{
-                    put("tool", tool);
-                    put("triggerType", StringUtils.join(triggers, ","));
-                }});
+                operation.trackProperty("tool", tool);
+                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(triggers, ","));
                 File tempProjectFolder = null;
                 try {
                     tempProjectFolder = AzureFunctionsUtils.createFunctionProjectToTempFolder(groupId, artifactId, version, tool);

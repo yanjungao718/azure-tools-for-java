@@ -5,11 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
+import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.mysql.cj.jdbc.ConnectionImpl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.sql.*;
+import java.util.Collections;
 
 public class MySQLConnectionUtils {
 
@@ -45,6 +50,9 @@ public class MySQLConnectionUtils {
         } catch (ClassNotFoundException | SQLException exception) {
             errorMessage = exception.getMessage();
         }
+        EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getServiceName(),
+                           ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getOperationName(),
+                           Collections.singletonMap("result", String.valueOf(connected)));
         return new ConnectResult(connected, errorMessage, pingCost, serverVersion);
     }
 

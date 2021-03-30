@@ -51,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -114,7 +115,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.clean_staging_folder",
-        params = {"$stagingFolder.getName()"},
+        params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static void cleanUpStagingFolder(File stagingFolder) {
@@ -129,7 +130,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.list_function_modules",
-        params = {"$project.getName()"},
+        params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static Module[] listFunctionModules(Project project) {
@@ -154,7 +155,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "common|function.validate_project",
-        params = {"$project.getName()"},
+        params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static boolean isFunctionProject(Project project) {
@@ -173,7 +174,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.list_function_methods",
-        params = {"$model.getName"},
+        params = {"module.getName()"},
         type = AzureOperation.Type.TASK
     )
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
@@ -208,7 +209,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         name = "function.copy_settings",
-        params = {"$model.getName"},
+        params = {"localSettingJson", "stagingFolder"},
         type = AzureOperation.Type.TASK
     )
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
@@ -283,6 +284,14 @@ public class FunctionUtils {
 
     public static String getFuncPath() throws IOException, InterruptedException {
         return FunctionCliResolver.resolveFunc();
+    }
+
+    public static List<String> getFunctionBindingList(Map<String, FunctionConfiguration> configMap) {
+        return configMap.values().stream().flatMap(configuration -> configuration.getBindings().stream())
+                        .map(Binding::getType)
+                        .sorted()
+                        .distinct()
+                        .collect(Collectors.toList());
     }
 
     private static void writeFunctionJsonFile(File file, FunctionConfiguration config) throws IOException {

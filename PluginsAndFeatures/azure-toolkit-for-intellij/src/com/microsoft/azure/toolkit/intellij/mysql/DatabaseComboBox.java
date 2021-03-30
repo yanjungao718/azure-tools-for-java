@@ -61,7 +61,7 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
     @Override
     @AzureOperation(
         name = "mysql|database.list.server|subscription",
-        params = {"@server.name()", "@subscription.subscriptionId()"},
+        params = {"this.server.name()", "this.subscription.subscriptionId()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends DatabaseInner> loadItems() throws Exception {

@@ -40,6 +40,8 @@ public final class AzureIconSymbol {
 
         AzureIconSymbol OPEN_IN_PORTAL = fillInPath("Common/OpenInPortal.svg");
         AzureIconSymbol SHOW_PROPERTIES = fillInPath("Common/ShowProperties.svg");
+
+        AzureIconSymbol APACHE_SPARK_FAILURE_DEBUG = fillInPath("Common/ApacheSparkFailureDebug.svg");
     }
 
     public interface MySQL {
@@ -65,6 +67,8 @@ public final class AzureIconSymbol {
         AzureIconSymbol RUNNING_ON_LINUX = fillInPath("WebApp/WebAppRunningOnLinux.svg");
         AzureIconSymbol STOPPED_ON_LINUX = fillInPath("WebApp/WebAppStoppedOnLinux.svg");
         AzureIconSymbol UPDATING_ON_LINUX = fillInPath("WebApp/WebAppUpdatingOnLinux.svg");
+
+        AzureIconSymbol DEPLOY = fillInPath("WebApp/Deploy.svg");
     }
 
     public interface DeploymentSlot {
@@ -87,6 +91,9 @@ public final class AzureIconSymbol {
         AzureIconSymbol RUNNING = fillInPath("FunctionApp/FunctionAppRunning.svg");
         AzureIconSymbol STOPPED = fillInPath("FunctionApp/FunctionAppStopped.svg");
         AzureIconSymbol UPDATING = fillInPath("FunctionApp/FunctionAppUpdating.svg");
+
+        AzureIconSymbol RUN = fillInPath("FunctionApp/Run.svg");
+        AzureIconSymbol DEPLOY = fillInPath("FunctionApp/Deploy.svg");
     }
 
     public interface SpringCloud {
@@ -101,6 +108,9 @@ public final class AzureIconSymbol {
         AzureIconSymbol FAILED = fillInPath("SpringCloud/SpringCloudAppFailed.svg");
         AzureIconSymbol PENDING = fillInPath("SpringCloud/SpringCloudAppPending.svg");
         AzureIconSymbol UNKNOWN = fillInPath("SpringCloud/SpringCloudAppUnknown.svg");
+
+        AzureIconSymbol DEPLOY = fillInPath("SpringCloud/Deploy.svg");
+        AzureIconSymbol ADD_DEPENDENCY = fillInPath("SpringCloud/AddDependency.svg");
     }
 
     public interface ApacheSparkOnAzureSynapse {
@@ -154,6 +164,15 @@ public final class AzureIconSymbol {
     public interface SQLServerBigDataCluster {
 
         AzureIconSymbol MODULE = fillInPath("SQLServerBigDataCluster/SqlServerBigDataCluster.svg");
+    }
+
+    public interface DockerSupport {
+
+        AzureIconSymbol MODULE = fillInPath("DockerSupport/DockerSupport.svg");
+
+        AzureIconSymbol RUN = fillInPath("DockerSupport/Run.svg");
+        AzureIconSymbol PUSH_IMAGE = fillInPath("DockerSupport/PushImage.svg");
+        AzureIconSymbol RUN_ON_WEB_APP = fillInPath("DockerSupport/RunOnWebApp.svg");
     }
 
     public static AzureIconSymbol fromPath(String path) {

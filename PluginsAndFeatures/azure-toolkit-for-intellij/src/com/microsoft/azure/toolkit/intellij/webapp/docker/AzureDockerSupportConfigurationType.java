@@ -11,13 +11,13 @@ import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.dockerhost.DockerHostRunConfigurationFactory;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfigurationFactory;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.WebAppOnLinuxDeployConfigurationFactory;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
 
 public class AzureDockerSupportConfigurationType implements ConfigurationType {
-    private static final String ICON_PATH = "/icons/PublishWebAppOnLinux_16.png";
 
     public static AzureDockerSupportConfigurationType getInstance() {
         return ConfigurationTypeUtil.findConfigurationType(AzureDockerSupportConfigurationType.class);
@@ -35,7 +35,7 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
 
     @Override
     public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.DockerSupport.MODULE);
     }
 
     @NotNull

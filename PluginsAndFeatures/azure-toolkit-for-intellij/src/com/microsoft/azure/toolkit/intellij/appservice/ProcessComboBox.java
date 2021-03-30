@@ -34,7 +34,7 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @Override
     @AzureOperation(
         name = "appservice|flight_recorder.list.app",
-        params = {"@appService.name()"},
+        params = {"this.appService.name()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<ProcessInfo> loadItems() throws Exception {

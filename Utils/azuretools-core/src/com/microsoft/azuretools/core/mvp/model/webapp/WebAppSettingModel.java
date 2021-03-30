@@ -76,13 +76,14 @@ public class WebAppSettingModel {
                 result.putAll(properties);
             }
             result.put(TelemetryConstants.RUNTIME, os == OperatingSystem.LINUX ?
-                    "linux-" + getLinuxRuntime().toString() : "windows-" + getWebContainer());
+                    "linux-" + getLinuxRuntime().toString() : "windows-" + getWebContainer() + (jdkVersion == null ? "" : "-" + jdkVersion.toString()));
             result.put(TelemetryConstants.WEBAPP_DEPLOY_TO_SLOT, String.valueOf(isDeployToSlot()));
             result.put(TelemetryConstants.SUBSCRIPTIONID, getSubscriptionId());
             result.put(TelemetryConstants.CREATE_NEWWEBAPP, String.valueOf(isCreatingNew()));
             result.put(TelemetryConstants.CREATE_NEWASP, String.valueOf(isCreatingAppServicePlan()));
             result.put(TelemetryConstants.CREATE_NEWRG, String.valueOf(isCreatingResGrp()));
             result.put(TelemetryConstants.FILETYPE, WebAppUtils.getFileType(getTargetName()));
+            result.put(TelemetryConstants.PRICING_TIER, pricing);
         } catch (final Exception ignore) {
         }
         return result;
