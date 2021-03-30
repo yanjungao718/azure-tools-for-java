@@ -26,6 +26,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,10 +50,12 @@ public class CreateFunctionHandler {
     private static final String APP_INSIGHTS_INSTRUMENTATION_KEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
     private FunctionDeployModel ctx;
+    private Operation operation;
 
-    public CreateFunctionHandler(FunctionDeployModel ctx) {
+    public CreateFunctionHandler(FunctionDeployModel ctx, Operation operation) {
         Preconditions.checkNotNull(ctx);
         this.ctx = ctx;
+        this.operation = operation;
     }
 
     public FunctionApp execute() {
@@ -71,7 +74,7 @@ public class CreateFunctionHandler {
 
     @AzureOperation(
         name = "function.create_detail",
-        params = {"@ctx.getAppName()"},
+        params = {"this.ctx.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     private FunctionApp createFunctionApp() {
@@ -92,6 +95,7 @@ public class CreateFunctionHandler {
         withCreate.withAppSettings(appSettings);
 
         FunctionApp result = withCreate.create();
+        operation.trackProperty("pricingTier", ctx.getPricingTier());
         Log.prompt(message("function.create.hint.functionCreated", ctx.getAppName()));
         return result;
     }
@@ -108,11 +112,13 @@ public class CreateFunctionHandler {
 
     @AzureOperation(
         name = "function|ai.create",
-        params = {"@ctx.getAppName()"},
+        params = {"this.ctx.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     private Map<String, String> bindingApplicationInsights() {
-        if (StringUtils.isAllEmpty(ctx.getInsightsName(), ctx.getInstrumentationKey())) {
+        final boolean disableAppInsights = StringUtils.isAllEmpty(ctx.getInsightsName(), ctx.getInstrumentationKey());
+        operation.trackProperty("disableAppInsights", String.valueOf(disableAppInsights));
+        if (disableAppInsights) {
             return Collections.emptyMap();
         }
         String instrumentationKey = ctx.getInstrumentationKey();
@@ -198,7 +204,7 @@ public class CreateFunctionHandler {
 
     @AzureOperation(
         name = "function.get.rg",
-        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()"},
+        params = {"this.ctx.getAppName()", "this.ctx.getResourceGroup()"},
         type = AzureOperation.Type.TASK
     )
     private FunctionApp getFunctionApp() {
