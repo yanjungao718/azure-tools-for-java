@@ -10,14 +10,14 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType;
 
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
 
 public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
     private static final String FACTORY_NAME = "Web App for Containers";
-    private static final String ICON_PATH = "/icons/PublishWebAppOnLinux_16.png";
 
     public WebAppOnLinuxDeployConfigurationFactory(AzureDockerSupportConfigurationType configurationType) {
         super(configurationType);
@@ -42,6 +42,6 @@ public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactor
 
     @Override
     public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.DockerSupport.RUN_ON_WEB_APP);
     }
 }

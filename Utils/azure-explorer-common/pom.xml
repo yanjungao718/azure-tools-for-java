@@ -5,7 +5,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.50.0</version>
+        <version>3.51.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
@@ -40,10 +40,9 @@
         </testResources>
         <plugins>
             <plugin>
-                <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/aspectj-maven-plugin -->
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>com.nickwongdev</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.11</version>
+                <version>1.12.6</version>
                 <configuration>
                     <showWeaveInfo>false</showWeaveInfo>
                     <source>1.8</source>
@@ -205,14 +204,17 @@
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
+            <artifactId>powermock-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>1.7.0RC4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito2</artifactId>
-            <version>1.7.0RC4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

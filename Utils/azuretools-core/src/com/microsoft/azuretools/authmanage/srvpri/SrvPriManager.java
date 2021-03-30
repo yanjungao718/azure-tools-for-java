@@ -5,22 +5,6 @@
 
 package com.microsoft.azuretools.authmanage.srvpri;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.logging.Logger;
-
-import org.codehaus.jackson.map.ObjectMapper;
-
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -34,7 +18,31 @@ import com.microsoft.azuretools.authmanage.srvpri.step.RoleAssignmentStep;
 import com.microsoft.azuretools.authmanage.srvpri.step.ServicePrincipalStep;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
 import com.microsoft.azuretools.authmanage.srvpri.step.StepManager;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
+
+import lombok.SneakyThrows;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.logging.Logger;
+
+import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 /**
  * Created by vlashch on 8/16/16.
@@ -46,8 +54,10 @@ public class SrvPriManager {
     // app - sp (1-1)
     // sp - role (1-many)
 
-    private final static Logger LOGGER = Logger.getLogger(SrvPriManager.class.getName());
-    public static String createSp(AccessTokenAzureManager preAccessTokenAzureManager,
+    private static final Logger LOGGER = Logger.getLogger(SrvPriManager.class.getName());
+    private static final int RETRY_COUNT = 5;
+
+    public static String createSp(AzureManagerBase preAccessTokenAzureManager,
                                   String tenantId,
                                   List<String> subscriptionIds,
                                   String suffix,
@@ -55,7 +65,7 @@ public class SrvPriManager {
                                   String destinationFolder)
             throws IOException {
 
-        System.out.print(tenantId +": [");
+        System.out.print(tenantId + ": [");
         for (String sid : subscriptionIds) {
             System.out.print(sid + ", ");
         }
@@ -64,7 +74,7 @@ public class SrvPriManager {
         Path spDirPath = Paths.get(destinationFolder);
         if (spDirPath == null) {
             String baseDir = System.getProperty("user.home");
-            String dirName = "MSAzureAuhtFiles";
+            String dirName = "MSAzureAuthFiles";
             spDirPath = Paths.get(baseDir, dirName);
             if (!Files.exists(spDirPath)) {
                 Files.createDirectory(spDirPath);
@@ -110,7 +120,7 @@ public class SrvPriManager {
 
         String overallStatusText = "=== Overall status";
         // create a file artifact
-        if(sm.getParamMap().get("status").toString().equals("done")) {
+        if (sm.getParamMap().get("status").toString().equals("done")) {
             Path filePath = Paths.get(spDirPath.toString(), spFilename);;
 
             createArtifact(
@@ -120,15 +130,12 @@ public class SrvPriManager {
             );
 
             statusReporter.report(new Status("Waiting for service principal activation to complete...", null, null));
-            final int SLEEP_SEC_TO_PROPAGATE = 40;
-            try {
-                Thread.sleep(SLEEP_SEC_TO_PROPAGATE * 1000);
-            } catch (InterruptedException e) {
-                fileReporter.report("Interrupted sleep: " + e.getMessage());
-            }
-
             statusReporter.report(new Status("Checking auth file...", null, null));
-            checkArtifact(fileReporter, filePath);
+            try {
+                checkArtifact(fileReporter, filePath).block();
+            } catch (Throwable ex) {
+                throw new IllegalStateException("Failed to check cred file due to error:" + ex.getMessage());
+            }
 
             String successSidsResult = String.format("Succeeded for %d of %d subscriptions. ",
                     CommonParams.getResultSubscriptionIdList().size(),
@@ -166,7 +173,8 @@ public class SrvPriManager {
                 private boolean skipLineSeparator = false;
                 @Override
                 public void write(String str) throws IOException {
-                    System.out.println(str);
+                    // avoid to print key in SP
+                    // System.out.println(str);
                     if (str.startsWith("#")) {
                         skipLineSeparator = true;
                         return;
@@ -183,10 +191,10 @@ public class SrvPriManager {
             prop.setProperty("tenant", CommonParams.getTenantId());
             int i = 0;
             for (String subscriptionId : CommonParams.getResultSubscriptionIdList()) {
-                if (i==0) {
+                if (i == 0) {
                     prop.setProperty("subscription", subscriptionId);
                 } else {
-                    prop.setProperty("subscription"+i, subscriptionId);
+                    prop.setProperty("subscription" + i, subscriptionId);
                 }
                 i++;
             }
@@ -207,87 +215,59 @@ public class SrvPriManager {
         }
     }
 
-    private static void checkArtifact(Reporter<String> fileReporter, Path filePath) throws IOException {
+    private static Mono<Boolean> checkArtifact(Reporter<String> fileReporter, Path filePath) {
         // here we try to use the file to check it's ok with retry logic
         fileReporter.report("Checking cred file...");
-        final int RETRY_QNTY = 5;
-        final int SLEEP_SEC = 10;
-        int retry_count = 0;
-        File authFiel = new File(filePath.toString());
-        while (retry_count < RETRY_QNTY) {
-            try {
-                fileReporter.report("Checking: Azure.authenticate(authFile)...");
-                Azure.Authenticated azureAuthenticated = Azure.authenticate(authFiel);
-                fileReporter.report("Checking: azureAuthenticated.subscriptions().list()...");
-                azureAuthenticated.subscriptions().list();
-                fileReporter.report("Checking: azureAuthenticated.withDefaultSubscription()...");
-                Azure azure = azureAuthenticated.withDefaultSubscription();
-                fileReporter.report("Checking: resourceGroups().list()...");
-                azure.resourceGroups().list();
-                fileReporter.report("Done.");
-                break;
-            } catch (Throwable e) {
-                LOGGER.info("=== checkArtifact@SrvPriManager exception: " + e.getMessage());
-                //e.printStackTrace();
-                if (needToRetry(e)) {
-                    retry_count++;
-                    if ((retry_count >= RETRY_QNTY)) {
-                        fileReporter.report(String.format("Failed to check cred file -retry limit %s has reached, error: %s", RETRY_QNTY, e.getMessage()));
-                        throw e;
-                    }
-                    LOGGER.info(String.format("Failed %d/%d, will retry in %s seconds, error: %s", retry_count, RETRY_QNTY, SLEEP_SEC, e.getMessage()));
-                    try {
-                        Thread.sleep(SLEEP_SEC * 1000);
-                    } catch (InterruptedException e1) {
-                        fileReporter.report("Interrupted sleep: " + e.getMessage());
-                    }
-                } else {
-                    fileReporter.report(String.format("Failed to check cred file after %s retries, error", retry_count, e.getMessage()));
-                    throw e;
-                }
-            }
-        }
+
+        return retryOnError(RETRY_COUNT, Mono.fromCallable(() -> {
+            File authFile = new File(filePath.toString());
+            fileReporter.report("Checking: Azure.authenticate(authFile)...");
+            Azure.Authenticated azureAuthenticated = Azure.authenticate(authFile);
+            fileReporter.report("Checking: azureAuthenticated.subscriptions().list()...");
+            azureAuthenticated.subscriptions().list();
+            fileReporter.report("Checking: azureAuthenticated.withDefaultSubscription()...");
+            Azure azure = azureAuthenticated.withDefaultSubscription();
+            fileReporter.report("Checking: resourceGroups().list()...");
+            azure.resourceGroups().list();
+            fileReporter.report("Done.");
+            return true;
+        }), SrvPriManager::needToRetry);
+
     }
 
-    private static boolean needToRetry(Throwable e) throws IOException {
+    // TODO: move this to common-lib
+    private static <T> Mono<T> retryOnError(int retryCount, Mono<T> observable, Function<Throwable, Boolean> shouldRetryOnError) {
+        return observable
+                .retryWhen(Retry.withThrowable(flux -> flux.zipWith(Flux.range(1, retryCount + 1), (throwable, count) -> {
+                    if (count < retryCount && (shouldRetryOnError.apply(throwable))) {
+                        return count;
+                    } else {
+                        throw Exceptions.propagate(throwable);
+                    }
+                }).flatMap(i -> Mono.delay(Duration.ofSeconds(((long) i * 10))))));
+    }
+
+    @SneakyThrows
+    private static boolean needToRetry(Throwable e) {
         final String ERROR_LABEL = "\"error\":";
         final String ERROR_TEXT = "unauthorized_client";
         if (e instanceof com.microsoft.aad.adal4j.AuthenticationException) {
             LOGGER.info("=== needToRetry@SrvPriManager: AuthenticationException info: " + e.getMessage());
             ObjectMapper om = new ObjectMapper();
             AuthenticationError ae = om.readValue(e.getMessage(), AuthenticationError.class);
-            if (ae.error.equals(ERROR_TEXT)) {
-                return true;
-            }
+            return ae.error.equals(ERROR_TEXT);
         } else {
             LOGGER.info("=== needToRetry@SrvPriManager: Exception info: " + e.getMessage());
             // if we can't catch the exception by type - the one we are catching may be on a deep level of cause.
             // we are looking for an error text;
             String mes = e.getMessage();
             int i1 = mes.indexOf(ERROR_LABEL);
-            if (i1 >=0) {
+            if (i1 >= 0) {
                 String error = mes.substring(i1 + ERROR_LABEL.length());
-                if (error.contains(ERROR_TEXT)) {
-                    return true;
-                }
+                return error.contains(ERROR_TEXT);
             }
         }
 
         return false;
     }
-
-//    SrvPriData collectSrvPriData(UUID appId) {
-//        return new SrvPriData();
-//    }
-
-// ======== Private helpers ===============================
-
-
-//    private static void printSrvPri(String id) throws Throwable {
-//        String resp = GraphRestHelper.get( "servicePrincipals/" + id, null);
-//        if(resp != null) {
-//            ObjectMapper mapper = new ObjectMapper();
-//            ServicePrincipalRet sp = mapper.readValue(resp, ServicePrincipalRet.class);
-//        }
-//    }
 }

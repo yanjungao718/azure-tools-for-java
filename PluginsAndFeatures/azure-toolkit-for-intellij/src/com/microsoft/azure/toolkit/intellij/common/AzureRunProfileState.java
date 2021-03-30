@@ -19,9 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptio
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.RunProcessHandler;
@@ -29,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AzureRunProfileState<T> implements RunProfileState {
@@ -47,51 +44,27 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
-        Map<String, String> telemetryMap = new HashMap<>();
         final Operation operation = createOperation();
         Observable.fromCallable(
             () -> {
                 try {
-                    if (operation != null) {
-                        operation.start();
-                        EventUtil.logEvent(EventType.info, operation, telemetryMap);
-                    }
-                    return this.executeSteps(processHandler, telemetryMap);
+                    operation.start();
+                    return this.executeSteps(processHandler, operation);
                 } finally {
                     // Once the operation done, whether success or not, `setText` should not throw new exception
                     processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
                 }
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
-                    if (operation != null) {
-                        operation.complete();
-                    }
-                    this.sendTelemetry(telemetryMap, true, null);
+                    this.sendTelemetry(operation, null);
                     this.onSuccess(res, processHandler);
                 },
                 (err) -> {
                     err.printStackTrace();
-                    if (operation != null) {
-                        EventUtil.logError(operation, ErrorType.userError, new Exception(err.getMessage(), err),
-                                           telemetryMap, null);
-                        operation.complete();
-                    }
+                    this.sendTelemetry(operation, err);
                     this.onFail(err, processHandler);
-                    this.sendTelemetry(telemetryMap, false, err.getMessage());
                 });
         return new DefaultExecutionResult(consoleView, processHandler);
-    }
-
-    protected Operation createOperation() {
-        return null;
-    }
-
-    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
-        final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
-                                    String.format("Failed to %s", error.getMessage()) : error.getMessage();
-        processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
-        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
     }
 
     protected void setText(RunProcessHandler runProcessHandler, String text) {
@@ -100,24 +73,28 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         }
     }
 
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
-    }
-
-    private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
-        updateTelemetryMap(telemetryMap);
-        telemetryMap.put("Success", String.valueOf(success));
-        if (!success) {
-            telemetryMap.put("ErrorMsg", errorMsg);
+    private void sendTelemetry(Operation operation, Throwable exception) {
+        operation.trackProperties(getTelemetryMap());
+        if (exception != null) {
+            EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), null, null);
         }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action
-                , getDeployTarget(), "Deploy", telemetryMap);
+        operation.complete();
     }
 
-    protected abstract String getDeployTarget();
+    protected abstract T executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception;
 
-    protected abstract T executeSteps(@NotNull RunProcessHandler processHandler
-            , @NotNull Map<String, String> telemetryMap) throws Exception;
+    @NotNull
+    protected abstract Operation createOperation();
+
+    protected abstract Map<String, String> getTelemetryMap();
 
     protected abstract void onSuccess(T result, @NotNull RunProcessHandler processHandler);
+
+    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
+        final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
+                                    String.format("Failed to %s", error.getMessage()) : error.getMessage();
+        processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
+        processHandler.notifyComplete();
+        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
+    }
 }

@@ -97,7 +97,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     @Override
     @AzureOperation(
         name = "appservice|plan.list.subscription|region|os",
-        params = {"@subscription.subscriptionId()", "@region.name()", "@os.name()"},
+        params = {"this.subscription.subscriptionId()", "this.region.name()", "this.os.name()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AppServicePlan> loadItems() throws Exception {

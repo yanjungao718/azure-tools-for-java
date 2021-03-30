@@ -19,7 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptio
 import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -101,7 +101,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
             DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
             popupGroup.add(am.getAction("AzurePopupGroup"));
-            loadWebApps();
         }
         try {
             PlatformDependent.isAndroid();
@@ -127,15 +126,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         } catch (IOException ex) {
             LOG.error("initAuthManage()", ex);
         }
-    }
-
-    private void loadWebApps() {
-        System.out.println("AzurePlugin@loadWebApps");
-        Runnable forceCleanWebAppsAction = () -> {
-            AzureWebAppMvpModel.getInstance().clearWebAppsCache();
-        };
-
-        AuthMethodManager.getInstance().addSignOutEventListener(forceCleanWebAppsAction);
     }
 
     private void initLoggerFileHandler() {

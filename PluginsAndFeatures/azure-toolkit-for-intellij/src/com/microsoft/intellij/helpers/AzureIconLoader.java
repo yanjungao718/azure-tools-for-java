@@ -31,7 +31,6 @@ public class AzureIconLoader {
 
     private static void loadIDEIcons() {
         loadIcon(AzureIconSymbol.Common.REFRESH, AllIcons.Actions.Refresh);
-        loadIcon(AzureIconSymbol.Common.CREATE, AllIcons.Welcome.CreateNewProject);
         loadIcon(AzureIconSymbol.Common.DELETE, AllIcons.Actions.GC);
         loadIcon(AzureIconSymbol.Common.RESTART, AllIcons.Actions.Restart);
         loadIcon(AzureIconSymbol.Common.SHOW_PROPERTIES, AllIcons.Actions.Properties);
