@@ -184,7 +184,6 @@ public class TelemetryConstants {
     public static final String UPDATE_A_CLUSTER = "update-a-cluster";
     public static final String SHOW_WHATS_NEW = "show-whats-new";
     public static final String UNHANDLED_EXCEPTION = "unhandled-exception";
-
     public static final String LIST_FILE = "list-file";
     public static final String REFRESH_FILE = "refresh-file";
     public static final String OPEN_FILE = "open-file";
