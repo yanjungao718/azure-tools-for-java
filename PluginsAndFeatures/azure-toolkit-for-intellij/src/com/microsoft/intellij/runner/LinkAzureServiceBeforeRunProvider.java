@@ -61,6 +61,11 @@ public class LinkAzureServiceBeforeRunProvider extends BeforeRunTaskProvider<Lin
         return DESCRIPTION;
     }
 
+    @Override
+    public @Nullable Icon getTaskIcon(LinkAzureServiceBeforeRunTask task) {
+        return AzureIconLoader.loadIcon(AzureIconSymbol.Common.AZURE);
+    }
+
     @Nullable
     @Override
     public Icon getIcon() {
