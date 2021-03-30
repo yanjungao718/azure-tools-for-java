@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AzureRunProfileState<T> implements RunProfileState {
@@ -45,24 +44,24 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
-        Map<String, String> telemetryMap = new HashMap<>();
         final Operation operation = createOperation();
         Observable.fromCallable(
             () -> {
                 try {
-                    return this.executeSteps(processHandler, telemetryMap);
+                    operation.start();
+                    return this.executeSteps(processHandler, operation);
                 } finally {
                     // Once the operation done, whether success or not, `setText` should not throw new exception
                     processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
                 }
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
-                    this.sendTelemetry(operation, telemetryMap, null);
+                    this.sendTelemetry(operation, null);
                     this.onSuccess(res, processHandler);
                 },
                 (err) -> {
                     err.printStackTrace();
-                    this.sendTelemetry(operation, telemetryMap, err);
+                    this.sendTelemetry(operation, err);
                     this.onFail(err, processHandler);
                 });
         return new DefaultExecutionResult(consoleView, processHandler);
@@ -74,22 +73,20 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         }
     }
 
-    private void sendTelemetry(Operation operation, @NotNull Map<String, String> telemetryMap, Throwable exception) {
-        updateTelemetryMap(telemetryMap);
-        operation.trackProperties(telemetryMap);
+    private void sendTelemetry(Operation operation, Throwable exception) {
+        operation.trackProperties(getTelemetryMap());
         if (exception != null) {
-            EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), telemetryMap, null);
+            EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), null, null);
         }
         operation.complete();
     }
 
-    protected abstract T executeSteps(@NotNull RunProcessHandler processHandler
-        , @NotNull Map<String, String> telemetryMap) throws Exception;
+    protected abstract T executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception;
 
     @NotNull
     protected abstract Operation createOperation();
 
-    protected abstract void updateTelemetryMap(@NotNull Map<String, String> telemetryMap);
+    protected abstract Map<String, String> getTelemetryMap();
 
     protected abstract void onSuccess(T result, @NotNull RunProcessHandler processHandler);
 

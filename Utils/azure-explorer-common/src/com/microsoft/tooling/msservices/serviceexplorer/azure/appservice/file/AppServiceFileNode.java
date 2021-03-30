@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
+import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
@@ -14,7 +15,9 @@ import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -62,17 +65,19 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
     @Override
     @AzureOperation(name = "appservice|file.refresh", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
-            return;
-        }
-        this.fileService.getFilesInDirectory(this.file.getPath()).stream()
-                        .map(file -> new AppServiceFileNode(file, this, fileService))
-                        .forEach(this::addChildNode);
+        executeWithTelemetryWrapper(TelemetryConstants.REFRESH_FILE, () -> {
+            if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
+                return;
+            }
+            this.fileService.getFilesInDirectory(this.file.getPath()).stream()
+                    .map(file -> new AppServiceFileNode(file, this, fileService))
+                    .forEach(this::addChildNode);
+        });
     }
 
     @AzureOperation(name = "appservice|file.open", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
-        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+        executeWithTelemetryWrapper(TelemetryConstants.OPEN_FILE, () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context));
     }
 
     @Override
@@ -106,7 +111,21 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
     }
 
     @Override
+    public String getServiceName() {
+        return file.getApp() instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
+    }
+
+    @Override
     public Map<String, String> toProperties() {
         return Collections.singletonMap(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(file.getApp().id()));
     }
+
+    // todo: replace with AzureOperation when custom properties is supported for AzureOperation
+    private void executeWithTelemetryWrapper(final String operationName, Runnable runnable) {
+        EventUtil.executeWithLog(getServiceName(), operationName, operation -> {
+            operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(file.getApp().id()));
+            runnable.run();
+        });
+    }
+
 }

@@ -34,7 +34,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
@@ -167,7 +169,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-        EventUtil.logEvent(EventType.info, ACCOUNT, SELECT_SUBSCRIPTIONS, null);
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         int rc = model.getRowCount();
         int unselectedCount = 0;
@@ -189,6 +190,11 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             boolean selected = (boolean) model.getValueAt(ri, CHECKBOX_COLUMN);
             this.sdl.get(ri).setSelected(selected);
         }
+
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("subsCount", String.valueOf(rc));
+        properties.put("selectedSubsCount", String.valueOf(rc - unselectedCount));
+        EventUtil.logEvent(EventType.info, ACCOUNT, SELECT_SUBSCRIPTIONS, null);
         super.doOKAction();
     }
 

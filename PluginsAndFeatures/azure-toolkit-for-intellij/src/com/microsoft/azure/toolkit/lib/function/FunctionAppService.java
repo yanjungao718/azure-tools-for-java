@@ -6,10 +6,9 @@ package com.microsoft.azure.toolkit.lib.function;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.function.CreateFunctionHandler;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_APP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
@@ -24,15 +23,13 @@ public class FunctionAppService {
     }
 
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {
-        final Operation operation = TelemetryManager.createOperation(FUNCTION, CREATE_FUNCTION_APP);
-        try {
-            operation.start();
+        return EventUtil.executeWithLog(FUNCTION, CREATE_FUNCTION_APP, operation -> {
             final FunctionDeployModel functionDeployModel = new FunctionDeployModel();
             functionDeployModel.saveModel(new FunctionAppComboBoxModel(config));
-            final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployModel);
+            operation.trackProperties(functionDeployModel.getTelemetryProperties());
+
+            final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployModel, operation);
             return createFunctionHandler.execute();
-        } finally {
-            operation.complete();
-        }
+        });
     }
 }

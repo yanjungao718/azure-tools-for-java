@@ -8,8 +8,10 @@ package com.microsoft.azuretools.core.mvp.model.function;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
+import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
+import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -17,21 +19,14 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AppServiceUtils;
-import rx.Observable;
-import rx.schedulers.Schedulers;
+import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AzureFunctionMvpModel {
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
-
-    private final Map<String, List<ResourceEx<FunctionApp>>> subscriptionIdToFunctionApps;
-
-    private AzureFunctionMvpModel() {
-        subscriptionIdToFunctionApps = new ConcurrentHashMap<>();
-    }
+    public static final String SUBSCRIPTION_FUNCTIONS = "subscription-functions";
 
     public static AzureFunctionMvpModel getInstance() {
         return SingletonHolder.INSTANCE;
@@ -67,9 +62,9 @@ public class AzureFunctionMvpModel {
         params = {"nameFromResourceId(appId)", "sid"},
         type = AzureOperation.Type.SERVICE
     )
+    @CacheEvict(cacheName = SUBSCRIPTION_FUNCTIONS, key = "$sid")
     public void deleteFunction(String sid, String appId) {
         getFunctionAppsClient(sid).deleteById(appId);
-        subscriptionIdToFunctionApps.remove(sid);
     }
 
     @AzureOperation(
@@ -131,28 +126,29 @@ public class AzureFunctionMvpModel {
     /**
      * List all the Function Apps in selected subscriptions.
      *
-     * @param forceReload flag indicating whether force to fetch latest data from server
+     * @param force flag indicating whether force to fetch latest data from server
      * @return list of Function App
      */
     @AzureOperation(
         name = "function.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean forceReload) {
-        final List<ResourceEx<FunctionApp>> functions = new ArrayList<>();
-        List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (subs.size() == 0) {
-            return functions;
-        }
-        Observable.from(subs).flatMap((sd) ->
-                Observable.create((subscriber) -> {
-                    List<ResourceEx<FunctionApp>> functionList = listFunctionsInSubscription(sd.subscriptionId(), forceReload);
-                    synchronized (functions) {
-                        functions.addAll(functionList);
-                    }
-                    subscriber.onCompleted();
-                }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
-        return functions;
+    public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean... force) {
+        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listFunctionsInSubscription(sd.subscriptionId(), force).stream())
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    @AzureOperation(
+        name = "function.list.java|subscription|selected",
+        type = AzureOperation.Type.SERVICE
+    )
+    @Preload
+    public List<ResourceEx<FunctionApp>> listJavaFunctionApps(final boolean... force) {
+        return this.listAllFunctions(force).parallelStream()
+            .filter(app -> WebAppUtils.isJavaWebApp(app.getResource()))
+            .collect(Collectors.toList());
     }
 
     @AzureOperation(
@@ -239,20 +235,14 @@ public class AzureFunctionMvpModel {
         params = {"subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
-    private List<ResourceEx<FunctionApp>> listFunctionsInSubscription(final String subscriptionId, final boolean forceReload) {
-        if (!forceReload && subscriptionIdToFunctionApps.get(subscriptionId) != null) {
-            return subscriptionIdToFunctionApps.get(subscriptionId);
-        }
-
+    @Cacheable(cacheName = "subscription-functions", key = "$subscriptionId", condition = "!(force&&force[0])")
+    private List<ResourceEx<FunctionApp>> listFunctionsInSubscription(final String subscriptionId, final boolean... force) {
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-        List<ResourceEx<FunctionApp>> functions = azure.appServices().functionApps()
+        return azure.appServices().functionApps()
                 .inner().list().stream().filter(inner -> inner.kind() != null && Arrays.asList(inner.kind().split(",")).contains("functionapp"))
                 .map(inner -> new FunctionAppWrapper(subscriptionId, inner))
                 .map(app -> new ResourceEx<FunctionApp>(app, subscriptionId))
                 .collect(Collectors.toList());
-        subscriptionIdToFunctionApps.put(subscriptionId, functions);
-
-        return functions;
     }
 
     private static FunctionApps getFunctionAppsClient(String sid) {
