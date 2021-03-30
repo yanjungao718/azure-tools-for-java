@@ -1,6 +1,21 @@
 <!-- Version: 3.50.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.51.0
+### Added
+- Add support for IntelliJ 2021.1 EAP
+- Add Azure SDK reference book for spring
+
+### Changed
+- Improve resource list performance with cache and preload
+
+### Fixed
+- [#5008](https://github.com/microsoft/azure-tools-for-java/issues/5008) IndexOutOfBoundsException while create MySQL connection
+- [PR #4987](https://github.com/microsoft/azure-tools-for-java/pull/4987) InvalidParameterException occurs when close a streaming log
+- [PR #4987](https://github.com/microsoft/azure-tools-for-java/pull/4987) Failed when select file to deploy to Azure Web App 
+- [PR #5014](https://github.com/microsoft/azure-tools-for-java/pull/5014) Failed to create MySQL instance as resource provider is not registered 
+- [PR #5055](https://github.com/microsoft/azure-tools-for-java/pull/5055) Can't deploy to Azure Web App when there is "Connect Azure Resource" in before launch
+
 ## 3.50.0
 
 ### Added
