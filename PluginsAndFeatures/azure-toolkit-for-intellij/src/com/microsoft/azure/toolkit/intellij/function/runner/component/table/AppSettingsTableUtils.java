@@ -13,6 +13,7 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionsConstants;
 import com.microsoft.intellij.util.PluginUtil;
@@ -86,6 +87,7 @@ public class AppSettingsTableUtils {
 
         final AnActionButton importButton = new AnActionButton(message("common.import"), AllIcons.ToolbarDecorator.Import) {
             @Override
+            @AzureOperation(name = "function.import_app_settings", type = AzureOperation.Type.TASK)
             public void actionPerformed(AnActionEvent anActionEvent) {
                 final ImportAppSettingsDialog importAppSettingsDialog = new ImportAppSettingsDialog(appSettingsTable.getLocalSettingsPath());
                 importAppSettingsDialog.addWindowListener(new WindowAdapter() {

@@ -11,6 +11,7 @@ import java.util.Map;
 public class TelemetryConstants {
 
     // production name
+    public static final String APP_SERVICE = "appservice";
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
     public static final String SPRING_CLOUD = "springcloud";
@@ -98,6 +99,8 @@ public class TelemetryConstants {
     public static final String BROWSE_DOCKER_CONTAINER = "browser-docker-container";
     public static final String DELETE_DOCKER_CONTAINER = "delete-docker-container";
     public static final String DELETE_DOCKER_IMAGE = "delete-docker-image";
+    public static final String GET_PUBLISH_FILE = "get-publish-file";
+    public static final String SAVE_APP_SERVICE = "save-appservice";
     public static final String DEPLOY_WEBAPP_DOCKERLOCAL = "deploy-webapp-dockerlocal";
     public static final String DEPLOY_WEBAPP_DOCKERHOST = "deploy-webapp-dockerhost";
     public static final String DEPLOY_WEBAPP_CONTAINER = "deploy-webapp-container";
@@ -181,6 +184,9 @@ public class TelemetryConstants {
     public static final String UPDATE_A_CLUSTER = "update-a-cluster";
     public static final String SHOW_WHATS_NEW = "show-whats-new";
     public static final String UNHANDLED_EXCEPTION = "unhandled-exception";
+    public static final String LIST_FILE = "list-file";
+    public static final String REFRESH_FILE = "refresh-file";
+    public static final String OPEN_FILE = "open-file";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
@@ -194,6 +200,8 @@ public class TelemetryConstants {
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
     public static final String AZURE_ENVIRONMENT = "azureEnvironment";
+    public static final String PRICING_TIER = "pricingTier";
+    public static final String TRIGGER_TYPE = "triggerType";
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();

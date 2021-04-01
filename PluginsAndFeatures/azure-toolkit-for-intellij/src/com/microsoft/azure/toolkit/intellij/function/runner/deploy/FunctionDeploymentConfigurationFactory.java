@@ -9,7 +9,8 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -17,7 +18,6 @@ import javax.swing.Icon;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionDeploymentConfigurationFactory extends ConfigurationFactory {
-    private static final String ICON_PATH = "/icons/azure-functions-deploy.png";
 
     public FunctionDeploymentConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);
@@ -41,6 +41,6 @@ public class FunctionDeploymentConfigurationFactory extends ConfigurationFactory
 
     @Override
     public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.DEPLOY);
     }
 }

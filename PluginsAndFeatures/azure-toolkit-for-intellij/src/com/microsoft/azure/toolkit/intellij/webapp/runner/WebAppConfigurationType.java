@@ -9,7 +9,8 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfigurationFactory;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -18,7 +19,6 @@ public class WebAppConfigurationType implements ConfigurationType {
 
     private static final String ID = "com.microsoft.intellij.run.configuration.WebAppConfigurationType";
     private static final String DISPLAY_NAME = "Azure Web App";
-    private static final String ICON_PATH = "/icons/PublishWebApp_16.png";
 
     public static WebAppConfigurationType getInstance() {
         return ConfigurationTypeUtil.findConfigurationType(WebAppConfigurationType.class);
@@ -36,7 +36,7 @@ public class WebAppConfigurationType implements ConfigurationType {
 
     @Override
     public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.WebApp.DEPLOY);
     }
 
     @NotNull
