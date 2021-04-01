@@ -75,11 +75,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         // be of URI schema which starts with "https://". Then job submission will fail with error like
         // "Server returned HTTP response code: 401 for URL: https://accountName.dfs.core.windows.net/fs0/Reference.jar"
         // Therefore, we need to transform the Gen2 "https" URI to "abfs" url to avoid the error.
-        final SparkSubmissionParameter submissionParameter = submitModel.getSubmissionParameter();
-        submissionParameter.setReferencedJars(submissionParameter.getReferencedJars().stream()
+        final SparkSubmissionParameter newParameter = SparkSubmissionParameter.copyOf(submitModel.getSubmissionParameter());
+        newParameter.setReferencedJars(newParameter.getReferencedJars().stream()
                                                    .map(this::transformToGen2Uri)
                                                    .collect(Collectors.toList()));
-        submissionParameter.setReferencedFiles(submissionParameter.getReferencedFiles().stream()
+        newParameter.setReferencedFiles(newParameter.getReferencedFiles().stream()
                                                     .map(this::transformToGen2Uri)
                                                     .collect(Collectors.toList()));
 
@@ -88,12 +88,12 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             try {
                 final WasbUri fsRoot = WasbUri.parse(submitModel.getJobUploadStorageModel().getUploadPath());
                 final String storageKey = submitModel.getJobUploadStorageModel().getStorageKey();
-                final Object existingConfigEntry = submissionParameter.getJobConfig().get(SparkSubmissionParameter.Conf);
+                final Object existingConfigEntry = newParameter.getJobConfig().get(SparkSubmissionParameter.Conf);
                 final SparkConfigures wrappedConfig = existingConfigEntry instanceof Map
                                                       ? new SparkConfigures(existingConfigEntry)
                                                       : new SparkConfigures();
-                wrappedConfig.put("spark.hadoop." + fsRoot.getHadoopBlobFsPropertyKey(), storageKey);
-                submissionParameter.getJobConfig().put(SparkSubmissionParameter.Conf, wrappedConfig);
+                wrappedConfig.put(fsRoot.getHadoopBlobFsPropertyKey(), storageKey);
+                newParameter.updateJobConfig(SparkSubmissionParameter.Conf, wrappedConfig);
             } catch (final UnknownFormatConversionException error) {
                 final String errorHint = "Azure blob storage uploading path is not in correct format";
                 log().warn(String.format("%s. Uploading Path: %s. Error message: %s. Stacktrace:\n%s",
@@ -108,7 +108,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             }
         }
 
-        return submissionParameter;
+        return newParameter;
     }
 
     @Override
