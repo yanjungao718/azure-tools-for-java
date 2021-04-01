@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppBasePropertyView;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
@@ -20,15 +21,15 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyView";
 
     public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String webAppId) {
-        final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId);
+                                                @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+        final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
 
-    protected FunctionAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        super(project, sid, resId, null);
+    protected FunctionAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId, @NotNull final VirtualFile virtualFile) {
+        super(project, sid, resId, null, virtualFile);
     }
 
     @Override

@@ -18,6 +18,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -97,7 +99,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private AnActionButton btnEdit;
 
     protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid,
-                                     @NotNull String resId, @Nullable String slotName) {
+                                     @NotNull String resId, @Nullable String slotName, @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.id = getId();
         this.presenter = createPresenter();
         this.presenter.onAttachView(this);
@@ -120,19 +123,21 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         btnGetPublishFile.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnGetPublishFile", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
-                FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
+                EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.GET_PUBLISH_FILE, operation -> {
+                    FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
                         false /*chooseFiles*/,
                         true /*chooseFolders*/,
                         false /*chooseJars*/,
                         false /*chooseJarsAsFiles*/,
                         false /*chooseJarContents*/,
                         false /*chooseMultiple*/
-                );
-                fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
-                final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
-                if (file != null) {
-                    presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, slotName, file.getPath());
-                }
+                    );
+                    fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
+                    final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
+                    if (file != null) {
+                        presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, slotName, file.getPath());
+                    }
+                });
             }
         });
 
@@ -151,8 +156,10 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         btnSave.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSave", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
-                setBtnEnableStatus(false);
-                presenter.onUpdateWebAppProperty(sid, resId, slotName, cachedAppSettings, editedAppSettings);
+                EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.SAVE_APP_SERVICE, operation -> {
+                    setBtnEnableStatus(false);
+                    presenter.onUpdateWebAppProperty(sid, resId, slotName, cachedAppSettings, editedAppSettings);
+                });
             }
         });
 

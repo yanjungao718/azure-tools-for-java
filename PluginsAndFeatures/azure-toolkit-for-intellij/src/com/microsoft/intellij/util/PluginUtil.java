@@ -155,7 +155,7 @@ public class PluginUtil {
     }
 
     public static Icon getIcon(String iconPath) {
-        return IconLoader.getIcon(iconPath);
+        return IconLoader.getIcon(iconPath, PluginUtil.class);
     }
 
     public static void dialogShaker(ValidationInfo info, DialogWrapper dialogWrapper) {

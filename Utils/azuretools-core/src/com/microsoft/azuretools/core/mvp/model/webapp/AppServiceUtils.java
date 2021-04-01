@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 public class AppServiceUtils {
     @AzureOperation(
         name = "function.get_publishing_profile",
-        params = {"$webAppBase.name()"},
+        params = {"webAppBase.name()"},
         type = AzureOperation.Type.TASK
     )
     public static boolean getPublishingProfileXmlWithSecrets(WebAppBase webAppBase, String filePath) {

@@ -26,7 +26,7 @@ public class ContainerRegistryPropertyViewProvider implements FileEditorProvider
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        return new ContainerRegistryPropertyView(project);
+        return new ContainerRegistryPropertyView(project, virtualFile);
     }
 
     @NotNull

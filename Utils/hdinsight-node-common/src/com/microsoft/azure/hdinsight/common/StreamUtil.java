@@ -88,18 +88,7 @@ public class StreamUtil {
         return file;
     }
 
-    public static ImageIcon getImageResourceFile(String resourcePath) {
-        URL url = classLoader.getResource(resourcePath);
-
-        if(url != null) {
-            return new ImageIcon(url);
-        } else {
-            return null;
-        }
-    }
-
     private static StreamUtil streamUtil = new StreamUtil();
-    private static ClassLoader classLoader = streamUtil.getClass().getClassLoader();
     private static final String SPARK_SUBMISSION_FOLDER = "SparkSubmission";
 
     public static String uploadArtifactToADLS(@NotNull File localFile, IHDIStorageAccount storageAccount, @NotNull String uploadFolderPath) throws Exception {

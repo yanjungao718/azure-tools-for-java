@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.project.Project;
@@ -18,15 +19,15 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
      * Initialize the Web App Property View and return it.
      */
     public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String webAppId) {
-        WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId);
+                                                @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+        WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
     private WebAppPropertyView(@NotNull final Project project, @NotNull final String sid,
-                               @NotNull final String webAppId) {
-        super(project, sid, webAppId, null);
+                               @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+        super(project, sid, webAppId, null, virtualFile);
     }
 
     @Override

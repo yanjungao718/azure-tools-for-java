@@ -5,14 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.properties;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorPolicy;
-import com.intellij.openapi.fileEditor.FileEditorProvider;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.JBMenuItem;
 import com.intellij.openapi.ui.JBPopupMenu;
@@ -22,18 +15,16 @@ import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.management.appplatform.v2020_07_01.AppResourceProperties;
-import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceProperties;
-import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceStatus;
-import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentSettings;
-import com.microsoft.azure.management.appplatform.v2020_07_01.PersistentDisk;
-import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
+import com.microsoft.azure.management.appplatform.v2020_07_01.*;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogManager;
+import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -42,8 +33,6 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudMonitorUtil;
@@ -73,7 +62,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -147,15 +135,9 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private DefaultTableModel instancesTableModel;
     private final Map<JComponent, Border> borderMap = new HashMap<>();
     private final Disposable rxSubscription;
-    private static LoadingCache<String, String> testKeyCache = CacheBuilder.newBuilder()
-                                                                           .expireAfterWrite(10, TimeUnit.MINUTES)
-                                                                           .build(new CacheLoader<String, String>() {
-                                                                               public String load(String key) throws IOException {
-                                                                                   return AzureSpringCloudMvpModel.getPrimaryTestEndpoint(key);
-                                                                               }
-                                                                           });
 
-    public SpringCloudAppPropertiesEditor(Project project, String clusterId, String appId) {
+    public SpringCloudAppPropertiesEditor(Project project, String clusterId, String appId, @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.project = project;
         this.clusterId = clusterId;
         this.appId = appId;
@@ -358,6 +340,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             final String message = String.format("%s app (%s)", actionName, this.appName);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, message, false, () -> {
                 EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
+                    logOperation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(clusterId));
                     action.accept(changes);
                 });
                 refreshData();
@@ -556,7 +539,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             }
             DeploymentResourceInner deploy = StringUtils.isNotEmpty(app.properties().activeDeploymentName())
                                              ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
-            testKeyCache.refresh(clusterId);
+            getTestKey(clusterId, true);
             return Pair.of(app, deploy);
         }).subscribeOn(Schedulers.io()).subscribe(pair -> AzureTaskManager.getInstance().runLater(
             () -> this.prepareViewModel(pair.getLeft(), pair.getRight())));
@@ -742,12 +725,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.appResourceInner = app;
             this.deploymentResourceInner = deploy;
             SpringCloudAppViewModel targetViewModel = new SpringCloudAppViewModel();
-            try {
-                String clusterKey = testKeyCache.get(clusterId);
-                targetViewModel.setTestUrl(AzureSpringCloudMvpModel.getTestEndpointForApp(clusterKey, app.name()));
-            } catch (ExecutionException e) {
-                targetViewModel.setTestUrl(e.getMessage());
-            }
+            String clusterKey = getTestKey(clusterId);
+            targetViewModel.setTestUrl(AzureSpringCloudMvpModel.getTestEndpointForApp(clusterKey, app.name()));
 
             // persistent storage
             if (app.properties().persistentDisk() != null && app.properties().persistentDisk().sizeInGB().intValue() > 0) {
@@ -814,6 +793,11 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                 PluginUtil.showErrorNotificationProject(project, "Cannot binding data to Spring Cloud property view.", e.getMessage());
             });
         }
+    }
+
+    @Cacheable(value = "springcloud|cluster.testEndpoint", key = "$clusterId", condition = "!(force&&force[0])")
+    private String getTestKey(String clusterId, boolean... force) {
+        return AzureSpringCloudMvpModel.getPrimaryTestEndpoint(clusterId);
     }
 
     private void updateModel(SpringCloudAppViewModel newModel) throws AzureExecutionException {
