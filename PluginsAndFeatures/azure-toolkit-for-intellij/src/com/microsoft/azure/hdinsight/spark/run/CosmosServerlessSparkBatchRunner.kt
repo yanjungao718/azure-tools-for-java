@@ -42,8 +42,8 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         return "CosmosServerlessSparkBatchRun"
     }
 
-    override fun updateStorageConfigForSubmissionParameter(submitModel: SparkSubmitModel): SparkSubmissionParameter {
-        return CreateSparkBatchJobParameters.copyOf(submitModel.submissionParameter as CreateSparkBatchJobParameters).apply {
+    override fun prepareSubmissionParameterWithTransformedGen2Uri(parameter: SparkSubmissionParameter): SparkSubmissionParameter {
+        return CreateSparkBatchJobParameters.copyOf(parameter as CreateSparkBatchJobParameters).apply {
             referencedJars = this.referencedJars.stream()
                 .map { transformToGen2Uri(it) }
                 .collect(Collectors.toList())
@@ -70,7 +70,7 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         CosmosServerlessSparkBatchJob(
             account,
             AdlsDeploy(storageRootPath, accessToken),
-            updateStorageConfigForSubmissionParameter(submitModel) as CreateSparkBatchJobParameters,
+            prepareSubmissionParameterWithTransformedGen2Uri(submissionParameter) as CreateSparkBatchJobParameters,
             SparkBatchSubmission.getInstance())
     }
 }
