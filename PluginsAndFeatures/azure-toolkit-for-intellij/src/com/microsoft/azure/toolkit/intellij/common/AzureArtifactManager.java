@@ -116,9 +116,14 @@ public class AzureArtifactManager {
         }
     }
 
-    public boolean equalsAzureArtifactIdentifier(AzureArtifact artifact1, AzureArtifact artifact2) {
+    public boolean equalsAzureArtifact(AzureArtifact artifact1, AzureArtifact artifact2) {
         if (Objects.isNull(artifact1) || Objects.isNull(artifact2)) {
             return artifact1 == artifact2;
+        }
+        if (artifact1.getType() != artifact2.getType()) {
+            // Artifact with different type may have same identifier, for instance, File and Artifact, both of them use file path as identifier
+            // todo: re-design identifier, make it include the artifact type info
+            return false;
         }
         return StringUtils.equals(getArtifactIdentifier(artifact1), getArtifactIdentifier(artifact2));
     }
