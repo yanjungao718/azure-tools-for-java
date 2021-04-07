@@ -1,4 +1,4 @@
-<!-- Version: 3.50.0 -->
+<!-- Version: 3.51.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 ## 3.51.0
