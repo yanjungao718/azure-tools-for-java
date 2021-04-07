@@ -14,7 +14,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ModuleComboBox;
 import com.microsoft.azure.toolkit.intellij.link.LinkConfig;
@@ -81,25 +81,13 @@ public class BasicLinkMySQLPanel<T extends LinkConfig<MySQLResourceConfig, Modul
         envPrefixTextField.setPreferredSize(lastColumnSize);
         envPrefixTextField.setMaximumSize(lastColumnSize);
         envPrefixTextField.setSize(lastColumnSize);
-        T config = supplier.get();
+        final T config = supplier.get();
         Optional.ofNullable(config.getResource().getSubscription())
-                .ifPresent((subscription -> {
-                    this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscription.subscriptionId(), Subscription::subscriptionId));
-                    subscriptionComboBox.setForceDisable(true);
-                    subscriptionComboBox.setEditable(false);
-                }));
+                .ifPresent((s -> this.subscriptionComboBox.setValue(new ItemReference<>(s.subscriptionId(), Subscription::subscriptionId), true)));
         Optional.ofNullable(config.getResource().getServer())
-                .ifPresent((server -> {
-                    this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(server.fullyQualifiedDomainName(), Server::fullyQualifiedDomainName));
-                    serverComboBox.setForceDisable(true);
-                    serverComboBox.setEditable(false);
-                }));
+                .ifPresent((s -> this.serverComboBox.setValue(new ItemReference<>(s.fullyQualifiedDomainName(), Server::fullyQualifiedDomainName), true)));
         Optional.ofNullable(config.getModule().getModule())
-                .ifPresent((module -> {
-                    this.moduleComboBox.setValue(new AzureComboBox.ItemReference<>(module.getName(), Module::getName));
-                    moduleComboBox.setForceDisable(true);
-                    moduleComboBox.setEditable(false);
-                }));
+                .ifPresent((m -> this.moduleComboBox.setValue(new ItemReference<>(m.getName(), Module::getName), true)));
         if (Objects.nonNull(config.getResource().getPasswordConfig())
                 && Objects.nonNull(config.getResource().getPasswordConfig().getPasswordSaveType())) {
             passwordSaveComboBox.setValue(config.getResource().getPasswordConfig().getPasswordSaveType());
