@@ -3,6 +3,8 @@
 
 ## 3.51.0
 ### Added
+<img src="https://user-images.githubusercontent.com/69189193/113823126-da73ea00-97b0-11eb-9b69-958f5d5a2b00.gif" width="840" height="525" />
+
 - Add support for IntelliJ 2021.1 EAP
 - Add Azure SDK reference book for spring
 
