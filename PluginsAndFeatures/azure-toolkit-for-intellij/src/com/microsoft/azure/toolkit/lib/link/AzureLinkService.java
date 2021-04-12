@@ -44,18 +44,18 @@ public class AzureLinkService {
     }
 
     public void link(Project project, LinkConfig<MySQLResourceConfig, ModuleResourceConfig> linkComposite, boolean storageResource) {
-        ModulePO modulePO = createModulePO(linkComposite.getModule());
+        final ModulePO modulePO = createModulePO(linkComposite.getModule());
         // create resource
-        MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
+        final MySQLResourcePO resource = createResourcePO(linkComposite.getResource());
         // create link
-        LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getResourceId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
+        final LinkPO linkPO = new LinkPO(resource.getId(), modulePO.getResourceId(), LinkType.SERVICE_WITH_MODULE, linkComposite.getEnvPrefix());
         // storage mysql
         if (storageResource) {
             AzureMySQLStorage.getStorage().addResource(resource);
         }
         // storage password
         if (ArrayUtils.isNotEmpty(linkComposite.getResource().getPasswordConfig().getPassword())) {
-            String inputPassword = String.valueOf(linkComposite.getResource().getPasswordConfig().getPassword());
+            final String inputPassword = String.valueOf(linkComposite.getResource().getPasswordConfig().getPassword());
             AzureMySQLStorage.getStorage().savePassword(resource, resource.getPasswordSave(), resource.getUsername(), inputPassword);
         }
         // storage link
@@ -67,23 +67,22 @@ public class AzureLinkService {
     }
 
     private MySQLResourcePO createResourcePO(MySQLResourceConfig config) {
-        JdbcUrl jdbcUrl = JdbcUrl.from(config.getUrl());
-        String businessUniqueKey = MySQLResourcePO.getBusinessUniqueKey(config.getServer().id(), jdbcUrl.getDatabase());
-        MySQLResourcePO existedResourcePO = AzureMySQLStorage.getStorage().getResourceByBusinessUniqueKey(businessUniqueKey);
-        String id = Objects.nonNull(existedResourcePO) ? existedResourcePO.getId() : DigestUtils.md5Hex(businessUniqueKey);
-        MySQLResourcePO resourcePO = MySQLResourcePO.builder()
+        final JdbcUrl jdbcUrl = JdbcUrl.from(config.getUrl());
+        final String businessUniqueKey = MySQLResourcePO.getBusinessUniqueKey(config.getServer().id(), jdbcUrl.getDatabase());
+        final MySQLResourcePO existedResourcePO = AzureMySQLStorage.getStorage().getResourceByBusinessUniqueKey(businessUniqueKey);
+        final String id = Objects.nonNull(existedResourcePO) ? existedResourcePO.getId() : DigestUtils.md5Hex(businessUniqueKey);
+        return MySQLResourcePO.builder()
                 .id(id)
                 .resourceId(config.getServer().id())
                 .url(config.getUrl())
                 .username(config.getUsername())
                 .passwordSave(config.getPasswordConfig().getPasswordSaveType())
                 .build();
-        return resourcePO;
     }
 
     public Map<String, String> retrieveLinkEnvsByModuleName(Project project, String moduleName) {
-        Map<String, String> linkedEnvMap = new LinkedHashMap<>();
-        List<LinkPO> moduleRelatedLinkList = AzureLinkStorage.getProjectStorage(project).getLinkByModuleId(moduleName)
+        final Map<String, String> linkedEnvMap = new LinkedHashMap<>();
+        final List<LinkPO> moduleRelatedLinkList = AzureLinkStorage.getProjectStorage(project).getLinkByModuleId(moduleName)
                 .stream()
                 .filter(e -> LinkType.SERVICE_WITH_MODULE.equals(e.getType()))
                 .collect(Collectors.toList());
@@ -91,16 +90,16 @@ public class AzureLinkService {
             return linkedEnvMap;
         }
         // services in application level
-        Set<? extends BaseResourcePO> serviceSet = AzureMySQLStorage.getStorage().getResources();
-        for (BaseResourcePO service : serviceSet) {
-            for (LinkPO link : moduleRelatedLinkList) {
+        final Set<? extends BaseResourcePO> serviceSet = AzureMySQLStorage.getStorage().getResources();
+        for (final BaseResourcePO service : serviceSet) {
+            for (final LinkPO link : moduleRelatedLinkList) {
                 if (!StringUtils.equals(link.getResourceId(), service.getId())) {
                     continue;
                 }
-                String envPrefix = link.getEnvPrefix();
+                final String envPrefix = link.getEnvPrefix();
                 if (ResourceType.AZURE_DATABASE_FOR_MYSQL.equals(service.getType())) {
-                    MySQLResourcePO mysql = (MySQLResourcePO) service;
-                    String password = readPasswordCredentials(project, mysql);
+                    final MySQLResourcePO mysql = (MySQLResourcePO) service;
+                    final String password = readPasswordCredentials(project, mysql);
                     linkedEnvMap.put(envPrefix + "URL", mysql.getUrl());
                     linkedEnvMap.put(envPrefix + "USERNAME", mysql.getUsername());
                     linkedEnvMap.put(envPrefix + "PASSWORD", password);
@@ -123,12 +122,12 @@ public class AzureLinkService {
             }
         }
         // re-input password
-        AtomicReference<PasswordConfig> passwordConfigReference = new AtomicReference<>();
+        final AtomicReference<PasswordConfig> passwordConfigReference = new AtomicReference<>();
         ApplicationManager.getApplication().invokeAndWait(() -> {
-            PasswordDialog dialog = new PasswordDialog(project, service.getUsername(), service.getUrl());
+            final PasswordDialog dialog = new PasswordDialog(project, service.getUsername(), service.getUrl());
             dialog.setOkActionListener(data -> {
                 dialog.close();
-                String inputPassword = String.valueOf(data.getPassword());
+                final String inputPassword = String.valueOf(data.getPassword());
                 if (MySQLConnectionUtils.connect(service.getUrl(), service.getUsername(), inputPassword)) {
                     AzureMySQLStorage.getStorage().savePassword(service, data.getPasswordSaveType(), service.getUsername(), inputPassword);
                     if (!Objects.equals(service.getPasswordSave(), data.getPasswordSaveType())) {
@@ -141,7 +140,7 @@ public class AzureLinkService {
             EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.UPDATE_PASSWORD).getServiceName(),
                                ActionConstants.parse(ActionConstants.MySQL.UPDATE_PASSWORD).getOperationName(), null);
         });
-        PasswordConfig passwordConfig = passwordConfigReference.get();
+        final PasswordConfig passwordConfig = passwordConfigReference.get();
         if (Objects.nonNull(passwordConfig)) {
             return String.valueOf(passwordConfig.getPassword());
         } else {

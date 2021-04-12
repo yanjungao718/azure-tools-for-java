@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.link.mysql;
 
 import com.microsoft.azuretools.ActionConstants;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.mysql.cj.jdbc.ConnectionImpl;
@@ -27,9 +26,9 @@ public class MySQLConnectionUtils {
             Class.forName("com.mysql.jdbc.Driver");
             DriverManager.getConnection(url, username, password);
             return true;
-        } catch (ClassNotFoundException | SQLException exception) {
+        } catch (final ClassNotFoundException | SQLException exception) {
+            return false;
         }
-        return false;
     }
 
     public static ConnectResult connectWithPing(String url, String username, String password) {
@@ -41,20 +40,20 @@ public class MySQLConnectionUtils {
         // refresh property
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            long start = System.currentTimeMillis();
-            Connection connection = DriverManager.getConnection(url, username, password);
+            final long start = System.currentTimeMillis();
+            final Connection connection = DriverManager.getConnection(url, username, password);
             connected = true;
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("select 'hi'");
+            final Statement statement = connection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("select 'hi'");
             if (resultSet.next()) {
-                String result = resultSet.getString(1);
+                final String result = resultSet.getString(1);
                 connected = "hi".equals(result);
             }
             pingCost = System.currentTimeMillis() - start;
             serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
-        } catch (ClassNotFoundException exception) {
+        } catch (final ClassNotFoundException exception) {
             errorMessage = exception.getMessage();
-        } catch (SQLException exception) {
+        } catch (final SQLException exception) {
             errorCode = exception.getErrorCode();
             errorMessage = isConnectionIssue(exception) ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
         }
@@ -64,17 +63,17 @@ public class MySQLConnectionUtils {
         return new ConnectResult(connected, errorMessage, pingCost, serverVersion, errorCode);
     }
 
-    private static boolean isConnectionIssue(final SQLException exception){
+    private static boolean isConnectionIssue(final SQLException exception) {
         return exception.getErrorCode() == CONNECTION_ERROR_CODE;
     }
 
     @Getter
     @AllArgsConstructor
     public static class ConnectResult {
-        private boolean connected;
-        private String message;
-        private Long pingCost;
-        private String serverVersion;
-        private int errorCode;
+        private final boolean connected;
+        private final String message;
+        private final Long pingCost;
+        private final String serverVersion;
+        private final int errorCode;
     }
 }
