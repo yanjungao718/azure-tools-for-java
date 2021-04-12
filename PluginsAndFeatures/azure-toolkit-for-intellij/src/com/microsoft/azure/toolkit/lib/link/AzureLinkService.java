@@ -21,6 +21,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzureLinkStorage;
 import com.microsoft.intellij.AzureMySQLStorage;
+import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 public class AzureLinkService {
     private static final AzureLinkService instance = new AzureLinkService();
+    private static final int ACCESS_DENIED_ERROR_CODE = 1045;
 
     public static AzureLinkService getInstance() {
         return instance;
@@ -109,10 +111,15 @@ public class AzureLinkService {
     }
 
     private String readPasswordCredentials(Project project, MySQLResourcePO service) {
-        String storagedPassword = AzureMySQLStorage.getStorage().loadPassword(service, service.getPasswordSave(), service.getUsername());
-        if (StringUtils.isNotBlank(storagedPassword)) {
-            if (MySQLConnectionUtils.connect(service.getUrl(), service.getUsername(), storagedPassword)) {
-                return storagedPassword;
+        final String storedPassword = AzureMySQLStorage.getStorage().loadPassword(service, service.getPasswordSave(), service.getUsername());
+        if (StringUtils.isNotEmpty(storedPassword)) {
+            final MySQLConnectionUtils.ConnectResult result = MySQLConnectionUtils.connectWithPing(service.getUrl(), service.getUsername(), storedPassword);
+            if (result.isConnected()) {
+                return storedPassword;
+            }
+            if (result.getErrorCode() != ACCESS_DENIED_ERROR_CODE) {
+                PluginUtil.showWarnNotification("Failed to connect MySQL", result.getMessage());
+                return StringUtils.EMPTY;
             }
         }
         // re-input password
