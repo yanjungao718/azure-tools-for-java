@@ -18,6 +18,10 @@ import java.util.Collections;
 
 public class MySQLConnectionUtils {
 
+    private static final String CONNECTION_ISSUE_MESSAGE = "%s Please follow https://docs.microsoft.com/en-us/azure/mysql/howto-manage-firewall-using-portal "
+        + "to create a firewall rule to unblock your local access.";
+    private static final int CONNECTION_ERROR_CODE = 9000;
+
     public static boolean connect(String url, String username, String password) {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -48,12 +52,16 @@ public class MySQLConnectionUtils {
             pingCost = System.currentTimeMillis() - start;
             serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
         } catch (ClassNotFoundException | SQLException exception) {
-            errorMessage = exception.getMessage();
+            errorMessage = isConnectionIssue(exception) ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
         }
         EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getServiceName(),
                            ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getOperationName(),
                            Collections.singletonMap("result", String.valueOf(connected)));
         return new ConnectResult(connected, errorMessage, pingCost, serverVersion);
+    }
+
+    private static boolean isConnectionIssue(final Exception exception){
+        return exception instanceof SQLException && ((SQLException) exception).getErrorCode() == CONNECTION_ERROR_CODE;
     }
 
     @Getter
