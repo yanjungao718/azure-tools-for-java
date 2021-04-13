@@ -20,6 +20,8 @@ public class MySQLConnectionUtils {
     private static final String CONNECTION_ISSUE_MESSAGE = "%s Please follow https://docs.microsoft.com/en-us/azure/mysql/howto-manage-firewall-using-portal "
         + "to create a firewall rule to unblock your local access.";
     private static final int CONNECTION_ERROR_CODE = 9000;
+    private static final int CLASS_NOT_FOUND_ERROR_CODE = -1000;
+    private static final int UNKNOWN_EXCEPTION_ERROR_CODE = -1;
 
     public static boolean connect(String url, String username, String password) {
         try {
@@ -51,11 +53,12 @@ public class MySQLConnectionUtils {
             }
             pingCost = System.currentTimeMillis() - start;
             serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
-        } catch (final ClassNotFoundException exception) {
-            errorMessage = exception.getMessage();
         } catch (final SQLException exception) {
             errorCode = exception.getErrorCode();
             errorMessage = isConnectionIssue(exception) ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
+        } catch (final ClassNotFoundException | RuntimeException exception) {
+            errorCode = exception instanceof ClassNotFoundException ? CLASS_NOT_FOUND_ERROR_CODE : UNKNOWN_EXCEPTION_ERROR_CODE;
+            errorMessage = exception.getMessage();
         }
         EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getServiceName(),
                            ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getOperationName(),
