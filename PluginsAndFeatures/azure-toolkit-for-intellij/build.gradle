@@ -60,6 +60,23 @@ intellij {
 	downloadSources = Boolean.valueOf(sources)
 }
 
+
+// disable runIde tasks in subprojects to prevent starting-up multiple ide.
+gradle.taskGraph.whenReady { graph ->
+    def hasRootRunTask = graph.hasTask(':runIde')
+
+    if (hasRootRunTask) {
+        graph.getAllTasks().each { task ->
+            // look for *:runIde
+            def subRunTask = (task.path =~ /:.+:runIde/)
+            if (subRunTask) {
+                println "TRACER skipping ${task.path} because ':runIde' was specified"
+                task.enabled = false
+            }
+        }
+    }
+}
+
 subprojects {
     apply plugin: 'java'
 
