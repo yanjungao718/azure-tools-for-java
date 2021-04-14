@@ -103,7 +103,7 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.8'
         annotationProcessor 'org.projectlombok:lombok:1.18.8'
 
-        compile "com.microsoft.azure:azure-toolkit-common-lib:0.5.0-SNAPSHOT"
+        compile "com.microsoft.azure:azure-toolkit-common-lib:0.5.0"
     }
 }
 
