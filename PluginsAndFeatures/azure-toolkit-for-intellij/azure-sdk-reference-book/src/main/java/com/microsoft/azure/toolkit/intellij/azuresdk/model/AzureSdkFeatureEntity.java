@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -19,10 +21,15 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureSdkFeatureEntity {
+    @Nullable
     private String id;
+    @Nonnull
     private String name;
     private String description;
+    @Nullable
     private String msdocs;
+    @Nullable
+    private ArtifactRef clientSource;
     private List<AzureSdkArtifactEntity> artifacts;
 
     public String toString() {
@@ -31,5 +38,13 @@ public class AzureSdkFeatureEntity {
 
     public List<AzureSdkArtifactEntity> getArtifacts(String type) {
         return this.artifacts.stream().filter(a -> Objects.equals(a.getType(), type)).collect(Collectors.toList());
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ArtifactRef {
+        private String groupId;
+        private String artifactId;
     }
 }
