@@ -16,16 +16,22 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.auth.AzureAuthHelper;
-import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.authmanage.AuthMethod;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
@@ -36,12 +42,10 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
+import reactor.core.scheduler.Schedulers;
 import rx.Single;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -85,32 +89,15 @@ public class SignInWindow extends AzureDialogWrapper {
         this.authMethodDetails = authMethodDetails;
         authFileTextField.setText(authMethodDetails == null ? null : authMethodDetails.getCredFilePath());
 
-        automatedRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                refreshAuthControlElements();
-            }
-        });
+        automatedRadioButton.addActionListener(e -> refreshAuthControlElements());
 
-        deviceLoginRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refreshAuthControlElements();
-            }
-        });
+        deviceLoginRadioButton.addActionListener(e -> refreshAuthControlElements());
 
         azureCliRadioButton.addActionListener(e -> refreshAuthControlElements());
 
-        browseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doSelectCredFilepath();
-            }
-        });
+        browseButton.addActionListener(e -> doSelectCredFilepath());
 
-        createNewAuthenticationFileButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doCreateServicePrincipal();
-            }
-        });
+        createNewAuthenticationFileButton.addActionListener(e -> doCreateServicePrincipal());
 
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(deviceLoginRadioButton);
@@ -119,6 +106,8 @@ public class SignInWindow extends AzureDialogWrapper {
         deviceLoginRadioButton.setSelected(true);
 
         init();
+
+
     }
 
     public AuthMethodDetails getAuthMethodDetails() {
@@ -136,6 +125,22 @@ public class SignInWindow extends AzureDialogWrapper {
         return null;
     }
 
+    private void checkAccountAvailability() {
+        Account cliAccount = Azure.az(AzureAccount.class).accounts().stream().filter(d -> d.getAuthType() == AuthType.AZURE_CLI).findFirst().orElse(null);
+        Optional.ofNullable(cliAccount).ifPresent(account -> account.checkAvailable().subscribeOn(Schedulers.boundedElastic()).doOnSuccess(avail -> {
+            azureCliCommentLabel.setIcon(null);
+            azureCliPanel.setEnabled(true);
+            azureCliRadioButton.setText("Azure CLI");
+            azureCliRadioButton.setEnabled(true);
+            azureCliRadioButton.setSelected(true);
+        }).doOnError(e -> {
+            azureCliCommentLabel.setIcon(null);
+            azureCliPanel.setEnabled(false);
+            azureCliRadioButton.setText("Azure CLI (Not logged in)");
+            azureCliRadioButton.setEnabled(false);
+        }).subscribe());
+    }
+
     @Override
     public void doCancelAction() {
         authMethodDetailsResult = authMethodDetails;
@@ -144,7 +149,7 @@ public class SignInWindow extends AzureDialogWrapper {
 
     @Override
     public void doHelpAction() {
-        JXHyperlink helpLink = new JXHyperlink();
+        final JXHyperlink helpLink = new JXHyperlink();
         helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
         helpLink.doClick();
     }
@@ -171,14 +176,14 @@ public class SignInWindow extends AzureDialogWrapper {
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle();
     }
 
-    private AuthMethodDetails doLogin() {
+    private @Nullable AuthMethodDetails doLogin() {
         authMethodDetailsResult = new AuthMethodDetails();
         if (automatedRadioButton.isSelected()) { // automated
             final Map<String, String> properties = new HashMap<>();
             properties.put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
-            String authPath = authFileTextField.getText();
+            final String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 final String title = "Sign in dialog info";
                 final String message = "Select authentication file";
@@ -212,22 +217,10 @@ public class SignInWindow extends AzureDialogWrapper {
     @Override
     protected void init() {
         super.init();
-        AzureTokenWrapper tokenWrapper = null;
-        try {
-            tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
-        } catch (IOException | RuntimeException e) {
-            // swallow exception while getting azure cli credential
-        }
-        if (tokenWrapper != null) {
-            azureCliPanel.setEnabled(true);
-            azureCliRadioButton.setText("Azure CLI");
-            azureCliRadioButton.setEnabled(true);
-            azureCliRadioButton.setSelected(true);
-        } else {
-            azureCliPanel.setEnabled(false);
-            azureCliRadioButton.setText("Azure CLI (Not logged in)");
-            azureCliRadioButton.setEnabled(false);
-        }
+        azureCliPanel.setEnabled(false);
+        azureCliRadioButton.setText("Azure CLI (checking...)");
+        azureCliRadioButton.setEnabled(false);
+        azureCliCommentLabel.setIcon(new AnimatedIcon.Default());
         refreshAuthControlElements();
     }
 
