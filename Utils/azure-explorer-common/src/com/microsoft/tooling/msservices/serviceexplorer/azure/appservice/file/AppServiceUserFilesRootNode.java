@@ -5,21 +5,29 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
+import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
+public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
     private static final String ROOT_PATH = "/site/wwwroot";
@@ -56,12 +64,15 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.list", params = {"@app.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.list", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        final AppServiceFileService service = this.getFileService();
-        service.getFilesInDirectory(getRootPath()).stream()
-                .map(file -> new AppServiceFileNode(file, this, service))
-                .forEach(this::addChildNode);
+        EventUtil.executeWithLog(getServiceName(), TelemetryConstants.LIST_FILE, operation -> {
+            operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
+            final AppServiceFileService service = this.getFileService();
+            service.getFilesInDirectory(getRootPath()).stream()
+                    .map(file -> new AppServiceFileNode(file, this, service))
+                    .forEach(this::addChildNode);
+        });
     }
 
     @NotNull
@@ -81,6 +92,16 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
             app = supplier.get();
         }
         return app;
+    }
+
+    @Override
+    public String getServiceName() {
+        return getTargetAppService() instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, subscriptionId);
     }
 
     @Override

@@ -6,12 +6,13 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.azure.resourcemanager.AzureResourceManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.Track2Manager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -127,7 +128,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
     private void swap() {
         // todo: add swap method to app service library
-        final AzureResourceManager resourceManager = Track2Manager.getAzureResourceManager(subscriptionId);
+        final AzureResourceManager resourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
         resourceManager.webApps().getById(webApp.id()).swap(slot.hostName());
     }
 
