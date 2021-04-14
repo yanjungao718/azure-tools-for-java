@@ -9,14 +9,14 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.intellij.icons.AllIcons;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 
 import javax.swing.*;
 
 public class SpringCloudDeploymentConfigurationType extends ConfigurationTypeBase implements ConfigurationType {
     private static final String ID = "AZURE_SPRING_CLOUD_SUPPORT";
     private static final String DISPLAY_NAME = "Azure Spring Cloud Services";
-    private static final String ICON_PATH = "/icons/azure-springcloud-small.png";
     private static final String DESCRIPTION = "Execute the Azure Spring Cloud Services";
 
     protected SpringCloudDeploymentConfigurationType() {
@@ -35,6 +35,6 @@ public class SpringCloudDeploymentConfigurationType extends ConfigurationTypeBas
 
     @Override
     public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
+        return AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE);
     }
 }

@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.51.0](#3510)
   - [3.50.0](#3500)
   - [3.49.0](#3490)
   - [3.48.0](#3480)
@@ -64,6 +65,28 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.51.0
+### Added
+- Add support for IntelliJ 2021.1 EAP
+- Add Azure SDK reference book for Spring
+
+### Changed
+- Improve resource list performance with cache and preload
+- Update Azure related run configuration icons
+- Continue with warning for multi-tenant issues while getting subscriptions
+- Remove preview label for function and spring cloud
+
+### Fixed
+- [#5002](https://github.com/microsoft/azure-tools-for-java/issues/5002) Failed to run Spark application with filled-in default Azure Blob storage account credential
+- [#5008](https://github.com/microsoft/azure-tools-for-java/issues/5008) IndexOutOfBoundsException while create MySQL connection
+- [PR #4987](https://github.com/microsoft/azure-tools-for-java/pull/4987) InvalidParameterException occurs when close a streaming log
+- [PR #4987](https://github.com/microsoft/azure-tools-for-java/pull/4987) Failed when select file to deploy to Azure Web App 
+- [PR #4998](https://github.com/microsoft/azure-tools-for-java/pull/4998) Fix IDEA203 regression of Spark failure debug in local
+- [PR #5006](https://github.com/microsoft/azure-tools-for-java/pull/5006) Fix NPE of exploring ADLS Gen2 FS in Spark job conf
+- [PR #5009](https://github.com/microsoft/azure-tools-for-java/pull/5009) Fix bundle build JCEF issue
+- [PR #5014](https://github.com/microsoft/azure-tools-for-java/pull/5014) Failed to create MySQL instance as resource provider is not registered 
+- [PR #5055](https://github.com/microsoft/azure-tools-for-java/pull/5055) Can't deploy to Azure Web App when there is "Connect Azure Resource" in before launch
 
 ## 3.50.0
 

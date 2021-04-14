@@ -14,8 +14,11 @@ import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.function.runner.IntelliJFunctionContext;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class FunctionDeployModel extends IntelliJFunctionContext {
 
     private boolean isNewResource;
