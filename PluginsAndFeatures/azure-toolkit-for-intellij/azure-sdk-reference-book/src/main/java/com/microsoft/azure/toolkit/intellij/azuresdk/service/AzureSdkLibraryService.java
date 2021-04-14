@@ -26,11 +26,13 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AzureSdkLibraryService {
     private static final ObjectMapper YML_MAPPER = new YAMLMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -41,51 +43,67 @@ public class AzureSdkLibraryService {
     @Preload
     @Cacheable(value = "sdk-services", condition = "!(force&&force[0])")
     public static List<AzureSdkServiceEntity> loadAzureSdkServices(boolean... force) throws IOException {
-        final List<AzureSdkServiceEntity> springSdkServices = getSpringSDKEntities();
-        final List<AzureJavaSdkEntity> csvSdkEntities = getAzureSDKEntities().stream()
-                .filter(e -> !Boolean.TRUE.equals(e.getIsHide()))
-                .filter(e -> AzureSdkArtifactEntity.Type.CLIENT.equals(e.getType()) || AzureSdkArtifactEntity.Type.MANAGEMENT.equals(e.getType()))
-                .collect(Collectors.toList());
-        AzureSdkLibraryService.addClientLibs(springSdkServices, csvSdkEntities);
-        AzureSdkLibraryService.addManagementLibs(springSdkServices, csvSdkEntities);
-        return springSdkServices;
+        final Map<String, AzureSdkServiceEntity> services = getSpringSDKEntities().stream()
+                .collect(Collectors.toMap(e -> trim(e.getName()), e -> e));
+        AzureSdkLibraryService.addClientLibs(services);
+        AzureSdkLibraryService.addManagementLibs(services);
+        return services.values().stream().sorted(Comparator.comparing(AzureSdkServiceEntity::getName)).collect(Collectors.toList());
     }
 
-    private static void addClientLibs(List<? extends AzureSdkServiceEntity> services, List<AzureJavaSdkEntity> entities) {
-        for (final AzureSdkServiceEntity service : services) {
-            final List<AzureSdkFeatureEntity> features = service.getContent();
-            for (final AzureSdkFeatureEntity feature : features) {
-                final List<AzureSdkArtifactEntity> libs = Optional.ofNullable(feature.getClientSource()).stream()
-                        .flatMap(ref -> findClientLibs(ref.getGroupId(), ref.getArtifactId(), entities))
-                        .map(AzureSdkLibraryService::toSdkArtifactEntity)
-                        .collect(Collectors.toList());
-                feature.getArtifacts().addAll(libs);
-            }
-        }
+    private static void addClientLibs(Map<String, AzureSdkServiceEntity> services) {
+        getAzureSDKEntities().stream()
+                .filter(raw -> AzureSdkArtifactEntity.Type.CLIENT.equals(raw.getType()))
+                .filter(raw -> !Boolean.TRUE.equals(raw.getIsHide()))
+                .sorted(Comparator.comparing(AzureJavaSdkEntity::getServiceName))
+                .forEachOrdered(raw -> {
+                    final AzureSdkServiceEntity service = getOrCreateService(services, raw);
+                    for (final AzureSdkFeatureEntity feature : service.getContent()) {
+                        final boolean specified = Optional.ofNullable(feature.getClientSource())
+                                .filter(s -> s.getGroupId().equals(raw.getGroupId()) && s.getArtifactId().equals(raw.getPackageName()))
+                                .isPresent();
+                        final boolean sameFeatureName = trim(feature.getName()).equals(trim(raw.getDisplayName()));
+                        if (specified || sameFeatureName) {
+                            feature.getArtifacts().add(toSdkArtifactEntity(raw));
+                            return;
+                        }
+                    }
+                    // if no mapping feature found.
+                    final AzureSdkFeatureEntity feature = AzureSdkFeatureEntity.builder()
+                            .name(raw.getDisplayName())
+                            .msdocs(buildMsdocsUrl(raw))
+                            .artifacts(new ArrayList<>(Collections.singletonList(toSdkArtifactEntity(raw))))
+                            .build();
+                    service.getContent().add(feature);
+                });
     }
 
-    private static void addManagementLibs(List<? extends AzureSdkServiceEntity> services, List<AzureJavaSdkEntity> entities) {
-        for (final AzureSdkServiceEntity service : services) {
-            final List<AzureSdkFeatureEntity> features = service.getContent();
-            final List<AzureSdkArtifactEntity> libs = findManagementLibs(service.getName(), entities)
-                    .map(AzureSdkLibraryService::toSdkArtifactEntity)
-                    .collect(Collectors.toList());
-            for (final AzureSdkFeatureEntity feature : features) {
-                feature.getArtifacts().addAll(libs);
-            }
-        }
+    private static void addManagementLibs(Map<String, AzureSdkServiceEntity> services) {
+        getAzureSDKEntities().stream()
+                .filter(raw -> !Boolean.TRUE.equals(raw.getIsHide()))
+                .filter(raw -> AzureSdkArtifactEntity.Type.MANAGEMENT.equals(raw.getType()))
+                .filter(raw -> "com.azure.resourcemanager".equals(raw.getGroupId()))
+                .sorted(Comparator.comparing(AzureJavaSdkEntity::getServiceName))
+                .forEachOrdered(raw -> {
+                    final AzureSdkServiceEntity service = getOrCreateService(services, raw);
+                    for (final AzureSdkFeatureEntity feature : service.getContent()) {
+                        feature.getArtifacts().add(toSdkArtifactEntity(raw));
+                    }
+                });
     }
 
-    private static Stream<AzureJavaSdkEntity> findClientLibs(String groupId, String artifactId, List<AzureJavaSdkEntity> entities) {
-        return entities.stream()
-                .filter(e -> AzureSdkArtifactEntity.Type.CLIENT.equals(e.getType()))
-                .filter(e -> groupId.equals(e.getGroupId()) && artifactId.equals(e.getPackageName()));
+    private static AzureSdkServiceEntity getOrCreateService(Map<String, AzureSdkServiceEntity> services, AzureJavaSdkEntity raw) {
+        final Function<String, AzureSdkServiceEntity> serviceComputer = (key) -> {
+            final AzureSdkFeatureEntity feature = AzureSdkFeatureEntity.builder().name(raw.getDisplayName()).msdocs(buildMsdocsUrl(raw)).build();
+            return AzureSdkServiceEntity.builder()
+                    .name(raw.getServiceName())
+                    .content(new ArrayList<>(Collections.singletonList(feature)))
+                    .build();
+        };
+        return services.computeIfAbsent(trim(raw.getServiceName()), serviceComputer);
     }
 
-    private static Stream<AzureJavaSdkEntity> findManagementLibs(String serviceName, List<AzureJavaSdkEntity> entities) {
-        return entities.stream()
-                .filter(e -> AzureSdkArtifactEntity.Type.MANAGEMENT.equals(e.getType()))
-                .filter(e -> e.getServiceName().equals(serviceName));
+    private static String trim(String name) {
+        return name.toLowerCase().replaceAll("\\W+", "");
     }
 
     @Nonnull
