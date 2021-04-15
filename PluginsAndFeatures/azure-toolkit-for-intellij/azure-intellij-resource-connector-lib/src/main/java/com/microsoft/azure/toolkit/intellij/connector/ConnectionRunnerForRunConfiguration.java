@@ -18,7 +18,6 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import lombok.Getter;
 import lombok.extern.java.Log;
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,17 +47,13 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     @Nullable
     @Override
     public ConnectionRunnerForRunConfiguration.MyBeforeRunTask createTask(@NotNull RunConfiguration config) {
-        return new MyBeforeRunTask(getId());
+        return new MyBeforeRunTask();
     }
 
     @Override
     public boolean executeTask(@NotNull DataContext dataContext, @NotNull RunConfiguration configuration,
                                @NotNull ExecutionEnvironment executionEnvironment, @NotNull ConnectionRunnerForRunConfiguration.MyBeforeRunTask beforeRunTask) {
         return beforeRunTask.execute(dataContext, configuration);
-    }
-
-    private static boolean isApplicableFor(@NotNull RunConfiguration config) {
-        return ConnectionManager.getDefinitions().stream().anyMatch(d -> d.isApplicableFor(config));
     }
 
     public static class MyBeforeRunTask extends BeforeRunTask<MyBeforeRunTask> {
@@ -68,19 +63,8 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         private static final Key<MyBeforeRunTask> ID = Key.create("ConnectionRunnerForConfigurationId");
         private List<Connection<? extends Resource, ? extends Resource>> connections;
 
-        protected MyBeforeRunTask(@NotNull Key<MyBeforeRunTask> providerId) {
-            super(providerId);
-            setEnabled(true);
-        }
-
-        @Override
-        public void writeExternal(@NotNull Element element) {
-            super.writeExternal(element);
-        }
-
-        @Override
-        public void readExternal(@NotNull Element element) {
-            super.readExternal(element);
+        protected MyBeforeRunTask() {
+            super(ID);
         }
 
         public boolean execute(@NotNull DataContext dataContext, @NotNull RunConfiguration configuration) {
@@ -103,7 +87,22 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
 
         @Override
         public boolean isApplicableFor(@NotNull RunConfigurationBase<?> configuration) {
-            return ConnectionRunnerForRunConfiguration.isApplicableFor(configuration);
+            final boolean applicable = configuration.getProject().getService(ConnectionManager.class)
+                    .getConnections().stream().anyMatch(c -> c.isApplicableFor(configuration));
+            if (applicable) {
+                if (configuration.getBeforeRunTasks().stream().noneMatch(t -> t instanceof MyBeforeRunTask)) {
+                    final MyBeforeRunTask task = new MyBeforeRunTask();
+                    task.setEnabled(true);
+                    configuration.getBeforeRunTasks().add(task);
+                }
+            } else {
+                final List<BeforeRunTask<?>> tasks = configuration.getBeforeRunTasks().stream()
+                        .filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
+                if (tasks.size() > 0) {
+                    configuration.getBeforeRunTasks().removeAll(tasks);
+                }
+            }
+            return applicable;
         }
     }
 }
