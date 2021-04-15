@@ -10,12 +10,14 @@ import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.Constants;
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthFile;
 import com.microsoft.azuretools.authmanage.AuthMethod;
@@ -24,6 +26,7 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +40,7 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     protected AzureTokenCredentials getCredentials(String tenantId) {
-        return Azure.az(AzureAccount.class).account().getTokenCredentialV1(tenantId);
+        return Azure.az(AzureAccount.class).account().getTokenCredentialForTenantV1(tenantId);
     }
 
     private static class LazyLoader {
@@ -51,7 +54,7 @@ public class IdentityAzureManager extends AzureManagerBase {
     /**
      * Override the getSubscriptionDetails since az account has already loaded the subscriptions
      */
-    public java.util.List<SubscriptionDetail> getSubscriptionDetails() {
+    public java.util.List<SubscriptionDetail> getSubscriptionDetails () {
         return Azure.az(AzureAccount.class).account().getSubscriptions().stream().map(q -> new SubscriptionDetail(
                 q.getId(),
                 q.getName(),
@@ -59,7 +62,7 @@ public class IdentityAzureManager extends AzureManagerBase {
                 q.isSelected())).collect(Collectors.toList());
     }
 
-    public List<String> getSelectedSubscriptionIds() {
+    public List<String> getSelectedSubscriptionIds () {
         if (!isSignedIn()) {
             return new ArrayList<>();
         }
@@ -71,7 +74,7 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     @Override
-    protected List<Tenant> getTenants(com.microsoft.azure.management.Azure.Authenticated authentication) {
+    protected List<Tenant> getTenants (com.microsoft.azure.management.Azure.Authenticated authentication){
         if (!isSignedIn()) {
             return new ArrayList<>();
         }
@@ -80,7 +83,56 @@ public class IdentityAzureManager extends AzureManagerBase {
         return super.getTenants(authentication).stream().filter(tenant -> tenantIds.contains(tenant.tenantId())).collect(Collectors.toList());
     }
 
-    public AuthMethodDetails signIn(AuthFile authFile) {
+    public Mono<AuthMethodDetails> signInAzureCli() {
+        AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+        return az.loginAsync(AuthType.AZURE_CLI).map(account -> {
+            if (account.isAvailable() && account.getEntity().isAuthenticated()) {
+                AuthMethodDetails authMethodDetails = new AuthMethodDetails();
+                authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+                authMethodDetails.setAuthType(AuthType.AZURE_CLI);
+                authMethodDetails.setAccountEmail(com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getEntity().getEmail());
+                return authMethodDetails;
+            } else {
+                throw new AzureToolkitAuthenticationException("Cannot login through azure cli.");
+            }
+        });
+    }
+
+    public Mono<AuthMethodDetails> signInOauth() {
+        AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+        return az.loginAsync(AuthType.OAUTH2).map(account -> {
+            if (account.isAvailable() && account.getEntity().isAuthenticated()) {
+                AuthMethodDetails authMethodDetails = new AuthMethodDetails();
+                authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+                authMethodDetails.setAuthType(AuthType.OAUTH2);
+                authMethodDetails.setAccountEmail(com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getEntity().getEmail());
+                return authMethodDetails;
+            } else {
+                throw new AzureToolkitAuthenticationException("Cannot login through azure cli.");
+            }
+        });
+    }
+
+    public Mono<AuthMethodDetails> signInDeviceCode(IDeviceLoginUI deviceLoginUI) {
+        AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+        return az.loginAsync(AuthType.DEVICE_CODE).flatMap(account -> {
+            deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode());
+            return ((DeviceCodeAccount) account).continueLogin();
+        }).map(account -> {
+            deviceLoginUI.closePrompt();
+            if (account.isAvailable() && account.getEntity().isAuthenticated()) {
+                AuthMethodDetails authMethodDetails = new AuthMethodDetails();
+                authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+                authMethodDetails.setAuthType(AuthType.DEVICE_CODE);
+                authMethodDetails.setAccountEmail(com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getEntity().getEmail());
+                return authMethodDetails;
+            } else {
+                throw new AzureToolkitAuthenticationException("Cannot login through azure cli.");
+            }
+        });
+    }
+
+    public Mono<AuthMethodDetails> signInServicePrincipal(AuthFile authFile) {
         AuthConfiguration auth = new AuthConfiguration();
         String environmentName = Environment.ENVIRONMENT_LIST.stream().filter(env -> StringUtils.contains(
                 env.getAzureEnvironment().managementEndpoint(),
@@ -98,16 +150,18 @@ public class IdentityAzureManager extends AzureManagerBase {
         auth.setCertificate(authFile.getCertificate());
         auth.setCertificatePassword(authFile.getCertificatePassword());
         auth.setTenant(authFile.getTenant());
-        signInInner(auth);
-        AuthMethodDetails authMethodDetails = new AuthMethodDetails();
-        authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
-        authMethodDetails.setAuthType(AuthType.SERVICE_PRINCIPAL);
-        authMethodDetails.setCredFilePath(authFile.getFilePath());
-        authMethodDetails.setAzureEnv(environmentName);
-        return authMethodDetails;
+        return Azure.az(AzureAccount.class).loginAsync(auth).map(account -> {
+            AuthMethodDetails authMethodDetails = new AuthMethodDetails();
+            authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+            authMethodDetails.setAuthType(AuthType.SERVICE_PRINCIPAL);
+            authMethodDetails.setCredFilePath(authFile.getFilePath());
+            authMethodDetails.setAzureEnv(environmentName);
+            return authMethodDetails;
+        });
+
     }
 
-    public boolean isSignedIn() {
+    public boolean isSignedIn () {
         try {
             return Azure.az(AzureAccount.class).account().isAvailable();
         } catch (AzureToolkitAuthenticationException ex) {
@@ -115,12 +169,8 @@ public class IdentityAzureManager extends AzureManagerBase {
         }
     }
 
-    private void signInInner(AuthConfiguration auth) {
-        Azure.az(AzureAccount.class).login(auth);
-    }
-
     @Override
-    public String getCurrentUserId() {
+    public String getCurrentUserId () {
         if (!isSignedIn()) {
             return null;
         }
@@ -128,17 +178,17 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
-        return Azure.az(AzureAccount.class).account().getTokenCredentialV1(tid).getToken(resource);
+    public String getAccessToken (String tid, String resource, PromptBehavior promptBehavior) throws IOException {
+        return Azure.az(AzureAccount.class).account().getTokenCredentialForTenantV1(tid).getToken(resource);
     }
 
     @Override
-    protected String getCurrentTenantId() {
+    protected String getCurrentTenantId () {
         return "common";
     }
 
     @Override
-    public void drop() {
+    public void drop () {
         if (!isSignedIn()) {
             return;
         }

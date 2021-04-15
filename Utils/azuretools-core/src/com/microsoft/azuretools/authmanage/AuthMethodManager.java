@@ -10,6 +10,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -25,6 +26,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -266,7 +268,7 @@ public class AuthMethodManager {
         try {
             if (authType == AuthType.SERVICE_PRINCIPAL) {
                 AuthFile authFile = AuthFile.fromFile(newMethodDetails.getCredFilePath());
-                return IdentityAzureManager.getInstance().signIn(authFile);
+                return IdentityAzureManager.getInstance().signInServicePrincipal(authFile).block();
             } else {
                 throw new UnsupportedOperationException("Cannot restore login for auth type:" + authType);
             }

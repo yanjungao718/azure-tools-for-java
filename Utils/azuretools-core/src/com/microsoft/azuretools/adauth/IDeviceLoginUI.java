@@ -29,4 +29,8 @@ public interface IDeviceLoginUI {
     default void setDisposable(Disposable disposable) {
 
     }
+
+    default void cancel() {
+
+    }
 }

@@ -15,6 +15,8 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.TableSpeedSearch;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -37,6 +39,7 @@ import javax.swing.table.TableColumn;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
@@ -190,6 +193,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             boolean selected = (boolean) model.getValueAt(ri, CHECKBOX_COLUMN);
             this.sdl.get(ri).setSelected(selected);
         }
+
+        List<String> collect = this.sdl.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
+        Azure.az(AzureAccount.class).account().selectSubscription(collect);
 
         final Map<String, String> properties = new HashMap<>();
         properties.put("subsCount", String.valueOf(rc));
