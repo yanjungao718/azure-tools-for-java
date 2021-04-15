@@ -10,7 +10,7 @@
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ResourceManager"
             serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ResourceManager$Impl" />
         <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration" id="ConnectionRunnerForConfigurationId"/>
-        <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$RunConfigurationExtension"/>
+        <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$MyRunConfigurationExtension"/>
     </extensions>
     <actions>
         <action
