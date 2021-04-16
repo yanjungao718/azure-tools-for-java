@@ -339,6 +339,88 @@ public class AzureWebAppMvpModel {
      *
      * @param model parameters
      * @return instance of created WebApp
+     * @throws IOException IOExceptions
+     */
+    @AzureOperation(
+            name = "docker.create_from_private_image",
+            params = {
+                "model.getWebAppName()",
+                "model.getSubscriptionId()",
+                "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
+            },
+            type = AzureOperation.Type.SERVICE
+    )
+    public WebApp createWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+        final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
+        final WebApp app;
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
+        final PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
+
+        final WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
+        if (model.isCreatingNewAppServicePlan()) {
+            // new asp
+            final AppServicePlan.DefinitionStages.WithCreate asp;
+            if (model.isCreatingNewResourceGroup()) {
+                // new rg
+                asp = azure.appServices().appServicePlans()
+                        .define(model.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withNewResourceGroup(model.getResourceGroupName())
+                        .withPricingTier(pricingTier)
+                        .withOperatingSystem(OperatingSystem.LINUX);
+                app = webAppDefinition
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withNewResourceGroup(model.getResourceGroupName())
+                        .withNewLinuxPlan(asp)
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            } else {
+                // old rg
+                asp = azure.appServices().appServicePlans()
+                        .define(model.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withExistingResourceGroup(model.getResourceGroupName())
+                        .withPricingTier(pricingTier)
+                        .withOperatingSystem(OperatingSystem.LINUX);
+                app = webAppDefinition
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withExistingResourceGroup(model.getResourceGroupName())
+                        .withNewLinuxPlan(asp)
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            }
+        } else {
+            // old asp
+            final AppServicePlan asp = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
+            if (model.isCreatingNewResourceGroup()) {
+                // new rg
+                app = webAppDefinition
+                        .withExistingLinuxPlan(asp)
+                        .withNewResourceGroup(model.getResourceGroupName())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            } else {
+                // old rg
+                app = webAppDefinition
+                        .withExistingLinuxPlan(asp)
+                        .withExistingResourceGroup(model.getResourceGroupName())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            }
+        }
+        return app;
+        // TODO: update cache
+    }
+
+    /**
+     * API to create Web App on Docker.
+     *
+     * @param model parameters
+     * @return instance of created WebApp
      */
     @AzureOperation(
             name = "docker.create_from_private_image",
@@ -373,6 +455,36 @@ public class AzureWebAppMvpModel {
                 .withRuntime(Runtime.DOCKER)
                 .withDockerConfiguration(dockerConfiguration)
                 .commit();
+    }
+
+    /**
+     * Update container settings for existing Web App on Linux.
+     *
+     * @param sid          Subscription id
+     * @param webAppId     id of Web App on Linux instance
+     * @param imageSetting new container settings
+     * @return instance of the updated Web App on Linux
+     */
+    @AzureOperation(
+            name = "docker|image.update",
+            params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) {
+        final WebApp app = getWebAppById(sid, webAppId);
+        clearTags(app);
+        if (imageSetting instanceof PrivateRegistryImageSetting) {
+            final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+            app.update().withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                    .withCredentials(pr.getUsername(), pr.getPassword())
+                    .withStartUpCommand(pr.getStartupFile()).apply();
+        } else {
+            // TODO: other types of ImageSetting, e.g. Docker Hub
+        }
+        // status-free restart.
+        stopWebApp(sid, webAppId);
+        startWebApp(sid, webAppId);
+        return app;
     }
 
     /**

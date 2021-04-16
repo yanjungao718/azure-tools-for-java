@@ -180,6 +180,39 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    public void testCreateWebAppOnLinuxExistingSrvPlan() {
+        WebAppOnLinuxDeployModel model = new WebAppOnLinuxDeployModel();
+        model.setCreatingNewAppServicePlan(false);
+        model.setCreatingNewResourceGroup(false);
+        model.setAppServicePlanId("test");
+        model.setResourceGroupName("testRgp");
+        model.setWebAppName("testApp");
+        model.setPricingSkuSize("500");
+        model.setPricingSkuTier("tier1");
+        model.setSubscriptionId(MOCK_SUBSCRIPTION);
+
+        PrivateRegistryImageSetting imageSetting = new PrivateRegistryImageSetting("url",
+                "name", "password", "imageNameWithTag",
+                "startUpFile");
+        model.setPrivateRegistryImageSetting(imageSetting);
+
+        WebApp.DefinitionStages.Blank def = mock(WebApp.DefinitionStages.Blank.class);
+        when(webAppsMock.define(model.getWebAppName())).thenReturn(def);
+        AppServicePlan srvPlan = mock(AppServicePlan.class);
+        when(appSrvPlans.getById(model.getAppServicePlanId())).thenReturn(srvPlan);
+        WebApp.DefinitionStages.ExistingLinuxPlanWithGroup withGrp = mock(WebApp.DefinitionStages.ExistingLinuxPlanWithGroup.class);
+        when(def.withExistingLinuxPlan(srvPlan)).thenReturn(withGrp);
+
+        try {
+            azureWebAppMvpModel.createWebAppWithPrivateRegistryImage(model);
+        } catch (Exception e) {
+        }
+
+        verify(withGrp, times(1)).withExistingResourceGroup(anyString());
+        verify(def, times(1)).withExistingLinuxPlan(any(AppServicePlan.class));
+    }
+
+    @Test
     public void testRestartWebApp() {
         WebApp app = mock(WebApp.class);
         when(webAppsMock.getById("appId")).thenReturn(app);
