@@ -12,15 +12,15 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBox;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
-import com.microsoft.intellij.ui.components.AzureArtifact;
-import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -130,7 +130,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     @Override
-    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList, @NotNull final WebAppComboBoxModel selectedWebApp) {
+    public synchronized void fillDeploymentSlots(List<IWebAppDeploymentSlot> slotList, @NotNull final WebAppComboBoxModel selectedWebApp) {
         final String defaultSlot = (String) cbxSlotName.getSelectedItem();
         final String defaultConfigurationSource = (String) cbxSlotConfigurationSource.getSelectedItem();
         cbxSlotName.removeAllItems();
@@ -187,12 +187,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     protected void resetFromConfig(@NotNull WebAppConfiguration configuration) {
-        final WebAppComboBoxModel configurationModel = new WebAppComboBoxModel(configuration.getModel());
-        if (StringUtils.isAllEmpty(configurationModel.getAppName(), configurationModel.getResourceId())) {
-            comboBoxWebApp.refreshItems();
-        } else {
-            comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel);
+        if (!StringUtils.isAllEmpty(configuration.getWebAppName(), configuration.getWebAppId())) {
+            final WebAppComboBoxModel configModel = new WebAppComboBoxModel(configuration.getModel());
+            comboBoxWebApp.setConfigModel(configModel);
         }
+        comboBoxWebApp.refreshItems();
         if (configuration.getAzureArtifactType() != null) {
             lastSelectedAzureArtifact = AzureArtifactManager
                     .getInstance(project)
