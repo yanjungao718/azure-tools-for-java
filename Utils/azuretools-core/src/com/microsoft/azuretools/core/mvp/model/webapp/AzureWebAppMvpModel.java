@@ -28,8 +28,10 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.WebAppEntity;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
@@ -349,78 +351,39 @@ public class AzureWebAppMvpModel {
      * @throws IOException IOExceptions
      */
     @AzureOperation(
-        name = "docker.create_from_private_image",
-        params = {
-            "model.getWebAppName()",
-            "model.getSubscriptionId()",
-            "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
-        },
-        type = AzureOperation.Type.SERVICE
+            name = "docker.create_from_private_image",
+            params = {
+                "model.getWebAppName()",
+                "model.getSubscriptionId()",
+                "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
+            },
+            type = AzureOperation.Type.SERVICE
     )
-    public WebApp createWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+    public IWebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
+        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .subscriptionId(model.getSubscriptionId())
+                .name(model.getAppServicePlanName())
+                .resourceGroup(model.getResourceGroupName())
+                .region(model.getLocationName())
+                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
-        final WebApp app;
-        final Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-        final PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
-
-        final WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
-        if (model.isCreatingNewAppServicePlan()) {
-            // new asp
-            final AppServicePlan.DefinitionStages.WithCreate asp;
-            if (model.isCreatingNewResourceGroup()) {
-                // new rg
-                asp = azure.appServices().appServicePlans()
-                           .define(model.getAppServicePlanName())
-                           .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                           .withNewResourceGroup(model.getResourceGroupName())
-                           .withPricingTier(pricingTier)
-                           .withOperatingSystem(OperatingSystem.LINUX);
-                app = webAppDefinition
-                    .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                    .withNewResourceGroup(model.getResourceGroupName())
-                    .withNewLinuxPlan(asp)
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
-            } else {
-                // old rg
-                asp = azure.appServices().appServicePlans()
-                           .define(model.getAppServicePlanName())
-                           .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                           .withExistingResourceGroup(model.getResourceGroupName())
-                           .withPricingTier(pricingTier)
-                           .withOperatingSystem(OperatingSystem.LINUX);
-                app = webAppDefinition
-                    .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                    .withExistingResourceGroup(model.getResourceGroupName())
-                    .withNewLinuxPlan(asp)
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
-            }
-        } else {
-            // old asp
-            final AppServicePlan asp = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-            if (model.isCreatingNewResourceGroup()) {
-                // new rg
-                app = webAppDefinition
-                    .withExistingLinuxPlan(asp)
-                    .withNewResourceGroup(model.getResourceGroupName())
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
-            } else {
-                // old rg
-                app = webAppDefinition
-                    .withExistingLinuxPlan(asp)
-                    .withExistingResourceGroup(model.getResourceGroupName())
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
-            }
-        }
-        return app;
-        // TODO: update cache
+        // todo: support start up file in docker configuration
+        final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
+                .image(pr.getImageTagWithServerUrl())
+                .registryUrl(pr.getServerUrl())
+                .userName(pr.getUsername())
+                .password(pr.getPassword()).build();
+        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
+                .withName(model.getWebAppName())
+                .withResourceGroup(resourceGroup.name())
+                .withPlan(appServicePlan.id())
+                .withRuntime(Runtime.DOCKER)
+                .withDockerConfiguration(dockerConfiguration)
+                .commit();
+        return result;
     }
 
     /**
@@ -436,20 +399,22 @@ public class AzureWebAppMvpModel {
         params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
-    public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) {
-        final WebApp app = getWebAppById(sid, webAppId);
-        clearTags(app);
+    public IWebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
+        final IWebApp app = com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).webapp(webAppId);
+        // clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
-            app.update().withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-               .withCredentials(pr.getUsername(), pr.getPassword())
-               .withStartUpCommand(pr.getStartupFile()).apply();
+            final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
+                    .image(pr.getImageTagWithServerUrl())
+                    .registryUrl(pr.getServerUrl())
+                    .userName(pr.getUsername())
+                    .password(pr.getPassword()).build();
+            app.update().withDockerConfiguration(dockerConfiguration).commit();
         } else {
             // TODO: other types of ImageSetting, e.g. Docker Hub
         }
         // status-free restart.
-        stopWebApp(sid, webAppId);
-        startWebApp(sid, webAppId);
+        app.restart();
         return app;
     }
 
@@ -935,8 +900,16 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
-        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model);
-        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(model);
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
+        final String[] tierSize = model.getPricing().split("_");
+        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .subscriptionId(model.getSubscriptionId())
+                .name(model.getAppServicePlanName())
+                .resourceGroup(model.getResourceGroup())
+                .region(model.getRegion())
+                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1])).build();
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
@@ -948,31 +921,29 @@ public class AzureWebAppMvpModel {
     }
 
     // todo: Move duplicated codes to azure common library
-    private ResourceGroup getOrCreateResourceGroup(@NotNull WebAppSettingModel model) {
-        AzureResourceManager.configure().withHttpClient()
+    private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
         final AzureResourceManager az =
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(model.getSubscriptionId());
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
         try {
-            return az.resourceGroups().getByName(model.getResourceGroup());
+            return az.resourceGroups().getByName(resourceGroup);
         } catch (ManagementException e) {
-            return az.resourceGroups().define(model.getResourceGroup()).withRegion(model.getRegion()).create();
+            return az.resourceGroups().define(resourceGroup).withRegion(region).create();
         }
     }
 
-    private IAppServicePlan getOrCreateAppServicePlan(@NotNull WebAppSettingModel model) {
-        final AzureAppService az = getAzureAppServiceClient(model.getSubscriptionId());
-        if (!model.isCreatingAppServicePlan()) {
-            return az.appServicePlan(model.getAppServicePlanId());
+    private IAppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
+        final AzureAppService az = getAzureAppServiceClient(servicePlanEntity.getSubscriptionId());
+        final IAppServicePlan appServicePlan = az.appServicePlan(servicePlanEntity);
+        if (appServicePlan.exists()) {
+            return appServicePlan;
         }
-        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
-        final String[] tierSize = model.getPricing().split("_");
         return appServicePlan.create()
                 // todo: remove duplicated parameters declared in service plan entity
-                .withName(model.getAppServicePlanName())
-                .withResourceGroup(model.getResourceGroup())
-                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(model.getRegion()))
-                .withPricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1]))
-                .withOperatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOS().name()))
+                .withName(servicePlanEntity.getName())
+                .withResourceGroup(servicePlanEntity.getResourceGroup())
+                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(servicePlanEntity.getRegion()))
+                .withPricingTier(servicePlanEntity.getPricingTier())
+                .withOperatingSystem(servicePlanEntity.getOperatingSystem())
                 .commit();
     }
 
