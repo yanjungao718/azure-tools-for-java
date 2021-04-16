@@ -101,8 +101,7 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
 
     @Override
     public Map<String, String> toProperties() {
-        // todo: lazy load to properties
-        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(getTargetAppService().id()));
+        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, subscriptionId);
     }
 
     @Override

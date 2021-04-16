@@ -46,14 +46,12 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.sdkmanage.Track2Manager;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -70,7 +68,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -341,7 +338,7 @@ public class AzureWebAppMvpModel {
 
     @CacheEvict(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$sid")
     public void deleteWebApp(String sid, String appId) {
-        AzureAppService.auth(Track2Manager.getAzureResourceManager(sid)).webapp(appId).delete();
+        com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(sid).webapp(appId).delete();
     }
 
     /**
@@ -913,33 +910,20 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public List<IWebApp> listAzureWebApps(final boolean force) {
-        final List<IWebApp> webApps = new ArrayList<>();
-        final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (subs.size() == 0) {
-            return webApps;
-        }
-        rx.Observable.from(subs)
-                .flatMap((sd) ->
-                        rx.Observable.create((subscriber) -> {
-                            synchronized (webApps) {
-                                webApps.addAll(listAzureWebAppsBySubscription(sd.subscriptionId(), force));
-                            }
-                            subscriber.onCompleted();
-                        }).subscribeOn(Schedulers.io()), subs.size())
-                .subscribeOn(Schedulers.io())
-                .toBlocking()
-                .subscribe();
-        return webApps;
+        return AzureMvpModel.getInstance().getSelectedSubscriptions().stream()
+                .flatMap(sub -> listAzureWebAppsBySubscription(sub.subscriptionId(), force).stream())
+                .collect(Collectors.toList());
     }
 
+    @NotNull
+    @AzureOperation(
+            name = "webapp.list.subscription",
+            params = {"subscriptionId"},
+            type = AzureOperation.Type.SERVICE
+    )
+    @Cacheable(cacheName = "subscription-webapps-track2", key = "$subscriptionId", condition = "!(force&&force[0])")
     public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean force) {
-        if (force || !webappsCache.containsKey(subscriptionId)) {
-            final List<IWebApp> webApps = getAzureAppServiceClient(subscriptionId)
-                    .webapps()
-                    .parallelStream().filter(webapp -> webapp.getRuntime() != null).collect(Collectors.toList());
-            webappsCache.put(subscriptionId, webApps);
-        }
-        return webappsCache.get(subscriptionId);
+        return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId).webapps();
     }
 
     /**
@@ -966,7 +950,8 @@ public class AzureWebAppMvpModel {
 
     // todo: Move duplicated codes to azure common library
     private ResourceGroup getOrCreateResourceGroup(@NotNull WebAppSettingModel model) {
-        final AzureResourceManager az = Track2Manager.getAzureResourceManager(model.getSubscriptionId());
+        final AzureResourceManager az =
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(model.getSubscriptionId());
         try {
             return az.resourceGroups().getByName(model.getResourceGroup());
         } catch (ManagementException e) {
@@ -996,7 +981,8 @@ public class AzureWebAppMvpModel {
      * todo: move to app service library
      */
     public void updateWebAppDiagnosticConfiguration(@NotNull IWebApp webApp, @NotNull WebAppSettingModel model) {
-        final AzureResourceManager azureResourceManager = Track2Manager.getAzureResourceManager(model.getSubscriptionId());
+        final AzureResourceManager azureResourceManager =
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(model.getSubscriptionId());
         com.azure.resourcemanager.appservice.models.WebApp.Update update = azureResourceManager.webApps().getById(webApp.id()).update();
         if (model.isEnableApplicationLog()) {
             update = (com.azure.resourcemanager.appservice.models.WebApp.Update) update.updateDiagnosticLogsConfiguration()
@@ -1037,7 +1023,7 @@ public class AzureWebAppMvpModel {
     }
 
     public AzureAppService getAzureAppServiceClient(String subscriptionId) {
-        return AzureAppService.auth(Track2Manager.getAzureResourceManager(subscriptionId));
+        return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId);
     }
 
     @AzureOperation(
@@ -1092,7 +1078,7 @@ public class AzureWebAppMvpModel {
     )
     public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
         final AzureResourceManager azureResourceManager =
-                Track2Manager.getAzureResourceManager(slot.entity().getSubscriptionId());
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(slot.entity().getSubscriptionId());
         final com.azure.resourcemanager.appservice.models.DeploymentSlot slotClient =
                 azureResourceManager.webApps().getById(slot.webApp().id()).deploymentSlots().getById(slot.id());
         slotClient.update().withAppSettings(toUpdate).apply();
