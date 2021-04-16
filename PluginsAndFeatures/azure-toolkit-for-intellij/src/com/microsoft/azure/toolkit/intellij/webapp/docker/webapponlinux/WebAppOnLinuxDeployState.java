@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerProgressHandler;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -89,22 +90,19 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         // deploy
         if (deployModel.isCreatingNewWebAppOnLinux()) {
             // create new WebApp
-            processHandler.setText(String.format("Creating new WebApp ... [%s]",
-                    deployModel.getWebAppName()));
-            WebApp app = AzureWebAppMvpModel.getInstance().createWebAppWithPrivateRegistryImage(deployModel);
+            processHandler.setText(String.format("Creating new WebApp ... [%s]", deployModel.getWebAppName()));
+            IWebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(deployModel);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                 updateConfigurationDataModel(app);
 
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                        null));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }
         } else {
             // update WebApp
             processHandler.setText(String.format("Updating WebApp ... [%s]",
                     deployModel.getWebAppName()));
-            WebApp app = AzureWebAppMvpModel.getInstance()
-                    .updateWebAppOnDocker(deployModel.getSubscriptionId(), deployModel.getWebAppId(), acrInfo);
+            IWebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(deployModel.getWebAppId(), acrInfo);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
             }
@@ -147,9 +145,9 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         return telemetryMap;
     }
 
-    private void updateConfigurationDataModel(WebApp app) {
+    private void updateConfigurationDataModel(IWebApp app) {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.id());
-        deployModel.setResourceGroupName(app.resourceGroupName());
+        deployModel.setResourceGroupName(app.entity().getResourceGroup());
     }
 }
