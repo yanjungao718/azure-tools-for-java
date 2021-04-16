@@ -25,12 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -54,6 +49,7 @@ public class AzureSdkLibraryService {
         getAzureSDKEntities().stream()
                 .filter(raw -> AzureSdkArtifactEntity.Type.CLIENT.equals(raw.getType()))
                 .filter(raw -> !Boolean.TRUE.equals(raw.getIsHide()))
+                .filter(raw -> "com.azure".equals(raw.getGroupId()))
                 .sorted(Comparator.comparing(AzureJavaSdkEntity::getServiceName))
                 .forEachOrdered(raw -> {
                     final AzureSdkServiceEntity service = getOrCreateService(services, raw);
@@ -86,6 +82,7 @@ public class AzureSdkLibraryService {
                 .forEachOrdered(raw -> {
                     final AzureSdkServiceEntity service = getOrCreateService(services, raw);
                     for (final AzureSdkFeatureEntity feature : service.getContent()) {
+                        feature.setName(feature.getName().replace("Resource Management - ", "").trim());
                         feature.getArtifacts().add(toSdkArtifactEntity(raw));
                     }
                 });
