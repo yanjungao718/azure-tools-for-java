@@ -69,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,8 +81,6 @@ public class AzureWebAppMvpModel {
     private static final Logger logger = Logger.getLogger(AzureWebAppMvpModel.class.getName());
 
     public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
-    public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<IWebApp>> webappsCache;
 
     private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS =
         Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
@@ -95,7 +92,6 @@ public class AzureWebAppMvpModel {
     private static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
 
     private AzureWebAppMvpModel() {
-        webappsCache = new ConcurrentHashMap<>();
     }
     public static final String CACHE_SUBSCRIPTION_WEBAPPS = "subscription-webapps";
 
@@ -233,8 +229,7 @@ public class AzureWebAppMvpModel {
 
     private WebApp.DefinitionStages.WithCreate applyDiagnosticConfig(WebApp.DefinitionStages.WithCreate withCreate,
                                                                      WebAppSettingModel settingModel) {
-        final WebAppDiagnosticLogs.DefinitionStages.Blank diagnosticLogs =
-            withCreate.defineDiagnosticLogsConfiguration();
+        final WebAppDiagnosticLogs.DefinitionStages.Blank diagnosticLogs = withCreate.defineDiagnosticLogsConfiguration();
         WebAppDiagnosticLogs.DefinitionStages.WithAttach withAttach = null;
         if (settingModel.isEnableApplicationLog()) {
             withAttach = diagnosticLogs.withApplicationLogging()
@@ -334,10 +329,6 @@ public class AzureWebAppMvpModel {
         return withGroup.withExistingResourceGroup(model.getResourceGroup());
     }
 
-    public void deployWebApp() {
-        // TODO
-    }
-
     @CacheEvict(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$sid")
     public void deleteWebApp(String sid, String appId) {
         com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(sid).webapp(appId).delete();
@@ -348,7 +339,6 @@ public class AzureWebAppMvpModel {
      *
      * @param model parameters
      * @return instance of created WebApp
-     * @throws IOException IOExceptions
      */
     @AzureOperation(
             name = "docker.create_from_private_image",
@@ -376,20 +366,18 @@ public class AzureWebAppMvpModel {
                 .registryUrl(pr.getServerUrl())
                 .userName(pr.getUsername())
                 .password(pr.getPassword()).build();
-        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
+        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
                 .withRuntime(Runtime.DOCKER)
                 .withDockerConfiguration(dockerConfiguration)
                 .commit();
-        return result;
     }
 
     /**
      * Update container settings for existing Web App on Linux.
      *
-     * @param sid          Subscription id
      * @param webAppId     id of Web App on Linux instance
      * @param imageSetting new container settings
      * @return instance of the updated Web App on Linux
@@ -410,8 +398,6 @@ public class AzureWebAppMvpModel {
                     .userName(pr.getUsername())
                     .password(pr.getPassword()).build();
             app.update().withDockerConfiguration(dockerConfiguration).commit();
-        } else {
-            // TODO: other types of ImageSetting, e.g. Docker Hub
         }
         // status-free restart.
         app.restart();
@@ -836,14 +822,6 @@ public class AzureWebAppMvpModel {
 
     public static void enableHttpLog(WebAppBase.Update webApp) {
         webApp.withContainerLoggingEnabled().apply();
-    }
-
-    @AzureOperation(
-        name = "webapp.clear_cache",
-        type = AzureOperation.Type.TASK
-    )
-    public void clearWebAppsCache() {
-        webappsCache.clear();
     }
 
     @AzureOperation(
