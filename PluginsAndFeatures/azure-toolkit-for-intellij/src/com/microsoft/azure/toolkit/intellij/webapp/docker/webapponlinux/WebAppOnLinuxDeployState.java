@@ -7,11 +7,11 @@ package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerProgressHandler;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -35,7 +35,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
+public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> {
     private final WebAppOnLinuxDeployModel deployModel;
 
     public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
@@ -45,7 +45,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
 
     @Override
     @AzureOperation(name = "docker.deploy_image.state", type = AzureOperation.Type.ACTION)
-    public WebApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    public IAppService executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         processHandler.setText("Starting job ...  ");
         final String basePath = project.getBasePath();
         if (basePath == null) {
@@ -98,6 +98,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
 
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }
+            return app;
         } else {
             // update WebApp
             processHandler.setText(String.format("Updating WebApp ... [%s]",
@@ -106,8 +107,8 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
             }
+            return app;
         }
-        return null;
     }
 
     @Override
@@ -121,7 +122,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         params = {"this.deployModel.getWebAppName()"},
         type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(IAppService result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText("Updating cache ... ");
         AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
         processHandler.setText("Job done");
