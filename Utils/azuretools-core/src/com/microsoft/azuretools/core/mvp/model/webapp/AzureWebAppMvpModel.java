@@ -922,7 +922,7 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     @Cacheable(cacheName = "subscription-webapps-track2", key = "$subscriptionId", condition = "!(force&&force[0])")
-    public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean force) {
+    public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean... force) {
         return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId).webapps();
     }
 
@@ -931,14 +931,13 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
             name = "webapp.create_detail",
-            params = {"$model.getWebAppName()"},
+            params = {"model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
     public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
-        final WebAppEntity webAppEntity = WebAppEntity.builder().name(model.getWebAppName()).resourceGroup(model.getResourceGroup()).build();
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model);
         final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(model);
-        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(webAppEntity).create()
+        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
@@ -950,6 +949,7 @@ public class AzureWebAppMvpModel {
 
     // todo: Move duplicated codes to azure common library
     private ResourceGroup getOrCreateResourceGroup(@NotNull WebAppSettingModel model) {
+        AzureResourceManager.configure().withHttpClient()
         final AzureResourceManager az =
                 com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(model.getSubscriptionId());
         try {
@@ -1006,7 +1006,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
             name = "webapp|deployment.create",
-            params = {"$model.getNewSlotName()", "$model.getWebAppName()"},
+            params = {"model.getNewSlotName()", "model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
     public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
@@ -1028,7 +1028,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
             name = "webapp|artifact.upload",
-            params = {"file.getName()", "$deployTarget.name()"},
+            params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
     public void deployArtifactsToWebApp(@NotNull final IAppService deployTarget, @NotNull final File file,
@@ -1073,7 +1073,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
             name = "webapp|deployment.update_settings",
-            params = {"$slot.entity().getName()", "$slot.entity().getWebappName()"},
+            params = {"slot.entity().getName()", "slot.entity().getWebappName()"},
             type = AzureOperation.Type.SERVICE
     )
     public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
