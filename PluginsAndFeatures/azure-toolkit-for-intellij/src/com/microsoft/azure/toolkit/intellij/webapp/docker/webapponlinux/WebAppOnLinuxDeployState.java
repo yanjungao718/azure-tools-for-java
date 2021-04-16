@@ -47,17 +47,17 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     @AzureOperation(name = "docker.deploy_image.state", type = AzureOperation.Type.ACTION)
     public WebApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         processHandler.setText("Starting job ...  ");
-        String basePath = project.getBasePath();
+        final String basePath = project.getBasePath();
         if (basePath == null) {
             processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
             throw new FileNotFoundException("Project base path is null.");
         }
         // locate artifact to specified location
-        String targetFilePath = deployModel.getTargetPath();
+        final String targetFilePath = deployModel.getTargetPath();
         processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
 
         // validate dockerfile
-        Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
+        final Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
         processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
         if (!targetDockerfile.toFile().exists()) {
             throw new FileNotFoundException("Dockerfile not found.");
@@ -70,10 +70,10 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         Files.write(targetDockerfile, content.getBytes());
 
         // build image
-        PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
+        final PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
         processHandler.setText(String.format("Building image ...  [%s]",
                 acrInfo.getImageTagWithServerUrl()));
-        DockerClient docker = DefaultDockerClient.fromEnv().build();
+        final DockerClient docker = DefaultDockerClient.fromEnv().build();
         DockerUtil.ping(docker);
         DockerUtil.buildImage(docker,
                 acrInfo.getImageTagWithServerUrl(),
@@ -91,7 +91,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         if (deployModel.isCreatingNewWebAppOnLinux()) {
             // create new WebApp
             processHandler.setText(String.format("Creating new WebApp ... [%s]", deployModel.getWebAppName()));
-            IWebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(deployModel);
+            final IWebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(deployModel);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                 updateConfigurationDataModel(app);
@@ -102,7 +102,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
             // update WebApp
             processHandler.setText(String.format("Updating WebApp ... [%s]",
                     deployModel.getWebAppName()));
-            IWebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(deployModel.getWebAppId(), acrInfo);
+            final IWebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(deployModel.getWebAppId(), acrInfo);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
             }
