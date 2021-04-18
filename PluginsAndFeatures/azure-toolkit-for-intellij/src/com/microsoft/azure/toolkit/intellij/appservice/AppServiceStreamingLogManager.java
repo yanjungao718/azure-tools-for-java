@@ -9,6 +9,10 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import com.microsoft.azure.toolkit.lib.appservice.service.*;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -19,12 +23,13 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import hu.akarnokd.rxjava3.interop.RxJavaInterop;
 import org.apache.commons.lang3.StringUtils;
+import reactor.adapter.rxjava.RxJava3Adapter;
 import rx.Observable;
 
 import java.io.IOException;
@@ -218,78 +223,62 @@ public enum AppServiceStreamingLogManager {
     }
 
     static class WebAppLogStreaming implements ILogStreaming {
-        private String resourceId;
-        private WebApp webApp;
+        private final IWebApp webApp;
 
         public WebAppLogStreaming(String resourceId) {
-            this.resourceId = resourceId;
+            this.webApp = Azure.az(AzureAppService.class).webapp(resourceId);
         }
 
         @Override
-        public boolean isLogStreamingEnabled() throws IOException {
-            return AzureWebAppMvpModel.isHttpLogEnabled(getWebApp());
+        public boolean isLogStreamingEnabled() {
+            return webApp.getDiagnosticConfig().isEnableWebServerLogging();
         }
 
         @Override
-        public void enableLogStreaming() throws IOException {
-            AzureWebAppMvpModel.enableHttpLog(getWebApp().update());
+        public void enableLogStreaming() {
+            final DiagnosticConfig diagnosticConfig = webApp.getDiagnosticConfig();
+            diagnosticConfig.setEnableWebServerLogging(true);
+            webApp.update().withDiagnosticConfig(diagnosticConfig).commit();
         }
 
         @Override
         public String getTitle() {
-            return AzureMvpModel.getSegment(resourceId, SITES);
+            return AzureMvpModel.getSegment(webApp.id(), SITES);
         }
 
         @Override
-        public Observable<String> getStreamingLogContent() throws IOException {
-            return getWebApp().streamAllLogsAsync();
-        }
-
-        private WebApp getWebApp() throws IOException {
-            if (webApp == null) {
-                webApp = AzureWebAppMvpModel.getInstance().getWebAppById(
-                        AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS), resourceId);
-            }
-            return webApp;
+        public Observable<String> getStreamingLogContent() {
+            return RxJavaInterop.toV1Observable(RxJava3Adapter.fluxToFlowable(webApp.streamAllLogsAsync()));
         }
     }
 
     static class WebAppSlotLogStreaming implements ILogStreaming {
-        private String resourceId;
-        private DeploymentSlot deploymentSlot;
+        private IWebAppDeploymentSlot deploymentSlot;
 
         public WebAppSlotLogStreaming(String resourceId) {
-            this.resourceId = resourceId;
+            this.deploymentSlot = Azure.az(AzureAppService.class).deploymentSlot(resourceId);
         }
 
         @Override
-        public boolean isLogStreamingEnabled() throws IOException {
-            return AzureWebAppMvpModel.isHttpLogEnabled(getDeploymentSlot());
+        public boolean isLogStreamingEnabled() {
+            return deploymentSlot.getDiagnosticConfig().isEnableWebServerLogging();
         }
 
         @Override
-        public void enableLogStreaming() throws IOException {
-            AzureWebAppMvpModel.enableHttpLog(getDeploymentSlot().update());
+        public void enableLogStreaming() {
+            final DiagnosticConfig diagnosticConfig = deploymentSlot.getDiagnosticConfig();
+            diagnosticConfig.setEnableWebServerLogging(true);
+            deploymentSlot.update().withDiagnosticConfig(diagnosticConfig).commit();
         }
 
         @Override
         public String getTitle() {
-            return AzureMvpModel.getSegment(resourceId, SLOTS);
+            return AzureMvpModel.getSegment(deploymentSlot.id(), SLOTS);
         }
 
         @Override
-        public Observable<String> getStreamingLogContent() throws IOException {
-            return getDeploymentSlot().streamAllLogsAsync();
-        }
-
-        private DeploymentSlot getDeploymentSlot() throws IOException {
-            if (deploymentSlot == null) {
-                final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-                final String webAppId = resourceId.substring(0, resourceId.indexOf("/slots"));
-                final WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
-                deploymentSlot = webApp.deploymentSlots().getById(resourceId);
-            }
-            return deploymentSlot;
+        public Observable<String> getStreamingLogContent() {
+            return RxJavaInterop.toV1Observable(RxJava3Adapter.fluxToFlowable(deploymentSlot.streamAllLogsAsync()));
         }
     }
 }
