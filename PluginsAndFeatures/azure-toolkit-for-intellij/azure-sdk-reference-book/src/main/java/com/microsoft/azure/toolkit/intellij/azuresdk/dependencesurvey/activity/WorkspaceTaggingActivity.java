@@ -34,11 +34,10 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull final Project project) {
-        Mono.fromCallable(() -> trackProjectDependencies(project))
-            .subscribe(this::trackWorkspaceTagging, this::trackWorkspaceTaggingFailure);
+        Mono.fromCallable(() -> getWorkspaceTags(project)).subscribe(this::trackWorkspaceTagging, this::trackWorkspaceTaggingFailure);
     }
 
-    private Set<String> trackProjectDependencies(@NotNull final Project project) {
+    private Set<String> getWorkspaceTags(@NotNull final Project project) {
         return ReadAction.nonBlocking(() -> {
             final Set<String> tagSet = new HashSet<>();
             OrderEnumerator.orderEntries(project).forEachLibrary(library -> {
