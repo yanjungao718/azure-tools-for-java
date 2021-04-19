@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -35,7 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,11 +57,8 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
 
     @Override
     protected void onHandleException(final Throwable throwable, final @Nullable AzureExceptionAction[] actions) {
-        Boolean backgrounded = AzureTaskContext.current().getBackgrounded();
-        if (Objects.isNull(backgrounded)) {
-            //TODO: detect task running background or not.
-            backgrounded = false;
-        }
+        //TODO: detect task running background or not.
+        final boolean backgrounded = Optional.ofNullable(AzureTaskContext.current().getTask()).map(AzureTask::getBackgrounded).orElse(false);
         onHandleException(throwable, backgrounded, actions);
     }
 
