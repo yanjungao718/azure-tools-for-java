@@ -33,10 +33,8 @@ public class DeviceLoginUI implements IDeviceLoginUI {
 
     public void promptDeviceCode(DeviceCodeInfo challenge) {
         ApplicationManager.getApplication().invokeLater(() -> {
-            deviceLoginWindow = new DeviceLoginWindow(challenge);
-            if (!deviceLoginWindow.showAndGet()) {
-                this.disposable.dispose();
-            }
+            deviceLoginWindow = new DeviceLoginWindow(challenge, this);
+            deviceLoginWindow.show();
         });
     }
 
@@ -44,6 +42,12 @@ public class DeviceLoginUI implements IDeviceLoginUI {
     public void closePrompt() {
         if (deviceLoginWindow != null) {
             deviceLoginWindow.closeDialog();
+        }
+    }
+    @Override
+    public void cancel() {
+        if (disposable != null) {
+            this.disposable.dispose();
         }
     }
 }
