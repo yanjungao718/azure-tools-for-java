@@ -12,6 +12,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.WorkspaceTaggingService;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.Telemetry;
+import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Mono;
@@ -34,11 +35,16 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull final Project project) {
-        Mono.fromCallable(() -> getWorkspaceTags(project)).subscribe(this::trackWorkspaceTagging, this::trackWorkspaceTaggingFailure);
+        // swallow exception for workspace tagging
+        Mono.fromCallable(() -> getWorkspaceTags(project)).subscribe(this::trackWorkspaceTagging, err -> {
+        });
     }
 
     private Set<String> getWorkspaceTags(@NotNull final Project project) {
         return ReadAction.nonBlocking(() -> {
+            if (project.isDisposed()) {
+                return SetUtils.EMPTY_SET;
+            }
             final Set<String> tagSet = new HashSet<>();
             OrderEnumerator.orderEntries(project).forEachLibrary(library -> {
                 if (StringUtils.isEmpty(library.getName())) {
@@ -62,13 +68,6 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
         properties.put(SERVICE_NAME, SYSTEM);
         properties.put(OPERATION_NAME, WORKSPACE_TAGGING);
         properties.put(TAG, StringUtils.join(tagSet, ","));
-        AzureTelemeter.log(Telemetry.Type.INFO, properties);
-    }
-
-    private void trackWorkspaceTaggingFailure(final Throwable throwable) {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(SERVICE_NAME, SYSTEM);
-        properties.put(OPERATION_NAME, WORKSPACE_TAGGING_FAILURE);
         AzureTelemeter.log(Telemetry.Type.INFO, properties);
     }
 }
