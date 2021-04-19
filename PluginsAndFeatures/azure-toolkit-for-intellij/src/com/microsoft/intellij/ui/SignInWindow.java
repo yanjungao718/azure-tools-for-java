@@ -5,6 +5,7 @@
 
 package com.microsoft.intellij.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -16,35 +17,44 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.auth.AzureAuthHelper;
-import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
+import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
-import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.sun.glass.ui.Application;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
+import reactor.core.Disposable;
+import reactor.core.scheduler.Schedulers;
+import reactor.core.publisher.Mono;
 import rx.Single;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
@@ -66,6 +76,7 @@ public class SignInWindow extends AzureDialogWrapper {
     private JRadioButton azureCliRadioButton;
     private JPanel azureCliPanel;
     private JLabel azureCliCommentLabel;
+    private JRadioButton oauthLoginRadioButton;
 
     private AuthMethodDetails authMethodDetails;
     private AuthMethodDetails authMethodDetailsResult;
@@ -85,40 +96,27 @@ public class SignInWindow extends AzureDialogWrapper {
         this.authMethodDetails = authMethodDetails;
         authFileTextField.setText(authMethodDetails == null ? null : authMethodDetails.getCredFilePath());
 
-        automatedRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                refreshAuthControlElements();
-            }
-        });
+        oauthLoginRadioButton.addItemListener(e -> refreshAuthControlElements());
 
-        deviceLoginRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refreshAuthControlElements();
-            }
-        });
+        automatedRadioButton.addActionListener(e -> refreshAuthControlElements());
+
+        deviceLoginRadioButton.addActionListener(e -> refreshAuthControlElements());
 
         azureCliRadioButton.addActionListener(e -> refreshAuthControlElements());
 
-        browseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doSelectCredFilepath();
-            }
-        });
+        browseButton.addActionListener(e -> doSelectCredFilepath());
 
-        createNewAuthenticationFileButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                doCreateServicePrincipal();
-            }
-        });
+        createNewAuthenticationFileButton.addActionListener(e -> doCreateServicePrincipal());
 
         ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(oauthLoginRadioButton);
         buttonGroup.add(deviceLoginRadioButton);
         buttonGroup.add(automatedRadioButton);
         buttonGroup.add(azureCliRadioButton);
-        deviceLoginRadioButton.setSelected(true);
+        oauthLoginRadioButton.setSelected(true);
 
         init();
+        checkAccountAvailability();
     }
 
     public AuthMethodDetails getAuthMethodDetails() {
@@ -136,6 +134,22 @@ public class SignInWindow extends AzureDialogWrapper {
         return null;
     }
 
+    private void checkAccountAvailability() {
+        Account cliAccount = Azure.az(AzureAccount.class).accounts().stream().filter(d -> d.getAuthType() == AuthType.AZURE_CLI).findFirst().orElse(null);
+        Optional.ofNullable(cliAccount).ifPresent(account -> account.checkAvailable().subscribeOn(Schedulers.boundedElastic()).doOnSuccess(avail -> {
+            azureCliCommentLabel.setIcon(null);
+            azureCliPanel.setEnabled(true);
+            azureCliRadioButton.setText("Azure CLI");
+            azureCliRadioButton.setEnabled(true);
+            azureCliRadioButton.setSelected(true);
+        }).doOnError(e -> {
+            azureCliCommentLabel.setIcon(null);
+            azureCliPanel.setEnabled(false);
+            azureCliRadioButton.setText("Azure CLI (Not logged in)");
+            azureCliRadioButton.setEnabled(false);
+        }).subscribe());
+    }
+
     @Override
     public void doCancelAction() {
         authMethodDetailsResult = authMethodDetails;
@@ -144,7 +158,7 @@ public class SignInWindow extends AzureDialogWrapper {
 
     @Override
     public void doHelpAction() {
-        JXHyperlink helpLink = new JXHyperlink();
+        final JXHyperlink helpLink = new JXHyperlink();
         helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
         helpLink.doClick();
     }
@@ -171,63 +185,39 @@ public class SignInWindow extends AzureDialogWrapper {
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle();
     }
 
-    private AuthMethodDetails doLogin() {
+    private @Nullable AuthMethodDetails doLogin() {
         authMethodDetailsResult = new AuthMethodDetails();
         if (automatedRadioButton.isSelected()) { // automated
             final Map<String, String> properties = new HashMap<>();
             properties.put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
-            String authPath = authFileTextField.getText();
+            final String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 final String title = "Sign in dialog info";
                 final String message = "Select authentication file";
                 DefaultLoader.getUIHelper().showMessageDialog(contentPane, message, title, Messages.getInformationIcon());
                 return null;
             }
-
-            authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
-            // TODO: check field is empty, check file is valid
-            authMethodDetailsResult.setCredFilePath(authPath);
+            authMethodDetailsResult = doServicePrincipalLogin(authPath);
         } else if (deviceLoginRadioButton.isSelected()) {
-            doDeviceLogin();
-            if (StringUtils.isNullOrEmpty(accountEmail)) {
-                System.out.println("Canceled by the user.");
-                return null;
-            }
-            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
-            authMethodDetailsResult.setAccountEmail(accountEmail);
-            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
+            authMethodDetailsResult = doDeviceLogin();
         } else if (azureCliRadioButton.isSelected()) {
-            call(() -> AzureCliAzureManager.getInstance().signIn(), signInAZProp);
-            if (AzureCliAzureManager.getInstance().isSignedIn()) {
-                authMethodDetailsResult.setAuthMethod(AuthMethod.AZ);
-            } else {
-                return null;
-            }
+            authMethodDetailsResult = call(() -> IdentityAzureManager.getInstance().signInAzureCli().block(), signInAZProp);
+        } else if (oauthLoginRadioButton.isSelected()) {
+            authMethodDetailsResult = call(() -> IdentityAzureManager.getInstance().signInOauth().block(), signInAZProp);
         }
         return authMethodDetailsResult;
     }
 
+
     @Override
     protected void init() {
         super.init();
-        AzureTokenWrapper tokenWrapper = null;
-        try {
-            tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
-        } catch (IOException | RuntimeException e) {
-            // swallow exception while getting azure cli credential
-        }
-        if (tokenWrapper != null) {
-            azureCliPanel.setEnabled(true);
-            azureCliRadioButton.setText("Azure CLI");
-            azureCliRadioButton.setEnabled(true);
-            azureCliRadioButton.setSelected(true);
-        } else {
-            azureCliPanel.setEnabled(false);
-            azureCliRadioButton.setText("Azure CLI (Not logged in)");
-            azureCliRadioButton.setEnabled(false);
-        }
+        azureCliPanel.setEnabled(false);
+        azureCliRadioButton.setText("Azure CLI (checking...)");
+        azureCliRadioButton.setEnabled(false);
+        azureCliCommentLabel.setIcon(new AnimatedIcon.Default());
         refreshAuthControlElements();
     }
 
@@ -269,27 +259,61 @@ public class SignInWindow extends AzureDialogWrapper {
             authFileTextField.setText(file.getPath());
         }
     }
-
-    @Nullable
-    private synchronized BaseADAuthManager doDeviceLogin() {
+    private AuthMethodDetails doServicePrincipalLogin(final String authPath) {
         try {
-            BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
-            if (dcAuthManager.isSignedIn()) {
+            IdentityAzureManager authManager = IdentityAzureManager.getInstance();
+            if (AuthMethodManager.getInstance().isSignedIn()) {
                 doSignOut();
             }
-            call(() -> dcAuthManager.signIn(null), signInDCProp);
-            accountEmail = dcAuthManager.getAccountEmail();
+            return authManager.signInServicePrincipal(AuthFile.fromFile(authPath)).block();
 
-            return dcAuthManager;
         } catch (Exception ex) {
             ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+            runTask(() -> {
+                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+            });
+        }
+        return null;
+    }
+
+    @Nullable
+    private synchronized AuthMethodDetails doDeviceLogin() {
+        try {
+            IdentityAzureManager dcAuthManager = IdentityAzureManager.getInstance();
+            if (AuthMethodManager.getInstance().isSignedIn()) {
+                doSignOut();
+            }
+            IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
+            return call(() -> {
+                final CompletableFuture<String> future = new CompletableFuture<>();
+                Mono<AuthMethodDetails> mono = dcAuthManager.signInDeviceCode(deviceLoginUI).cache();
+                final Disposable subscribe = mono.doFinally(r -> {
+                    future.complete("complete");
+                }).subscribe();
+                deviceLoginUI.setDisposable(subscribe);
+                future.get();
+                return mono.block();
+            }, signInDCProp);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            runTask(() -> {
+                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+            });
         }
 
         return null;
     }
 
-    private void call(Callable loginCallable, Map<String, String> properties) {
+    private static void runTask(@Nonnull Runnable runnable) {
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            runnable.run();
+        } else {
+            ApplicationManager.getApplication().invokeLater(runnable);
+        }
+    }
+
+    private <T>T call(Callable<T> loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Signing in..."));
 
@@ -297,7 +321,7 @@ public class SignInWindow extends AzureDialogWrapper {
             operation.start();
             operation.trackProperties(properties);
             operation.trackProperty(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
-            loginCallable.call();
+            return loginCallable.call();
         } catch (Exception e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
@@ -310,7 +334,7 @@ public class SignInWindow extends AzureDialogWrapper {
         try {
             accountEmail = null;
             // AuthMethod.AD is deprecated.
-            AuthMethod.DC.getAdAuthManager().signOut();
+            AuthMethodManager.getInstance().signOut();
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), "Sign Out Error");
@@ -318,21 +342,33 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void doCreateServicePrincipal() {
-        BaseADAuthManager dcAuthManager = null;
+        IdentityAzureManager dcAuthManager = null;
         try {
             if (getAuthMethodManager().isSignedIn()) {
                 getAuthMethodManager().signOut();
             }
+            IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
 
-            dcAuthManager = doDeviceLogin();
+            AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+            Account account = az.loginAsync(AuthType.DEVICE_CODE).block();
+
+
+//                return ((DeviceCodeAccount) account).continueLogin();
+
+            Mono<Account> mono = ((DeviceCodeAccount) account).continueLogin().cache();
+            Disposable subscribe = mono.subscribeOn(Schedulers.boundedElastic()).doFinally(r -> {
+                deviceLoginUI.closePrompt();
+            }).subscribe();
+            deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode());
+            deviceLoginUI.setDisposable(subscribe);
+            dcAuthManager = (IdentityAzureManager) getAuthMethodManager().getAzureManager();
             if (dcAuthManager == null || !dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");
                 return;
             }
 
-            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
-            SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
+            SubscriptionManager subscriptionManager = dcAuthManager.getSubscriptionManager();
 
             Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Loading subscriptions..."));
             subscriptionManager.getSubscriptionDetails();
@@ -365,7 +401,7 @@ public class SignInWindow extends AzureDialogWrapper {
             }
 
             SrvPriCreationStatusDialog d1 = SrvPriCreationStatusDialog
-                .go(accessTokenAzureManager, tidSidsMap, destinationFolder, project);
+                .go(dcAuthManager, tidSidsMap, destinationFolder, project);
             if (d1 == null) {
                 System.out.println(">> Canceled by the user");
                 return;
@@ -389,7 +425,7 @@ public class SignInWindow extends AzureDialogWrapper {
             if (dcAuthManager != null) {
                 try {
                     System.out.println(">> Signing out...");
-                    dcAuthManager.signOut();
+                    AuthMethodManager.getInstance().signOut();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

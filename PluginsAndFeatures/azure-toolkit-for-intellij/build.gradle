@@ -57,7 +57,7 @@ intellij {
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']
-	downloadSources = Boolean.valueOf(sources)
+    downloadSources = Boolean.valueOf(sources)
 }
 
 
@@ -100,8 +100,8 @@ subprojects {
     dependencies {
         compileOnly 'org.jetbrains:annotations:20.1.0'
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
-        compileOnly 'org.projectlombok:lombok:1.18.8'
-        annotationProcessor 'org.projectlombok:lombok:1.18.8'
+        compileOnly 'org.projectlombok:lombok:1.18.18'
+        annotationProcessor 'org.projectlombok:lombok:1.18.18'
 
         compile "com.microsoft.azure:azure-toolkit-common-lib:0.6.0-SNAPSHOT"
     }
@@ -144,6 +144,7 @@ configurations {
 apply plugin: 'java'
 
 dependencies {
+    compile 'com.nimbusds:oauth2-oidc-sdk:7.1.1', { force = true }
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
@@ -216,7 +217,9 @@ test {
         events "passed", "skipped", "failed"
     }
 }
-
+runIde {
+    maxHeapSize = "4g"
+}
 task cucumberPackJar(type: Jar) {
     appendix = 'pathing'
 
@@ -238,10 +241,10 @@ task cucumber() {
             main = "cucumber.api.cli.Main"
             classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
             args = [
-                '--plugin', 'progress',
-                '--glue', 'com.microsoft.azure.hdinsight.spark.common',
-                '-m',
-                'Test/resources']
+                    '--plugin', 'progress',
+                    '--glue', 'com.microsoft.azure.hdinsight.spark.common',
+                    '-m',
+                    'Test/resources']
         }
     }
 }
