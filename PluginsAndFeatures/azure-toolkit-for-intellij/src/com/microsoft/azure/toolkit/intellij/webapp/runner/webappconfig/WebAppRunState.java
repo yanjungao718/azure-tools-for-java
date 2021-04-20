@@ -141,6 +141,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
 
     private IWebApp getOrCreateAzureWebApp(AzureAppService azureAppService, RunProcessHandler processHandler) throws Exception {
         final WebAppEntity entity = WebAppEntity.builder().id(webAppSettingModel.getWebAppId())
+                                                .subscriptionId(webAppSettingModel.getSubscriptionId())
                                                 .resourceGroup(webAppSettingModel.getResourceGroup())
                                                 .name(webAppSettingModel.getWebAppName()).build();
         final IWebApp webApp = azureAppService.webapp(entity);
