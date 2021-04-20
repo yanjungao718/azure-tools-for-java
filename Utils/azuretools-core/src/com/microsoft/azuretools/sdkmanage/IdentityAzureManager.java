@@ -9,8 +9,8 @@ import com.azure.core.management.AzureEnvironment;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.Constants;
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthFile;
 import com.microsoft.azuretools.authmanage.AuthMethod;
@@ -41,8 +40,6 @@ import java.util.stream.Collectors;
 
 
 public class IdentityAzureManager extends AzureManagerBase {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityAzureManager.class);
-
     private IdentityAzureManager() {
         settings.setSubscriptionsDetailsFileName(Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_IDENTITY);
     }
@@ -97,23 +94,12 @@ public class IdentityAzureManager extends AzureManagerBase {
 
     public Mono<AuthMethodDetails> signInAzureCli() {
         AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-        return az.loginAsync(AuthType.AZURE_CLI, false).map(account -> fromAccountEntity(account.getEntity()));
+        return az.loginAsync(AuthType.AZURE_CLI, false).flatMap(Account::continueLogin).map(account -> fromAccountEntity(account.getEntity()));
     }
 
     public Mono<AuthMethodDetails> signInOAuth() {
         AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-        return az.loginAsync(AuthType.OAUTH2, true).map(account -> fromAccountEntity(account.getEntity()));
-    }
-
-    public Mono<AuthMethodDetails> signInDeviceCode(IDeviceLoginUI deviceLoginUI) {
-        AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-        return az.loginAsync(AuthType.DEVICE_CODE, true).flatMap(account -> {
-            deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode());
-            return ((DeviceCodeAccount) account).continueLogin();
-        }).map(account -> {
-            deviceLoginUI.closePrompt();
-            return fromAccountEntity(account.getEntity());
-        });
+        return az.loginAsync(AuthType.OAUTH2, true).flatMap(Account::continueLogin).map(account -> fromAccountEntity(account.getEntity()));
     }
 
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {
@@ -125,7 +111,7 @@ public class IdentityAzureManager extends AzureManagerBase {
             if (authType == AuthType.SERVICE_PRINCIPAL) {
                 AuthFile authFile = AuthFile.fromFile(authMethodDetails.getCredFilePath());
                 return signInServicePrincipal(authFile).map(ac -> authMethodDetails);
-            } else if (authType == AuthType.DEVICE_CODE || authType == AuthType.OAUTH2) {
+            } else {
                 if (StringUtils.isNoneBlank(authMethodDetails.getClientId(), authMethodDetails.getTenantId())) {
                     AccountEntity entity = new AccountEntity();
                     entity.setEnvironment(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
@@ -133,18 +119,16 @@ public class IdentityAzureManager extends AzureManagerBase {
                     entity.setEmail(authMethodDetails.getAccountEmail());
                     entity.setClientId(authMethodDetails.getClientId());
                     entity.setTenantIds(Collections.singletonList(authMethodDetails.getTenantId()));
-                    return Azure.az(AzureAccount.class).loginAsync(entity).map(ac -> fromAccountEntity(ac.getEntity()));
+                    Account account = Azure.az(AzureAccount.class).account(entity);
+                    return Mono.just(fromAccountEntity(account.getEntity()));
                 } else {
                     throw new AzureToolkitRuntimeException("Cannot restore credentials due to version change.");
                 }
-            } else {
-                throw new AzureToolkitRuntimeException(String.format("Cannot restore credentials: unsupported auth type '%s'.", authType));
             }
 
         } catch (Throwable e) {
             drop();
-            LOGGER.warn(String.format("Cannot restore credentials due to error: %s", e.getMessage()));
-            return Mono.just(new AuthMethodDetails());
+            return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
         }
     }
 
@@ -166,7 +150,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         auth.setCertificate(authFile.getCertificate());
         auth.setCertificatePassword(authFile.getCertificatePassword());
         auth.setTenant(authFile.getTenant());
-        return Azure.az(AzureAccount.class).loginAsync(auth, false).map(account -> {
+        return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
             AuthMethodDetails authMethodDetails = fromAccountEntity(account.getEntity());
             // special handle for SP
             authMethodDetails.setCredFilePath(authFile.getFilePath());

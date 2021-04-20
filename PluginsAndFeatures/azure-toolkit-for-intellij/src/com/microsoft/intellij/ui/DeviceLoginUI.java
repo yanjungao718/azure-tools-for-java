@@ -6,7 +6,6 @@
 package com.microsoft.intellij.ui;
 
 import com.azure.identity.DeviceCodeInfo;
-import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.aad.adal4j.AuthenticationCallback;
 import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationResult;
@@ -16,6 +15,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.Disposable;
+
 
 public class DeviceLoginUI implements IDeviceLoginUI {
     private DeviceLoginWindow deviceLoginWindow;
@@ -32,10 +32,8 @@ public class DeviceLoginUI implements IDeviceLoginUI {
     }
 
     public void promptDeviceCode(DeviceCodeInfo challenge) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            deviceLoginWindow = new DeviceLoginWindow(challenge, this);
-            deviceLoginWindow.show();
-        });
+        deviceLoginWindow = new DeviceLoginWindow(challenge, this);
+        deviceLoginWindow.show();
     }
 
     @Override
@@ -44,6 +42,7 @@ public class DeviceLoginUI implements IDeviceLoginUI {
             deviceLoginWindow.closeDialog();
         }
     }
+
     @Override
     public void cancel() {
         if (disposable != null) {

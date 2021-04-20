@@ -5,6 +5,8 @@
 
 package com.microsoft.intellij.ui;
 
+import com.azure.core.management.AzureEnvironment;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -20,7 +22,11 @@ import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
+import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
@@ -59,6 +65,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
     private static final String SIGN_IN_ERROR = "Sign In Error";
+    private static final String USER_CANCEL = "user cancel";
 
     private JPanel contentPane;
 
@@ -300,29 +307,51 @@ public class SignInWindow extends AzureDialogWrapper {
 
     @Nullable
     private synchronized AuthMethodDetails doDeviceLogin() {
+        CompletableFuture<AuthMethodDetails> deviceCodeLoginFuture = new CompletableFuture<>();
         try {
-            IdentityAzureManager dcAuthManager = IdentityAzureManager.getInstance();
             if (AuthMethodManager.getInstance().isSignedIn()) {
                 doSignOut();
             }
-            IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
-            return call(() -> {
-                final CompletableFuture<String> future = new CompletableFuture<>();
-                Mono<AuthMethodDetails> mono = dcAuthManager.signInDeviceCode(deviceLoginUI).cache();
-                final Disposable subscribe = mono.doFinally(r -> {
-                    future.complete("complete");
-                }).subscribe();
-                deviceLoginUI.setDisposable(subscribe);
-                future.get();
-                return mono.block();
-            }, signInDCProp);
+            final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
+            final AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+            AzureEnvironment env = AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName());
+            com.microsoft.azure.toolkit.lib.Azure.az(AzureCloud.class).set(env);
+            final Account account = az.loginAsync(AuthType.DEVICE_CODE, true).block();
+            Disposable subscribe = account.continueLogin().doOnCancel(() -> {
+                deviceCodeLoginFuture.completeExceptionally(new IllegalStateException("user cancel"));
+            }).doOnSuccess(ac -> {
+                deviceCodeLoginFuture.complete(fromAccountEntity(ac.getEntity()));
+            }).doOnError(deviceCodeLoginFuture::completeExceptionally).doFinally(signal -> {
+                deviceLoginUI.closePrompt();
+            }).subscribe();
+            deviceLoginUI.setDisposable(subscribe);
+            if (ApplicationManager.getApplication().isDispatchThread()) {
+                deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode());
+            } else {
+                AzureTaskManager.getInstance().runAndWait(() ->
+                                                              deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode()));
+            }
+            return Mono.fromFuture(deviceCodeLoginFuture).block();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+            if (ex instanceof IllegalStateException && USER_CANCEL.equals(ex.getMessage())) {
+            } else {
+                ex.printStackTrace();
+                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+            }
         }
-
         return null;
+    }
+
+    private static AuthMethodDetails fromAccountEntity(AccountEntity entity) {
+        AuthMethodDetails authMethodDetails = new AuthMethodDetails();
+        authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+        authMethodDetails.setAuthType(entity.getType());
+        authMethodDetails.setClientId(entity.getClientId());
+        authMethodDetails.setTenantId(entity.getTenantIds().get(0));
+        authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudNameForAzureCli(entity.getEnvironment()));
+        authMethodDetails.setAccountEmail(entity.getEmail());
+        return authMethodDetails;
     }
 
     private <T> T call(Callable<T> loginCallable, Map<String, String> properties) {
@@ -355,17 +384,16 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void doCreateServicePrincipal() {
         final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-        final IdentityAzureManager dcAuthManager = (IdentityAzureManager) authMethodManager.getAzureManager();
+        final IdentityAzureManager dcAuthManager = IdentityAzureManager.getInstance();
         try {
             if (authMethodManager.isSignedIn()) {
                 authMethodManager.signOut();
             }
-            final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
-
-            final AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-            final Account account = az.loginAsync(AuthType.DEVICE_CODE, true).block();
-
             doDeviceLogin();
+            if (!dcAuthManager.isSignedIn()) {
+                System.out.println(">> Canceled by the user");
+                return;
+            }
 
             final SubscriptionManager subscriptionManager = dcAuthManager.getSubscriptionManager();
 
