@@ -28,8 +28,8 @@ import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
@@ -271,14 +271,14 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     @Nullable
-    private synchronized BaseADAuthManager doDeviceLogin() {
+    private synchronized IdentityAzureManager doDeviceLogin() {
         try {
-            BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
-            if (dcAuthManager.isSignedIn()) {
+            IdentityAzureManager dcAuthManager = (IdentityAzureManager) AuthMethodManager.getInstance().getAzureManager();
+            if (AuthMethodManager.getInstance().isSignedIn()) {
                 doSignOut();
             }
             call(() -> dcAuthManager.signIn(null), signInDCProp);
-            accountEmail = dcAuthManager.getAccountEmail();
+            accountEmail = dcAuthManager.getCurrentUserId();
 
             return dcAuthManager;
         } catch (Exception ex) {
@@ -310,7 +310,7 @@ public class SignInWindow extends AzureDialogWrapper {
         try {
             accountEmail = null;
             // AuthMethod.AD is deprecated.
-            AuthMethod.DC.getAdAuthManager().signOut();
+            AuthMethodManager.getInstance().signOut();
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), "Sign Out Error");
@@ -318,7 +318,7 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void doCreateServicePrincipal() {
-        BaseADAuthManager dcAuthManager = null;
+        IdentityAzureManager dcAuthManager = null;
         try {
             if (getAuthMethodManager().isSignedIn()) {
                 getAuthMethodManager().signOut();
@@ -331,8 +331,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 return;
             }
 
-            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
-            SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
+            SubscriptionManager subscriptionManager = dcAuthManager.getSubscriptionManager();
 
             Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Loading subscriptions..."));
             subscriptionManager.getSubscriptionDetails();
@@ -365,7 +364,7 @@ public class SignInWindow extends AzureDialogWrapper {
             }
 
             SrvPriCreationStatusDialog d1 = SrvPriCreationStatusDialog
-                .go(accessTokenAzureManager, tidSidsMap, destinationFolder, project);
+                .go(dcAuthManager, tidSidsMap, destinationFolder, project);
             if (d1 == null) {
                 System.out.println(">> Canceled by the user");
                 return;
@@ -389,7 +388,7 @@ public class SignInWindow extends AzureDialogWrapper {
             if (dcAuthManager != null) {
                 try {
                     System.out.println(">> Signing out...");
-                    dcAuthManager.signOut();
+                    AuthMethodManager.getInstance().signOut();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
