@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.52.0](#3520)
   - [3.51.0](#3510)
   - [3.50.0](#3500)
   - [3.49.0](#3490)
@@ -65,6 +66,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.52.0
+### Added
+- Add OAuth2 login
 
 ## 3.51.0
 ### Added
