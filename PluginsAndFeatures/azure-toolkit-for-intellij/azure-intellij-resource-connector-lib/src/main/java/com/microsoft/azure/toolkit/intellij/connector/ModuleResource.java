@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +23,13 @@ import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor
-@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class ModuleResource implements Resource {
     public static final String TYPE = Definition.IJ_MODULE.type;
     private final String type = Definition.IJ_MODULE.type;
     @EqualsAndHashCode.Include
     private final String moduleName;
+    private Module module;
 
     @Override
     public String getId() {
@@ -38,10 +37,13 @@ public final class ModuleResource implements Resource {
     }
 
     public Module getModule() {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
-        return Arrays.stream(ModuleManager.getInstance(project).getModules())
-                .filter(m -> Objects.equals(m.getName(), moduleName)).findAny()
-                .orElse(null);
+        if (this.module == null) {
+            final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+            this.module = Arrays.stream(ModuleManager.getInstance(project).getModules())
+                    .filter(m -> Objects.equals(m.getName(), moduleName)).findAny()
+                    .orElse(null);
+        }
+        return this.module;
     }
 
     public String toString() {

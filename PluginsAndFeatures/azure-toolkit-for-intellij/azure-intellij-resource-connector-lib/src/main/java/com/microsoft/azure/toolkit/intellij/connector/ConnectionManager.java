@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.project.Project;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -15,7 +16,15 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -42,9 +51,19 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         return Optional.ofNullable(definition).orElse(new DefaultConnection.Definition<>());
     }
 
-    static <R extends Resource, C extends Resource> void registerDefinition(String resourceType, String consumerType, ConnectionDefinition<R, C> definition) {
+    @Nonnull
+    @SuppressWarnings({"unchecked"})
+    private static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinitionOrDefault(String connectionType) {
+        final ConnectionDefinition<R, C> definition = (ConnectionDefinition<R, C>) Impl.definitions.get(connectionType);
+        return Optional.ofNullable(definition).orElse(new DefaultConnection.Definition<>());
+    }
+
+    static <R extends Resource, C extends Resource> void registerDefinition(String resourceType, String consumerType, ConnectionDefinition<R, C> definition, Project project) {
         final String type = typeOf(resourceType, consumerType);
         Impl.definitions.put(type, definition);
+        Optional.ofNullable(Impl.delayed.get(type))
+                .map(definition::read)
+                .ifPresent(c -> project.getService(ConnectionManager.class).addConnection(c));
     }
 
     void addConnection(Connection<? extends Resource, ? extends Resource> connection);
@@ -63,6 +82,11 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         private static final String FIELD_TYPE = "type";
         private final Set<Connection<? extends Resource, ? extends Resource>> connections = new LinkedHashSet<>();
         private static final Map<String, ConnectionDefinition<? extends Resource, ? extends Resource>> definitions = new LinkedHashMap<>();
+        private static final Map<String, Element> delayed = new HashMap<>();
+
+        static {
+            definitions.put("default", new DefaultConnection.Definition<>());
+        }
 
         @Override
         public synchronized void addConnection(Connection<? extends Resource, ? extends Resource> connection) {
@@ -85,21 +109,13 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             return connections.stream().filter(e -> StringUtils.equals(id, e.getConsumer().getId())).collect(Collectors.toList());
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings({"rawtypes"})
         public Element getState() {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
             for (final Connection connection : this.connections) {
-                final String connectionType = ConnectionManager.typeOf(connection.getResource().getType(), connection.getConsumer().getType());
                 final Element connectionEle = new Element(ELEMENT_NAME_CONNECTION);
-                try {
-                    final var definition = definitions.get(connectionType);
-                    assert definition != null : String.format("definition for connection of type \"%s\" is not found", connectionType);
-                    definition.write(connectionEle, connection);
-                    connectionEle.setAttribute(FIELD_TYPE, connectionType);
-                    connectionsEle.addContent(connectionEle);
-                } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when persist a resource connection of type '%s'", connectionType), e);
-                }
+                this.writeConnection(connectionEle, connection);
+                connectionsEle.addContent(connectionEle);
             }
             return connectionsEle;
         }
@@ -107,16 +123,34 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         public void loadState(@NotNull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
                 final String connectionType = connectionEle.getAttributeValue(FIELD_TYPE);
+                this.readConnection(connectionEle, connectionType);
+            }
+        }
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        private void writeConnection(Element connectionEle, Connection connection) {
+            final String customType = ConnectionManager.typeOf(connection.getResource().getType(), connection.getConsumer().getType());
+            final String connectionType = connection instanceof DefaultConnection ? "default" : customType;
+            final ConnectionDefinition<?, ?> definition = definitions.get(connectionType);
+            assert definition != null : String.format("definition for connection of type \"%s\" is not found", connectionType);
+            definition.write(connectionEle, connection);
+            connectionEle.setAttribute(FIELD_TYPE, connectionType);
+        }
+
+
+        private void readConnection(Element connectionEle, String connectionType) {
+            final ConnectionDefinition<?, ?> definition = definitions.get(connectionType);
+            if (Objects.nonNull(definition)) {
                 try {
-                    final ConnectionDefinition<? extends Resource, ? extends Resource> definition = definitions.get(connectionType);
-                    assert definition != null : String.format("definition for connection of type \"%s\" is not found", connectionType);
-                    final var connection = definition.read(connectionEle);
+                    final Connection<?, ?> connection = definition.read(connectionEle);
                     if (Objects.nonNull(connection)) {
                         this.addConnection(connection);
                     }
                 } catch (final Exception e) {
                     log.log(Level.WARNING, String.format("error occurs when load a resource connection of type '%s'", connectionType), e);
                 }
+            } else {
+                delayed.put(connectionType, connectionEle);
             }
         }
     }
