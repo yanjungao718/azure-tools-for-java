@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
+All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file(test).
 
 - [Change Log](#change-log)
   - [3.51.0](#3510)
