@@ -14,6 +14,12 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.WriteExternalException;
+import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
@@ -22,12 +28,15 @@ import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.intellij.ui.components.AzureArtifact;
-import com.microsoft.intellij.ui.components.AzureArtifactManager;
-import com.microsoft.intellij.ui.components.AzureArtifactType;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.Optional;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -38,7 +47,11 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String TOMCAT = "tomcat";
     private static final String JAVA = "java";
     private static final String JBOSS = "jboss";
+    public static final String JAVA_VERSION = "javaVersion";
     private final IntelliJWebAppSettingModel webAppSettingModel;
+    @Getter
+    @Setter
+    private Map<String, String> applicationSettings;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -64,8 +77,24 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     }
 
     @Override
+    public void readExternal(final Element element) throws InvalidDataException {
+        super.readExternal(element);
+        Optional.ofNullable(element.getChild(JAVA_VERSION))
+                .map(javaVersionElement -> javaVersionElement.getAttributeValue(JAVA_VERSION))
+                .ifPresent(javaVersion -> webAppSettingModel.setJdkVersion(JavaVersion.fromString(javaVersion)));
+    }
+
+    @Override
+    public void writeExternal(final Element element) throws WriteExternalException {
+        super.writeExternal(element);
+        Optional.ofNullable(webAppSettingModel.getJdkVersion())
+                .map(JavaVersion::toString)
+                .map(javaVersion -> new Element(JAVA_VERSION).setAttribute(JAVA_VERSION, javaVersion))
+                .ifPresent(element::addContent);
+    }
+
+    @Override
     public void validate() throws ConfigurationException {
-        checkAzurePreconditions();
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(message("webapp.deploy.validate.noWebAppName"));
