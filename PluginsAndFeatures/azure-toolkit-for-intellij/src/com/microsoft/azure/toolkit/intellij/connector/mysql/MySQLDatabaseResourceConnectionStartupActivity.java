@@ -13,6 +13,6 @@ public class MySQLDatabaseResourceConnectionStartupActivity implements StartupAc
         final String resourceType = MySQLDatabaseResource.TYPE;
         final String consumerType = ModuleResource.TYPE;
         ResourceManager.registerDefinition(MySQLDatabaseResource.Definition.AZURE_MYSQL);
-        ConnectionManager.registerDefinition(resourceType, consumerType, MySQLDatabaseResourceConnection.Definition.MODULE_MYSQL);
+        ConnectionManager.registerDefinition(resourceType, consumerType, MySQLDatabaseResourceConnection.Definition.MODULE_MYSQL, project);
     }
 }

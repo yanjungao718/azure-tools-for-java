@@ -44,17 +44,6 @@ public interface ConnectionDefinition<R extends Resource, C extends Resource> {
     boolean validate(Connection<R, C> connection, Project project);
 
     /**
-     * are the connections defined by this definition generally applicable for
-     * the specified {@code configuration}.<br>
-     * - a {@code Connect Azure Resource} before run task will be added to the
-     * RC if applicable.<br> but the before run task will take no effect if
-     * there are no connections applicable for the specified {@code configuration}.
-     */
-    default boolean isApplicableFor(@NotNull RunConfiguration configuration) {
-        return false;
-    }
-
-    /**
      * get <b>custom</b> connector dialog to create resource connection of
      * a type defined by this definition
      */

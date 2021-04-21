@@ -16,7 +16,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
-import com.microsoft.azure.toolkit.intellij.connector.*;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
+import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.common.AzureMessager;
@@ -24,7 +30,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -61,8 +66,14 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
 
     @Override
     public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
-        final Module module = getTargetModule(configuration);
-        return Objects.equals(module, this.consumer.getModule());
+        final boolean javaAppRunConfiguration = configuration instanceof ApplicationConfiguration;
+        final boolean springbootAppRunConfiguration = StringUtils.equals(configuration.getClass().getName(), SPRING_BOOT_CONFIGURATION);
+        final boolean azureWebAppRunConfiguration = StringUtils.equals(configuration.getClass().getName(), AZURE_WEBAPP_CONFIGURATION);
+        if (javaAppRunConfiguration || azureWebAppRunConfiguration || springbootAppRunConfiguration) {
+            final Module module = getTargetModule(configuration);
+            return Objects.nonNull(module) && Objects.equals(module.getName(), this.consumer.getModuleName());
+        }
+        return false;
     }
 
     @Override
@@ -87,18 +98,16 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
 
     @Nullable
     private static Module getTargetModule(@NotNull RunConfiguration configuration) {
-        Module module = null;
-        if (configuration instanceof WebAppConfiguration) {
+        if (configuration instanceof ModuleBasedConfiguration) {
+            return ((ModuleBasedConfiguration<?, ?>) configuration).getConfigurationModule().getModule();
+        } else if (configuration instanceof WebAppConfiguration) {
             final WebAppConfiguration webAppConfiguration = (WebAppConfiguration) configuration;
             final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(configuration.getProject())
-                                                                    .getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
-                                                                                          webAppConfiguration.getArtifactIdentifier());
-            module = AzureArtifactManager.getInstance(configuration.getProject()).getModuleFromAzureArtifact(azureArtifact);
+                    .getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
+                            webAppConfiguration.getArtifactIdentifier());
+            return AzureArtifactManager.getInstance(configuration.getProject()).getModuleFromAzureArtifact(azureArtifact);
         }
-        if (Objects.isNull(module) && configuration instanceof ModuleBasedConfiguration) {
-            module = ((ModuleBasedConfiguration<?, ?>) configuration).getConfigurationModule().getModule();
-        }
-        return module;
+        return null;
     }
 
     private Map<String, String> initEnv() {
@@ -146,14 +155,6 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
 
         private static final String PROMPT_TITLE = "Azure Resource Connector";
         private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
-
-        @Override
-        public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
-            final boolean springbootAppRunConfiguration = StringUtils.equals(configuration.getClass().getName(), SPRING_BOOT_CONFIGURATION);
-            final boolean azureWebAppRunConfiguration = StringUtils.equals(configuration.getClass().getName(), AZURE_WEBAPP_CONFIGURATION);
-            final boolean javaAppRunConfiguration = configuration instanceof ApplicationConfiguration;
-            return springbootAppRunConfiguration || javaAppRunConfiguration || azureWebAppRunConfiguration;
-        }
 
         @Override
         public MySQLDatabaseResourceConnection create(MySQLDatabaseResource resource, ModuleResource consumer) {
