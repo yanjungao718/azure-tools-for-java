@@ -9,6 +9,7 @@ import com.azure.identity.DeviceCodeInfo;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,12 +25,14 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     private JPanel panel;
     private JEditorPane editorPanel;
     private DeviceCodeInfo deviceCode;
+    private IDeviceLoginUI deviceLoginUI;
 
 
-    public DeviceLoginWindow(DeviceCodeInfo deviceCode) {
+    public DeviceLoginWindow(DeviceCodeInfo deviceCode, IDeviceLoginUI deviceLoginUI) {
         super(null, false, IdeModalityType.PROJECT);
         super.setOKButtonText("Copy&&Open");
         this.deviceCode = deviceCode;
+        this.deviceLoginUI = deviceLoginUI;
         setModal(true);
         setTitle(TITLE);
         editorPanel.setBackground(panel.getBackground());
@@ -68,6 +71,11 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         BrowserUtil.open(deviceCode.getVerificationUrl());
     }
 
+    @Override
+    public void doCancelAction() {
+        deviceLoginUI.cancel();
+        super.doCancelAction();
+    }
     public void closeDialog() {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Window w = getWindow();

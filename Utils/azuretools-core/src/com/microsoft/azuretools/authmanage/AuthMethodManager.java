@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -30,9 +31,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -216,15 +219,14 @@ public class AuthMethodManager {
                     targetAuthMethodDetails = new AuthMethodDetails();
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 } else {
+                    targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                     // convert old auth method to new ones
                     switch (targetAuthMethodDetails.getAuthMethod()) {
                         case AZ: {
-                            targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                             targetAuthMethodDetails.setAuthType(AuthType.AZURE_CLI);
                             break;
                         }
                         case DC: {
-                            targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                             targetAuthMethodDetails.setAuthType(AuthType.DEVICE_CODE);
                             break;
                         }
@@ -233,14 +235,16 @@ public class AuthMethodManager {
                             LOGGER.warning("The AD auth method is not supported now, ignore the credential.");
                             break;
                         case SP:
-                            targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                             targetAuthMethodDetails.setAuthType(AuthType.SERVICE_PRINCIPAL);
                             break;
                         default:
                             break;
                     }
                 }
-                authMethodDetails = restoreInner(targetAuthMethodDetails);
+                authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
+                List<String> allSubscriptionIds = identityAzureManager.getSubscriptionDetails().stream()
+                        .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
+                identityAzureManager.selectSubscriptionByIds(allSubscriptionIds);
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {
@@ -256,24 +260,6 @@ public class AuthMethodManager {
             }
             return this;
         });
-    }
-
-    private AuthMethodDetails restoreInner(AuthMethodDetails newMethodDetails) {
-        if (newMethodDetails == null || newMethodDetails.getAuthMethod() == null) {
-            return newMethodDetails;
-        }
-        AuthType authType = newMethodDetails.getAuthType();
-        try {
-            if (authType == AuthType.SERVICE_PRINCIPAL) {
-                AuthFile authFile = AuthFile.fromFile(newMethodDetails.getCredFilePath());
-                return IdentityAzureManager.getInstance().signIn(authFile);
-            } else {
-                throw new UnsupportedOperationException("Cannot restore login for auth type:" + authType);
-            }
-
-        } catch (Throwable e) {
-            throw new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage()), e);
-        }
     }
 
     @AzureOperation(name = "account|auth_setting.load", type = AzureOperation.Type.TASK)
