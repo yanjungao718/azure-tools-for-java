@@ -26,6 +26,8 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -45,6 +49,7 @@ public class AuthMethodManager {
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
+    private final CompletableFuture<Boolean> initFuture = new CompletableFuture();
     private final IdentityAzureManager identityAzureManager = IdentityAzureManager.getInstance();
 
     static {
@@ -68,7 +73,14 @@ public class AuthMethodManager {
     }
 
     private AuthMethodManager() {
-        initAuthMethodManagerFromSettings();
+        Mono.fromCallable(() -> {
+            try {
+                initAuthMethodManagerFromSettings();
+            } catch (Throwable ex) {
+                LOGGER.warning("Cannot restore login due to error: " + ex.getMessage());
+            }
+            return true;
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
     }
 
     @NotNull
@@ -157,6 +169,7 @@ public class AuthMethodManager {
 
     @Nullable
     public AzureManager getAzureManager() {
+        waitInitFinish();
         if (!this.isSignedIn()) {
             return null;
         }
@@ -166,12 +179,14 @@ public class AuthMethodManager {
     @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
     @CacheEvict(CacheEvict.ALL) // evict all caches on signing out
     public void signOut() {
+        waitInitFinish();
         identityAzureManager.drop();
         cleanAll();
         notifySignOutEventListener();
     }
 
     public boolean isSignedIn() {
+        waitInitFinish();
         return identityAzureManager != null && identityAzureManager.isSignedIn();
     }
 
@@ -185,6 +200,7 @@ public class AuthMethodManager {
 
     @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
+        waitInitFinish();
         cleanAll();
         this.authMethodDetails = authMethodDetails;
         persistAuthMethodDetails();
@@ -192,6 +208,7 @@ public class AuthMethodManager {
     }
 
     private synchronized void cleanAll() {
+        waitInitFinish();
         identityAzureManager.getSubscriptionManager().cleanSubscriptions();
         authMethodDetails = new AuthMethodDetails();
         persistAuthMethodDetails();
@@ -199,6 +216,7 @@ public class AuthMethodManager {
 
     @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
     public void persistAuthMethodDetails() {
+        waitInitFinish();
         try {
             System.out.println("saving authMethodDetails...");
             String sd = JsonHelper.serialize(authMethodDetails);
@@ -252,8 +270,10 @@ public class AuthMethodManager {
                         put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
                     }
                 };
+                initFuture.complete(true);
                 EventUtil.logEvent(EventType.info, operation, telemetryProperties);
             } catch (RuntimeException exception) {
+                initFuture.complete(true);
                 EventUtil.logError(operation, ErrorType.systemError, exception, null, null);
                 this.authMethodDetails = new AuthMethodDetails();
                 this.authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
@@ -277,6 +297,13 @@ public class AuthMethodManager {
         } catch (IOException ignored) {
             System.out.println("Failed to loading authMethodDetails settings. Use defaults.");
             return new AuthMethodDetails();
+        }
+    }
+
+    private void waitInitFinish() {
+        try {
+            this.initFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
         }
     }
 }
