@@ -25,14 +25,17 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
     private static final String ROOT_PATH = "/site/wwwroot";
 
+    protected WebAppBase app;
+    protected Supplier<WebAppBase> supplier;
+
     protected final String subscriptionId;
-    protected final WebAppBase app;
     private AppServiceFileService fileService;
 
     public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
@@ -43,6 +46,17 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
         super(MODULE_ID, name, parent, null);
         this.subscriptionId = subscriptionId;
         this.app = app;
+    }
+
+    // Lazy load for WebAppBase
+    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+        this(MODULE_NAME, parent, subscriptionId, supplier);
+    }
+
+    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+        super(MODULE_ID, name, parent, null);
+        this.subscriptionId = subscriptionId;
+        this.supplier = supplier;
     }
 
     @Override
@@ -68,19 +82,26 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
 
     public AppServiceFileService getFileService() {
         if (Objects.isNull(this.fileService)) {
-            this.fileService = AppServiceFileService.forApp(app);
+            this.fileService = AppServiceFileService.forApp(getTargetAppService());
         }
         return this.fileService;
     }
 
+    private WebAppBase getTargetAppService() {
+        if (app == null) {
+            app = supplier.get();
+        }
+        return app;
+    }
+
     @Override
     public String getServiceName() {
-        return app instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
+        return getTargetAppService() instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
     }
 
     @Override
     public Map<String, String> toProperties() {
-        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(app.id()));
+        return Collections.singletonMap(AppInsightsConstants.SubscriptionId, subscriptionId);
     }
 
     @Override
