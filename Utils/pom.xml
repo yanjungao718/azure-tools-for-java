@@ -75,7 +75,6 @@
 
         <azure.toolkit-lib.version>0.7.0-SNAPSHOT</azure.toolkit-lib.version>
         <azure.storage.version>8.6.5</azure.storage.version>
-        <azure.auth.helper.version>0.7.0-SNAPSHOT</azure.auth.helper.version>
         <azure.security.keyvault.secrets.version>4.2.0</azure.security.keyvault.secrets.version>
         <azure.security.keyvault.keys.version>4.2.0</azure.security.keyvault.keys.version>
         <azure.security.keyvault.certificates.version>4.1.0</azure.security.keyvault.certificates.version>
@@ -340,11 +339,6 @@
                 <groupId>com.azure</groupId>
                 <artifactId>azure-security-keyvault-certificates</artifactId>
                 <version>${azure.security.keyvault.certificates.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-auth-helper</artifactId>
-                <version>${azure.auth.helper.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
