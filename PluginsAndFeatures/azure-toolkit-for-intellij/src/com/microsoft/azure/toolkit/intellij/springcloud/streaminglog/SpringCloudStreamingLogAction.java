@@ -58,7 +58,7 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
         final ResourceId appId = ResourceId.fromString(this.appId);
         final String subscriptionId = appId.subscriptionId();
         final String clusterName = appId.parent().name();
-        this.app = Azure.az(AzureSpringCloud.class).cluster(clusterName).app(appId.name());
+        this.app = Azure.az(AzureSpringCloud.class).subscription(subscriptionId).cluster(clusterName).app(appId.name());
     }
 
     @Override
