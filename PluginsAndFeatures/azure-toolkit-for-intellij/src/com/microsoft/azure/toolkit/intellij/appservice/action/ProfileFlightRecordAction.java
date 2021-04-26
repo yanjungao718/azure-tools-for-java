@@ -71,9 +71,9 @@ public class ProfileFlightRecordAction extends NodeActionListener {
     private void doProfileFlightRecorderAll() {
         try {
             // prerequisite check
-            final String subscriptionId = AzureMvpModel.getSegment(appService.id(), "subscriptions");
+            final String subscriptionId = AzureMvpModel.getSegment(webAppId, "subscriptions");
             // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
-            appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, appService.id());
+            appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
             if (appService.operatingSystem() == OperatingSystem.LINUX &&
                 StringUtils.containsIgnoreCase(appService.linuxFxVersion(), "DOCKER|")) {
                 final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());
