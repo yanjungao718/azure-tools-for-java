@@ -127,7 +127,11 @@ public class SignInWindow extends AzureDialogWrapper {
 
         radioButtonComponentsMap.put(spRadioButton, Arrays.asList(servicePrincipalCommentLabel,
                                                                   authFileLabel, authFileTextField, browseButton, createNewAuthenticationFileButton));
-        radioButtonComponentsMap.put(deviceLoginRadioButton, Arrays.asList(deviceLoginCommentLabel));
+        radioButtonComponentsMap.put(deviceLoginRadioButton, Collections.singletonList(deviceLoginCommentLabel));
+
+        radioButtonComponentsMap.put(oauthLoginRadioButton, Collections.singletonList(labelOAuthLogin));
+
+        radioButtonComponentsMap.put(azureCliRadioButton, Collections.singletonList(azureCliCommentLabel));
         init();
         checkAccountAvailability();
     }
@@ -262,10 +266,6 @@ public class SignInWindow extends AzureDialogWrapper {
         azureCliCommentLabel.setIcon(null);
         azureCliRadioButton.setEnabled(true);
         azureCliRadioButton.setText("Azure CLI");
-        // the default selection is oauth2, if user doesn't change it, will set the default login to azure cli
-        if (oauthLoginRadioButton.isSelected()) {
-            azureCliRadioButton.setSelected(true);
-        }
     }
 
     private void disableAzureCliLogin() {
