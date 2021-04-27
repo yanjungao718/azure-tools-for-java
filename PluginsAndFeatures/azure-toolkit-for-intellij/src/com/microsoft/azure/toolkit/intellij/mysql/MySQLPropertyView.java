@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -154,7 +155,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             }
             boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToLocal.equals(allowAccessToLocal)) {
-                MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessToLocalMachine(subscriptionId, property.getServer(), allowAccessToLocal);
+                AzureMySQLService.FirewallRuleService.getInstance().updateAllowAccessToLocalMachine(subscriptionId, property.getServer(), allowAccessToLocal);
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
@@ -270,7 +271,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         if (ServerState.READY.equals(server.userVisibleState())) {
             originalAllowAccessToAzureServices = MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromAzureServices(property.getFirewallRules());
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-            originalAllowAccessToLocal = MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromLocalMachine(property.getFirewallRules());
+            originalAllowAccessToLocal = AzureMySQLService.FirewallRuleService.getInstance().isAllowAccessFromLocalMachine(property.getFirewallRules());
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();

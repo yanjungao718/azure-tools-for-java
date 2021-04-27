@@ -19,46 +19,8 @@ import java.util.Enumeration;
  */
 public final class NetUtils {
 
-    private static final String UNKNOWN_LOCALHOST = "UNKNOWN_LOCALHOST";
-
     private NetUtils() {
         // empty
-    }
-
-    /**
-     * This method gets the network name of the machine we are running on. Returns "UNKNOWN_LOCALHOST" in the unlikely
-     * case where the host name cannot be found.
-     *
-     * @return String the name of the local host
-     */
-    public static String getLocalHostname() {
-        try {
-            final InetAddress addr = InetAddress.getLocalHost();
-            return addr == null ? UNKNOWN_LOCALHOST : addr.getHostName();
-        } catch (final UnknownHostException uhe) {
-            try {
-                final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                if (interfaces != null) {
-                    while (interfaces.hasMoreElements()) {
-                        final NetworkInterface nic = interfaces.nextElement();
-                        final Enumeration<InetAddress> addresses = nic.getInetAddresses();
-                        while (addresses.hasMoreElements()) {
-                            final InetAddress address = addresses.nextElement();
-                            if (!address.isLoopbackAddress()) {
-                                final String hostname = address.getHostName();
-                                if (hostname != null) {
-                                    return hostname;
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (final SocketException se) {
-                // ignore and log below.
-            }
-            // log.error("Could not determine local host name", uhe);
-            return UNKNOWN_LOCALHOST;
-        }
     }
 
     /**
