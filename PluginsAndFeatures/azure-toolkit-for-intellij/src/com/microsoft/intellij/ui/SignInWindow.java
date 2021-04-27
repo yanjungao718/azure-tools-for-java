@@ -40,6 +40,7 @@ import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.Disposable;
@@ -344,7 +345,7 @@ public class SignInWindow extends AzureDialogWrapper {
         authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
         authMethodDetails.setAuthType(entity.getType());
         authMethodDetails.setClientId(entity.getClientId());
-        authMethodDetails.setTenantId(entity.getTenantIds().get(0));
+        authMethodDetails.setTenantId(CollectionUtils.isEmpty(entity.getTenantIds()) ? "" : entity.getTenantIds().get(0));
         authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudNameForAzureCli(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());
         return authMethodDetails;
