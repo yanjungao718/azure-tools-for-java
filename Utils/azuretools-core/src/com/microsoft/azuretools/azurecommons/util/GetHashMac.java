@@ -59,6 +59,11 @@ public class GetHashMac {
         return ret;
     }
 
+    public static String getMac() {
+        String rowMac = getRawMacByCommand();
+        return isValidRawMac(rowMac) ? rowMac : getRawMacWithNetworkInterface();
+    }
+
     private static boolean isValidMac(String mac) {
         if (StringUtils.isEmpty(mac)) {
             return false;
