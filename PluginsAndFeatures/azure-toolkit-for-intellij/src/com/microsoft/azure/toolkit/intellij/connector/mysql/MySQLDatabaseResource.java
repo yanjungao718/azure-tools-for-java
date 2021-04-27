@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.utils.JdbcUrl;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

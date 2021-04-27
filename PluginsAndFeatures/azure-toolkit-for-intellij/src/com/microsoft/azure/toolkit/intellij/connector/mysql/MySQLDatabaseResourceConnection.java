@@ -30,7 +30,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.utils.MySQLConnectionUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,7 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.microsoft.azuretools.utils.MySQLConnectionUtils.ACCESS_DENIED_ERROR_CODE;
+import static com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils.ACCESS_DENIED_ERROR_CODE;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

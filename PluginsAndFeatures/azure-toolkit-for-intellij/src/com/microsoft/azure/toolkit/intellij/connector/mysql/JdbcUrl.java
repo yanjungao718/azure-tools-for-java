@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.utils;
+package com.microsoft.azure.toolkit.intellij.connector.mysql;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
