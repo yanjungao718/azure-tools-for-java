@@ -107,22 +107,29 @@ public class AzureMySQLService {
             if (isAllowAccessFromLocalMachine(subscriptionId, server)) {
                 return true;
             }
+            final String publicIp = getPublicIp(server);
+            if (StringUtils.isNotBlank(publicIp)) {
+                final String ruleName = getAccessFromLocalRuleName();
+                final FirewallRuleInner firewallRule = new FirewallRuleInner();
+                firewallRule.withStartIpAddress(publicIp);
+                firewallRule.withEndIpAddress(publicIp);
+                final MySQLManager mySQLManager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
+                mySQLManager.firewallRules().inner().createOrUpdate(server.resourceGroupName(), server.name(), ruleName, firewallRule);
+                return true;
+            }
+            return false;
+        }
+
+        private String getPublicIp(final Server server) {
             MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(JdbcUrl.mysql(server.fullyQualifiedDomainName()),
                     server.administratorLogin() + "@" + server.name(), StringUtils.EMPTY);
             if (StringUtils.isNotBlank(connectResult.getMessage())) {
                 Matcher matcher = IPADDRESS_PATTERN.matcher(connectResult.getMessage());
                 if (matcher.find()) {
-                    final String publicIp = matcher.group();
-                    final String ruleName = getAccessFromLocalRuleName();
-                    final FirewallRuleInner firewallRule = new FirewallRuleInner();
-                    firewallRule.withStartIpAddress(publicIp);
-                    firewallRule.withEndIpAddress(publicIp);
-                    final MySQLManager mySQLManager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
-                    mySQLManager.firewallRules().inner().createOrUpdate(server.resourceGroupName(), server.name(), ruleName, firewallRule);
-                    return true;
+                    return matcher.group();
                 }
             }
-            return false;
+            return StringUtils.EMPTY;
         }
 
         public boolean disableAllowAccessFromLocalMachine(final String subscriptionId, final Server server) {
