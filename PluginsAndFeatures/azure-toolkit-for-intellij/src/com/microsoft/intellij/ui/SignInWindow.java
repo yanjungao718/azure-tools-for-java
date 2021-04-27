@@ -77,7 +77,6 @@ public class SignInWindow extends AzureDialogWrapper {
     private JLabel servicePrincipalCommentLabel;
     private JLabel deviceLoginCommentLabel;
     private JRadioButton azureCliRadioButton;
-    private JPanel azureCliPanel;
     private JLabel azureCliCommentLabel;
     private JRadioButton oauthLoginRadioButton;
     private JLabel labelOAuthLogin;
