@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.lib.mysql;
 
+import com.intellij.util.net.NetUtils;
+import com.microsoft.azure.common.utils.GetHashMac;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefaultCreate;
@@ -144,8 +146,8 @@ public class AzureMySQLService {
         }
 
         private String getAccessFromLocalRuleName() {
-            final String hostname = com.intellij.util.net.NetUtils.getLocalHostString();
-            final String macAddress = NetUtils.getMacAddressString();
+            final String hostname = NetUtils.getLocalHostString();
+            final String macAddress = GetHashMac.getMac();
             final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + hostname + macAddress;
             return ruleName;
         }
