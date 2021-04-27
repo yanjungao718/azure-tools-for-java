@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.lib.mysql;
 
-import com.intellij.util.net.NetUtils;
-import com.microsoft.azure.common.utils.GetHashMac;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefaultCreate;
@@ -19,13 +17,16 @@ import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.List;
@@ -125,6 +126,7 @@ public class AzureMySQLService {
         }
 
         private String getPublicIp(final Server server) {
+            // try to get public IP by ping Azure MySQL server
             MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(JdbcUrl.mysql(server.fullyQualifiedDomainName()),
                     server.administratorLogin() + "@" + server.name(), StringUtils.EMPTY);
             if (StringUtils.isNotBlank(connectResult.getMessage())) {
@@ -133,7 +135,20 @@ public class AzureMySQLService {
                     return matcher.group();
                 }
             }
-            return StringUtils.EMPTY;
+            // Alternatively, get public IP by ping public URL
+            String ip = StringUtils.EMPTY;
+            try {
+                final URL url = new URL("https://ipecho.net/plain");
+                final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), StandardCharsets.UTF_8));
+                while ((ip = in.readLine()) != null) {
+                    if (StringUtils.isNotBlank(ip)) {
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+            }
+            return ip;
         }
 
         public boolean disableAllowAccessFromLocalMachine(final String subscriptionId, final Server server) {
