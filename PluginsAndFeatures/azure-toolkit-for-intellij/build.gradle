@@ -145,6 +145,9 @@ apply plugin: 'java'
 
 dependencies {
     compile 'com.nimbusds:oauth2-oidc-sdk:7.1.1', { force = true }
+    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
+
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
     compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.3.3.RELEASE'
