@@ -11,6 +11,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -26,6 +27,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Single;
+import rx.exceptions.Exceptions;
 
 import javax.swing.*;
 
@@ -139,7 +141,14 @@ public class AzureSignInAction extends AzureAnAction {
                 .doOnSuccess(authMethodManager::setAuthMethodDetails)
                 .flatMap((a) -> SelectSubscriptionsAction.selectSubscriptions(project))
                 .doOnSuccess((subs) -> authMethodManager.notifySignInEventListener())
-                .map((unused) -> authMethodManager.isSignedIn());
+                .map((unused) -> authMethodManager.isSignedIn())
+                    .onErrorResumeNext(ex -> {
+                        Throwable e = Exceptions.getFinalCause(ex);
+                        if (e instanceof IllegalStateException && "user cancel".equals(e.getMessage())) {
+                            return Single.just(false);
+                        }
+                        throw new AzureToolkitAuthenticationException("Cannot login due to error", e);
+                    });
         } else {
             return Single.fromCallable(authMethodManager::isSignedIn);
         }
