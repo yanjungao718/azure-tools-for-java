@@ -22,9 +22,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.*;
-import com.microsoft.azuretools.utils.NetUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.List;
@@ -146,9 +147,13 @@ public class AzureMySQLService {
         }
 
         private String getAccessFromLocalRuleName() {
-            final String hostname = NetUtils.getLocalHostString();
+            String hostname = "UNKNOWN_HOST";
+            try {
+                hostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e) {
+            }
             final String macAddress = GetHashMac.getMac();
-            final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + hostname + macAddress;
+            final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + hostname + "_" + macAddress;
             return ruleName;
         }
 
