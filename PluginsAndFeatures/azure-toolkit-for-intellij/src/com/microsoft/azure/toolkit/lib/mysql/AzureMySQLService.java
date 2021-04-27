@@ -91,7 +91,7 @@ public class AzureMySQLService {
         }
 
         public boolean isAllowAccessFromLocalMachine(final List<FirewallRuleInner> firewallRules) {
-            final String ruleName = getAllAccessFromLocalRuleName();
+            final String ruleName = getAccessFromLocalRuleName();
             return firewallRules.stream().filter(e -> StringUtils.equals(e.name(), ruleName)).count() > 0L;
         }
 
@@ -113,7 +113,7 @@ public class AzureMySQLService {
                 Matcher matcher = IPADDRESS_PATTERN.matcher(connectResult.getMessage());
                 if (matcher.find()) {
                     final String publicIp = matcher.group();
-                    final String ruleName = getAllAccessFromLocalRuleName();
+                    final String ruleName = getAccessFromLocalRuleName();
                     final FirewallRuleInner firewallRule = new FirewallRuleInner();
                     firewallRule.withStartIpAddress(publicIp);
                     firewallRule.withEndIpAddress(publicIp);
@@ -129,13 +129,13 @@ public class AzureMySQLService {
             if (!isAllowAccessFromLocalMachine(subscriptionId, server)) {
                 return true;
             }
-            final String ruleName = getAllAccessFromLocalRuleName();
+            final String ruleName = getAccessFromLocalRuleName();
             final MySQLManager mySQLManager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
             mySQLManager.firewallRules().inner().delete(server.resourceGroupName(), server.name(), ruleName);
             return true;
         }
 
-        private String getAllAccessFromLocalRuleName() {
+        private String getAccessFromLocalRuleName() {
             final String hostname = com.intellij.util.net.NetUtils.getLocalHostString();
             final String macAddress = NetUtils.getMacAddressString();
             final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + hostname + macAddress;
