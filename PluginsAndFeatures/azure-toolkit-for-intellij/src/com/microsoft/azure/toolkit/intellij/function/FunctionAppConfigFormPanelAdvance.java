@@ -26,11 +26,12 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFormPanel<FunctionAppConfig> {
+    private final Project project;
     private JTabbedPane tabPane;
     private JPanel pnlRoot;
-    private Project project;
     private AppServiceInfoAdvancedPanel<FunctionAppConfig> appServiceConfigPanelAdvanced;
     private AppServiceMonitorPanel appServiceMonitorPanel;
     private JPanel pnlMonitoring;
@@ -39,6 +40,7 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
     private ApplicationInsightsConfig insightsConfig;
 
     public FunctionAppConfigFormPanelAdvance(final Project project) {
+        super();
         this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
@@ -73,7 +75,7 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
             protected void textChanged(@NotNull final DocumentEvent documentEvent) {
                 // ai name pattern is the subset of function name pattern, so no need to validate the ai instance name
                 insightsConfig.setName(appServiceConfigPanelAdvanced.getTextName().getValue());
-                ApplicationInsightsComboBox insightsComboBox = appServiceMonitorPanel.getApplicationInsightsComboBox();
+                final ApplicationInsightsComboBox insightsComboBox = appServiceMonitorPanel.getApplicationInsightsComboBox();
                 insightsComboBox.removeItem(insightsConfig);
                 insightsComboBox.setValue(insightsConfig);
             }
@@ -82,7 +84,7 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, () -> FunctionAppConfig.builder().build());
+        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel<>(project, () -> FunctionAppConfig.builder().build());
         appServiceConfigPanelAdvanced.setValidPlatform(Arrays.asList(Platform.AzureFunction.values()));
         final List<PricingTier> validPricing = AzureFunctionMvpModel.getInstance().listFunctionPricingTier();
         appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER);
@@ -96,13 +98,13 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
         appServiceMonitorPanel.setWebServerLogVisible(false);
         appServiceMonitorPanel.setData(MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build());
 
-        appServiceConfigPanelAdvanced.getSelectorSubscription().addActionListener(event -> {
-            appServiceMonitorPanel.getApplicationInsightsComboBox().setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue());
-        });
+        appServiceConfigPanelAdvanced.getSelectorSubscription().addActionListener(event ->
+                appServiceMonitorPanel.getApplicationInsightsComboBox().setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue()));
 
         appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
-            final Platform platform = appServiceConfigPanelAdvanced.getSelectorPlatform().getValue();
-            appServiceMonitorPanel.setApplicationLogVisible(platform.getOs() == OperatingSystem.WINDOWS);
+            final OperatingSystem operatingSystem = Optional.ofNullable(appServiceConfigPanelAdvanced.getSelectorPlatform().getValue())
+                    .map(Platform::getOs).orElse(null);
+            appServiceMonitorPanel.setApplicationLogVisible(operatingSystem == OperatingSystem.WINDOWS);
         });
     }
 }
