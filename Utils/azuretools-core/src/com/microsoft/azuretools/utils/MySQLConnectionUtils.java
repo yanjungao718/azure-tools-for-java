@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql;
+package com.microsoft.azuretools.utils;
 
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -60,7 +60,8 @@ public class MySQLConnectionUtils {
             serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
         } catch (final SQLException exception) {
             errorCode = exception.getErrorCode();
-            errorMessage = exception.getErrorCode() == CONNECTION_ERROR_CODE ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
+            errorMessage = exception.getErrorCode() == CONNECTION_ERROR_CODE ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage())
+                    : exception.getMessage();
         } catch (final ClassNotFoundException | RuntimeException exception) {
             errorCode = exception instanceof ClassNotFoundException ? CLASS_NOT_FOUND_ERROR_CODE : UNKNOWN_EXCEPTION_ERROR_CODE;
             errorMessage = exception.getMessage();

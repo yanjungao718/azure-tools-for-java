@@ -24,6 +24,8 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.utils.JdbcUrl;
+import com.microsoft.azuretools.utils.MySQLConnectionUtils;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 
