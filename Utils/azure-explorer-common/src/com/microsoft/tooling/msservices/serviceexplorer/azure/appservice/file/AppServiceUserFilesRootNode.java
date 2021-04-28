@@ -96,7 +96,7 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
 
     @Override
     public String getServiceName() {
-        return getTargetAppService() instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
+        return (app != null && app instanceof FunctionApp) ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
     }
 
     @Override
