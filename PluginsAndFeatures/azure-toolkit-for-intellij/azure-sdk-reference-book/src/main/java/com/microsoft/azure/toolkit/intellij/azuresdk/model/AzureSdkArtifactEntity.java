@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,9 +30,15 @@ public class AzureSdkArtifactEntity {
     public String getDependencySnippet(DependencyType type, String version) {
         final String strType = type.getName().toLowerCase();
         if (Objects.nonNull(dependencyPattern) && dependencyPattern.containsKey(strType)) {
-            return dependencyPattern.get(strType);
+            return dependencyPattern.get(strType).replaceAll("\\$\\{azure\\.version}", version);
         }
         return getDefaultDependencySnippet(type, version);
+    }
+
+    public Map<String, String> getLinks(String version) {
+        final HashMap<String, String> result = new HashMap<>();
+        this.links.forEach((name, link) -> result.put(name, link.replaceAll("\\$\\{azure\\.version}", version)));
+        return result;
     }
 
     private String getDefaultDependencySnippet(final DependencyType type, final String version) {

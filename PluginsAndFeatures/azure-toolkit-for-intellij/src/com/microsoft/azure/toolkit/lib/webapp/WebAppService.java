@@ -5,19 +5,22 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.telemetrywrapper.*;
-import org.apache.commons.compress.utils.FileNameUtils;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
@@ -31,7 +34,7 @@ public class WebAppService {
     }
 
     @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.SERVICE)
-    public WebApp createWebApp(final WebAppConfig config) {
+    public IWebApp createWebApp(final WebAppConfig config) {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);
         final Map<String, String> properties = settings.getTelemetryProperties(null);
@@ -39,7 +42,7 @@ public class WebAppService {
         try {
             operation.start();
             operation.trackProperties(properties);
-            return AzureWebAppMvpModel.getInstance().createWebApp(settings);
+            return AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(settings);
         } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw e;
@@ -59,15 +62,8 @@ public class WebAppService {
         settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().id()));
         settings.setResourceGroup(config.getResourceGroup().name());
         settings.setWebAppName(config.getName());
-        settings.setOS(config.getPlatform().getOs());
         settings.setRegion(config.getRegion().name());
-        if (settings.getOS() == OperatingSystem.LINUX) {
-            settings.setStack(config.getPlatform().getStackOrWebContainer());
-            settings.setVersion(config.getPlatform().getStackVersionOrJavaVersion());
-        } else if (settings.getOS() == OperatingSystem.WINDOWS) {
-            settings.setWebContainer(config.getPlatform().getStackOrWebContainer());
-            settings.setJdkVersion(JavaVersion.fromString(config.getPlatform().getStackVersionOrJavaVersion()));
-        }
+        settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
         // creating if id is empty
         settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().id()));
         if (settings.isCreatingAppServicePlan()) {
@@ -79,7 +75,8 @@ public class WebAppService {
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
             settings.setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
-            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel());
+            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel() == null ? null :
+                                            monitorConfig.getApplicationLogLevel().toString());
             settings.setEnableWebServerLogging(monitorConfig.isEnableWebServerLogging());
             settings.setWebServerLogQuota(monitorConfig.getWebServerLogQuota());
             settings.setWebServerRetentionPeriod(monitorConfig.getWebServerRetentionPeriod());
@@ -89,5 +86,17 @@ public class WebAppService {
         settings.setTargetName(config.getApplication() == null ? null : config.getApplication().toFile().getName());
         settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
         return settings;
+    }
+
+    private static Runtime getRuntimeFromWebAppConfig(@NotNull final Platform platform) {
+        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem operatingSystem =
+            com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(platform.getOs().name());
+        if (operatingSystem == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
+            return Runtime.getRuntimeFromLinuxFxVersion(String.join(" ", platform.getStackOrWebContainer(), platform.getStackVersionOrJavaVersion()));
+        }
+        final WebContainer webContainer = WebContainer.fromString(platform.getStackOrWebContainer());
+        final com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion javaVersion =
+            com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion.fromString(platform.getStackVersionOrJavaVersion());
+        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
     }
 }

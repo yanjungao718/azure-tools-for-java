@@ -74,6 +74,7 @@ public class MavenRunTaskUtil {
      * Legacy code, will be replaced by BeforeRunTaskUtils
      * @deprecated
      */
+    @Deprecated
     private static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
         boolean shouldAdd = true;
         for (BeforeRunTask task : tasks) {
