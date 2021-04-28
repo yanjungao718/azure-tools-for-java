@@ -128,7 +128,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         ProgressIndicator progressIndicator = null;
 
         public ActionRunner(Project project) {
-            super(project, "Create Service Principal Progress", true);
+            super(project, "Create Service Principal Progress", false);
         }
 
         @Override

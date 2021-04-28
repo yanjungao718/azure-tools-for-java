@@ -160,7 +160,7 @@ public class AzureSdkLibraryService {
         } else if (url.startsWith("http")) {
             return url;
         }
-        return String.format("https://azuresdkdocs.blob.core.windows.net/$web/java/%s/%s/index.html", entity.getPackageName(), entity.getVersionGA());
+        return String.format("https://azuresdkdocs.blob.core.windows.net/$web/java/%s/${azure.version}/index.html", entity.getPackageName());
     }
 
     /**
@@ -174,8 +174,8 @@ public class AzureSdkLibraryService {
         } else if (url.startsWith("http")) {
             return url;
         }
-        return String.format("https://github.com/Azure/azure-sdk-for-java/tree/%s_%s/sdk/%s/%s/", entity.getPackageName(), entity.getVersionGA(),
-                url, entity.getPackageName());
+        return String.format("https://github.com/Azure/azure-sdk-for-java/tree/%s_${azure.version}/sdk/%s/%s/", entity.getPackageName(), url,
+                entity.getPackageName());
     }
 
     @AzureOperation(name = "sdk.load_meta_data", type = AzureOperation.Type.TASK)

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Map;
@@ -33,14 +34,9 @@ public class AzureSdkArtifactDetailPanel {
     public AzureSdkArtifactDetailPanel(AzureSdkArtifactEntity artifact) {
         this.artifact = artifact;
         this.$$$setupUI$$$();
-        this.init();
+        this.artifactId.setText(artifact.getArtifactId());
         this.initEventListeners();
         this.version.setBorder(BorderFactory.createEmptyBorder());
-    }
-
-    private void init() {
-        this.artifactId.setText(artifact.getArtifactId());
-        this.buildLinks();
     }
 
     private void initEventListeners() {
@@ -51,8 +47,9 @@ public class AzureSdkArtifactDetailPanel {
         });
     }
 
-    private void buildLinks() {
-        artifact.getLinks().forEach((type, url) -> {
+    private void setLinks(@Nonnull final Map<String, String> links) {
+        this.links.removeAll();
+        links.forEach((type, url) -> {
             final HyperlinkLabel link = new HyperlinkLabel();
             if (StringUtils.isNotBlank(url)) {
                 this.links.add(new JToolBar.Separator());
@@ -64,7 +61,7 @@ public class AzureSdkArtifactDetailPanel {
         });
     }
 
-    private void buildVersionSelector() {
+    private DropDownLink<String> buildVersionSelector() {
         final ArrayList<String> versions = new ArrayList<>();
         if (StringUtils.isNotBlank(artifact.getVersionGA())) {
             versions.add(artifact.getVersionGA());
@@ -72,12 +69,14 @@ public class AzureSdkArtifactDetailPanel {
         if (StringUtils.isNotBlank(artifact.getVersionPreview())) {
             versions.add(artifact.getVersionPreview());
         }
-        this.version = new DropDownLink<>(versions.get(0), versions, v -> {
+        final DropDownLink<String> version = new DropDownLink<>(versions.get(0), versions, (String v) -> {
             if (this.artifactId.isSelected()) {
+                this.setLinks(this.artifact.getLinks(v));
                 this.onArtifactOrVersionSelected.accept(this.artifact, this.version.getSelectedItem());
             }
         }, true);
-        this.version.setForeground(JBColor.BLACK);
+        version.setForeground(JBColor.BLACK);
+        return version;
     }
 
     public void setSelected(boolean selected) {
@@ -94,7 +93,9 @@ public class AzureSdkArtifactDetailPanel {
     }
 
     private void createUIComponents() {
-        this.buildVersionSelector();
+        this.links = new JPanel();
+        this.version = this.buildVersionSelector();
+        this.setLinks(artifact.getLinks(this.version.getSelectedItem()));
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
