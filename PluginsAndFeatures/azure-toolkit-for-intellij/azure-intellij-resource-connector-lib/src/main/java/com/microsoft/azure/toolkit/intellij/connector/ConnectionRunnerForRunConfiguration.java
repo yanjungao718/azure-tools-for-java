@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -93,7 +94,7 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
                 if (configuration.getBeforeRunTasks().stream().noneMatch(t -> t instanceof MyBeforeRunTask)) {
                     final MyBeforeRunTask task = new MyBeforeRunTask();
                     task.setEnabled(true);
-                    configuration.getBeforeRunTasks().add(task);
+                    this.addTask(configuration, task);
                 }
             } else {
                 final List<BeforeRunTask<?>> tasks = configuration.getBeforeRunTasks().stream()
@@ -103,6 +104,16 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
                 }
             }
             return applicable;
+        }
+
+        private void addTask(RunConfigurationBase<?> configuration, MyBeforeRunTask task) {
+            try {
+                configuration.getBeforeRunTasks().add(task);
+            } catch (final UnsupportedOperationException e) { // EmptyList doesn't support `add`
+                final ArrayList<BeforeRunTask<?>> newTasks = new ArrayList<>(configuration.getBeforeRunTasks());
+                newTasks.add(task);
+                configuration.setBeforeRunTasks(newTasks);
+            }
         }
     }
 }
