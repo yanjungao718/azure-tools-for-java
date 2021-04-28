@@ -33,6 +33,10 @@ public class JdbcUrl {
         return new JdbcUrl(String.format("jdbc:mysql://%s:3306/%s?serverTimezone=UTC&useSSL=true&requireSSL=false", serverHost, database));
     }
 
+    public static JdbcUrl mysql(String serverHost) {
+        return new JdbcUrl(String.format("jdbc:mysql://%s:3306?serverTimezone=UTC&useSSL=true&requireSSL=false", serverHost));
+    }
+
     public int getPort() {
         if (this.uri.getScheme().toLowerCase().startsWith("mysql")) {
             return this.uri.getPort() < 1 ? 3306 : this.uri.getPort();
