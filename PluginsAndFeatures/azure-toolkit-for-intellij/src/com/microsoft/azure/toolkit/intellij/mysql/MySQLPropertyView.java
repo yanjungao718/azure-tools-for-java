@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -149,14 +150,19 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             refreshProperty(subscriptionId, property.getServer().resourceGroupName(), property.getServer().name());
             boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices)) {
-                MySQLMvpModel.FirewallRuleMvpModel
+                boolean result = MySQLMvpModel.FirewallRuleMvpModel
                         .updateAllowAccessFromAzureServices(subscriptionId, property.getServer(), allowAccessToAzureServices);
-                originalAllowAccessToAzureServices = allowAccessToAzureServices;
+                if (result) {
+                    originalAllowAccessToAzureServices = allowAccessToAzureServices;
+                }
             }
             boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToLocal.equals(allowAccessToLocal)) {
-                MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessToLocalMachine(subscriptionId, property.getServer(), allowAccessToLocal);
-                originalAllowAccessToLocal = allowAccessToLocal;
+                boolean result = AzureMySQLService.FirewallRuleService.getInstance()
+                        .updateAllowAccessToLocalMachine(subscriptionId, property.getServer(), allowAccessToLocal);
+                if (result) {
+                    originalAllowAccessToLocal = allowAccessToLocal;
+                }
             }
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
             Boolean changed = MySQLPropertyView.this.changed();
@@ -271,7 +277,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         if (ServerState.READY.equals(server.userVisibleState())) {
             originalAllowAccessToAzureServices = MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromAzureServices(property.getFirewallRules());
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-            originalAllowAccessToLocal = MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromLocalMachine(property.getFirewallRules());
+            originalAllowAccessToLocal = AzureMySQLService.FirewallRuleService.getInstance().isAllowAccessFromLocalMachine(property.getFirewallRules());
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();

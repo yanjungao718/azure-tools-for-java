@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
-import com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.springcloud.*;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
@@ -25,7 +25,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.Spring
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -51,7 +50,6 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         this.config = configuration;
     }
 
-    @Nullable
     @Override
     public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812811
@@ -68,7 +66,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         final ScaleSettings scaleSettings = deploymentConfig.getScaleSettings();
         final String runtimeVersion = deploymentConfig.getJavaVersion();
 
-        final AzureSpringCloud az = AzureSpringCloud.az(SpringCloudUtils.getSpringManager(appConfig.getSubscriptionId()));
+        final AzureSpringCloud az = Azure.az(AzureSpringCloud.class);
         final SpringCloudCluster cluster = az.cluster(clusterName);
         final SpringCloudApp app = cluster.app(appName);
         final String deploymentName = StringUtils.firstNonBlank(
