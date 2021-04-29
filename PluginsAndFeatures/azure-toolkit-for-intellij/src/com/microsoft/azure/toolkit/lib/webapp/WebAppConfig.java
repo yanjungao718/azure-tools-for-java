@@ -9,10 +9,12 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
+@Setter
 @SuperBuilder(toBuilder = true)
 public class WebAppConfig extends AppServiceConfig {
     public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;

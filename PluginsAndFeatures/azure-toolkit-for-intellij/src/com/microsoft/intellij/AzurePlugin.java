@@ -26,6 +26,7 @@ import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -44,6 +45,7 @@ import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.rest.LogLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -95,8 +97,11 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         this.azureSettings = AzureSettings.getSafeInstance(project);
         String hasMac = GetHashMac.getHashMac();
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
+        final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION,
+                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID")));
+        Azure.az().config().setLogLevel(LogLevel.NONE);
+        Azure.az().config().setUserAgent(userAgent);
+        CommonSettings.setUserAgent(userAgent);
 
         initializeAIRegistry(project);
         // Showing dialog needs to be run in UI thread

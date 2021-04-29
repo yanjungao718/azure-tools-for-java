@@ -9,10 +9,12 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
+@Setter
 @SuperBuilder(toBuilder = true)
 public class FunctionAppConfig extends AppServiceConfig {
     public static final Platform DEFAULT_PLATFORM = Platform.AzureFunction.Windows_Java8;

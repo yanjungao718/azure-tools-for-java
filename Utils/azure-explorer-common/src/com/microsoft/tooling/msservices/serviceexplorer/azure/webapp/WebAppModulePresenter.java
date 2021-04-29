@@ -15,11 +15,11 @@ public class WebAppModulePresenter<V extends WebAppModuleView> extends MvpPresen
     public void onModuleRefresh() {
         final WebAppModuleView view = getMvpView();
         if (view != null) {
-            view.renderChildren(AzureWebAppMvpModel.getInstance().listAllWebApps(true));
+            view.renderChildren(AzureWebAppMvpModel.getInstance().listAzureWebApps(true));
         }
     }
 
     public void onDeleteWebApp(String sid, String id) {
-        AzureWebAppMvpModel.getInstance().deleteWebApp(sid, id);
+        AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(sid).webapp(id).delete();
     }
 }

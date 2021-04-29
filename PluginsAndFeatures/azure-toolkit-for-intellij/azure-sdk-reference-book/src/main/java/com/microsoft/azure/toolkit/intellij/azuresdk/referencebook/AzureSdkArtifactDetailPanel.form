@@ -28,7 +28,7 @@
         </constraints>
         <properties/>
       </component>
-      <grid id="4d55f" binding="links" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="2">
+      <grid id="4d55f" binding="links" custom-create="true" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="2">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
