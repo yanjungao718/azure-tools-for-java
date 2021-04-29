@@ -1,6 +1,18 @@
 <!-- Version: 3.51.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.52.0
+### Added
+- Support OAuth for authentication
+- Add support for management/client sdk in Azure SDK reference book
+
+### Changed
+- Improve UI for azure service connector
+
+### Fixed
+- [#5121](https://github.com/microsoft/azure-tools-for-java/issues/5121) Fix project disposed exception for workspace tagging
+- [PR #5163](https://github.com/microsoft/azure-tools-for-java/pull/5163) Fix enable local access may not work for Azure MySQL
+
 ## 3.51.0
 ### Added
 <img src="https://user-images.githubusercontent.com/69189193/113823126-da73ea00-97b0-11eb-9b69-958f5d5a2b00.gif" width="840" height="525" />
