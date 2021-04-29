@@ -6,6 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.jediterm.terminal.TerminalDataStream;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.intellij.util.PatternUtils;
@@ -42,7 +44,7 @@ public enum SSHTerminalManager {
      * @param fxVersion
      * @return
      */
-    public boolean beforeExecuteAzCreateRemoteConnection(String subscriptionId, String os, String fxVersion) {
+    public boolean beforeExecuteAzCreateRemoteConnection(String subscriptionId, Runtime runtime) {
         try {
             // check to confirm that azure cli is installed.
             if (!AzureCliUtils.isCliInstalled()) {
@@ -59,12 +61,11 @@ public enum SSHTerminalManager {
             return false;
         }
         // only support these web app those os is linux.
-        if (!OS_LINUX.equalsIgnoreCase(os)) {
+        if (runtime.getOperatingSystem() == OperatingSystem.WINDOWS) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
-        // check non-docker web app
-        if (StringUtils.containsIgnoreCase(fxVersion, WEB_APP_DOCKER_PREFIX)) {
+        if (runtime.getOperatingSystem() == OperatingSystem.DOCKER) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }

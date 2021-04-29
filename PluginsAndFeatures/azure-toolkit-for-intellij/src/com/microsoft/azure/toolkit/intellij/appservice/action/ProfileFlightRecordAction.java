@@ -10,7 +10,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.appservice.jfr.RunFlightRecorderDialog;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderConfiguration;
@@ -42,43 +41,45 @@ import java.util.logging.Logger;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
+// todo: Migrate profile client implementation to track2 sdk
 @Name("Profile Flight Recorder")
 public class ProfileFlightRecordAction extends NodeActionListener {
     private static final Logger logger = Logger.getLogger(ProfileFlightRecordAction.class.getName());
     private static final int ONE_SECOND = 1000;
     private static final int TWO_SECONDS = 2000;
     private final Project project;
+    private final String webAppId;
+
     private WebAppBase appService;
 
     public ProfileFlightRecordAction(WebAppNode webAppNode) {
         super();
         this.project = (Project) webAppNode.getProject();
-        appService = webAppNode.getWebapp();
+        this.webAppId = webAppNode.getWebAppId();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
-        // prerequisite check
-        if (appService.operatingSystem() == OperatingSystem.LINUX &&
-                StringUtils.containsIgnoreCase(appService.linuxFxVersion(), "DOCKER|")) {
-            final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());
-            notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"), message);
-            return;
-        }
-        EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
-                                 "start-flight-recorder", op -> {
-                op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(appService.id()));
-                final IAzureOperationTitle title = AzureOperationBundle.title("appservice|flight_recorder.profile");
-                final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
-                AzureTaskManager.getInstance().runInBackground(task);
-            });
+        EventUtil.executeWithLog(TelemetryConstants.WEBAPP, "start-flight-recorder", op -> {
+            op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(webAppId));
+            final IAzureOperationTitle title = AzureOperationBundle.title("appservice|flight_recorder.profile");
+            final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
+            AzureTaskManager.getInstance().runInBackground(task);
+        });
     }
 
     private void doProfileFlightRecorderAll() {
         try {
-            final String subscriptionId = AzureMvpModel.getSegment(appService.id(), "subscriptions");
+            // prerequisite check
+            final String subscriptionId = AzureMvpModel.getSegment(webAppId, "subscriptions");
             // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
-            appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, appService.id());
+            appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
+            if (appService.operatingSystem() == OperatingSystem.LINUX &&
+                StringUtils.containsIgnoreCase(appService.linuxFxVersion(), "DOCKER|")) {
+                final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());
+                notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"), message);
+                return;
+            }
             if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
                 final String message = message("webapp.flightRecord.error.notRunning.message", appService.name());
                 notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"), message);
@@ -110,7 +111,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             finishLatch.await();
         } catch (Exception ex) {
             notifyUserWithErrorMessage(
-                    message("webapp.flightRecord.error.profileFailed.title"), message("webapp.flightRecord.error.profileFailed.message") + ex.getMessage());
+                message("webapp.flightRecord.error.profileFailed.title"), message("webapp.flightRecord.error.profileFailed.message") + ex.getMessage());
         }
     }
 
@@ -167,8 +168,8 @@ public class ProfileFlightRecordAction extends NodeActionListener {
 
     private void notifyUserWithErrorMessage(String title, String errorMessage) {
         PluginUtil.showErrorNotificationProject(
-                project, title,
-                errorMessage);
+            project, title,
+            errorMessage);
     }
 
     private String getActionOnJfrFile(String filePath) {

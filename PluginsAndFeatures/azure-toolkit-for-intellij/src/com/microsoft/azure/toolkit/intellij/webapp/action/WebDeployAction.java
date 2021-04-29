@@ -12,8 +12,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -37,9 +36,8 @@ public class WebDeployAction extends AzureAnAction {
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
     @Override
-    @AzureOperation(name = "webapp.deploy_module", params = {"this.module.getName()"}, type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
-        Module module = DataKeys.MODULE.getData(event.getDataContext());
+        final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
             return true;
         }
@@ -62,6 +60,7 @@ public class WebDeployAction extends AzureAnAction {
     }
 
     @SuppressWarnings("deprecation")
+    @AzureOperation(name = "webapp.deploy_module", params = {"module.getName()"}, type = AzureOperation.Type.ACTION)
     private void runConfiguration(Module module) {
         Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);

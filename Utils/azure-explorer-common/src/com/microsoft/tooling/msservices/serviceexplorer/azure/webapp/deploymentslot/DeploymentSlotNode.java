@@ -5,12 +5,14 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.azure.resourcemanager.AzureResourceManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -25,17 +27,15 @@ import java.util.List;
 public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlotNodeView {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";
     private static final String LABEL = "Slot";
-    protected final String webAppId;
-    protected final String webAppName;
-    protected final String slotName;
 
-    public DeploymentSlotNode(final String slotId, final String webAppId, final String webAppName,
-                              final DeploymentSlotModule parent, final String name, final String state, final String os,
-                              final String subscriptionId, final String hostName) {
-        super(slotId, name, LABEL, parent, subscriptionId, hostName, os, state);
-        this.webAppId = webAppId;
-        this.webAppName = webAppName;
-        this.slotName = name;
+    private final IWebApp webApp;
+    private final IWebAppDeploymentSlot slot;
+
+    public DeploymentSlotNode(final IWebAppDeploymentSlot deploymentSlot, final DeploymentSlotModule parent) {
+        super(deploymentSlot.id(), deploymentSlot.name(), LABEL, parent, parent.subscriptionId, deploymentSlot.hostName(),
+                deploymentSlot.getRuntime().getOperatingSystem().toString(), deploymentSlot.state());
+        this.webApp = deploymentSlot.webApp();
+        this.slot = deploymentSlot;
         loadActions();
     }
 
@@ -54,11 +54,11 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     public String getWebAppId() {
-        return this.webAppId;
+        return this.webApp.id();
     }
 
     public String getWebAppName() {
-        return this.webAppName;
+        return this.webApp.name();
     }
 
     @Override
@@ -95,26 +95,28 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     @Override
     @AzureOperation(name = "webapp|deployment.refresh", params = {"this.slotName", "this.webAppName"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        final WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
-        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
-        this.renderNode(WebAppBaseState.fromString(slot.state()));
+        if (slot.exists()) {
+            this.renderNode(WebAppBaseState.fromString(slot.state()));
+        } else {
+            parent.removeNode(subscriptionId, name, this);
+        }
     }
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.START, type = AzureOperation.Type.ACTION)
     private void start() {
-        AzureWebAppMvpModel.getInstance().startDeploymentSlot(subscriptionId, webAppId, slotName);
+        slot.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
-        AzureWebAppMvpModel.getInstance().stopDeploymentSlot(subscriptionId, webAppId, slotName);
+        slot.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
-        AzureWebAppMvpModel.getInstance().restartDeploymentSlot(subscriptionId, webAppId, slotName);
+        slot.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
@@ -125,12 +127,14 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
     private void swap() {
-        AzureWebAppMvpModel.getInstance().swapSlotWithProduction(subscriptionId, webAppId, slotName);
+        // todo: add swap method to app service library
+        final AzureResourceManager resourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
+        resourceManager.webApps().getById(webApp.id()).swap(slot.name());
     }
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
+        DefaultLoader.getUIHelper().openInBrowser("http://" + slot.hostName());
     }
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)

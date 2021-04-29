@@ -12,12 +12,12 @@ public class DeploymentSlotModulePresenter<V extends DeploymentSlotModuleView> e
     public void onRefreshDeploymentSlotModule(final String subscriptionId, final String webAppId) {
         final DeploymentSlotModuleView view = getMvpView();
         if (view != null) {
-            view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId));
+            view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(subscriptionId).webapp(webAppId).deploymentSlots());
         }
     }
 
     public void onDeleteDeploymentSlot(final String subscriptionId, final String webAppId,
                                        final String slotName) {
-        AzureWebAppMvpModel.getInstance().deleteDeploymentSlotNode(subscriptionId, webAppId, slotName);
+        AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(subscriptionId).webapp(webAppId).deploymentSlot(slotName).delete();
     }
 }

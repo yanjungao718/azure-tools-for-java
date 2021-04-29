@@ -21,16 +21,10 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -42,7 +36,6 @@ public class MySQLMvpModel {
     private static final String NAME_AVAILABILITY_CHECK_TYPE = "Microsoft.DBforMySQL/servers";
     private static final String NAME_ALLOW_ACCESS_TO_AZURE_SERVICES = "AllowAllWindowsAzureIps";
     private static final String IP_ALLOW_ACCESS_TO_AZURE_SERVICES = "0.0.0.0";
-    private static final String NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL = "ClientIPAddress_";
     private static final List<String> MYSQL_SUPPORTED_REGIONS = Arrays.asList(
             "australiacentral", "australiacentral2", "australiaeast", "australiasoutheast", "brazilsouth", "canadacentral", "canadaeast", "centralindia",
             "centralus", "eastasia", "eastus2", "eastus", "francecentral", "francesouth", "germanywestcentral", "japaneast", "japanwest", "koreacentral",
@@ -207,82 +200,6 @@ public class MySQLMvpModel {
             return true;
         }
 
-        public static boolean isAllowAccessFromLocalMachine(final String subscriptionId, final Server server) {
-            final List<FirewallRuleInner> firewallRules = MySQLMvpModel.FirewallRuleMvpModel.listFirewallRules(subscriptionId, server);
-            return MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromLocalMachine(firewallRules);
-        }
-
-        public static boolean isAllowAccessFromLocalMachine(final List<FirewallRuleInner> firewallRules) {
-            final List<FirewallRuleInner> localFirewallRules = MySQLMvpModel.FirewallRuleMvpModel.getLocalFirewallRules(firewallRules);
-            return CollectionUtils.isNotEmpty(localFirewallRules);
-        }
-
-        public static boolean updateAllowAccessToLocalMachine(final String subscriptionId, final Server server, final boolean enable) {
-            if (enable) {
-                return MySQLMvpModel.FirewallRuleMvpModel.enableAllowAccessFromLocalMachine(subscriptionId, server);
-            } else {
-                return MySQLMvpModel.FirewallRuleMvpModel.disableAllowAccessFromLocalMachine(subscriptionId, server);
-            }
-        }
-
-        public static boolean enableAllowAccessFromLocalMachine(final String subscriptionId, final Server server) {
-            if (MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromLocalMachine(subscriptionId, server)) {
-                return true;
-            }
-            try {
-                final String publicIp = MySQLMvpModel.FirewallRuleMvpModel.getPublicIp();
-                final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + publicIp.replaceAll("\\.", "-");
-                final FirewallRuleInner firewallRule = new FirewallRuleInner();
-                firewallRule.withStartIpAddress(publicIp);
-                firewallRule.withEndIpAddress(publicIp);
-                final MySQLManager mySQLManager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
-                mySQLManager.firewallRules().inner().createOrUpdate(server.resourceGroupName(), server.name(), ruleName, firewallRule);
-            } catch (IOException e) {
-                Lombok.sneakyThrow(e);
-            }
-            return true;
-        }
-
-        public static boolean disableAllowAccessFromLocalMachine(final String subscriptionId, final Server server) {
-            if (!MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromLocalMachine(subscriptionId, server)) {
-                return true;
-            }
-            final MySQLManager mySQLManager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
-            final List<FirewallRuleInner> firewallRules = MySQLMvpModel.FirewallRuleMvpModel.listFirewallRules(subscriptionId, server);
-            final List<FirewallRuleInner> localFirewallRules = MySQLMvpModel.FirewallRuleMvpModel.getLocalFirewallRules(firewallRules);
-            localFirewallRules.stream().forEach(e -> {
-                mySQLManager.firewallRules().inner().delete(server.resourceGroupName(), server.name(), e.name());
-            });
-            return true;
-        }
-
-        private static List<FirewallRuleInner> getLocalFirewallRules(final List<FirewallRuleInner> firewallRules) {
-            try {
-                final String publicIp = getPublicIp();
-                if (StringUtils.isBlank(publicIp)) {
-                    return new ArrayList<>();
-                }
-                return firewallRules.stream().filter(e -> StringUtils.equals(publicIp, e.startIpAddress()) && StringUtils.equals(publicIp, e.endIpAddress()))
-                        .collect(Collectors.toList());
-            } catch (IOException e) {
-                Lombok.sneakyThrow(e);
-            }
-            return new ArrayList<>();
-        }
-
-        private static String getPublicIp() throws IOException {
-            final URL url = new URL("https://ipecho.net/plain");
-            final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            String ip;
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), StandardCharsets.UTF_8))) {
-                while ((ip = in.readLine()) != null) {
-                    if (StringUtils.isNotBlank(ip)) {
-                        break;
-                    }
-                }
-            }
-            return ip;
-        }
     }
 
     private static List<Server> listMySQLServersBySubscriptionId(final String subscriptionId) throws IOException {
