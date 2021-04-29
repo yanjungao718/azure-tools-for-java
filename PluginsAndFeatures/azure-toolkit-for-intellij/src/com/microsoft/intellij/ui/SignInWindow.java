@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -48,7 +49,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 import rx.Single;
-import rx.exceptions.Exceptions;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,6 +57,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -65,7 +66,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
     private static final String SIGN_IN_ERROR = "Sign In Error";
-    private static final String USER_CANCEL = "user cancel";
 
     private JPanel contentPane;
 
@@ -214,21 +214,26 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private static AuthMethodDetails checkCanceled(ProgressIndicator indicator, Mono<? extends AuthMethodDetails> mono) {
-        CompletableFuture<AuthMethodDetails> loginFuture = new CompletableFuture<>();
+        CompletableFuture<? extends AuthMethodDetails> future = mono.toFuture();
         Disposable disposable = Flux.interval(Duration.ofSeconds(1)).map(ts -> {
-            if (indicator != null && indicator.isCanceled()) {
-                IllegalStateException e = new IllegalStateException(USER_CANCEL);
-                loginFuture.completeExceptionally(e);
-                throw e;
+            if (indicator != null) {
+                indicator.checkCanceled();
             }
             return 1;
-        }).onErrorResume(e -> Mono.empty()).subscribe();
-        mono.doOnError(loginFuture::completeExceptionally).doOnSuccess(loginFuture::complete).doFinally(e -> disposable.dispose()).subscribe();
+        }).onErrorResume(e -> {
+            if (e instanceof ProcessCanceledException) {
+                future.cancel(true);
+            }
+            return Mono.empty();
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
         try {
-            return loginFuture.get();
-        } catch (Throwable ex) {
-            Throwable e = Exceptions.getFinalCause(ex);
-            throw new AzureToolkitRuntimeException("Cannot login due to error: " + ex.getMessage(), ex);
+            return future.get();
+        } catch (CancellationException e) {
+            return null;
+        } catch (Throwable e) {
+            throw new AzureToolkitRuntimeException("Cannot login due to error: " + e.getMessage(), e);
+        } finally {
+            disposable.dispose();
         }
     }
 
@@ -333,25 +338,22 @@ public class SignInWindow extends AzureDialogWrapper {
             final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
             final AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
             final Account account = az.loginAsync(AuthType.DEVICE_CODE, true).block();
-            Disposable subscribe = account.continueLogin().doOnCancel(() -> {
-                deviceCodeLoginFuture.completeExceptionally(new IllegalStateException("user cancel"));
-            }).doOnSuccess(ac -> {
-                deviceCodeLoginFuture.complete(fromAccountEntity(ac.getEntity()));
-            }).doOnError(deviceCodeLoginFuture::completeExceptionally).doFinally(signal -> {
-                deviceLoginUI.closePrompt();
-            }).subscribe();
-            deviceLoginUI.setDisposable(subscribe);
+
+            CompletableFuture<AuthMethodDetails> future =
+                    account.continueLogin().map(ac -> fromAccountEntity(ac.getEntity())).doFinally(signal -> {
+                        deviceLoginUI.closePrompt();
+                    }).toFuture();
+            deviceLoginUI.setFuture(future);
             if (ApplicationManager.getApplication().isDispatchThread()) {
                 deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode());
             } else {
                 AzureTaskManager.getInstance().runAndWait(() ->
                                                               deviceLoginUI.promptDeviceCode(((DeviceCodeAccount) account).getDeviceCode()));
             }
-            return Mono.fromFuture(deviceCodeLoginFuture).block();
+            return future.get();
 
         } catch (Exception ex) {
-            if (ex instanceof IllegalStateException && USER_CANCEL.equals(ex.getMessage())) {
-            } else {
+            if (!(ex instanceof CancellationException)) {
                 ex.printStackTrace();
                 ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
             }
