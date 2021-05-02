@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;

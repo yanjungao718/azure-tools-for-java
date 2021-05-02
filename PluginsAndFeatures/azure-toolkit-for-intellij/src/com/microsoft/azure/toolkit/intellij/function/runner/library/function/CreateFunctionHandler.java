@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.appservice.OperatingSystemEnum;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.ElasticPremiumPricingTier;
 import com.microsoft.azure.common.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;

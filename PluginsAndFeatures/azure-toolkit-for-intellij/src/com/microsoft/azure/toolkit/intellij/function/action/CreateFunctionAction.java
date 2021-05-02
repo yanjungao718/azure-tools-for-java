@@ -23,7 +23,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.util.IncorrectOperationException;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;

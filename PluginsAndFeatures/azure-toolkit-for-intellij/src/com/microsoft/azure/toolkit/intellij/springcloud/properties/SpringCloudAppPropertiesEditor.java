@@ -15,7 +15,7 @@ import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.common.Utils;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2020_07_01.*;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;

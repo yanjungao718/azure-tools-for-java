@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.ClassUtils;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 
 import java.lang.reflect.Field;
 import java.util.*;

@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.function;
 import com.google.common.io.Files;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
 import com.microsoft.azure.common.function.utils.FunctionUtils;
 import com.microsoft.azure.hdinsight.common.StreamUtil;

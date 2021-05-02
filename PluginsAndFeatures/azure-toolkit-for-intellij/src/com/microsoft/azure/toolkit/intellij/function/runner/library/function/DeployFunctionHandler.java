@@ -10,7 +10,7 @@ import com.microsoft.azure.common.appservice.DeployTargetType;
 import com.microsoft.azure.common.appservice.DeploymentType;
 import com.microsoft.azure.common.appservice.OperatingSystemEnum;
 import com.microsoft.azure.common.deploytarget.DeployTarget;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.function.handlers.artifact.DockerArtifactHandler;
 import com.microsoft.azure.common.function.handlers.artifact.MSDeployArtifactHandlerImpl;

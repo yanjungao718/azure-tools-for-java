@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.docker.utils;
 
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
