@@ -21,7 +21,7 @@ import com.microsoft.azure.common.handlers.ArtifactHandler;
 import com.microsoft.azure.common.handlers.artifact.ArtifactHandlerBase;
 import com.microsoft.azure.common.handlers.artifact.FTPArtifactHandlerImpl;
 import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
-import com.microsoft.azure.common.utils.AppServiceUtils;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
