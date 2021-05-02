@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.core;
 
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
-import com.microsoft.azure.common.utils.TextUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.TextUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
 
 import java.io.File;
