@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
-import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;

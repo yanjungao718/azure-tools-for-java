@@ -6,15 +6,15 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azure.common.appservice.OperatingSystemEnum;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.OperatingSystemEnum;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
-import com.microsoft.azure.common.function.configurations.ElasticPremiumPricingTier;
-import com.microsoft.azure.common.function.configurations.FunctionExtensionVersion;
-import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.function.handlers.runtime.FunctionRuntimeHandler;
-import com.microsoft.azure.common.function.handlers.runtime.LinuxFunctionRuntimeHandler;
-import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRuntimeHandler;
-import com.microsoft.azure.common.function.utils.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.ElasticPremiumPricingTier;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionExtensionVersion;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.FunctionRuntimeHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.LinuxFunctionRuntimeHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.WindowsFunctionRuntimeHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
