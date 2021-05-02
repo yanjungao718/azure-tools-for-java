@@ -5,8 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.dependency;
 
-import com.microsoft.azure.common.utils.IndentUtil;
 import com.microsoft.azure.toolkit.lib.common.utils.TextUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.intellij.util.XmlUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -35,7 +35,7 @@ public class PomXmlUpdater {
             return originalXml;
         }
         final String[] originXmlLines = TextUtils.splitLines(originalXml);
-        final String baseIndent = IndentUtil.calcXmlIndent(originXmlLines, parent.getLineNumber() - 1,
+        final String baseIndent = Utils.calcXmlIndent(originXmlLines, parent.getLineNumber() - 1,
                 parent.getColumnNumber() - 2);
         final String placeHolder = String.format("@PLACEHOLDER_RANDOM_%s@", RandomUtils.nextLong());
         final Text placeHolderNode = new DefaultText("\n" + placeHolder);
