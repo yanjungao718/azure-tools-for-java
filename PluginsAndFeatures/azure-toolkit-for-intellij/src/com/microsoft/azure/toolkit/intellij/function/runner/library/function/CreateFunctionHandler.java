@@ -16,7 +16,7 @@ import com.microsoft.azure.common.function.handlers.runtime.FunctionRuntimeHandl
 import com.microsoft.azure.common.function.handlers.runtime.LinuxFunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRuntimeHandler;
 import com.microsoft.azure.common.function.utils.FunctionUtils;
-import com.microsoft.azure.common.logging.Log;
+import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;

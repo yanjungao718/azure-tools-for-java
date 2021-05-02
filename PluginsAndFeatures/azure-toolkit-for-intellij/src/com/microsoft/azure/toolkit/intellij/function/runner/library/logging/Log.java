@@ -14,7 +14,7 @@ import java.io.StringWriter;
 
 
 public final class Log {
-    private static Logger logger = LoggerFactory.getLogger(com.microsoft.azure.common.logging.Log.class);
+    private static Logger logger = LoggerFactory.getLogger(com.microsoft.azure.toolkit.lib.common.logging.Log.class);
 
     public static void error(String message) {
         logger.error(message);
