@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.appservice.OperatingSystemEnum;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.ElasticPremiumPricingTier;
@@ -165,7 +164,7 @@ public class CreateFunctionHandler {
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
         final RuntimeConfiguration runtime = ctx.getRuntime();
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
-            return Utils.parseOperationSystem(runtime.getOs());
+            return OperatingSystemEnum.fromString(runtime.getOs());
         }
         return DEFAULT_OS;
     }

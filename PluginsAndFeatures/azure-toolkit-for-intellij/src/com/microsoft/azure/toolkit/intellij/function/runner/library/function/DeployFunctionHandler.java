@@ -164,7 +164,7 @@ public class DeployFunctionHandler {
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
         final RuntimeConfiguration runtime = model.getRuntime();
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
-            return Utils.parseOperationSystem(runtime.getOs());
+            return OperatingSystemEnum.fromString(runtime.getOs());
         }
         return DEFAULT_OS;
     }
