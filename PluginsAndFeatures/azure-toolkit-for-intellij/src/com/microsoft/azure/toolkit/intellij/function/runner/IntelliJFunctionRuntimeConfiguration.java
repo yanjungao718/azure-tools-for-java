@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner;
 
-import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
 
 public class IntelliJFunctionRuntimeConfiguration extends RuntimeConfiguration {
     private String userName;

@@ -5,12 +5,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
+import lombok.Lombok;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +46,7 @@ public class SpringCloudMonitorUtil {
                     SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, app, deployment);
                     Thread.sleep(1000 * 5);
                 } catch (InterruptedException e) {
-                    SneakyThrowUtils.sneakyThrow(e);
+                    throw Lombok.sneakyThrow(e);
                 }
 
             } while (originalStatus == status);
