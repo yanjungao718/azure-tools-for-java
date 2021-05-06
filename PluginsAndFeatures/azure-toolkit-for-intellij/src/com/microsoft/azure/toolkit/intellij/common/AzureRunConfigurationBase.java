@@ -14,7 +14,7 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.Accessor;
 import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;

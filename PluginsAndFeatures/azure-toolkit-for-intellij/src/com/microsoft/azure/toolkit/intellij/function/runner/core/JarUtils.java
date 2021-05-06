@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.core;
 
 import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedInputStream;

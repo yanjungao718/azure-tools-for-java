@@ -16,7 +16,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
