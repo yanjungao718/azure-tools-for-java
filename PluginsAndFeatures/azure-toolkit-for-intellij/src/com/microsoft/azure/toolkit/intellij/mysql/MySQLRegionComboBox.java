@@ -5,12 +5,17 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +23,7 @@ import java.util.Objects;
 
 public class MySQLRegionComboBox extends AzureComboBox<Region> {
 
+    private static final String REGION_UNAVAILABLE_MESSAGE = "Currently, the service is not available in this location for your subscription.";
     private Subscription subscription;
 
     public void setSubscription(Subscription subscription) {
@@ -48,6 +54,11 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
     @Override
     protected String getItemText(Object item) {
         if (item instanceof Region) {
+            if ("centraluseuap".equals(((Region) item).label())) {
+                return "Central US EUAP";
+            } else if ("eastus2euap".equals(((Region) item).label())) {
+                return "East US 2 EUAP";
+            }
             return ((Region) item).label();
         }
         return super.getItemText(item);
@@ -56,5 +67,21 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
     @Override
     public boolean isRequired() {
         return true;
+    }
+
+    @org.jetbrains.annotations.NotNull
+    @Override
+    public AzureValidationInfo doValidate() {
+        final AzureValidationInfo info = super.doValidate();
+        if (!AzureValidationInfo.OK.equals(info)) {
+            return info;
+        }
+        MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscription.subscriptionId());
+        List<PerformanceTierPropertiesInner> propertiesInnerList = manager.locationBasedPerformanceTiers().inner().list(getValue().name());
+        if (CollectionUtils.size(propertiesInnerList) < 3) {
+            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+        }
+        return info;
     }
 }
