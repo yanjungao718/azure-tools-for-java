@@ -5,15 +5,32 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MySQLRegionComboBox extends AzureComboBox<Region> {
+
+    private Subscription subscription;
+
+    public void setSubscription(Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
+            return;
+        }
+        this.subscription = subscription;
+        if (subscription == null) {
+            this.clear();
+            return;
+        }
+        this.refreshItems();
+    }
 
     @NotNull
     @Override
@@ -22,7 +39,10 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends Region> loadItems() {
-        return MySQLMvpModel.listSupportedRegions();
+        if (Objects.isNull(subscription)) {
+            return new ArrayList<>();
+        }
+        return MySQLMvpModel.listSupportedRegions(subscription);
     }
 
     @Override
@@ -31,5 +51,10 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
             return ((Region) item).label();
         }
         return super.getItemText(item);
+    }
+
+    @Override
+    public boolean isRequired() {
+        return true;
     }
 }
