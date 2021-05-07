@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.lib.springcloud.*;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.model.ScaleSettings;
-import com.microsoft.azure.tools.utils.RxUtils;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -154,7 +153,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         setText(processHandler, String.format("Getting public url of app(%s)...", app.name()));
         String publicUrl = app.entity().getApplicationUrl();
         if (StringUtils.isEmpty(publicUrl)) {
-            publicUrl = RxUtils.pollUntil(() -> app.refresh().entity().getApplicationUrl(), StringUtils::isNotBlank, GET_URL_TIMEOUT);
+            publicUrl = Utils.pollUntil(() -> app.refresh().entity().getApplicationUrl(), StringUtils::isNotBlank, GET_URL_TIMEOUT);
         }
         if (StringUtils.isEmpty(publicUrl)) {
             DefaultLoader.getUIHelper().showWarningNotification(NOTIFICATION_TITLE, "Failed to get application url");

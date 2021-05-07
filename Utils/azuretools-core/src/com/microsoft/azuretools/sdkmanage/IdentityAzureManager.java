@@ -28,8 +28,6 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -112,13 +110,14 @@ public class IdentityAzureManager extends AzureManagerBase {
                 AuthFile authFile = AuthFile.fromFile(authMethodDetails.getCredFilePath());
                 return signInServicePrincipal(authFile).map(ac -> authMethodDetails);
             } else {
-                if (StringUtils.isNoneBlank(authMethodDetails.getClientId(), authMethodDetails.getTenantId())) {
+                if (StringUtils.isNoneBlank(authMethodDetails.getClientId())) {
                     AccountEntity entity = new AccountEntity();
                     entity.setEnvironment(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
                     entity.setType(authType);
                     entity.setEmail(authMethodDetails.getAccountEmail());
                     entity.setClientId(authMethodDetails.getClientId());
-                    entity.setTenantIds(Collections.singletonList(authMethodDetails.getTenantId()));
+                    entity.setTenantIds(StringUtils.isNotBlank(authMethodDetails.getTenantId()) ?
+                                        Collections.singletonList(authMethodDetails.getTenantId()) : null);
                     Account account = Azure.az(AzureAccount.class).account(entity);
                     return Mono.just(fromAccountEntity(account.getEntity()));
                 } else {
@@ -198,7 +197,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
         authMethodDetails.setAuthType(entity.getType());
         authMethodDetails.setClientId(entity.getClientId());
-        authMethodDetails.setTenantId(entity.getTenantIds().get(0));
+        authMethodDetails.setTenantId(CollectionUtils.isEmpty(entity.getTenantIds()) ? "" : entity.getTenantIds().get(0));
         authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudNameForAzureCli(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());
         return authMethodDetails;
