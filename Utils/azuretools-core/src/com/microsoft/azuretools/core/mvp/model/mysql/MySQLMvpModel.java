@@ -13,6 +13,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerUpdateParameters;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
 import com.microsoft.azure.management.mysql.v2020_01_01.SslEnforcementEnum;
+import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
