@@ -17,6 +17,8 @@ import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseI
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.NameAvailabilityInner;
+import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.management.resources.RegionType;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -119,6 +121,16 @@ public class MySQLMvpModel {
                 .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
                 .map(e -> Region.findByLabelOrName(e.name()))
                 .sorted(Comparator.comparing(Region::label))
+                .collect(Collectors.toList());
+    }
+
+    public static List<Region> listSupportedRegions(Subscription subscription) {
+        PagedList<Location> locationList = subscription.listLocations();
+        locationList.loadAll();
+        return locationList.stream()
+                .filter(e -> RegionType.PHYSICAL.equals(e.regionType()))
+                .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
+                .map(e -> e.region())
                 .collect(Collectors.toList());
     }
 
