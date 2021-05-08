@@ -23,6 +23,7 @@ import java.util.Objects;
 
 public class MySQLRegionComboBox extends AzureComboBox<Region> {
 
+    private static final String DEFAULT_MYSQL_PERFORMANCE_TIER_ID = "Basic";
     private static final String REGION_UNAVAILABLE_MESSAGE = "Currently, the service is not available in this location for your subscription.";
     private Subscription subscription;
 
@@ -78,7 +79,7 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
         }
         MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscription.subscriptionId());
         List<PerformanceTierPropertiesInner> propertiesInnerList = manager.locationBasedPerformanceTiers().inner().list(getValue().name());
-        if (CollectionUtils.size(propertiesInnerList) < 3) {
+        if (propertiesInnerList.stream().filter(e -> DEFAULT_MYSQL_PERFORMANCE_TIER_ID.equals(e.id())).count() > 0L) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }

@@ -45,7 +45,6 @@
         <azure.identity.version>1.2.1</azure.identity.version>
         <azure.resourcemanager.version>2.1.0</azure.resourcemanager.version>
         <azure.toolkit-auth.version>${project.version}</azure.toolkit-auth.version>
-        <azure.tools-common.version>0.10.2</azure.tools-common.version>
         <azure.version>1.41.1</azure.version>
 
         <aspectj.version>1.8.13</aspectj.version>
