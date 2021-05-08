@@ -132,6 +132,7 @@ public class MySQLMvpModel {
                 .filter(e -> RegionType.PHYSICAL.equals(e.regionType()))
                 .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
                 .map(e -> e.region())
+                .distinct()
                 .collect(Collectors.toList());
     }
 
