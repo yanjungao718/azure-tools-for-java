@@ -55,6 +55,7 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
     @Override
     protected String getItemText(Object item) {
         if (item instanceof Region) {
+            // TODO: remove - This is only for test
             if ("centraluseuap".equals(((Region) item).label())) {
                 return "Central US EUAP";
             } else if ("eastus2euap".equals(((Region) item).label())) {
