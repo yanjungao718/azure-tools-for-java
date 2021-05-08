@@ -79,6 +79,7 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
         }
         MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscription.subscriptionId());
         List<PerformanceTierPropertiesInner> propertiesInnerList = manager.locationBasedPerformanceTiers().inner().list(getValue().name());
+        // 'Basic' performance tier represents the service is available in this location for your subscription
         if (propertiesInnerList.stream().filter(e -> DEFAULT_MYSQL_PERFORMANCE_TIER_ID.equals(e.id())).count() > 0L) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
