@@ -82,6 +82,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
             final Subscription subscription = (Subscription) e.getItem();
             this.resourceGroupComboBox.setSubscription(subscription);
             this.serverNameTextField.setSubscription(subscription);
+            this.regionComboBox.setSubscription(subscription);
         }
     }
 

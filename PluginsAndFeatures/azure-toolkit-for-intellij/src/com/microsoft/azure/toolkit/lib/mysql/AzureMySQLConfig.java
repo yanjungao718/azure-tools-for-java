@@ -55,7 +55,7 @@ public class AzureMySQLConfig {
         if (CollectionUtils.isNotEmpty(supportedVersions)) {
             config.setVersion(ServerVersion.fromString(supportedVersions.get(0)));
         }
-        List<Region> supportedRegions = MySQLMvpModel.listSupportedRegions();
+        List<Region> supportedRegions = MySQLMvpModel.listSupportedRegions(subscription);
         if (CollectionUtils.isNotEmpty(supportedRegions)) {
             config.setRegion(supportedRegions.get(0));
         }
