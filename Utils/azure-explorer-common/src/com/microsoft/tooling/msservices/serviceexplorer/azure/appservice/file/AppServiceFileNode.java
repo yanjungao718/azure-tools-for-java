@@ -6,8 +6,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -37,13 +37,13 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final long SIZE_20MB = 20 * 1024 * 1024;
     private final AppServiceFileService fileService;
-    private final AppServiceFile file;
+    private final AppServiceFileLegacy file;
 
-    public AppServiceFileNode(final AppServiceFile file, final Node parent, AppServiceFileService service) {
+    public AppServiceFileNode(final AppServiceFileLegacy file, final Node parent, AppServiceFileService service) {
         super(file.getName(), file.getName(), parent, null);
         this.file = file;
         this.fileService = service;
-        if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
+        if (this.file.getType() != AppServiceFileLegacy.Type.DIRECTORY) {
             this.addDownloadAction();
         }
     }
@@ -66,7 +66,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
     @AzureOperation(name = "appservice|file.refresh", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         executeWithTelemetryWrapper(TelemetryConstants.REFRESH_FILE, () -> {
-            if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
+            if (this.file.getType() != AppServiceFileLegacy.Type.DIRECTORY) {
                 return;
             }
             this.fileService.getFilesInDirectory(this.file.getPath()).stream()
@@ -82,7 +82,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
 
     @Override
     public void onNodeDblClicked(Object context) {
-        if (this.file.getType() == AppServiceFile.Type.DIRECTORY) {
+        if (this.file.getType() == AppServiceFileLegacy.Type.DIRECTORY) {
             return;
         } else if (this.file.getSize() > SIZE_20MB) {
             DefaultLoader.getUIHelper().showError("File is too large, please download it first", "File is Too Large");
@@ -95,17 +95,17 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
 
     @Override
     public int getPriority() {
-        return this.file.getType() == AppServiceFile.Type.DIRECTORY ? Sortable.HIGH_PRIORITY : Sortable.DEFAULT_PRIORITY;
+        return this.file.getType() == AppServiceFileLegacy.Type.DIRECTORY ? Sortable.HIGH_PRIORITY : Sortable.DEFAULT_PRIORITY;
     }
 
     @Override
     public Icon getIcon() {
-        return DefaultLoader.getIdeHelper().getFileTypeIcon(this.file.getName(), this.file.getType() == AppServiceFile.Type.DIRECTORY);
+        return DefaultLoader.getIdeHelper().getFileTypeIcon(this.file.getName(), this.file.getType() == AppServiceFileLegacy.Type.DIRECTORY);
     }
 
     @Override
     public String getToolTip() {
-        return file.getType() == AppServiceFile.Type.DIRECTORY ?
+        return file.getType() == AppServiceFileLegacy.Type.DIRECTORY ?
                String.format("Type: %s Date modified: %s", file.getMime(), file.getMtime()) :
                String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), file.getMtime());
     }
@@ -127,5 +127,4 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
             runnable.run();
         });
     }
-
 }
