@@ -6,7 +6,7 @@
 package com.microsoft.tooling.msservices.helpers;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;

@@ -45,6 +45,10 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         loadActions();
     }
 
+    public IWebApp getWebappManager() {
+        return webappManager;
+    }
+
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
         boolean isLinux = webappManager.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
