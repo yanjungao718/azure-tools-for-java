@@ -137,10 +137,12 @@ public interface IDEHelper {
         return null;
     }
 
+    @Deprecated
     default void saveAppServiceFile(@NotNull final AppServiceFileLegacy file, @NotNull Object context, @Nullable File dest) {
         // do nothing in default
     }
 
+    @Deprecated
     default void openAppServiceFile(final AppServiceFileLegacy file, Object context) {
         // do nothing in default
     }

@@ -39,10 +39,13 @@ import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
 import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -78,7 +81,11 @@ public class IDEHelperImpl implements IDEHelper {
         + "do you want to create a new file with the changed content?";
     private static final String FILE_HAS_BEEN_MODIFIED = "File '%s' has been modified since you view it, do you still want to save your changes?";
     private static final String SAVE_CHANGES = "Do you want to save your changes?";
-    public static final String FILE_HAS_BEEN_SAVED = "File %s has been saved to Azure";
+    private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
+    private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
+    private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
+    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+    private static final String FILE_HAS_BEEN_SAVED = "File %s has been saved to Azure";
 
     @Override
     public void setApplicationProperty(@NotNull String name, @NotNull String value) {
@@ -352,21 +359,62 @@ public class IDEHelperImpl implements IDEHelper {
         return type.getIcon();
     }
 
-    private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
-    private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
-    private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
-    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+    @AzureOperation(
+            name = "appservice|file.open",
+            params = {"target.getName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    @SneakyThrows
+    public void openAppServiceFile(AppServiceFile target, Object context) {
+        final IAppService appService = target.getApp();
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
+        final VirtualFile virtualFile = getOrCreateVirtualFile(target.getId(), target.getFullName(), fileEditorManager);
+        final OutputStream output = virtualFile.getOutputStream(null);
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
+        final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
+            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+            indicator.setIndeterminate(true);
+            indicator.setText2("Checking file existence");
+            final AppServiceFile file = appService.getFileByPath(target.getPath());
+            if (file == null) {
+                final String failureFileDeleted = String.format("Target file (%s) has been deleted", target.getName());
+                UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(failureFileDeleted, "Open File"));
+                return;
+            }
+            indicator.setText2("Loading file content");
+            final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
+            appService
+                    .getFileContent(file.getPath())
+                    .doOnComplete(() -> AzureTaskManager.getInstance().runLater(() -> {
+                        final Consumer<String> contentSaver = content -> saveFileToAzure(target, content, fileEditorManager.getProject());
+                        if (!openFileInEditor(contentSaver, virtualFile, fileEditorManager)) {
+                            Messages.showWarningDialog(failure, "Open File");
+                        }
+                    }, AzureTask.Modality.NONE))
+                    .doAfterTerminate(() -> IOUtils.closeQuietly(output, null))
+                    .subscribe(bytes -> {
+                        try {
+                            IOUtils.write(bytes.array(), output);
+                        } catch (final IOException e) {
+                            final String error = "failed to load data into editor";
+                            final String action = "try later or downloading it first";
+                            throw new AzureToolkitRuntimeException(error, e, action);
+                        }
+                    }, AzureExceptionHandler::onRxException);
+        });
+        AzureTaskManager.getInstance().runInModal(task);
+    }
 
     @AzureOperation(
-        name = "appservice|file.open",
-        params = {"target.getName()"},
-        type = AzureOperation.Type.SERVICE
+            name = "appservice|file.open",
+            params = {"target.getName()"},
+            type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
     public void openAppServiceFile(final AppServiceFileLegacy target, Object context) {
         final AppServiceFileService fileService = AppServiceFileService.forApp(target.getApp());
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
-        final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
+        final VirtualFile virtualFile = getOrCreateVirtualFile(target.getId(), target.getFullName(), fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
         final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
         final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
@@ -382,27 +430,28 @@ public class IDEHelperImpl implements IDEHelper {
             }
             indicator.setText2("Loading file content");
             fileService
-                .getFileContent(file.getPath())
-                .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
-                    if (!openFileInEditor(file, virtualFile, fileEditorManager)) {
-                        Messages.showWarningDialog(failure, "Open File");
-                    }
-                }, AzureTask.Modality.NONE))
-                .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
-                .subscribe(bytes -> {
-                    try {
-                        IOUtils.write(bytes, output);
-                    } catch (final IOException e) {
-                        final String error = "failed to load data into editor";
-                        final String action = "try later or downloading it first";
-                        throw new AzureToolkitRuntimeException(error, e, action);
-                    }
-                }, AzureExceptionHandler::onRxException);
+                    .getFileContent(file.getPath())
+                    .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
+                        final Consumer<String> contentSaver = content -> saveFileToAzure(target, content, fileEditorManager.getProject());
+                        if (!openFileInEditor(contentSaver, virtualFile, fileEditorManager)) {
+                            Messages.showWarningDialog(failure, "Open File");
+                        }
+                    }, AzureTask.Modality.NONE))
+                    .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
+                    .subscribe(bytes -> {
+                        try {
+                            IOUtils.write(bytes, output);
+                        } catch (final IOException e) {
+                            final String error = "failed to load data into editor";
+                            final String action = "try later or downloading it first";
+                            throw new AzureToolkitRuntimeException(error, e, action);
+                        }
+                    }, AzureExceptionHandler::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    private boolean openFileInEditor(final AppServiceFileLegacy appServiceFile, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
+    private boolean openFileInEditor(final Consumer<String> contentSaver, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
         final FileEditor[] editors = fileEditorManager.openFile(virtualFile, true, true);
         if (editors.length == 0) {
             return false;
@@ -420,7 +469,7 @@ public class IDEHelperImpl implements IDEHelper {
                                 boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
                                     fileEditor.getComponent(), SAVE_CHANGES, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
                                 if (result) {
-                                    saveFileToAzure(appServiceFile, content, fileEditorManager.getProject());
+                                    contentSaver.consume(content);
                                 }
                             }
                         } catch (RuntimeException e) {
@@ -439,6 +488,34 @@ public class IDEHelperImpl implements IDEHelper {
         return textEditor.getEditor().getDocument().getText();
     }
 
+    @AzureOperation(
+            name = "appservice|file.save",
+            params = {"appServiceFile.getName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+            final IAppService appService = appServiceFile.getApp();
+            final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
+            final boolean deleted = target == null;
+            final boolean outDated = ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()));
+            boolean toSave = true;
+            if (deleted) {
+                toSave = DefaultLoader.getUIHelper().showYesNoDialog(null, String.format(FILE_HAS_BEEN_DELETED, appServiceFile.getName()),
+                        APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+            } else if (outDated) {
+                toSave = DefaultLoader.getUIHelper().showYesNoDialog(
+                        null, String.format(FILE_HAS_BEEN_MODIFIED, appServiceFile.getName()), APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+            }
+            if (toSave) {
+                appService.uploadFileToPath(content, appServiceFile.getPath());
+                PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile));
+            }
+        }));
+    }
+
+    @Deprecated
     @AzureOperation(
         name = "appservice|file.save",
         params = {"appServiceFile.getName()"},
@@ -488,7 +565,7 @@ public class IDEHelperImpl implements IDEHelper {
             AppServiceFileService
                 .forApp(file.getApp())
                 .getFileContent(file.getPath())
-                .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
+                .doOnCompleted(() -> notifyDownloadSuccess(file.getName(), destFile, ((Project) context)))
                 .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
                 .subscribe(bytes -> {
                     try {
@@ -503,10 +580,39 @@ public class IDEHelperImpl implements IDEHelper {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    private void notifyDownloadSuccess(final AppServiceFileLegacy file, final File dest, final Project project) {
+    @SneakyThrows
+    @Override
+    public void saveAppServiceFile(@NotNull AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+        final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
+        if (Objects.isNull(destFile)) {
+            return;
+        }
+        final OutputStream output = new FileOutputStream(destFile);
+        final Project project = (Project) context;
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.download", file.getName());
+        final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
+            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+            file.getApp()
+                    .getFileContent(file.getPath())
+                    .doOnComplete(() -> notifyDownloadSuccess(file.getName(), destFile, ((Project) context)))
+                    .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
+                    .subscribe(bytes -> {
+                        try {
+                            IOUtils.write(bytes.array(), output);
+                        } catch (final IOException e) {
+                            final String error = "failed to write data into local file";
+                            final String action = "try later";
+                            throw new AzureToolkitRuntimeException(error, e, action);
+                        }
+                    }, AzureExceptionHandler::onRxException);
+        });
+        AzureTaskManager.getInstance().runInModal(task);
+    }
+
+    private void notifyDownloadSuccess(final String name, final File dest, final Project project) {
         final String title = "File downloaded";
         final File directory = dest.getParentFile();
-        final String message = String.format(SUCCESS_DOWNLOADING, file.getName(), directory.getAbsolutePath());
+        final String message = String.format(SUCCESS_DOWNLOADING, name, directory.getAbsolutePath());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
         notification.addAction(new AnAction(RevealFileAction.getActionName()) {
             @Override
@@ -527,20 +633,18 @@ public class IDEHelperImpl implements IDEHelper {
         Notifications.Bus.notify(notification);
     }
 
-    private VirtualFile getOrCreateVirtualFile(AppServiceFileLegacy file, FileEditorManager manager) {
-        synchronized (file) {
-            return Arrays.stream(manager.getOpenFiles())
-                         .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
-                         .findFirst().orElse(createVirtualFile(file, manager));
-        }
+    private synchronized VirtualFile getOrCreateVirtualFile(final String fileId, final String fullName, FileEditorManager manager) {
+        return Arrays.stream(manager.getOpenFiles())
+                .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), fileId))
+                .findFirst().orElse(createVirtualFile(fileId, fullName, manager));
     }
 
     @SneakyThrows
-    private LightVirtualFile createVirtualFile(AppServiceFileLegacy file, FileEditorManager manager) {
-        final LightVirtualFile virtualFile = new LightVirtualFile(file.getFullName());
-        virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
+    private LightVirtualFile createVirtualFile(final String fileId, final String fullName, FileEditorManager manager) {
+        final LightVirtualFile virtualFile = new LightVirtualFile(fullName);
+        virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(fullName));
         virtualFile.setCharset(StandardCharsets.UTF_8);
-        virtualFile.putUserData(APP_SERVICE_FILE_ID, file.getId());
+        virtualFile.putUserData(APP_SERVICE_FILE_ID, fileId);
         virtualFile.setWritable(true);
         return virtualFile;
     }
