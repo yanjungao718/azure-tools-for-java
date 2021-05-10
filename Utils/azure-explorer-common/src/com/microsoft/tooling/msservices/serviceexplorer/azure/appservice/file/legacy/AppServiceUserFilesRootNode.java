@@ -3,12 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
-import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -25,7 +24,6 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
@@ -33,7 +31,6 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
     private static final String ROOT_PATH = "/site/wwwroot";
 
     protected WebAppBase app;
-    protected Supplier<WebAppBase> supplier;
 
     protected final String subscriptionId;
     private AppServiceFileService fileService;
@@ -46,17 +43,6 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
         super(MODULE_ID, name, parent, null);
         this.subscriptionId = subscriptionId;
         this.app = app;
-    }
-
-    // Lazy load for WebAppBase
-    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
-        this(MODULE_NAME, parent, subscriptionId, supplier);
-    }
-
-    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
-        super(MODULE_ID, name, parent, null);
-        this.subscriptionId = subscriptionId;
-        this.supplier = supplier;
     }
 
     @Override
@@ -82,16 +68,9 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
 
     public AppServiceFileService getFileService() {
         if (Objects.isNull(this.fileService)) {
-            this.fileService = AppServiceFileService.forApp(getTargetAppService());
+            this.fileService = AppServiceFileService.forApp(app);
         }
         return this.fileService;
-    }
-
-    private WebAppBase getTargetAppService() {
-        if (app == null) {
-            app = supplier.get();
-        }
-        return app;
     }
 
     @Override

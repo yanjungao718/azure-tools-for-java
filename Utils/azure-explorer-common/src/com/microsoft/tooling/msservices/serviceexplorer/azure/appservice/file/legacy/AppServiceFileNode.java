@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
