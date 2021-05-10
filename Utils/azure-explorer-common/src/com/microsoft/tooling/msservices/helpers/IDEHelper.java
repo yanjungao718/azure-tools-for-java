@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.helpers;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -141,6 +142,14 @@ public interface IDEHelper {
     }
 
     default void openAppServiceFile(final AppServiceFileLegacy file, Object context) {
+        // do nothing in default
+    }
+
+    default void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+        // do nothing in default
+    }
+
+    default void openAppServiceFile(final AppServiceFile file, Object context) {
         // do nothing in default
     }
 }
