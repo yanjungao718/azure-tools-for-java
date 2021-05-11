@@ -31,7 +31,7 @@ public class SqlServerModule extends AzureRefreshableNode {
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        return AzureIconSymbol.SQL.MODULE;
+        return AzureIconSymbol.SqlServer.MODULE;
     }
 
     @Override
