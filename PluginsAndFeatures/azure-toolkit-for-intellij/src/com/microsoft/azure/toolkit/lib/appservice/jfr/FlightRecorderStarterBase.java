@@ -5,9 +5,11 @@
 
 package com.microsoft.azure.toolkit.lib.appservice.jfr;
 
+import com.azure.core.util.FluxUtil;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
 import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -32,6 +34,7 @@ public abstract class FlightRecorderStarterBase {
     public abstract CommandOutput startFlightRecorder(int pid, int timeInSeconds, String fileName) throws IOException;
 
     public byte[] downloadJFRFile(String fileName) {
-        return appService.getFileContent(getFinalJfrPath(fileName)).blockOptional().orElse(new byte[0]);
+        return FluxUtil.collectBytesInByteBufferStream(appService.getFileContent(getFinalJfrPath(fileName))).blockOptional()
+                .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("Failed to download JFR file %s from %s", fileName, appService.name())));
     }
 }
