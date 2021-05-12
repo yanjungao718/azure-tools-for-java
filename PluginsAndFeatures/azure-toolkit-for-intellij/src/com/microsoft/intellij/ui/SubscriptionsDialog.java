@@ -55,7 +55,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     private final Project project;
     private JPanel contentPane;
     private JPanel panelTable;
-    private JTable table;
+    private JBTable table;
     private List<SubscriptionDetail> sdl;
 
     private SubscriptionsDialog(List<SubscriptionDetail> sdl, Project project) {
@@ -117,17 +117,14 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             setSubscriptions();
             // to notify subscribers
             subscriptionManager.setSubscriptionDetails(sdl);
-
         }, (ex) -> {
-                ex.printStackTrace();
-                //LOGGER.error("refreshSubscriptions", ex);
-                ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
-            });
+            ex.printStackTrace();
+            ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
+        });
     }
 
     private void setSubscriptions() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setRowCount(0);
         sdl.sort((sub1, sub2) -> {
             if (sub1.isSelected() != sub2.isSelected()) {
                 return sub1.isSelected() ? -1 : 0;
@@ -159,9 +156,19 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
+                this.setEnabled(false);
+                model.setRowCount(0);
+                model.fireTableDataChanged();
+                table.getEmptyText().setText("Refreshing");
                 AppInsightsClient.createByType(AppInsightsClient.EventType.Subscription, "", "Refresh", null);
                 final IAzureOperationTitle title = AzureOperationBundle.title("account|subscription.refresh");
-                final AzureTask task = new AzureTask(project, title, true, SubscriptionsDialog.this::refreshSubscriptions, AzureTask.Modality.ANY);
+                final AzureTask task = new AzureTask(project, title, true, () -> {
+                    try {
+                        SubscriptionsDialog.this.refreshSubscriptions();
+                    } finally {
+                        this.setEnabled(true);
+                    }
+                }, AzureTask.Modality.ANY);
                 AzureTaskManager.getInstance().runInBackground(task);
             }
         };
