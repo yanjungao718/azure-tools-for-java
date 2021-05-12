@@ -41,8 +41,8 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -363,7 +363,7 @@ public class IDEHelperImpl implements IDEHelper {
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
-    public void openAppServiceFile(final AppServiceFile target, Object context) {
+    public void openAppServiceFile(final AppServiceFileLegacy target, Object context) {
         final AppServiceFileService fileService = AppServiceFileService.forApp(target.getApp());
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
@@ -374,7 +374,7 @@ public class IDEHelperImpl implements IDEHelper {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             indicator.setText2("Checking file existence");
-            final AppServiceFile file = fileService.getFileByPath(target.getPath());
+            final AppServiceFileLegacy file = fileService.getFileByPath(target.getPath());
             if (file == null) {
                 final String failureFileDeleted = String.format("Target file (%s) has been deleted", target.getName());
                 UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(failureFileDeleted, "Open File"));
@@ -402,7 +402,7 @@ public class IDEHelperImpl implements IDEHelper {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    private boolean openFileInEditor(final AppServiceFile appServiceFile, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
+    private boolean openFileInEditor(final AppServiceFileLegacy appServiceFile, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
         final FileEditor[] editors = fileEditorManager.openFile(virtualFile, true, true);
         if (editors.length == 0) {
             return false;
@@ -444,11 +444,11 @@ public class IDEHelperImpl implements IDEHelper {
         params = {"appServiceFile.getName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
+    private void saveFileToAzure(final AppServiceFileLegacy appServiceFile, final String content, final Project project) {
         final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
-            final AppServiceFile target = fileService.getFileByPath(appServiceFile.getPath());
+            final AppServiceFileLegacy target = fileService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
             final boolean outDated = ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()));
             boolean toSave = true;
@@ -475,7 +475,7 @@ public class IDEHelperImpl implements IDEHelper {
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
-    public void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+    public void saveAppServiceFile(@NotNull final AppServiceFileLegacy file, @NotNull Object context, @Nullable File dest) {
         final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {
             return;
@@ -503,7 +503,7 @@ public class IDEHelperImpl implements IDEHelper {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    private void notifyDownloadSuccess(final AppServiceFile file, final File dest, final Project project) {
+    private void notifyDownloadSuccess(final AppServiceFileLegacy file, final File dest, final Project project) {
         final String title = "File downloaded";
         final File directory = dest.getParentFile();
         final String message = String.format(SUCCESS_DOWNLOADING, file.getName(), directory.getAbsolutePath());
@@ -527,7 +527,7 @@ public class IDEHelperImpl implements IDEHelper {
         Notifications.Bus.notify(notification);
     }
 
-    private VirtualFile getOrCreateVirtualFile(AppServiceFile file, FileEditorManager manager) {
+    private VirtualFile getOrCreateVirtualFile(AppServiceFileLegacy file, FileEditorManager manager) {
         synchronized (file) {
             return Arrays.stream(manager.getOpenFiles())
                          .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
@@ -536,7 +536,7 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @SneakyThrows
-    private LightVirtualFile createVirtualFile(AppServiceFile file, FileEditorManager manager) {
+    private LightVirtualFile createVirtualFile(AppServiceFileLegacy file, FileEditorManager manager) {
         final LightVirtualFile virtualFile = new LightVirtualFile(file.getFullName());
         virtualFile.setFileType(FileTypeManager.getInstance().getFileTypeByFileName(file.getName()));
         virtualFile.setCharset(StandardCharsets.UTF_8);
