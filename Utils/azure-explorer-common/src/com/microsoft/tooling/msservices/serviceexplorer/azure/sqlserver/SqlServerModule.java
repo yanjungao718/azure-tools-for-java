@@ -45,7 +45,9 @@ public class SqlServerModule extends AzureRefreshableNode {
 
     @Override
     public void removeNode(String sid, String id, Node node) {
-        MySQLMvpModel.delete(sid, id);
+        /**
+         * TODO(qianjin): implementation remove logic.
+         */
         removeDirectChildNode(node);
     }
 
