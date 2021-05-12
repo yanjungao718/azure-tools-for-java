@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+@Deprecated
 public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";

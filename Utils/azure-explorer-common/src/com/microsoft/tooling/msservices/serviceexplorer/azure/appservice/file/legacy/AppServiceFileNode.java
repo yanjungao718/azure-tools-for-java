@@ -32,6 +32,7 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.Map;
 
+@Deprecated
 @Log
 public class AppServiceFileNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();

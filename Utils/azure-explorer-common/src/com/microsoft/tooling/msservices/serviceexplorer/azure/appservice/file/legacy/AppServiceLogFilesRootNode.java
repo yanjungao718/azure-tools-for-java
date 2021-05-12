@@ -9,6 +9,7 @@ import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+@Deprecated
 public class AppServiceLogFilesRootNode extends AppServiceUserFilesRootNode {
     private static final String MODULE_NAME = "Logs";
     private static final String ROOT_PATH = "/LogFiles";
