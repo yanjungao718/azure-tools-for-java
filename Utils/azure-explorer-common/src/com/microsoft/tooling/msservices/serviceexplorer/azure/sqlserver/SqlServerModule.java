@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class SqlServerModule extends AzureRefreshableNode {
 
-    public static final String MODULE_NAME = "SQL Servers";
+    public static final String MODULE_NAME = "SQL Server";
     private static final String SQL_SERVER_DATABASE_MODULE_ID = SqlServerModule.class.getName();
 
     public SqlServerModule(final Node parent) {
