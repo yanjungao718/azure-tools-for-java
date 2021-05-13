@@ -3,9 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -21,24 +23,27 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 import javax.swing.*;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
+@Deprecated
 public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
     private static final String ROOT_PATH = "/site/wwwroot";
 
-    protected IAppService appService;
-    protected final String subscriptionId;
+    protected WebAppBase app;
 
-    // Lazy load for WebAppBase
-    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final IAppService appService) {
-        this(MODULE_NAME, parent, subscriptionId, appService);
+    protected final String subscriptionId;
+    private AppServiceFileService fileService;
+
+    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
+        this(MODULE_NAME, parent, subscriptionId, app);
     }
 
-    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final IAppService appService) {
+    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final WebAppBase app) {
         super(MODULE_ID, name, parent, null);
         this.subscriptionId = subscriptionId;
-        this.appService = appService;
+        this.app = app;
     }
 
     @Override
@@ -50,8 +55,9 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
     protected void refreshItems() {
         EventUtil.executeWithLog(getServiceName(), TelemetryConstants.LIST_FILE, operation -> {
             operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
-            appService.getFilesInDirectory(getRootPath()).stream()
-                    .map(file -> new AppServiceFileNode(file, this, appService))
+            final AppServiceFileService service = this.getFileService();
+            service.getFilesInDirectory(getRootPath()).stream()
+                    .map(file -> new AppServiceFileNode(file, this, service))
                     .forEach(this::addChildNode);
         });
     }
@@ -61,10 +67,16 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
         return ROOT_PATH;
     }
 
+    public AppServiceFileService getFileService() {
+        if (Objects.isNull(this.fileService)) {
+            this.fileService = AppServiceFileService.forApp(app);
+        }
+        return this.fileService;
+    }
+
     @Override
     public String getServiceName() {
-        // todo: update after function track2 migration
-        return TelemetryConstants.WEBAPP;
+        return (app != null && app instanceof FunctionApp) ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
     }
 
     @Override
