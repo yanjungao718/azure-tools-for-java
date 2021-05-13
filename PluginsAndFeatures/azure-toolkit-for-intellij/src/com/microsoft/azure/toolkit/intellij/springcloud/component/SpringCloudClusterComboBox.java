@@ -51,7 +51,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
     protected List<? extends SpringCloudCluster> loadItems() throws Exception {
         if (Objects.nonNull(this.subscription)) {
             final String sid = this.subscription.subscriptionId();
-            final AzureSpringCloud az = Azure.az(AzureSpringCloud.class);
+            final AzureSpringCloud az = Azure.az(AzureSpringCloud.class).subscription(sid);
             return az.clusters();
         }
         return Collections.emptyList();
