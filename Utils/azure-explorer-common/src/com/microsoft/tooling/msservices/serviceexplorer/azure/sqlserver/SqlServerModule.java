@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -46,9 +45,7 @@ public class SqlServerModule extends AzureRefreshableNode {
 
     @Override
     public void removeNode(String sid, String id, Node node) {
-        /**
-         * TODO(qianjin): implementation remove logic.
-         */
+        Azure.az(AzureSqlServer.class).sqlServer(id).delete().commit();
         removeDirectChildNode(node);
     }
 
