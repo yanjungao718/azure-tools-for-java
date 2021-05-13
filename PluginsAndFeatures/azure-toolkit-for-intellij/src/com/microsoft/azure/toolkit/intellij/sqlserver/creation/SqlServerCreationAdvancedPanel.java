@@ -68,8 +68,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private void initListeners() {
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
         this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
-        this.security.getAllowAccessFromAzureServicesCheckBox().addItemListener(this::onSecurityAllowAccessFromAzureServicesCheckBoxChanged);
-        this.security.getAllowAccessFromLocalMachineCheckBox().addItemListener(this::onSecurityAllowAccessFromLocalMachineCheckBoxChanged);
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
@@ -90,14 +88,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
                 }
             }
         };
-    }
-
-    private void onSecurityAllowAccessFromAzureServicesCheckBoxChanged(final ItemEvent e) {
-        config.setAllowAccessFromAzureServices(e.getStateChange() == ItemEvent.SELECTED);
-    }
-
-    private void onSecurityAllowAccessFromLocalMachineCheckBoxChanged(final ItemEvent e) {
-        config.setAllowAccessFromLocalMachine(e.getStateChange() == ItemEvent.SELECTED);
     }
 
     @Override
