@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.mysql.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.mysql.creation.PasswordUtils;
-import com.microsoft.azure.toolkit.intellij.sqlserver.common.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import lombok.Getter;
@@ -25,7 +25,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
 
     private JPanel rootPanel;
     @Getter
-    private ServerNameTextField serverNameTextField;
+    private SqlServerNameTextField serverNameTextField;
     @Getter
     private AdminUsernameTextField adminUsernameTextField;
     @Getter
