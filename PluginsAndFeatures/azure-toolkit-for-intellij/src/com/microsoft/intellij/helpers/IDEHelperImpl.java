@@ -368,7 +368,7 @@ public class IDEHelperImpl implements IDEHelper {
     public void openAppServiceFile(AppServiceFile target, Object context) {
         final IAppService appService = target.getApp();
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
-        final VirtualFile virtualFile = getOrCreateVirtualFile(target.getId(), target.getFullName(), fileEditorManager);
+        final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
         final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
@@ -414,7 +414,7 @@ public class IDEHelperImpl implements IDEHelper {
     public void openAppServiceFile(final AppServiceFileLegacy target, Object context) {
         final AppServiceFileService fileService = AppServiceFileService.forApp(target.getApp());
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
-        final VirtualFile virtualFile = getOrCreateVirtualFile(target.getId(), target.getFullName(), fileEditorManager);
+        final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
         final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
         final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
@@ -633,10 +633,21 @@ public class IDEHelperImpl implements IDEHelper {
         Notifications.Bus.notify(notification);
     }
 
-    private synchronized VirtualFile getOrCreateVirtualFile(final String fileId, final String fullName, FileEditorManager manager) {
-        return Arrays.stream(manager.getOpenFiles())
-                .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), fileId))
-                .findFirst().orElse(createVirtualFile(fileId, fullName, manager));
+    private synchronized VirtualFile getOrCreateVirtualFile(final AppServiceFile file, FileEditorManager manager) {
+        synchronized (file) {
+            return Arrays.stream(manager.getOpenFiles())
+                    .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
+                    .findFirst().orElse(createVirtualFile(file.getId(), file.getFullName(), manager));
+        }
+    }
+
+    @Deprecated
+    private synchronized VirtualFile getOrCreateVirtualFile(final AppServiceFileLegacy file, FileEditorManager manager) {
+        synchronized (file) {
+            return Arrays.stream(manager.getOpenFiles())
+                    .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
+                    .findFirst().orElse(createVirtualFile(file.getId(), file.getFullName(), manager));
+        }
     }
 
     @SneakyThrows
