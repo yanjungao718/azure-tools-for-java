@@ -6,7 +6,9 @@ package com.microsoft.azure.toolkit.intellij.sqlserver.common;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.sqlserver.model.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ServerNameTextField extends ValidationDebouncedTextInput {
+public class SqlServerNameTextField extends ValidationDebouncedTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
     private Subscription subscription;
@@ -50,8 +52,13 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
                 .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate availability
-        if (!com.microsoft.azure.toolkit.lib.Azure.az(AzureSqlServer.class).checkNameAvailability(subscription.subscriptionId(), value)) {
-            return AzureValidationInfo.builder().input(this).message("The specified server name is already in use.").type(AzureValidationInfo.Type.ERROR).build();
+        CheckNameAvailabilityResultEntity resultEntity = Azure.az(AzureSqlServer.class).checkNameAvailability(subscription.subscriptionId(), value);
+        if (!resultEntity.isAvailable()) {
+            String message = resultEntity.getUnavailabilityReason();
+            if ("AlreadyExists".equalsIgnoreCase(resultEntity.getUnavailabilityReason())) {
+                message = "The specified server name is already in use.";
+            }
+            return AzureValidationInfo.builder().input(this).message(message).type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
     }
