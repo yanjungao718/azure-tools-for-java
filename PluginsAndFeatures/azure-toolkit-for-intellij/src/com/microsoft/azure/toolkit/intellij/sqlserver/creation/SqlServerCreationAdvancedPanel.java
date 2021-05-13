@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.mysql.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.mysql.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.mysql.creation.PasswordUtils;
-import com.microsoft.azure.toolkit.intellij.sqlserver.common.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerRegionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
@@ -36,7 +36,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     @Getter
     private ResourceGroupComboBox resourceGroupComboBox;
     @Getter
-    private ServerNameTextField serverNameTextField;
+    private SqlServerNameTextField serverNameTextField;
     @Getter
     private SqlServerRegionComboBox regionComboBox;
     @Getter
