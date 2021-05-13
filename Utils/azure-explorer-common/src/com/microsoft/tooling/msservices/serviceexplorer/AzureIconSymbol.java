@@ -57,6 +57,15 @@ public final class AzureIconSymbol {
 
     }
 
+    public interface SqlServer {
+
+        AzureIconSymbol MODULE = fillInPath("SqlServer/SqlServer.svg");
+
+        AzureIconSymbol RUNNING = fillInPath("SqlServer/SqlServerRunning.svg");
+        AzureIconSymbol STOPPED = fillInPath("SqlServer/SqlServerStopped.svg");
+        AzureIconSymbol UPDATING = fillInPath("SqlServer/SqlServerUpdating.svg");
+    }
+
     public interface WebApp {
 
         AzureIconSymbol MODULE = fillInPath("WebApp/WebApp.svg");
