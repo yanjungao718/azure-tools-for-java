@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.google.common.base.Joiner;
 import com.jcraft.jsch.*;
-import com.microsoft.azure.management.appservice.PublishingProfile;
-import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.model.PublishingProfile;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.utils.WebSocketSSLProxy;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -29,21 +29,21 @@ public class TunnelProxy {
     public static final String DEFAULT_SSH_PASSWORD = "Docker!";
     private static final Logger logger = Logger.getLogger(TunnelProxy.class.getName());
     private static final String LOCALHOST = "localhost";
-    private WebAppBase webAppBase;
+    private IAppService appService;
     private WebSocketSSLProxy wssProxy;
 
-    public TunnelProxy(@NotNull WebAppBase webAppBase) {
-        this.webAppBase = webAppBase;
+    public TunnelProxy(@NotNull IAppService webAppBase) {
+        this.appService = webAppBase;
         reset();
     }
 
     public void reset() {
-        String host = webAppBase.defaultHostName().toLowerCase().replace("http://", "").replace("https://", "");
+        String host = appService.hostName().toLowerCase().replace("http://", "").replace("https://", "");
         String[] parts = host.split("\\.", 2);
         host = Joiner.on('.').join(parts[0], "scm", parts[1]);
-        PublishingProfile publishingProfile = webAppBase.getPublishingProfile();
+        PublishingProfile publishingProfile = appService.getPublishingProfile();
         wssProxy = new WebSocketSSLProxy(String.format("wss://%s/AppServiceTunnel/Tunnel.ashx", host),
-                                         publishingProfile.gitUsername(), publishingProfile.gitPassword());
+                                         publishingProfile.getGitUsername(), publishingProfile.getGitPassword());
     }
 
     public void close() {

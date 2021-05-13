@@ -205,6 +205,8 @@ public class AzureModule extends AzureRefreshableNode {
                 resourceManagementModule.load(true);
                 functionModule.load(true);
                 springCloudModule.load(true);
+                mysqlModule.load(true);
+                sqlServerModule.load(true);
 
                 if (hdInsightModule != null) {
                     hdInsightModule.load(true);
