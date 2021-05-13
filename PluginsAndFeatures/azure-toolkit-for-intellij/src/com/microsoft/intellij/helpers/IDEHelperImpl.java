@@ -5,7 +5,11 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.RevealFileAction;
@@ -16,9 +20,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -46,8 +48,8 @@ import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
@@ -67,10 +69,20 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 @Log
@@ -209,11 +221,11 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public List<ArtifactDescriptor> getArtifacts(@NotNull ProjectDescriptor projectDescriptor)
         throws AzureCmdException {
-        Project project = findOpenProject(projectDescriptor);
+        final Project project = findOpenProject(projectDescriptor);
 
-        List<ArtifactDescriptor> artifactDescriptors = new ArrayList<ArtifactDescriptor>();
+        final List<ArtifactDescriptor> artifactDescriptors = new ArrayList<>();
 
-        for (Artifact artifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
+        for (final Artifact artifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
             artifactDescriptors.add(new ArtifactDescriptor(artifact.getName(), artifact.getArtifactType().getId()));
         }
 
@@ -225,13 +237,13 @@ public class IDEHelperImpl implements IDEHelper {
     public ListenableFuture<String> buildArtifact(@NotNull ProjectDescriptor projectDescriptor,
                                                   @NotNull ArtifactDescriptor artifactDescriptor) {
         try {
-            Project project = findOpenProject(projectDescriptor);
+            final Project project = findOpenProject(projectDescriptor);
 
             final Artifact artifact = findProjectArtifact(project, artifactDescriptor);
 
             final SettableFuture<String> future = SettableFuture.create();
 
-            Futures.addCallback(buildArtifact(project, artifact, false), new FutureCallback<Boolean>() {
+            Futures.addCallback(buildArtifact(project, artifact, false), new FutureCallback<>() {
                 @Override
                 public void onSuccess(@Nullable Boolean succeded) {
                     if (succeded != null && succeded) {
@@ -254,7 +266,7 @@ public class IDEHelperImpl implements IDEHelper {
             }, MoreExecutors.directExecutor());
 
             return future;
-        } catch (AzureCmdException e) {
+        } catch (final AzureCmdException e) {
             return Futures.immediateFailedFuture(e);
         }
     }
@@ -266,10 +278,10 @@ public class IDEHelperImpl implements IDEHelper {
 
     @NotNull
     private static byte[] getArray(@NotNull InputStream is) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         int readCount;
-        byte[] data = new byte[16384];
+        final byte[] data = new byte[16384];
 
         while ((readCount = is.read(data, 0, data.length)) != -1) {
             buffer.write(data, 0, readCount);
@@ -283,17 +295,12 @@ public class IDEHelperImpl implements IDEHelper {
     private static ListenableFuture<Boolean> buildArtifact(@NotNull Project project, final @NotNull Artifact artifact, boolean rebuild) {
         final SettableFuture<Boolean> future = SettableFuture.create();
 
-        Set<Artifact> artifacts = new LinkedHashSet<Artifact>(1);
+        final Set<Artifact> artifacts = new LinkedHashSet<>(1);
         artifacts.add(artifact);
-        CompileScope scope = ArtifactCompileScope.createArtifactsScope(project, artifacts, rebuild);
+        final CompileScope scope = ArtifactCompileScope.createArtifactsScope(project, artifacts, rebuild);
         ArtifactsWorkspaceSettings.getInstance(project).setArtifactsToBuild(artifacts);
 
-        CompilerManager.getInstance(project).make(scope, new CompileStatusNotification() {
-            @Override
-            public void finished(boolean aborted, int errors, int warnings, CompileContext compileContext) {
-                future.set(!aborted && errors == 0);
-            }
-        });
+        CompilerManager.getInstance(project).make(scope, (aborted, errors, warnings, compileContext) -> future.set(!aborted && errors == 0));
 
         return future;
     }
@@ -303,7 +310,7 @@ public class IDEHelperImpl implements IDEHelper {
         throws AzureCmdException {
         Project project = null;
 
-        for (Project openProject : ProjectManager.getInstance().getOpenProjects()) {
+        for (final Project openProject : ProjectManager.getInstance().getOpenProjects()) {
             if (StringUtils.equals(projectDescriptor.getName(), openProject.getName()) &&
                 StringUtils.equals(projectDescriptor.getPath(), openProject.getBasePath())) {
                 project = openProject;
@@ -323,7 +330,7 @@ public class IDEHelperImpl implements IDEHelper {
         throws AzureCmdException {
         Artifact artifact = null;
 
-        for (Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
+        for (final Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
             if (artifactDescriptor.getName().equals(projectArtifact.getName()) &&
                 artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
                 artifact = projectArtifact;
@@ -341,7 +348,7 @@ public class IDEHelperImpl implements IDEHelper {
     public void openLinkInBrowser(@NotNull String url) {
         try {
             BrowserUtil.browse(url);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             DefaultLoader.getUIHelper().showException("Unexpected exception: " + e.getMessage(), e, "Browse Web App", true, false);
             DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
         }
@@ -456,7 +463,7 @@ public class IDEHelperImpl implements IDEHelper {
         if (editors.length == 0) {
             return false;
         }
-        for (FileEditor fileEditor : editors) {
+        for (final FileEditor fileEditor : editors) {
             if (fileEditor instanceof TextEditor) {
                 final String originContent = getTextEditorContent((TextEditor) fileEditor);
                 final MessageBusConnection messageBusConnection = fileEditorManager.getProject().getMessageBus().connect(fileEditor);
@@ -466,13 +473,13 @@ public class IDEHelperImpl implements IDEHelper {
                         try {
                             final String content = getTextEditorContent((TextEditor) fileEditor);
                             if (file == virtualFile && !StringUtils.equals(content, originContent)) {
-                                boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
+                                final boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
                                     fileEditor.getComponent(), SAVE_CHANGES, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
                                 if (result) {
                                     contentSaver.consume(content);
                                 }
                             }
-                        } catch (RuntimeException e) {
+                        } catch (final RuntimeException e) {
                             AzureExceptionHandler.getInstance().handleException(e);
                         } finally {
                             messageBusConnection.disconnect();
