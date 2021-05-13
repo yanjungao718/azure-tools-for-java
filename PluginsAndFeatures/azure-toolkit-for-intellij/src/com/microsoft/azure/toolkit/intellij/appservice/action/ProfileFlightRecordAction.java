@@ -9,19 +9,18 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.appservice.jfr.RunFlightRecorderDialog;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderStarterBase;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.util.PluginUtil;
@@ -50,12 +49,13 @@ public class ProfileFlightRecordAction extends NodeActionListener {
     private final Project project;
     private final String webAppId;
 
-    private WebAppBase appService;
+    private IAppService appService;
 
     public ProfileFlightRecordAction(WebAppNode webAppNode) {
         super();
         this.project = (Project) webAppNode.getProject();
         this.webAppId = webAppNode.getWebAppId();
+        this.appService = webAppNode.getWebappManager();
     }
 
     @Override
@@ -73,9 +73,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             // prerequisite check
             final String subscriptionId = AzureMvpModel.getSegment(webAppId, "subscriptions");
             // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
-            appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
-            if (appService.operatingSystem() == OperatingSystem.LINUX &&
-                StringUtils.containsIgnoreCase(appService.linuxFxVersion(), "DOCKER|")) {
+            if (appService.getRuntime().getOperatingSystem() == OperatingSystem.DOCKER) {
                 final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());
                 notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"), message);
                 return;
@@ -117,7 +115,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
 
     private FlightRecorderConfiguration collectFlightRecorderConfiguration() {
         RunFlightRecorderDialog ui = new RunFlightRecorderDialog(project, appService);
-        ui.setTitle(message("webapp.flightRecord.task.startRecorder.title", appService.defaultHostName()));
+        ui.setTitle(message("webapp.flightRecord.task.startRecorder.title", appService.hostName()));
         ui.setOkActionListener((config) -> {
             ui.close(DialogWrapper.OK_EXIT_CODE);
         });

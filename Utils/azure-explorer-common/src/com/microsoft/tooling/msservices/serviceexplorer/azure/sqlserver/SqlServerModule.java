@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -36,7 +37,7 @@ public class SqlServerModule extends AzureRefreshableNode {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        List<ISqlServer> servers = com.microsoft.azure.toolkit.lib.Azure.az(AzureSqlServer.class).sqlServers();
+        List<ISqlServer> servers = Azure.az(AzureSqlServer.class).sqlServers();
         servers.parallelStream()
             .filter(server -> Objects.nonNull(server.entity()))
             .map(server -> new SqlServerNode(this, server.entity().getSubscriptionId(), server))
