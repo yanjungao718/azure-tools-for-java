@@ -74,7 +74,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
             final Subscription subscription = (Subscription) e.getItem();
             this.resourceGroupComboBox.setSubscription(subscription);
-            this.serverNameTextField.setSubscription(subscription);
+            this.serverNameTextField.setSubscriptionId(subscription.subscriptionId());
             this.regionComboBox.setSubscription(subscription);
         }
     }
@@ -105,9 +105,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setRegion(regionComboBox.getValue());
-        /*if (StringUtils.isNotBlank(versionComboBox.getValue())) {
-            config.setVersion(ServerVersion.fromString(versionComboBox.getValue()));
-        }*/
         config.setAllowAccessFromAzureServices(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
         config.setAllowAccessFromLocalMachine(security.getAllowAccessFromLocalMachineCheckBox().isSelected());
         return config;
@@ -136,9 +133,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         if (config.getRegion() != null) {
             regionComboBox.setValue(config.getRegion());
         }
-        /*if (config.getVersion() != null) {
-            versionComboBox.setValue(config.getVersion().toString());
-        }*/
         security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAllowAccessFromAzureServices());
         security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isAllowAccessFromLocalMachine());
     }
@@ -151,7 +145,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
             this.subscriptionComboBox,
             this.resourceGroupComboBox,
             this.regionComboBox,
-            //this.versionComboBox,
             this.passwordFieldInput,
             this.confirmPasswordFieldInput
         };
