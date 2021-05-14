@@ -4,7 +4,6 @@
  */
 package com.microsoft.azure.toolkit.intellij.sqlserver.common;
 
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -13,17 +12,16 @@ import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class SqlServerNameTextField extends ValidationDebouncedTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
-    private Subscription subscription;
+    private String subscriptionId;
 
-    public void setSubscription(Subscription subscription) {
-        if (!Objects.equals(subscription, this.subscription)) {
-            this.subscription = subscription;
+    public void setSubscription(String subscription) {
+        if (!StringUtils.equals(subscriptionId, this.subscriptionId)) {
+            this.subscriptionId = subscriptionId;
         }
     }
 
@@ -52,7 +50,7 @@ public class SqlServerNameTextField extends ValidationDebouncedTextInput {
                 .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate availability
-        CheckNameAvailabilityResultEntity resultEntity = Azure.az(AzureSqlServer.class).checkNameAvailability(subscription.subscriptionId(), value);
+        CheckNameAvailabilityResultEntity resultEntity = Azure.az(AzureSqlServer.class).checkNameAvailability(subscriptionId, value);
         if (!resultEntity.isAvailable()) {
             String message = resultEntity.getUnavailabilityReason();
             if ("AlreadyExists".equalsIgnoreCase(resultEntity.getUnavailabilityReason())) {
