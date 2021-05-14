@@ -46,10 +46,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
@@ -76,15 +78,14 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
     private JBTable tableInstances;
 
     private BiConsumer<? super Boolean, ? super SpringCloudAppConfig> listener = (aBoolean, springCloudAppConfig) -> System.out.println(aBoolean);
-    private SpringCloudAppConfig originalData;
+    private SpringCloudAppConfig originalConfig;
 
     public SpringCloudAppPanel(@Nullable SpringCloudApp app, @Nonnull final Project project) {
         super();
-        this.app = app;
-        this.init();
+        this.init(app);
     }
 
-    private void init() {
+    private void init(SpringCloudApp origin) {
         this.selectorSubscription.addValueListener(s -> this.selectorCluster.setSubscription(s));
         this.selectorSubscription.setRequired(true);
         this.selectorSubscription.setLabel("Subscription");
@@ -134,15 +135,15 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         this.numMemory.addActionListener((e) -> debouncer.debounce());
         this.numInstance.addChangeListener((e) -> debouncer.debounce());
 
-        final boolean appFixed = Objects.nonNull(this.app);
+        final boolean appFixed = Objects.nonNull(origin);
         this.selectorSubscription.setValueFixed(appFixed);
         this.selectorCluster.setValueFixed(appFixed);
         this.selectorApp.setValueFixed(appFixed);
 
         if (appFixed) { // app is specified on construction(show properties)
-            this.selectorCluster.setItemsLoader(() -> Collections.singletonList(this.app.getCluster()));
-            this.selectorApp.setItemsLoader(() -> Collections.singletonList(this.app));
-            this.setApp(this.app);
+            this.selectorCluster.setItemsLoader(() -> Collections.singletonList(origin.getCluster()));
+            this.selectorApp.setItemsLoader(() -> Collections.singletonList(origin));
+            this.setApp(origin);
         }
     }
 
@@ -152,20 +153,23 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
 
     public void refresh() {
         Objects.requireNonNull(this.app).refresh();
-        this.setApp(this.app);
+        AzureTaskManager.getInstance().runLater(this::updateForm);
     }
 
     public void reset() {
-        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.originalData).ifPresent(this::setData));
+        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.originalConfig).ifPresent(this::setData));
     }
 
     private void setApp(@Nonnull SpringCloudApp app) {
-        final String title = String.format("Loading properties of app(%s)", Objects.requireNonNull(this.app).name());
-        AzureTaskManager.getInstance().runLater(title, () -> this.setAppInner(app));
+        if (Objects.equals(app, this.app)) {
+            return;
+        }
+        this.app = app;
+        AzureTaskManager.getInstance().runLater(this::updateForm);
     }
 
-    private void setAppInner(@Nonnull SpringCloudApp app) {
-        this.app = app;
+    private void updateForm() {
+        assert Objects.nonNull(app): "app is not specified";
         final String testUrl = app.entity().getTestUrl();
         this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
         this.txtTestEndpoint.setHyperlinkTarget(testUrl);
@@ -175,19 +179,19 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         final DefaultComboBoxModel<Integer> numCpuModel = (DefaultComboBoxModel<Integer>) this.numCpu.getModel();
         final DefaultComboBoxModel<Integer> numMemoryModel = (DefaultComboBoxModel<Integer>) this.numMemory.getModel();
         numCpuModel.removeAllElements();
+        numCpuModel.addAll(IntStream.range(1, 1 + (basic ? 1 : 4)).boxed().collect(Collectors.toList()));
         numMemoryModel.removeAllElements();
-        IntStream.range(1, 1 + (basic ? 1 : 4)).forEach(i -> this.numCpu.addItem(i));
-        IntStream.range(1, 1 + (basic ? 2 : 8)).forEach(i -> this.numMemory.addItem(i));
+        numMemoryModel.addAll(IntStream.range(1, 1 + (basic ? 2 : 8)).boxed().collect(Collectors.toList()));
         this.numInstance.setMaximum(basic ? 25 : 500);
         this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
         this.numInstance.setMinimum(0);
-
         final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment()).stream().findAny()
             .or(() -> app.deployments().stream().findAny())
             .map(SpringCloudDeployment::entity)
             .orElse(new SpringCloudDeploymentEntity("default", app.entity()));
         final List<SpringCloudDeploymentInstanceEntity> instances = deploymentEntity.getInstances();
+        this.numInstance.setRealMin(Math.min(instances.size(), 1));
 
         final DefaultTableModel model = (DefaultTableModel) this.tableInstances.getModel();
         model.setRowCount(0);
@@ -196,14 +200,14 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         model.setRowCount(rows);
         this.tableInstances.setVisibleRowCount(rows);
 
-        this.originalData = toConfig(app);
-        this.setData(this.originalData);
+        this.originalConfig = toConfig(app);
+        this.setData(this.originalConfig);
     }
 
     private void onDataChanged() {
-        if (Objects.nonNull(this.originalData) && Objects.nonNull(this.listener) && Objects.nonNull(this.app)) {
+        if (Objects.nonNull(this.originalConfig) && Objects.nonNull(this.listener) && Objects.nonNull(this.app)) {
             final SpringCloudAppConfig newData = this.getData();
-            this.listener.accept(!this.originalData.equals(newData), newData);
+            this.listener.accept(!this.originalConfig.equals(newData), newData);
         }
     }
 
@@ -227,8 +231,8 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         deploymentConfig.setCpu(deploymentEntity.getCpu());
         deploymentConfig.setMemoryInGB(deploymentEntity.getMemoryInGB());
         deploymentConfig.setInstanceCount(instances.size());
-        deploymentConfig.setJvmOptions(deploymentEntity.getJvmOptions());
-        deploymentConfig.setEnvironment(deploymentEntity.getEnvironmentVariables());
+        deploymentConfig.setJvmOptions(Optional.ofNullable(deploymentEntity.getJvmOptions()).map(String::trim).orElse(""));
+        deploymentConfig.setEnvironment(Optional.ofNullable(deploymentEntity.getEnvironmentVariables()).orElse(new HashMap<>()));
         return appConfig;
     }
 
@@ -246,7 +250,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         deploymentConfig.setMemoryInGB(numMemory.getItem());
         deploymentConfig.setInstanceCount(numInstance.getValue());
         deploymentConfig.setJvmOptions(Optional.ofNullable(this.txtJvmOptions.getText()).map(String::trim).orElse(""));
-        deploymentConfig.setEnvironment(envTable.getEnvironmentVariables());
+        deploymentConfig.setEnvironment(Optional.ofNullable(envTable.getEnvironmentVariables()).orElse(new HashMap<>()));
         return appConfig;
     }
 
