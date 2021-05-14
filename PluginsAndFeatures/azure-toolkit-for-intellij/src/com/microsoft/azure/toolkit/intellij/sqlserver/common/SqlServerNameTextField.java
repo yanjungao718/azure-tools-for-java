@@ -19,7 +19,7 @@ public class SqlServerNameTextField extends ValidationDebouncedTextInput {
     private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
     private String subscriptionId;
 
-    public void setSubscription(String subscriptionId) {
+    public void setSubscriptionId(String subscriptionId) {
         if (!StringUtils.equals(subscriptionId, this.subscriptionId)) {
             this.subscriptionId = subscriptionId;
         }
