@@ -101,13 +101,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        final AzureFormInput<?>[] inputs = {
-            serverNameTextField,
-            adminUsernameTextField,
-            passwordFieldInput,
-            confirmPasswordFieldInput
-        };
-        return Arrays.asList(inputs);
+        return Arrays.asList(serverNameTextField, adminUsernameTextField, passwordFieldInput, confirmPasswordFieldInput);
     }
 
 }
