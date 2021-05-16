@@ -36,12 +36,14 @@ import java.awt.event.ItemEvent;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -54,8 +56,13 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private boolean required;
     private Object value;
     private boolean valueNotSet = true;
-    private boolean valueFixed;
     private String label;
+    @Nullable
+    @Setter
+    protected Boolean valueFixed;
+    @Getter
+    @Setter
+    private Supplier<? extends List<? extends T>> itemsLoader;
 
     public AzureComboBox() {
         this(true);
@@ -70,6 +77,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
+    public AzureComboBox(@Nonnull Supplier<? extends List<? extends T>> itemsLoader) {
+        this(itemsLoader, true);
+    }
+
+    public AzureComboBox(@Nonnull Supplier<? extends List<? extends T>> itemsLoader, boolean refresh) {
+        this(refresh);
+        this.itemsLoader = itemsLoader;
+    }
+
     @Override
     public JComponent getInputComponent() {
         return this;
@@ -80,7 +96,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.inputEditor = new AzureComboBoxEditor();
         this.setEditable(true);
         this.setEditor(this.inputEditor);
-        this.setRenderer(new SimpleListCellRenderer<T>() {
+        this.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(@Nonnull final JList<? extends T> l, final T t, final int i, final boolean b,
                                   final boolean b1) {
@@ -91,9 +107,19 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         if (isFilterable()) {
             this.addPopupMenuListener(new AzureComboBoxPopupMenuListener());
         }
+        final TailingDebouncer valueDebouncer = new TailingDebouncer(() -> {
+            @SuppressWarnings("unchecked")
+            final ValueListener<T>[] listeners = this.listenerList.getListeners(ValueListener.class);
+            for (final ValueListener<T> listener : listeners) {
+                listener.onValueChanged(this.getValue());
+            }
+        }, DEBOUNCE_DELAY);
         this.addItemListener((e) -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 this.refreshValue();
+            }
+            if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+                valueDebouncer.debounce();
             }
         });
     }
@@ -105,24 +131,28 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public void setValue(final T val) {
-        this.setValue(val, false);
+        this.setValue(val, null);
     }
 
-    public void setValue(final T val, final boolean fixed) {
-        this.valueFixed = fixed;
-        this.setEditable(!this.valueFixed);
+    public void setValue(final T val, final Boolean fixed) {
+        Optional.ofNullable(fixed).ifPresent(f -> {
+            this.valueFixed = fixed;
+            this.setEditable(!f);
+        });
         this.valueNotSet = false;
         this.value = val;
         this.refreshValue();
     }
 
     public void setValue(final ItemReference<T> val) {
-        this.setValue(val, false);
+        this.setValue(val, null);
     }
 
-    public void setValue(final ItemReference<T> val, final boolean fixed) {
-        this.valueFixed = fixed;
-        this.setEditable(!this.valueFixed);
+    public void setValue(final ItemReference<T> val, final Boolean fixed) {
+        Optional.ofNullable(fixed).ifPresent(f -> {
+            this.valueFixed = fixed;
+            this.setEditable(!f);
+        });
         this.valueNotSet = false;
         this.value = val;
         this.refreshValue();
@@ -166,7 +196,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private void doRefreshItems() {
         try {
             this.setLoading(true);
-            final List<? extends T> items = this.loadItems();
+            final List<? extends T> items = this.loadItemsInner();
             this.setLoading(false);
             AzureTaskManager.getInstance().runLater(() -> this.setItems(items), AzureTask.Modality.ANY);
         } catch (final Exception e) {
@@ -203,7 +233,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 this.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
             } else {
-                this.setEnabled(!valueFixed);
+                this.setEnabled(!Objects.equals(valueFixed, true));
                 this.setEditor(this.inputEditor);
             }
         }, AzureTask.Modality.ANY);
@@ -227,11 +257,21 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected Observable<? extends List<? extends T>> loadItemsAsync() {
-        return Observable.fromCallable(this::loadItems).subscribeOn(Schedulers.io());
+        return Observable.fromCallable(this::loadItemsInner).subscribeOn(Schedulers.io());
+    }
+
+    protected final List<? extends T> loadItemsInner() throws Exception {
+        if (Objects.nonNull(this.itemsLoader)) {
+            return this.itemsLoader.get();
+        } else {
+            return this.loadItems();
+        }
     }
 
     @Nonnull
-    protected abstract List<? extends T> loadItems() throws Exception;
+    protected List<? extends T> loadItems() throws Exception {
+        return Collections.emptyList();
+    }
 
     @Nullable
     protected T getDefaultValue() {
@@ -393,5 +433,18 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             }
             return this.predicate.test((T) obj);
         }
+    }
+
+    public void addValueListener(ValueListener<T> listener) {
+        this.listenerList.add(ValueListener.class, listener);
+    }
+
+    public void removeValueListener(ValueListener<T> listener) {
+        this.listenerList.remove(ValueListener.class, listener);
+    }
+
+    @FunctionalInterface
+    public interface ValueListener<T> extends EventListener {
+        void onValueChanged(@Nullable T value);
     }
 }
