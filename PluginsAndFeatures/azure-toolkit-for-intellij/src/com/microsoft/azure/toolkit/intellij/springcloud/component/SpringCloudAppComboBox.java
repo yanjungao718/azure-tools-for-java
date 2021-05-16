@@ -24,7 +24,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private SpringCloudCluster cluster;
-    private List<SpringCloudApp> localItems = new ArrayList<>();
+    private final List<SpringCloudApp> localItems = new ArrayList<>();
 
     @Override
     protected String getItemText(final Object item) {
@@ -62,7 +62,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         if (Objects.nonNull(this.cluster)) {
             if (CollectionUtils.isNotEmpty(this.localItems)) {
                 apps.addAll(this.localItems.stream()
-                    .filter(i -> Objects.equals(this.cluster.name(), i.cluster().name()))
+                    .filter(i -> Objects.equals(this.cluster.name(), i.getCluster().name()))
                     .collect(Collectors.toList()));
             }
             apps.addAll(cluster.apps());
@@ -73,8 +73,11 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @Nullable
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, message("springCloud.app.create.tooltip"), this::showAppCreationPopup);
+        if (!Objects.equals(this.valueFixed, true)) {
+            return ExtendableTextComponent.Extension.create(
+                AllIcons.General.Add, message("springCloud.app.create.tooltip"), this::showAppCreationPopup);
+        }
+        return null;
     }
 
     private void showAppCreationPopup() {
