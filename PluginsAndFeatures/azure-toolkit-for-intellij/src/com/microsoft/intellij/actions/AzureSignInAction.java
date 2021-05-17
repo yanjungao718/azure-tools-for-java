@@ -91,7 +91,7 @@ public class AzureSignInAction extends AzureAnAction {
         final String warningMessage;
         switch (authType) {
             case SERVICE_PRINCIPAL:
-                warningMessage = String.format("Signed in using file \"%s\"", authMethodDetails.getCredFilePath());
+                warningMessage = String.format("Signed in using service principal \"%s\"", authMethodDetails.getClientId());
                 break;
             case OAUTH2:
             case DEVICE_CODE:

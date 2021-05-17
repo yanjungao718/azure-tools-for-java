@@ -88,7 +88,7 @@
         </constraints>
         <properties>
           <enabled value="true"/>
-          <text value=" An authentication file with credentials for an Azure Active Directory service principal will be used for sign in."/>
+          <text value=" Sign in by Azure Active Directory service principal"/>
         </properties>
       </component>
       <vspacer id="75b89">
