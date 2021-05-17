@@ -50,9 +50,11 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRO
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
+import lombok.Lombok;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import rx.exceptions.Exceptions;
 
 public class AuthMethodManager {
     private static final org.apache.log4j.Logger LOGGER =
@@ -66,7 +68,8 @@ public class AuthMethodManager {
     static {
         // fix the class load problem for intellij plugin
         ClassLoader current = Thread.currentThread().getContextClassLoader();
-        Logger.getLogger(com.microsoft.aad.adal4j.AuthenticationContext.class).setLevel(Level.OFF);
+        Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
+
         try {
             Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
             HttpClientProviders.createInstance();
@@ -75,6 +78,14 @@ public class AuthMethodManager {
                 com.microsoft.azure.toolkit.lib.Azure.az(AzureCloud.class)
                                                      .set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
             }
+            Hooks.onErrorDropped(ex -> {
+                if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
+                    LOGGER.info(ex.getMessage());
+                }
+                throw Lombok.sneakyThrow(ex);
+            });
+
+
         } finally {
             Thread.currentThread().setContextClassLoader(current);
         }
