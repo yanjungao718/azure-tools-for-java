@@ -33,10 +33,20 @@ public class AuthMethodDetails {
     @Getter
     private String clientId;
 
+    @Deprecated
     @JsonProperty
     @Setter
     @Getter
     private String credFilePath;
+
+    @JsonProperty
+    @Setter
+    @Getter
+    private String certificate;
+
+    @Setter
+    @Getter
+    private String passwordInMemory;
 
     @JsonProperty
     @Setter
