@@ -23,8 +23,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-@Name(MySQLConnectToServerAction.ACTION_NAME)
-public class MySQLConnectToServerAction extends NodeActionListener {
+@Name(OpenMySQLByToolsAction.ACTION_NAME)
+public class OpenMySQLByToolsAction extends NodeActionListener {
 
     public static final String ACTION_NAME = "Open by Database Tools";
     private static final String MYSQL_PATTERN_NAME = "Azure Database for MySQL - %s";
@@ -33,7 +33,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
     private final MySQLNode node;
     private final Project project;
 
-    public MySQLConnectToServerAction(MySQLNode node) {
+    public OpenMySQLByToolsAction(MySQLNode node) {
         super();
         this.node = node;
         this.project = (Project) node.getProject();
@@ -75,7 +75,7 @@ public class MySQLConnectToServerAction extends NodeActionListener {
         IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
                 .name(String.format(MYSQL_PATTERN_NAME, node.getServer().name()))
                 .driverClassName(MYSQL_DEFAULT_DRIVER)
-                .url(JdbcUrl.sqlserver(node.getServer().fullyQualifiedDomainName()).toString())
+                .url(JdbcUrl.mysql(node.getServer().fullyQualifiedDomainName()).toString())
                 .username(node.getServer().administratorLogin() + "@" + node.getServer().name())
                 .build();
         IntellijDatasourceService.getInstance().openDataSourceManagerDialog(project, properties);
