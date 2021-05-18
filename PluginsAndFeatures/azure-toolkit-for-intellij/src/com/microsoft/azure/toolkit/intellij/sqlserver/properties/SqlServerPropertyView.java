@@ -143,10 +143,9 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setText(actionName);
         SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(false);
         Runnable runnable = () -> {
-            String subscriptionId = property.getSubscriptionId();
             // refresh property
-            SqlServerEntity entity = property.getServer().entity();
-            refreshProperty(subscriptionId, entity.getResourceGroup(), entity.getName());
+            SqlServerEntity entity = this.property.getServer().entity();
+            refreshProperty(entity.getSubscriptionId(), entity.getResourceGroup(), entity.getName());
             boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices) || !originalAllowAccessToLocal.equals(allowAccessToLocal)) {
@@ -162,7 +161,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             SqlServerPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
             final Map<String, String> properties = new HashMap<>();
-            properties.put(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
+            properties.put(TelemetryConstants.SUBSCRIPTIONID, entity.getSubscriptionId());
             properties.put("allowAccessToLocal", String.valueOf(allowAccessToLocal));
             properties.put("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
             EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.SAVE).getServiceName(),
@@ -181,9 +180,10 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private void onDatabaseComboBoxChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof SqlDatabaseEntity) {
             final SqlDatabaseEntity database = (SqlDatabaseEntity) e.getItem();
-            connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(property.getServer().entity().getFullyQualifiedDomainName(),
+            SqlServerEntity entity = this.property.getServer().entity();
+            connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(entity.getFullyQualifiedDomainName(),
                 database.getName(), overview.getServerAdminLoginNameTextField().getText(), DBConnectionString.Type.JDBC));
-            connectionStringsSpring.getOutputTextArea().setText(getConnectionString(property.getServer().entity().getFullyQualifiedDomainName(),
+            connectionStringsSpring.getOutputTextArea().setText(getConnectionString(entity.getFullyQualifiedDomainName(),
                 database.getName(), overview.getServerAdminLoginNameTextField().getText(), DBConnectionString.Type.SPRING));
         }
     }
@@ -223,23 +223,21 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     }
 
     private void refreshProperty(String sid, String resourceGroup, String name) {
-        SqlServerProperty newProperty = new SqlServerProperty();
-        newProperty.setSubscriptionId(sid);
         // find server
         try {
             ISqlServer server = Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
-            newProperty.setServer(server);
+            this.property.setServer(server);
         } catch (Exception ex) {
             String error = "find Azure Database for MySQL server information";
             String action = "confirm your network is available and your server actually exists.";
             throw new AzureToolkitRuntimeException(error, action);
         }
-        if ("Ready".equals(newProperty.getServer().entity().getState())) {
+        SqlServerEntity entity = property.getServer().entity();
+        if ("Ready".equals(entity.getState())) {
             // find firewalls
-            List<SqlFirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(newProperty.getServer().entity().getId()).firewallRules();
-            newProperty.setFirewallRules(firewallRules);
+            List<SqlFirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
+            this.property.setFirewallRules(firewallRules);
         }
-        this.property = newProperty;
     }
 
     // @Override
