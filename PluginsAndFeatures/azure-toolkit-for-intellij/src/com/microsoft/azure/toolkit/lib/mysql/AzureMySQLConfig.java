@@ -7,10 +7,10 @@ package com.microsoft.azure.toolkit.lib.mysql;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import lombok.Getter;
@@ -51,7 +51,7 @@ public class AzureMySQLConfig {
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There is no subscription in your account.");
         Subscription subscription = selectedSubscriptions.get(0);
         config.setSubscription(subscription);
-        DraftResourceGroup resourceGroup = DraftResourceGroup.builder().subscription(subscription).name("rs-" + defaultNameSuffix).build();
+        DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
         config.setResourceGroup(resourceGroup);
         List<String> supportedVersions = MySQLMvpModel.listSupportedVersions();
         if (CollectionUtils.isNotEmpty(supportedVersions)) {

@@ -167,7 +167,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(((VMWizardModel) model).getSubscription().getSubscriptionId());
+            azure = azureManager.getAzure(model.getSubscription().getId());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to authenticate\n\n" + ex.getMessage(), ex);
         }

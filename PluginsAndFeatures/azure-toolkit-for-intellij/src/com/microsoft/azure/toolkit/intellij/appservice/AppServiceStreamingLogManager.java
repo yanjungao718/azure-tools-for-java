@@ -25,6 +25,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -184,19 +185,14 @@ public enum AppServiceStreamingLogManager {
             }
             final String aiKey = aiAppSettings.value();
             final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            final SubscriptionDetail subscriptionDetail = Optional.ofNullable(azureManager)
-                                                                  .map(AzureManager::getSubscriptionManager)
-                                                                  .map(SubscriptionManager::getSubscriptionIdToSubscriptionDetailsMap)
-                                                                  .map(map -> map.get(subscriptionId)).orElse(null);
             final List<ApplicationInsightsComponent> insightsResources =
-                subscriptionDetail == null ? Collections.EMPTY_LIST : AzureSDKManager.getInsightsResources(subscriptionDetail);
+                    subscriptionId == null ? Collections.EMPTY_LIST : AzureSDKManager.getInsightsResources(subscriptionId);
             final ApplicationInsightsComponent target = insightsResources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.instrumentationKey(), aiKey))
                     .findFirst()
                     .orElseThrow(() -> new IOException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
-            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, azureManager.getPortalUrl());
+            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, IdentityAzureManager.getInstance().getPortalUrl());
             DefaultLoader.getIdeHelper().openLinkInBrowser(aiUrl);
         }
 

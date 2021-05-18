@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import icons.MavenIcons;
 
@@ -26,7 +27,6 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -140,7 +140,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             public void customize(JList jlist, ResourceGroup resourceGroup, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (resourceGroup != null) {
-                    setText(resourceGroup.name());
+                    setText(resourceGroup.getName());
                 }
             }
         });
@@ -300,7 +300,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             Subscription sub = (Subscription) comboSubscription.getSelectedItem();
             ResourceGroup rg = (ResourceGroup) comboResourceGroup.getSelectedItem();
             if (sub != null && rg != null) {
-                updateAppServicePlanList(sub.getId(), rg.name());
+                updateAppServicePlanList(sub.getId(), rg.getName());
             }
         }
     }
@@ -393,7 +393,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 webAppOnLinuxDeployConfiguration.setCreatingNewResourceGroup(false);
                 ResourceGroup selectedRg = (ResourceGroup) comboResourceGroup.getSelectedItem();
                 if (selectedRg != null) {
-                    webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedRg.name());
+                    webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedRg.getName());
                 } else {
                     webAppOnLinuxDeployConfiguration.setResourceGroupName(null);
                 }
@@ -616,7 +616,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (resourceGroupList != null && resourceGroupList.size() > 0) {
             resourceGroupList.forEach((item) -> {
                 comboResourceGroup.addItem(item);
-                if (Comparing.equal(item.name(), defaultResourceGroup)) {
+                if (Comparing.equal(item.getName(), defaultResourceGroup)) {
                     comboResourceGroup.setSelectedItem(item);
                     // defaultResourceGroup = null;
                 }
@@ -669,7 +669,6 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
 
     /**
      * Let the presenter release the view. Will be called by:
-     * {@link com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.WebAppOnLinuxDeploySettingsEditor#disposeEditor()}.
      */
     @Override
     public void disposeEditor() {

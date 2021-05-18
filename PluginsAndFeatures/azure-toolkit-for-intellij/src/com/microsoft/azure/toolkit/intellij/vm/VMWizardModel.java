@@ -16,7 +16,7 @@ import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.MachineSettingsStep;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.SelectImageStep;
@@ -56,7 +56,7 @@ public class VMWizardModel extends WizardModel implements TelemetryProperties {
     private String password;
     private String certificate;
     private String subnet;
-    private SubscriptionDetail subscription;
+    private Subscription subscription;
 
     public VMWizardModel(VMArmModule node) {
         super(ApplicationNamesInfo.getInstance().getFullProductName() + " - Create new Virtual Machine");
@@ -148,11 +148,11 @@ public class VMWizardModel extends WizardModel implements TelemetryProperties {
         this.certificate = certificate;
     }
 
-    public void setSubscription(SubscriptionDetail subscription) {
+    public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
     }
 
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return subscription;
     }
 
@@ -282,8 +282,8 @@ public class VMWizardModel extends WizardModel implements TelemetryProperties {
         if (this.getSize() != null) properties.put("Size", this.getSize());
         if (this.getSubnet() != null) properties.put("Subnet", this.getSubnet());
         if (this.getSubscription() != null) {
-            properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-            properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+            properties.put("SubscriptionName", this.getSubscription().getName());
+            properties.put("SubscriptionId", this.getSubscription().getId());
         }
         if (this.getName() != null) properties.put("Name", this.getName());
         if (this.getRegion() != null) properties.put("Region", this.getRegion().getName());

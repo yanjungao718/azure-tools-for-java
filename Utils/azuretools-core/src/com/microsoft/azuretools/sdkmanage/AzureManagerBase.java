@@ -21,7 +21,6 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
 import com.microsoft.azuretools.authmanage.interact.INotification;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
@@ -30,6 +29,7 @@ import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 
+import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public abstract class AzureManagerBase implements AzureManager {
     protected static final Settings settings = new Settings();
 
     protected AzureManagerBase() {
-        this.subscriptionManager = new SubscriptionManagerPersist(this);
+        this.subscriptionManager = new SubscriptionManager();
     }
 
     @Override
@@ -229,11 +229,6 @@ public abstract class AzureManagerBase implements AzureManager {
             return null;
         }
         return getEnvironment().getAzureEnvironment().storageEndpointSuffix();
-    }
-
-    @Override
-    public Settings getSettings() {
-        return settings;
     }
 
     @Override

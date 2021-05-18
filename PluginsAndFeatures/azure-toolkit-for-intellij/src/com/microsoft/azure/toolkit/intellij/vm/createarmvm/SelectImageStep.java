@@ -12,17 +12,16 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
+import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.RxJavaUtils;
@@ -42,8 +41,8 @@ import java.awt.event.ItemListener;
 import java.io.InterruptedIOException;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
@@ -59,7 +58,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
     private JPanel rootPanel;
     private JList createVmStepsList;
-    private JComboBox regionComboBox;
+    private com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox regionComboBox;
 
     private JList imageLabelList;
     private JComboBox publisherComboBox;
@@ -92,22 +91,15 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(model.getSubscription().getSubscriptionId());
+            azure = azureManager.getAzure(model.getSubscription().getId());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to authenticate\n\n" + ex.getMessage(), ex);
         }
-        regionComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
-
-            @Override
-            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
-                if (o != null && (o instanceof Region)) {
-                    setText("  " + ((Region) o).getName());
-                }
-            }
-        });
+        regionComboBox.setSubscription(model.getSubscription());
         regionComboBox.addItemListener(e -> {
+            model.setRegion((Region) regionComboBox.getSelectedItem());
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                selectRegion();
+                regionChanged();
             }
         });
         publisherComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
@@ -232,26 +224,6 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
         rootPanel.revalidate();
 
-        // will set to null if selected subscription changes
-        if (model.getRegion() == null) {
-            Map<SubscriptionDetail, List<Region>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-            if (subscription2Location == null || subscription2Location.get(model.getSubscription()) == null) {
-                final DefaultComboBoxModel<String> loadingModel = new DefaultComboBoxModel<>(new String[]{"<Loading...>"});
-                regionComboBox.setModel(loadingModel);
-                model.getCurrentNavigationState().NEXT.setEnabled(false);
-                final IAzureOperationTitle title = AzureOperationBundle.title("common|region.list.subscription", model.getSubscription().getSubscriptionName());
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
-                    try {
-                        AzureModelController.updateSubscriptionMaps(null);
-                        DefaultLoader.getIdeHelper().invokeLater(this::fillRegions);
-                    } catch (Exception ex) {
-                        PluginUtil.displayErrorDialogInAWTAndLog("Error", "Error loading locations", ex);
-                    }
-                }));
-            } else {
-                fillRegions();
-            }
-        }
         if ((knownImageBtn.isSelected() && knownImageComboBox.getSelectedItem() == null) ||
                 (customImageBtn.isSelected() && imageLabelList.getSelectedValue() == null)) {
             disableNext();
@@ -278,21 +250,18 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         versionLabel.setEnabled(customImage);
     }
 
+    private void createUIComponents() {
+        this.regionComboBox = new RegionComboBox();
+    }
+
     private void fillRegions() {
-        List<Region> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(model.getSubscription())
-                .stream().filter(e -> SUPPORTED_REGION_LIST.contains(e.getName())).sorted(Comparator.comparing(Region::getName)).collect(Collectors.toList());
-        regionComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
-        if (locations.size() > 0) {
-            selectRegion();
-        }
         enableControls(customImageBtn.isSelected());
     }
 
-    private void selectRegion() {
+    private void regionChanged() {
         if (customImageBtn.isSelected()) {
             fillPublishers();
         }
-        model.setRegion((Region) regionComboBox.getSelectedItem());
     }
 
     private void fillPublishers() {

@@ -8,23 +8,23 @@ package com.microsoft.azuretools.core.mvp.model;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Deployment;
-import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.azuretools.utils.CanceledByUserException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,14 +66,8 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public Subscription getSubscriptionById(String sid) {
-        Subscription ret = null;
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        final Map<String, Subscription> map =
-            azureManager.getSubscriptionManager().getSubscriptionIdToSubscriptionMap();
-        if (map != null) {
-            ret = map.get(sid);
-        }
-        return ret;
+        return azureManager.getSubscriptionById(sid);
     }
 
     /**
@@ -88,22 +82,25 @@ public class AzureMvpModel {
     public List<Subscription> getSelectedSubscriptions() {
         final List<Subscription> ret = new ArrayList<>();
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            return ret;
-        }
-        Map<String, SubscriptionDetail> sidToSubDetailMap = azureManager.getSubscriptionManager()
-                .getSubscriptionIdToSubscriptionDetailsMap();
-        Map<String, Subscription> sidToSubscriptionMap = azureManager.getSubscriptionManager()
-                .getSubscriptionIdToSubscriptionMap();
-        if (sidToSubDetailMap != null && sidToSubscriptionMap != null) {
-            for (final SubscriptionDetail subDetail : sidToSubDetailMap.values()) {
-                if (subDetail.isSelected()) {
-                    ret.add(sidToSubscriptionMap.get(subDetail.getSubscriptionId()));
-                }
-            }
-        }
+        ret.addAll(azureManager.getSelectedSubscriptions());
         Collections.sort(ret, getComparator(Subscription::getName));
         return ret;
+    }
+
+    /**
+     * List all the resource groups in specific subscription.
+     * @return
+     */
+    @AzureOperation(
+        name = "arm|rg.list.subscription|selected",
+        type = AzureOperation.Type.SERVICE
+    )
+    public List<ResourceEx<ResourceGroup>> getResourceGroups(String sid) {
+        List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
+        resourceGroups.addAll(az(AzureGroup.class).list(sid).stream().map(r -> new ResourceEx<>(r, sid)).collect(Collectors.toList()));
+        Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
+                resourceGroupResourceEx.getResource().getName()));
+        return resourceGroups;
     }
 
     /**
@@ -111,26 +108,14 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "arm|rg.list.subscription|selected",
-        type = AzureOperation.Type.SERVICE
+            name = "arm|rg.list.subscription|selected",
+            type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<ResourceGroup>> getResourceGroups(boolean forceUpdate) throws CanceledByUserException {
+    public List<ResourceEx<ResourceGroup>> getResourceGroups() {
         List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
-        Map<SubscriptionDetail, List<ResourceGroup>> srgMap = AzureModel.getInstance()
-            .getSubscriptionToResourceGroupMap();
-        if (srgMap == null || srgMap.size() < 1 || forceUpdate) {
-            AzureModelController.updateSubscriptionMaps(null);
-        }
-        srgMap = AzureModel.getInstance().getSubscriptionToResourceGroupMap();
-        if (srgMap == null) {
-            return resourceGroups;
-        }
-        for (SubscriptionDetail sd : srgMap.keySet()) {
-            resourceGroups.addAll(srgMap.get(sd).stream().map(
-                resourceGroup -> new ResourceEx<>(resourceGroup, sd.getSubscriptionId())).collect(Collectors.toList()));
-        }
+        resourceGroups.addAll(az(AzureGroup.class).list().stream().map(r -> new ResourceEx<>(r, r.getSubscriptionId())).collect(Collectors.toList()));
         Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
-                resourceGroupResourceEx.getResource().name()));
+                resourceGroupResourceEx.getResource().getName()));
         return resourceGroups;
     }
 
@@ -146,9 +131,7 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public void deleteResourceGroup(String rgName, String sid) {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        Azure azure = azureManager.getAzure(sid);
-        azure.resourceGroups().deleteByName(rgName);
+        az(AzureGroup.class).delete(sid, rgName);
     }
 
     /**
@@ -163,10 +146,8 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceGroup> getResourceGroupsBySubscriptionId(String sid) {
-        List<ResourceGroup> ret = new ArrayList<>();
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        ret.addAll(azure.resourceGroups().list());
-        Collections.sort(ret, getComparator(ResourceGroup::name));
+        List<ResourceGroup> ret = new ArrayList<>(az(AzureGroup.class).list(sid));
+        Collections.sort(ret, getComparator(ResourceGroup::getName));
         return ret;
     }
 
@@ -179,17 +160,11 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
-        ResourceGroup resourceGroup;
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         try {
-            resourceGroup = azure.resourceGroups().getByName(name);
-            if (resourceGroup == null) {
-                throw new Exception(CANNOT_GET_RESOURCE_GROUP);
-            }
+            return az(AzureGroup.class).get(sid, name);
         } catch (Exception e) {
             throw new Exception(CANNOT_GET_RESOURCE_GROUP);
         }
-        return resourceGroup;
     }
 
     @AzureOperation(

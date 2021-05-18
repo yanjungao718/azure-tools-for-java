@@ -215,6 +215,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         List<String> selectedIds = this.sdl.stream().filter(SubscriptionDetail::isSelected)
                 .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
         IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
+        IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
 
         final Map<String, String> properties = new HashMap<>();
         properties.put("subsCount", String.valueOf(rc));

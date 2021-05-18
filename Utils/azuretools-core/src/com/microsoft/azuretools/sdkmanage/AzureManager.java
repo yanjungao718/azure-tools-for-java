@@ -16,12 +16,13 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.utils.Pair;
-
 import java.io.IOException;
 import java.util.List;
 
 public interface AzureManager {
     Azure getAzure(String sid);
+
+    Subscription getSubscriptionById(String sid);
 
     AppPlatformManager getAzureSpringCloudClient(String sid);
 
@@ -31,13 +32,13 @@ public interface AzureManager {
 
     List<Subscription> getSubscriptions();
 
+    List<Subscription> getSelectedSubscriptions();
+
     default List<String> getSelectedSubscriptionIds() {
         return null;
     }
 
     List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant();
-
-    Settings getSettings();
 
     SubscriptionManager getSubscriptionManager();
 
