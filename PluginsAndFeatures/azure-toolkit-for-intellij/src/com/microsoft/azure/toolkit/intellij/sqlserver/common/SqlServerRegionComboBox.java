@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * TODO(Qianjin) : extend RegionComboBox
+ */
 public class SqlServerRegionComboBox extends AzureComboBox<Region> {
 
     private static final String REGION_UNAVAILABLE_MESSAGE = "Your subscription does not have access to create a server "
@@ -28,6 +31,8 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
         + "aka.ms/sqlcapacity. Please try another region or create a support ticket to request access.";
 
     private Subscription subscription;
+    private boolean validated;
+    private AzureValidationInfo validatedInfo;
 
     public void setSubscription(Subscription subscription) {
         if (Objects.equals(subscription, this.subscription)) {
@@ -63,6 +68,14 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
     }
 
     @Override
+    public void setItem(Region item) {
+        if (!item.equals(getItem())) {
+            validated = false;
+        }
+        super.setItem(item);
+    }
+
+    @Override
     public boolean isRequired() {
         return true;
     }
@@ -70,16 +83,19 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        final AzureValidationInfo info = super.doValidate();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
+        if (validated && Objects.isNull(validatedInfo)) {
+            return validatedInfo;
         }
-        AzureSqlServer service = com.microsoft.azure.toolkit.lib.Azure.az(AzureSqlServer.class);
-        if (!service.checkRegionCapability(subscription.subscriptionId(), getValue().getName())) {
-            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+        validatedInfo = super.doValidate();
+        if (AzureValidationInfo.OK.equals(validatedInfo)) {
+            AzureSqlServer service = com.microsoft.azure.toolkit.lib.Azure.az(AzureSqlServer.class);
+            if (!service.checkRegionCapability(subscription.subscriptionId(), getValue().getName())) {
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                validatedInfo = builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+            }
         }
-        return info;
+        validated = true;
+        return validatedInfo;
     }
 
     /**

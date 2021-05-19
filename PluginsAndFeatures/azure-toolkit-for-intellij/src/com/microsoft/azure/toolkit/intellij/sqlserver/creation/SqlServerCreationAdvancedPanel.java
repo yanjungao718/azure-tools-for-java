@@ -67,7 +67,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
 
     private void initListeners() {
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
-        this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
+        this.adminUsernameTextField.getDocument().addDocumentListener(this.onAdminUsernameChanged());
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
@@ -79,7 +79,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         }
     }
 
-    private DocumentListener generateAdminUsernameListener() {
+    private DocumentListener onAdminUsernameChanged() {
         return new TextDocumentListenerAdapter() {
             @Override
             public void onDocumentChanged() {
