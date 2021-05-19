@@ -25,8 +25,7 @@ public class SqlServerPropertyViewProvider implements FileEditorProvider, DumbAw
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        SqlServerPropertyView propertyView = new SqlServerPropertyView();
-        return propertyView;
+        return new SqlServerPropertyView();
     }
 
     @NotNull
