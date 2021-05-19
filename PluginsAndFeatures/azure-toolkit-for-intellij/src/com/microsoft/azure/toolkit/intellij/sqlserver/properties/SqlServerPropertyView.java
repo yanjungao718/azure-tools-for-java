@@ -43,6 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * TODO (qianjin): shared common code
+ */
 public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     public static final String ID = "com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView";
