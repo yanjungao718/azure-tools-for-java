@@ -16,18 +16,28 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CustomerSurveyManager {
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
     private static final String BASE_FOLDER = Paths.get(System.getProperty("user.home"), AZURE_TOOLS_FOLDER).toString();
     private static final String FILE_NAME_SURVEY_CONFIG = "SurveyConfig.json";
+    private static final String OPERATION_NAME = "operationName";
+    private static final String SYSTEM = "system";
+    private static final String SERVICE_NAME = "serviceName";
+    private static final String SURVEY = "survey";
+    private static final String RESPONSE = "response";
+    private static final String SURVEY_TYPE = "kind";
 
     private static final int INIT_SURVEY_DELAY_BY_DAY = 10;
     private static final int PUT_OFF_DELAY_BY_DAY = 30;
@@ -63,18 +73,28 @@ public class CustomerSurveyManager {
     }
 
     private void showSurveyPopup(final Project project, final ICustomerSurvey survey) {
-        final SurveyPopUpDialog popUpDialog = new SurveyPopUpDialog(project, survey, result -> {
+        final SurveyPopUpDialog popUpDialog = new SurveyPopUpDialog(project, survey, response -> {
             try {
-                if (result == CustomerSurveyResponse.ACCEPT) {
+                if (response == CustomerSurveyResponse.ACCEPT) {
                     // redirect to browser
                     BrowserUtil.browse(survey.getLink());
                 }
-                updateSurveyStatus(survey, result);
+                trackCustomerSurvey(survey, response);
             } finally {
                 aBoolean.set(true);
             }
         });
         popUpDialog.setVisible(true);
+    }
+
+    private void trackCustomerSurvey(final ICustomerSurvey survey, final CustomerSurveyResponse response) {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(SERVICE_NAME, SYSTEM);
+        properties.put(OPERATION_NAME, SURVEY);
+        properties.put(SURVEY_TYPE, survey.getType());
+        properties.put(RESPONSE, response.name());
+        AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
+        updateSurveyStatus(survey, response);
     }
 
     private CustomerSurveyConfiguration.CustomerSurveyStatus getSurveyStatus(ICustomerSurvey survey) {
