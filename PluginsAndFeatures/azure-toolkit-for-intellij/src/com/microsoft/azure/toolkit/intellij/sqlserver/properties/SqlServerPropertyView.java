@@ -13,11 +13,11 @@ import com.microsoft.azure.toolkit.intellij.mysql.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyActionPanel;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerDatabaseComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.database.DatabaseTemplateUtils;
+import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.utils.DBConnectionString;
-import com.microsoft.azure.toolkit.lib.common.utils.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlFirewallRuleEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
@@ -49,6 +49,7 @@ import java.util.Map;
 public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     public static final String ID = "com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView";
+    private static final String SQLSERVER_DRIVER_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 
     private AzureHideableTitledSeparator overviewSeparator;
     private SqlServerPropertryOverviewPanel overview;
@@ -64,7 +65,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private SqlServerDatabaseComboBox databaseComboBox;
     private JLabel databaseLabel;
 
-    private SqlServerProperty property;
+    private SqlServerProperty property = new SqlServerProperty();
 
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
@@ -78,19 +79,19 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         connectionStringsSeparator.addContentComponent(connectionStringsJDBC);
         connectionStringsSeparator.addContentComponent(connectionStringsSpring);
         connectionStringsJDBC.getTitleLabel().setText("JDBC");
-        connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(null, null, null, DBConnectionString.Type.JDBC));
         connectionStringsSpring.getTitleLabel().setText("Spring");
-        connectionStringsSpring.getOutputTextArea().setText(getConnectionString(null, null, null, DBConnectionString.Type.SPRING));
+        JdbcUrl jdbcUrl = this.getJdbcUrl(null, null, null);
+        connectionStringsJDBC.getOutputTextArea().setText(DatabaseTemplateUtils.toJdbcTemplate(jdbcUrl));
+        connectionStringsSpring.getOutputTextArea().setText(DatabaseTemplateUtils.toSpringTemplate(jdbcUrl, SQLSERVER_DRIVER_CLASS_NAME));
         init();
         initListeners();
     }
 
-    private String getConnectionString(final String hostname, final String database, final String username, DBConnectionString.Type type) {
+    private JdbcUrl getJdbcUrl(final String hostname, final String database, final String username) {
         String realHostname = StringUtils.isNotBlank(hostname) ? hostname : "${your_hostname}";
         String realDatabase = StringUtils.isNotBlank(database) ? database : "${your_database}";
         String realUsername = StringUtils.isNotBlank(username) ? username : "${your_username}";
-        String url = JdbcUrl.sqlserver(realHostname, realDatabase).toString();
-        return DBConnectionString.builder().type(type).url(url).username(realUsername).password("${your_password}").build().asString();
+        return JdbcUrl.sqlserver(realHostname, realDatabase).setUsername(username).setPassword("${your_password}");
     }
 
     private void init() {
@@ -184,10 +185,10 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof SqlDatabaseEntity) {
             final SqlDatabaseEntity database = (SqlDatabaseEntity) e.getItem();
             SqlServerEntity entity = this.property.getServer().entity();
-            connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(entity.getFullyQualifiedDomainName(),
-                database.getName(), overview.getServerAdminLoginNameTextField().getText(), DBConnectionString.Type.JDBC));
-            connectionStringsSpring.getOutputTextArea().setText(getConnectionString(entity.getFullyQualifiedDomainName(),
-                database.getName(), overview.getServerAdminLoginNameTextField().getText(), DBConnectionString.Type.SPRING));
+            JdbcUrl jdbcUrl = this.getJdbcUrl(entity.getFullyQualifiedDomainName(),
+                    database.getName(), overview.getServerAdminLoginNameTextField().getText());
+            connectionStringsJDBC.getOutputTextArea().setText(DatabaseTemplateUtils.toJdbcTemplate(jdbcUrl));
+            connectionStringsSpring.getOutputTextArea().setText(DatabaseTemplateUtils.toSpringTemplate(jdbcUrl, SQLSERVER_DRIVER_CLASS_NAME));
         }
     }
 
