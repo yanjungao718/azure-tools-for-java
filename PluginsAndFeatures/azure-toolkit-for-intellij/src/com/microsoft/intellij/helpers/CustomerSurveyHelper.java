@@ -20,7 +20,6 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.intellij.ui.SurveyPopUpDialog;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -72,8 +71,6 @@ public enum CustomerSurveyHelper {
                     .subscribeOn(new IdeaSchedulers(project).dispatchUIThread())
                     .take(1)
                     .subscribe(next -> {
-                        SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
-                        dialog.setVisible(true);
                         synchronized (CustomerSurveyHelper.class) {
                             if (operation != null) {
                                 operation.complete();
