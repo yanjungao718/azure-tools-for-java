@@ -21,7 +21,7 @@ public class PasswordUtils {
     private static final int PASSWORD_CATEGORIES_MIN = 3;
     private static final int LONGEST_COMMON_SUBSEQUENCE_BETWEEN_NAME_AND_PASSWORD = 3;
 
-    protected static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
+    public static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
             @Override
             public AzureValidationInfo doValidate() {
@@ -36,7 +36,7 @@ public class PasswordUtils {
         };
     }
 
-    protected static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
+    public static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
         return new AzurePasswordFieldInput(confirmPasswordField) {
             @Override
             public AzureValidationInfo doValidate() {
