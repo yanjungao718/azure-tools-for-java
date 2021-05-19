@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAct
 import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.ConnectToMySQLAction;
+import com.microsoft.azure.toolkit.intellij.sqlserver.CreateSqlServerAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.azure.toolkit.intellij.appservice.action.ProfileFlightRecordAction;
@@ -47,6 +48,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
@@ -85,6 +87,8 @@ public class NodeActionsMap {
                 .add(PushToContainerRegistryAction.class).build());
         node2Actions.put(MySQLModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateMySQLAction.class).build());
+        node2Actions.put(SqlServerModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateSqlServerAction.class).build());
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,
