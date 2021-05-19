@@ -22,13 +22,19 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.creation;
 
+import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+
+import java.util.List;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -95,7 +101,9 @@ public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
     }
 
     private void createUIComponents() {
-        SqlServerConfig config = SqlServerConfig.getDefaultConfig();
+        final List<Subscription> selectedSubscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There is no subscription in your account.");
+        SqlServerConfig config = SqlServerConfig.getDefaultConfig(selectedSubscriptions.get(0));
         basic = new SqlServerCreationBasicPanel(config);
         advanced = new SqlServerCreationAdvancedPanel(config);
     }
