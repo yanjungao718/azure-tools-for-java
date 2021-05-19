@@ -103,7 +103,7 @@ public class SignInWindow extends AzureDialogWrapper {
         buttonGroup.add(deviceLoginRadioButton);
         buttonGroup.add(spRadioButton);
         buttonGroup.add(azureCliRadioButton);
-        azureCliRadioButton.setSelected(true);
+        oauthLoginRadioButton.setSelected(true);
 
         radioButtonComponentsMap.put(spRadioButton, servicePrincipalCommentLabel);
         radioButtonComponentsMap.put(deviceLoginRadioButton, deviceLoginCommentLabel);
@@ -294,7 +294,6 @@ public class SignInWindow extends AzureDialogWrapper {
                 doSignOut();
             }
             return authManager.signInServicePrincipal(auth).block();
-
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
