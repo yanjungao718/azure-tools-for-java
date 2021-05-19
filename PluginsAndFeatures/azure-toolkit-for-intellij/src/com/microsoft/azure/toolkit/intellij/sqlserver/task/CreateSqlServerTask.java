@@ -3,14 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.lib.sqlserver;
+package com.microsoft.azure.toolkit.intellij.sqlserver.task;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlFirewallRuleEntity;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
@@ -25,11 +25,12 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 
 import java.util.Collections;
 
-public class SqlServerService {
-    private static final SqlServerService instance = new SqlServerService();
+public class CreateSqlServerTask {
 
-    public static SqlServerService getInstance() {
-        return SqlServerService.instance;
+    private final SqlServerConfig config;
+
+    public CreateSqlServerTask(SqlServerConfig config) {
+        this.config = config;
     }
 
     @AzureOperation(
@@ -40,7 +41,7 @@ public class SqlServerService {
         },
         type = AzureOperation.Type.SERVICE
     )
-    public ISqlServer create(final SqlServerConfig config) {
+    public ISqlServer execute() {
         final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();

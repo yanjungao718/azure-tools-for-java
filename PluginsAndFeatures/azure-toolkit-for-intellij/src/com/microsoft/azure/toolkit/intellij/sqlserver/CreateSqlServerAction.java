@@ -12,8 +12,8 @@ import com.microsoft.azure.toolkit.intellij.sqlserver.creation.SqlServerCreation
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.intellij.sqlserver.task.CreateSqlServerTask;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
-import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerService;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -74,7 +74,7 @@ public class CreateSqlServerAction extends NodeActionListener {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             DefaultLoader.getIdeHelper().invokeLater(dialog::close);
-            ISqlServer server = SqlServerService.getInstance().create(config);
+            ISqlServer server = new CreateSqlServerTask(config).execute();
             refreshAzureExplorer(server);
         };
         String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), SqlServerModule.MODULE_NAME, config.getServerName());
