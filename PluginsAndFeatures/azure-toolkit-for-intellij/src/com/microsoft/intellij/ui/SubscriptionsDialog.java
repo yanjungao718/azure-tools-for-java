@@ -15,6 +15,8 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.TableSpeedSearch;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -109,7 +111,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             }
             final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
             subscriptionManager.cleanSubscriptions();
-
+            Azure.az(AzureAccount.class).account().reloadSubscriptions().block();
             SelectSubscriptionsAction.loadSubscriptions(subscriptionManager, project);
 
             //System.out.println("refreshSubscriptions: calling getSubscriptionDetails()");
@@ -216,7 +218,11 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
                 .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
         IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
         IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
-
+        AzureAccount az = Azure.az(AzureAccount.class);
+        selectedIds.forEach(sid -> {
+            // pre load regions
+            az.listRegions(sid);
+        });
         final Map<String, String> properties = new HashMap<>();
         properties.put("subsCount", String.valueOf(rc));
         properties.put("selectedSubsCount", String.valueOf(rc - unselectedCount));

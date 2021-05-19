@@ -44,10 +44,6 @@ public class AuthMethodDetails {
     @Getter
     private String certificate;
 
-    @Setter
-    @Getter
-    private String passwordInMemory;
-
     @JsonProperty
     @Setter
     @Getter

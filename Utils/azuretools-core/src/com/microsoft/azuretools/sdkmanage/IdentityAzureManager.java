@@ -22,6 +22,7 @@ import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
@@ -125,7 +126,13 @@ public class IdentityAzureManager extends AzureManagerBase {
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
                 } else {
-                    auth.setKey(authMethodDetails.getPasswordInMemory());
+                    String key = MvpUIHelperFactory.getInstance().getMvpUIHelper().loadPasswordFromSecureStore("account",
+                            authMethodDetails.getClientId());
+                    if (StringUtils.isBlank(key)) {
+                        throw new AzureToolkitRuntimeException(
+                                String.format("Cannot find SP security key for '%s' in intellij key pools.", authMethodDetails.getClientId()));
+                    }
+                    auth.setKey(key);
                 }
                 return signInServicePrincipal(auth).map(ac -> authMethodDetails);
             } else {
