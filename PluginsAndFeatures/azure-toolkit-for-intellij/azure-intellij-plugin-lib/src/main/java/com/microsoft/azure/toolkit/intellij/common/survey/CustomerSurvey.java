@@ -58,7 +58,9 @@ public enum CustomerSurvey implements ICustomerSurvey {
     private final Icon icon;
 
     private static String getInstallationId() {
-        return AzureTelemeter.getCommonProperties().get("Installation ID");
+        return Optional.ofNullable(AzureTelemeter.getCommonProperties())
+                .map(properties -> properties.get("Installation ID"))
+                .orElse(StringUtils.EMPTY);
     }
 
     @Override
