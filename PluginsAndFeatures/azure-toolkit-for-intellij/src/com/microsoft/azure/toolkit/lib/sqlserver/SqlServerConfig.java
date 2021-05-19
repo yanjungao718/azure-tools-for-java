@@ -39,12 +39,9 @@ public class SqlServerConfig {
     private boolean allowAccessFromAzureServices;
     private boolean allowAccessFromLocalMachine;
 
-    public static SqlServerConfig getDefaultConfig() {
+    public static SqlServerConfig getDefaultConfig(Subscription subscription) {
         final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
         final SqlServerConfig config = new SqlServerConfig();
-        final List<Subscription> selectedSubscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There is no subscription in your account.");
-        Subscription subscription = selectedSubscriptions.get(0);
         config.setSubscription(subscription);
         DraftResourceGroup resourceGroup = DraftResourceGroup.builder().subscription(subscription).name("rs-" + defaultNameSuffix).build();
         config.setResourceGroup(resourceGroup);
