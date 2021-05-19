@@ -18,13 +18,6 @@ public class SqlServerDatabaseComboBox extends AzureComboBox<SqlDatabaseEntity> 
 
     private ISqlServer server;
 
-    public void setSubscription(ISqlServer server) {
-        if (Objects.equals(server, this.server)) {
-            return;
-        }
-        this.refreshItems();
-    }
-
     public void setServer(ISqlServer server) {
         if (Objects.equals(server, this.server)) {
             return;
