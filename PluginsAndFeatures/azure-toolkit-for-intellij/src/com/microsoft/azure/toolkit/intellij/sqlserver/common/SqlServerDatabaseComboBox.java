@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * TODO: refactor together with DatabaseComboBox.
+ */
 public class SqlServerDatabaseComboBox extends AzureComboBox<SqlDatabaseEntity> {
 
     private ISqlServer server;
