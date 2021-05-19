@@ -10,12 +10,14 @@ import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import lombok.Getter;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +26,9 @@ import java.util.Map;
 public class SqlServerNode extends Node implements TelemetryProperties {
     private static final String SERVER_READY = "Ready";
     private static final String SERVER_UPDATING = "Updating";
+    @Getter
     private final String subscriptionId;
+    @Getter
     private final ISqlServer server;
     private String serverState;
 
@@ -75,10 +79,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
 
     @AzureOperation(name = ActionConstants.MySQL.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
-        /**
-         * TODO: implementation
-         */
-        // DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
+        DefaultLoader.getUIHelper().openSqlServerPropertyView(SqlServerNode.this);
     }
 
     @Override
