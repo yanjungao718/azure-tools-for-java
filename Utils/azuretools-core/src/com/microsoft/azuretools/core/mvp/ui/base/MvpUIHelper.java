@@ -14,7 +14,7 @@ public interface MvpUIHelper {
     void showException(String message, Exception e);
 
     @Deprecated
-    default String loadPasswordFromSecureStore(@NotNull String serviceName, @NotNull String userName) {
+    default String loadPasswordFromSecureStore(@NotNull String key) {
         return null;
     }
 }

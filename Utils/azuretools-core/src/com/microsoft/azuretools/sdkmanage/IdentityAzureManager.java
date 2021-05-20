@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -125,8 +124,8 @@ public class IdentityAzureManager extends AzureManagerBase {
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
                 } else {
-                    String key = MvpUIHelperFactory.getInstance().getMvpUIHelper().loadPasswordFromSecureStore("account",
-                            authMethodDetails.getClientId());
+                    String key = MvpUIHelperFactory.getInstance().getMvpUIHelper().loadPasswordFromSecureStore(
+                        StringUtils.joinWith("|", "account", authMethodDetails.getClientId()));
                     if (StringUtils.isBlank(key)) {
                         throw new AzureToolkitRuntimeException(
                                 String.format("Cannot find SP security key for '%s' in intellij key pools.", authMethodDetails.getClientId()));

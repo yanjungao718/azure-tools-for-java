@@ -38,6 +38,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -81,7 +83,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
         if (CollectionUtils.isEmpty(sdl)) {
             PluginUtil.displayInfoDialog("No subscription", "No subscription in current account, you may get a free "
-                    + "one from https://azure.microsoft.com/en-us/free/");
+                + "one from https://azure.microsoft.com/en-us/free/");
             return null;
         }
         SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
@@ -176,9 +178,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         };
 
         ToolbarDecorator tableToolbarDecorator =
-                ToolbarDecorator.createDecorator(table)
-                        .disableUpDownActions()
-                        .addExtraActions(refreshAction);
+            ToolbarDecorator.createDecorator(table)
+                .disableUpDownActions()
+                .addExtraActions(refreshAction);
 
         panelTable = tableToolbarDecorator.createPanel();
 
@@ -204,8 +206,8 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
         if (rc != 0 && unselectedCount == rc) {
             DefaultLoader.getUIHelper().showMessageDialog(
-                    contentPane, "Please select at least one subscription",
-                    "Subscription dialog info", Messages.getInformationIcon());
+                contentPane, "Please select at least one subscription",
+                "Subscription dialog info", Messages.getInformationIcon());
             return;
         }
 
@@ -215,8 +217,18 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         }
 
         List<String> selectedIds = this.sdl.stream().filter(SubscriptionDetail::isSelected)
-                .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
+            .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
         IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
+        IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
+        Mono.fromCallable(() -> {
+            AzureAccount az = Azure.az(AzureAccount.class);
+            selectedIds.stream().limit(5).forEach(sid -> {
+                // pr-load regions
+                az.listRegions(sid);
+            });
+            return 1;
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
+
         final Map<String, String> properties = new HashMap<>();
         properties.put("subsCount", String.valueOf(rc));
         properties.put("selectedSubsCount", String.valueOf(rc - unselectedCount));
