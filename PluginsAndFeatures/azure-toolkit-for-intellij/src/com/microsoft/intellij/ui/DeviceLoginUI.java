@@ -14,14 +14,15 @@ import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import reactor.core.Disposable;
+
+import java.util.concurrent.Future;
 
 
 public class DeviceLoginUI implements IDeviceLoginUI {
     private DeviceLoginWindow deviceLoginWindow;
 
     @Setter
-    private Disposable disposable;
+    private Future future;
 
     @Nullable
     @Override
@@ -45,8 +46,8 @@ public class DeviceLoginUI implements IDeviceLoginUI {
 
     @Override
     public void cancel() {
-        if (disposable != null) {
-            this.disposable.dispose();
+        if (future != null) {
+            this.future.cancel(true);
         }
     }
 }

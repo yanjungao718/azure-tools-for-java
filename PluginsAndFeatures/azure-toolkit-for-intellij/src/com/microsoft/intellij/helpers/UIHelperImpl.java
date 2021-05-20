@@ -428,16 +428,16 @@ public class UIHelperImpl implements UIHelper {
             showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
             return;
         }
-        final String id = node.getAppId();
+        final String id = node.getApp().entity().getId();
         final String subscription = getSubscriptionId(id);
-        final String appName = node.getAppName();
+        final String appName = node.getApp().name();
         final LightVirtualFile existing = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
         final LightVirtualFile itemVirtualFile = Objects.isNull(existing) ? createVirtualFile(appName, subscription, id) : existing;
         if (Objects.isNull(existing)) {
             itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
         }
         AzureTaskManager.getInstance().runInModal(String.format("Loading properties of app(%s)", appName), () -> {
-            final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).subscription(subscription).cluster(node.getClusterName());
+            final SpringCloudCluster cluster = node.getApp().getCluster();
             final SpringCloudApp app = Objects.requireNonNull(cluster).app(appName);
             itemVirtualFile.putUserData(SpringCloudAppPropertiesEditorProvider.APP_KEY, app);
             AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(itemVirtualFile, true, true));
@@ -493,7 +493,8 @@ public class UIHelperImpl implements UIHelper {
                                                               ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, sid, resId);
-            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
+            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE,
+                AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
             itemVirtualFile.setFileType(fileType);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
