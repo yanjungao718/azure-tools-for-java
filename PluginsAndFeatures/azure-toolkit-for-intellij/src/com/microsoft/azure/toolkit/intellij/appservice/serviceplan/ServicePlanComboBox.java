@@ -114,7 +114,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
-                stream = stream.filter(p -> Objects.equals(p.region(), this.region));
+                stream = stream.filter(p -> Objects.equals(p.regionName(), this.region.getLabel()));
             }
             if (Objects.nonNull(this.os)) {
                 stream = stream.filter(p -> p.operatingSystem() == this.os);
