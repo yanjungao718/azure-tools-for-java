@@ -36,11 +36,6 @@ public class SurveyPopUpDialog extends JDialog {
 
     private static final int DISPOSE_TIME = 10;
     private static final String LABEL_DO_NOT_SHOW_AGAIN = "Don't show again.";
-    private static final String LABEL_PROMPT = "<html>" +
-            "<h3 align=\"center\">%s?</h3>" +
-            "<p align=\"center\" style=\"line-height: 0\"> Your feedback is important, </p>" +
-            "<p align=\"center\" style=\"line-height: 0\"> take a minute to fill out our survey.</p>" +
-            "</html>";
 
     private JPanel contentPane;
     private JButton giveFeedbackButton;
@@ -49,6 +44,8 @@ public class SurveyPopUpDialog extends JDialog {
     private JLabel lblMessage;
     private JLabel lblAzureIcon;
     private JLabel lblClose;
+    private JLabel lblFeedBack;
+    private JLabel lblTakeSurvey;
 
     private Point dragPosition;
     private Color buttonOnHoverColor = JBColor.WHITE;
@@ -234,7 +231,8 @@ public class SurveyPopUpDialog extends JDialog {
         lblDoNotShowAgain = new HyperlinkLabel(LABEL_DO_NOT_SHOW_AGAIN);
         lblDoNotShowAgain.addHyperlinkListener(e -> takeSurvey(CustomerSurveyResponse.NEVER_SHOW_AGAIN));
 
-        lblMessage = new JLabel(String.format(LABEL_PROMPT, survey.getDescription()));
+        lblMessage = new JLabel(survey.getDescription());
+        lblMessage.setFont(new Font(lblMessage.getFont().getName(), Font.BOLD, lblMessage.getFont().getSize()));
 
         lblAzureIcon = new JLabel();
         final Icon scaledIcon = IconUtil.scale(survey.getIcon(), lblAzureIcon, 50f / survey.getIcon().getIconWidth());
