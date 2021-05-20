@@ -37,7 +37,7 @@ public class CustomerSurveyManager {
     private static final String SERVICE_NAME = "serviceName";
     private static final String SURVEY = "survey";
     private static final String RESPONSE = "response";
-    private static final String SURVEY_TYPE = "kind";
+    private static final String SURVEY_TYPE = "type";
 
     private static final int INIT_SURVEY_DELAY_BY_DAY = 10;
     private static final int PUT_OFF_DELAY_BY_DAY = 30;
