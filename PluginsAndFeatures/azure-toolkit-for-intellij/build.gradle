@@ -171,6 +171,7 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.7.0-SNAPSHOT', { force = true }
     compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.7.0-SNAPSHOT', { force = true }
     aspect "com.microsoft.azure:azure-toolkit-common-lib:0.7.0-SNAPSHOT",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
