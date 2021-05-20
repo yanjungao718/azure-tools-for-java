@@ -15,7 +15,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.annotation.Nonnull;
