@@ -15,6 +15,7 @@ import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -40,7 +41,7 @@ import static org.mockito.Mockito.*;
     RedisCaches.class,
     SubscriptionManager.class
 })
-
+@Ignore
 public class AzureRedisMvpModelTest {
 
     private AzureRedisMvpModel azureRedisMvpModel;
@@ -100,8 +101,6 @@ public class AzureRedisMvpModelTest {
 
         when(subscriptionDetailMock.isSelected()).thenReturn(true);
         when(subscriptionDetailMock.getSubscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
-        when(subscriptionManagerMock.getSubscriptionIdToSubscriptionDetailsMap()).thenReturn(mockSidToSubDetailMap);
-        when(subscriptionManagerMock.getSubscriptionIdToSubscriptionMap()).thenReturn(mockSidToSubscriptionMap);
         when(subscriptionMock.getId()).thenReturn(MOCK_SUBSCRIPTION);
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
 

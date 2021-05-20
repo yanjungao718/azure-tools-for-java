@@ -167,7 +167,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(((VMWizardModel) model).getSubscription().getSubscriptionId());
+            azure = azureManager.getAzure(model.getSubscription().getId());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to authenticate\n\n" + ex.getMessage(), ex);
         }
@@ -190,7 +190,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
         validateEmptyFields();
 
-        if (vmSizeComboBox.getItemCount() == 0) {
+        if (vmSizeComboBox.getItemCount() == 0 || vmSizeComboBox.getItemAt(0).contains("<Loading...>")) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
             final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().getName());

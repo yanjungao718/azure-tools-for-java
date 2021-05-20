@@ -29,6 +29,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import org.apache.commons.collections4.CollectionUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -287,9 +288,14 @@ public class AuthMethodManager {
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
+                List<SubscriptionDetail> persistSubscriptions = identityAzureManager.getSubscriptionManager().loadSubscriptions();
                 List<String> allSubscriptionIds = identityAzureManager.getSubscriptionDetails().stream()
                         .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
-                identityAzureManager.selectSubscriptionByIds(allSubscriptionIds);
+                List<String> savedSubscriptionList = null;
+                if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
+                    savedSubscriptionList = persistSubscriptions.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                }
+                identityAzureManager.selectSubscriptionByIds(savedSubscriptionList != null ? savedSubscriptionList : allSubscriptionIds);
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {

@@ -4,9 +4,9 @@
  */
 package com.microsoft.azure.toolkit.intellij.mysql;
 
-import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;

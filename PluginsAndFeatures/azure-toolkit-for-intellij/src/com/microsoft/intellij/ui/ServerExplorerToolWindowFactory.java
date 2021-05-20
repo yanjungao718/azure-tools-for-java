@@ -403,26 +403,29 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
             try {
                 Runnable forceRefreshTitleActions = () -> {
-                    try {
-                        toolWindowEx.setTitleActions(
-                            new AnAction("Refresh", "Refresh Azure Nodes List", null) {
-                                @Override
-                                public void actionPerformed(AnActionEvent event) {
-                                    azureModule.load(true);
-                                }
 
-                                @Override
-                                public void update(AnActionEvent e) {
-                                    boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
-                                    final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
-                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
-                                }
-                            },
-                            new AzureSignInAction(),
-                            new SelectSubscriptionsAction());
-                    } catch (Exception e) {
-                        AzurePlugin.log(e.getMessage(), e);
-                    }
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        try {
+                            toolWindowEx.setTitleActions(
+                                    new AnAction("Refresh", "Refresh Azure Nodes List", null) {
+                                        @Override
+                                        public void actionPerformed(AnActionEvent event) {
+                                            azureModule.load(true);
+                                        }
+
+                                        @Override
+                                        public void update(AnActionEvent e) {
+                                            boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
+                                            final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
+                                            e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
+                                        }
+                                    },
+                                    new AzureSignInAction(),
+                                    new SelectSubscriptionsAction());
+                        } catch (Exception e) {
+                            AzurePlugin.log(e.getMessage(), e);
+                        }
+                    });
                 };
                 AuthMethodManager.getInstance().addSignInEventListener(forceRefreshTitleActions);
                 AuthMethodManager.getInstance().addSignOutEventListener(forceRefreshTitleActions);
