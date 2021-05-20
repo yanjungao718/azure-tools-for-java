@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.properties;
 
+import com.microsoft.azure.toolkit.intellij.common.ui.TextFieldUtils;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -30,8 +31,10 @@ public class SqlServerPropertryOverviewPanel extends JPanel {
 
     SqlServerPropertryOverviewPanel() {
         super();
-        disableTxtBoard();
-        makeTxtOpaque();
+        TextFieldUtils.disableTextBoard(resourceGroupTextField, serverNameTextField, statusTextField, serverAdminLoginNameTextField,
+            locationTextField, versionTextField, subscriptionTextField, subscriptionIDTextField);
+        TextFieldUtils.makeTextOpaque(resourceGroupTextField, serverNameTextField, statusTextField, serverAdminLoginNameTextField,
+            locationTextField, versionTextField, subscriptionTextField, subscriptionIDTextField);
     }
 
     @Override
@@ -40,25 +43,4 @@ public class SqlServerPropertryOverviewPanel extends JPanel {
         rootPanel.setVisible(visible);
     }
 
-    private void disableTxtBoard() {
-        resourceGroupTextField.setBorder(BorderFactory.createEmptyBorder());
-        serverNameTextField.setBorder(BorderFactory.createEmptyBorder());
-        statusTextField.setBorder(BorderFactory.createEmptyBorder());
-        serverAdminLoginNameTextField.setBorder(BorderFactory.createEmptyBorder());
-        locationTextField.setBorder(BorderFactory.createEmptyBorder());
-        versionTextField.setBorder(BorderFactory.createEmptyBorder());
-        subscriptionTextField.setBorder(BorderFactory.createEmptyBorder());
-        subscriptionIDTextField.setBorder(BorderFactory.createEmptyBorder());
-    }
-
-    private void makeTxtOpaque() {
-        resourceGroupTextField.setBackground(null);
-        serverNameTextField.setBackground(null);
-        statusTextField.setBackground(null);
-        serverAdminLoginNameTextField.setBackground(null);
-        locationTextField.setBackground(null);
-        versionTextField.setBackground(null);
-        subscriptionTextField.setBackground(null);
-        subscriptionIDTextField.setBackground(null);
-    }
 }

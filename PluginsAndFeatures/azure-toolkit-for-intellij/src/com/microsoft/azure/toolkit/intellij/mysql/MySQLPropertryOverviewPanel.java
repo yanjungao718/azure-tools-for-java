@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.microsoft.azure.toolkit.intellij.common.ui.TextFieldUtils;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -34,8 +35,12 @@ public class MySQLPropertryOverviewPanel extends JPanel {
 
     MySQLPropertryOverviewPanel() {
         super();
-        disableTxtBoard();
-        makeTxtOpaque();
+        TextFieldUtils.disableTextBoard(resourceGroupTextField, serverNameTextField, statusTextField, serverAdminLoginNameTextField,
+            locationTextField, mysqlVersionTextField, subscriptionTextField, performanceConfigurationsTextField,
+            subscriptionIDTextField, sslEnforceStatusTextField);
+        TextFieldUtils.makeTextOpaque(resourceGroupTextField, serverNameTextField, statusTextField, serverAdminLoginNameTextField,
+            locationTextField, mysqlVersionTextField, subscriptionTextField, performanceConfigurationsTextField,
+            subscriptionIDTextField, sslEnforceStatusTextField);
     }
 
     @Override
@@ -44,29 +49,4 @@ public class MySQLPropertryOverviewPanel extends JPanel {
         rootPanel.setVisible(visible);
     }
 
-    private void disableTxtBoard() {
-        resourceGroupTextField.setBorder(BorderFactory.createEmptyBorder());
-        serverNameTextField.setBorder(BorderFactory.createEmptyBorder());
-        statusTextField.setBorder(BorderFactory.createEmptyBorder());
-        serverAdminLoginNameTextField.setBorder(BorderFactory.createEmptyBorder());
-        locationTextField.setBorder(BorderFactory.createEmptyBorder());
-        mysqlVersionTextField.setBorder(BorderFactory.createEmptyBorder());
-        subscriptionTextField.setBorder(BorderFactory.createEmptyBorder());
-        performanceConfigurationsTextField.setBorder(BorderFactory.createEmptyBorder());
-        subscriptionIDTextField.setBorder(BorderFactory.createEmptyBorder());
-        sslEnforceStatusTextField.setBorder(BorderFactory.createEmptyBorder());
-    }
-
-    private void makeTxtOpaque() {
-        resourceGroupTextField.setBackground(null);
-        serverNameTextField.setBackground(null);
-        statusTextField.setBackground(null);
-        serverAdminLoginNameTextField.setBackground(null);
-        locationTextField.setBackground(null);
-        mysqlVersionTextField.setBackground(null);
-        subscriptionTextField.setBackground(null);
-        performanceConfigurationsTextField.setBackground(null);
-        subscriptionIDTextField.setBackground(null);
-        sslEnforceStatusTextField.setBackground(null);
-    }
 }
