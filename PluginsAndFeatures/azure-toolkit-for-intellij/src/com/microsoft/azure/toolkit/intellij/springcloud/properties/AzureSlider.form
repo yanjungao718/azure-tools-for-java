@@ -13,15 +13,15 @@
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <majorTickSpacing value="50"/>
-          <maximum value="500"/>
+          <majorTickSpacing value="5"/>
+          <maximum value="25"/>
           <minimum value="0"/>
-          <minorTickSpacing value="10"/>
+          <minorTickSpacing value="1"/>
           <paintLabels value="true"/>
           <paintTicks value="true"/>
           <paintTrack value="true"/>
           <snapToTicks value="false"/>
-          <value value="50"/>
+          <value value="1"/>
           <valueIsAdjusting value="true"/>
         </properties>
       </component>
