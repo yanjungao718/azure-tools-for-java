@@ -85,7 +85,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         builder.subscription(this.subscription)
                .name(this.textName.getValue())
                .os(this.os)
-               .region(com.microsoft.azure.management.resources.fluentcore.arm.Region.fromName(this.region.getName()))
+               .region(this.region)
                .tier(this.comboBoxPricingTier.getValue());
         return builder.build();
     }

@@ -29,7 +29,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -138,8 +137,8 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
         final IAzureOperationTitle title = AzureOperationBundle.title("arm|deployment.deploy", deploymentName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.CREATE_DEPLOYMENT, (operation -> {
-                SubscriptionDetail subs = (SubscriptionDetail) subscriptionCb.getSelectedItem();
-                com.microsoft.azure.management.Azure azure = AuthMethodManager.getInstance().getAzureClient(subs.getSubscriptionId());
+                Subscription subs = (Subscription) subscriptionCb.getSelectedItem();
+                com.microsoft.azure.management.Azure azure = AuthMethodManager.getInstance().getAzureClient(subs.getId());
                 WithTemplate template;
                 if (createNewRgButton.isSelected()) {
                     rgName = rgNameTextFiled.getText();
@@ -151,7 +150,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                 } else {
                     ResourceGroup rg = ((ResourceEx<ResourceGroup>) rgNameCb.getSelectedItem()).getResource();
                     List<ResourceEx<Deployment>> deployments = AzureMvpModel.getInstance()
-                                                                            .getDeploymentByRgName(subs.getSubscriptionId(), rg.getName());
+                                                                            .getDeploymentByRgName(subs.getId(), rg.getName());
                     boolean isExist = deployments.parallelStream()
                                                  .anyMatch(deployment -> deployment.getResource().name().equals(deploymentName));
                     if (isExist) {

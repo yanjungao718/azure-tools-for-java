@@ -7,7 +7,6 @@ package com.microsoft.applicationinsights.preference;
 
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 
 import java.util.*;
 
