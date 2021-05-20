@@ -5,10 +5,16 @@
 
 package com.microsoft.azuretools.core.mvp.ui.base;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
 public interface MvpUIHelper {
 
     void showError(String message);
 
     void showException(String message, Exception e);
 
+    @Deprecated
+    default String loadPasswordFromSecureStore(@NotNull String serviceName, @NotNull String userName) {
+        return null;
+    }
 }
