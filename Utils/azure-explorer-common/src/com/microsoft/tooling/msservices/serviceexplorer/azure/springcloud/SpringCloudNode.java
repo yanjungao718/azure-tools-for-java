@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -35,6 +36,14 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         super(cluster.id(), cluster.name(), parent, null, true);
         this.cluster = cluster;
         loadActions();
+        AzureEventBus.after("springcloud|app.create", this::onAppCreatedOrRemoved);
+        AzureEventBus.after("springcloud|app.remove", this::onAppCreatedOrRemoved);
+    }
+
+    public void onAppCreatedOrRemoved(SpringCloudApp app) {
+        if (this.cluster.name().equals(app.getCluster().name())) {
+            refreshItems();
+        }
     }
 
     @Override
