@@ -70,6 +70,7 @@ public class AuthMethodManager {
         // fix the class load problem for intellij plugin
         ClassLoader current = Thread.currentThread().getContextClassLoader();
         Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
+        Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
 
         try {
             Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
