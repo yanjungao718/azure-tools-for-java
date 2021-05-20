@@ -2,21 +2,23 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-
-package com.microsoft.intellij.ui;
+package com.microsoft.azure.toolkit.intellij.common.survey;
 
 import com.intellij.ide.ui.LafManager;
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
+import com.intellij.ui.Gray;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.JBColor;
+import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 
-import com.microsoft.intellij.helpers.CustomerSurveyHelper;
-import com.microsoft.intellij.ui.util.UIUtils;
-import com.microsoft.intellij.util.PluginUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.ButtonUI;
@@ -28,16 +30,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Optional;
 
 public class SurveyPopUpDialog extends JDialog {
 
     private static final int DISPOSE_TIME = 10;
     private static final String LABEL_DO_NOT_SHOW_AGAIN = "Don't show again.";
-    private static final String LABEL_PROMPT = "<html>" +
-            "<h3 align=\"center\">Enjoy Azure Toolkits?</h3>" +
-            "<p align=\"center\" style=\"line-height: 0%\"> Your feedback is important, </p>" +
-            "<p align=\"center\" style=\"line-height: 0%\"> take a minute to fill out our survey.</p>" +
-            "</html>";
 
     private JPanel contentPane;
     private JButton giveFeedbackButton;
@@ -46,41 +44,48 @@ public class SurveyPopUpDialog extends JDialog {
     private JLabel lblMessage;
     private JLabel lblAzureIcon;
     private JLabel lblClose;
-
-    private CustomerSurveyHelper customerSurveyHelper;
+    private JLabel lblFeedBack;
+    private JLabel lblTakeSurvey;
 
     private Point dragPosition;
-    private Timer disposeTimer;
-    private LafManagerListener themeListener;
-    private Color buttonOnHoverColor = Color.WHITE;
-    private boolean isDisposed = false;
+    private Color buttonOnHoverColor = JBColor.WHITE;
+    private boolean isDisposed;
 
-    public SurveyPopUpDialog(CustomerSurveyHelper customerSurveyHelper, Project project) {
+    private final Timer disposeTimer;
+    private final LafManagerListener themeListener;
+    private final ICustomerSurvey survey;
+    private final Consumer<? super CustomerSurveyResponse> listener;
+
+    public SurveyPopUpDialog(final Project project, @Nonnull final ICustomerSurvey customerSurvey,
+                             @Nonnull final Consumer<? super CustomerSurveyResponse> listener) {
         super();
 
-        this.customerSurveyHelper = customerSurveyHelper;
-        this.disposeTimer = new Timer(1000 * DISPOSE_TIME, (e) -> this.putOff());
+        this.listener = listener;
+        this.survey = customerSurvey;
         this.themeListener = lafManager -> renderUiByTheme();
+        this.disposeTimer = new Timer(1000 * DISPOSE_TIME, (e) -> takeSurvey(CustomerSurveyResponse.PUT_OFF_AUTO));
+
+        $$$setupUI$$$();
 
         this.setAlwaysOnTop(true);
         this.setSize(250, 250);
         this.setContentPane(contentPane);
         this.setUndecorated(true);
-        this.getRootPane().setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        this.getRootPane().setBorder(BorderFactory.createLineBorder(JBColor.GRAY));
         this.setModal(false);
         this.setLocationRelativeToIDE(project);
         this.setDisposeTimer();
 
-        giveFeedbackButton.addActionListener((e) -> takeSurvey());
+        giveFeedbackButton.addActionListener((e) -> takeSurvey(CustomerSurveyResponse.ACCEPT));
         giveFeedbackButton.setFocusable(false);
 
-        notNowButton.addActionListener((e) -> putOff());
+        notNowButton.addActionListener((e) -> takeSurvey(CustomerSurveyResponse.PUT_OFF));
         notNowButton.setFocusable(false);
 
         lblClose.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                putOff();
+                takeSurvey(CustomerSurveyResponse.PUT_OFF);
             }
         });
 
@@ -88,11 +93,11 @@ public class SurveyPopUpDialog extends JDialog {
         // call onCancel() when cross is clicked
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                putOff();
+                takeSurvey(CustomerSurveyResponse.PUT_OFF);
             }
         });
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> putOff(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
+        contentPane.registerKeyboardAction(e -> takeSurvey(CustomerSurveyResponse.PUT_OFF), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
 
         // Add listener to intellij theme change
         LafManager.getInstance().addLafManagerListener(this.themeListener);
@@ -103,30 +108,30 @@ public class SurveyPopUpDialog extends JDialog {
 
     private void renderUiByTheme() {
         // Use default ui setting for mac
-        boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
-        if (isMac) {
+        if (SystemUtils.IS_OS_MAC) {
             return;
         }
-        if (UIUtils.isUnderLightTheme()) {
-            UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
-            ButtonUI buttonUI = new MetalButtonUI();
+        final UIManager.LookAndFeelInfo theme = LafManager.getInstance().getCurrentLookAndFeel();
+        if (StringUtils.containsIgnoreCase(theme.getName(), "light")) {
+            setPanelBackGroundColor(contentPane, JBColor.WHITE);
+            final ButtonUI buttonUI = new MetalButtonUI();
             giveFeedbackButton.setUI(buttonUI);
-            giveFeedbackButton.setForeground(new Color(255, 255, 255));
+            giveFeedbackButton.setForeground(Gray._255);
             giveFeedbackButton.setBackground(new Color(0, 114, 198));
             notNowButton.setUI(buttonUI);
-            notNowButton.setForeground(new Color(255, 255, 255));
-            notNowButton.setBackground(new Color(105, 105, 105));
-            buttonOnHoverColor = Color.LIGHT_GRAY;
+            notNowButton.setForeground(Gray._255);
+            notNowButton.setBackground(Gray._105);
+            buttonOnHoverColor = JBColor.LIGHT_GRAY;
         } else {
-            UIUtils.setPanelBackGroundColor(contentPane, null);
-            ButtonUI buttonUI = new JButton().getUI();
+            setPanelBackGroundColor(contentPane, null);
+            final ButtonUI buttonUI = new JButton().getUI();
             giveFeedbackButton.setForeground(null);
             giveFeedbackButton.setBackground(null);
             giveFeedbackButton.setUI(buttonUI);
             notNowButton.setForeground(null);
             notNowButton.setBackground(null);
             notNowButton.setUI(buttonUI);
-            buttonOnHoverColor = Color.WHITE;
+            buttonOnHoverColor = JBColor.WHITE;
         }
         giveFeedbackButton.setBorderPainted(false);
         setButtonHoverListener(giveFeedbackButton);
@@ -176,8 +181,11 @@ public class SurveyPopUpDialog extends JDialog {
             // In case user close project after start up
             ideFrame = WindowManagerImpl.getInstance().findVisibleFrame();
         }
-        int locationX = ideFrame.getX() + ideFrame.getWidth() - this.getWidth();
-        int locationY = ideFrame.getY() + ideFrame.getHeight() - this.getHeight();
+
+        final int locationX = Optional.ofNullable(ideFrame).map(frame -> frame.getX() + frame.getWidth() - this.getWidth())
+                .orElseGet(() -> Toolkit.getDefaultToolkit().getScreenSize().width - this.getWidth());
+        final int locationY = Optional.ofNullable(ideFrame).map(frame -> frame.getY() + frame.getHeight() - this.getHeight())
+                .orElseGet(() -> Toolkit.getDefaultToolkit().getScreenSize().height - this.getHeight());
         this.setLocation(locationX, locationY);
     }
 
@@ -195,25 +203,12 @@ public class SurveyPopUpDialog extends JDialog {
         });
     }
 
-    private synchronized void takeSurvey() {
-        if (!isDisposed) {
-            customerSurveyHelper.takeSurvey();
-            close();
+    private synchronized void takeSurvey(CustomerSurveyResponse response) {
+        if (isDisposed) {
+            return;
         }
-    }
-
-    private synchronized void putOff() {
-        if (!isDisposed) {
-            customerSurveyHelper.putOff();
-            close();
-        }
-    }
-
-    private synchronized void neverShow() {
-        if (!isDisposed) {
-            customerSurveyHelper.neverShowAgain();
-            close();
-        }
+        close();
+        this.listener.consume(response);
     }
 
     private synchronized void close() {
@@ -223,17 +218,28 @@ public class SurveyPopUpDialog extends JDialog {
         dispose();
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
-        lblDoNotShowAgain = new HyperlinkLabel(LABEL_DO_NOT_SHOW_AGAIN);
-        lblDoNotShowAgain.addHyperlinkListener(e -> neverShow());
+    private void setPanelBackGroundColor(JPanel panel, Color color) {
+        panel.setBackground(color);
+        for (final Component child : panel.getComponents()) {
+            if (child instanceof JPanel) {
+                setPanelBackGroundColor((JPanel) child, color);
+            }
+        }
+    }
 
-        lblMessage = new JLabel(LABEL_PROMPT);
+    private void createUIComponents() {
+        lblDoNotShowAgain = new HyperlinkLabel(LABEL_DO_NOT_SHOW_AGAIN);
+        lblDoNotShowAgain.addHyperlinkListener(e -> takeSurvey(CustomerSurveyResponse.NEVER_SHOW_AGAIN));
+
+        lblMessage = new JLabel(survey.getDescription());
+        lblMessage.setFont(new Font(lblMessage.getFont().getName(), Font.BOLD, lblMessage.getFont().getSize()));
 
         lblAzureIcon = new JLabel();
-        Icon rawIcon = PluginUtil.getIcon("/icons/azure_large.png");
-        Icon scaledIcon = IconUtil.scale(rawIcon, lblAzureIcon, 50f / rawIcon.getIconWidth());
-
+        final Icon scaledIcon = IconUtil.scale(survey.getIcon(), lblAzureIcon, 50f / survey.getIcon().getIconWidth());
         lblAzureIcon.setIcon(scaledIcon);
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 }
