@@ -21,19 +21,19 @@ import java.util.Optional;
 @AllArgsConstructor
 public enum CustomerSurvey implements ICustomerSurvey {
 
-    AZURE_SDK(Constants.AZURE_SDK_SURVEY_LINK, Constants.AZURE_SDK_SURVEY_DESCRIPTION, Constants.AZURE_ICON) {
+    AZURE_SDK(Constants.AZURE_SDK_SURVEY_LINK, Constants.AZURE_SDK_SURVEY, Constants.AZURE_ICON) {
         @Override
         public String getLink() {
             return String.format(super.getLink(), getInstallationId());
         }
     },
-    AZURE_CLIENT_SDK(Constants.AZURE_CLIENT_SDK_SURVEY_LINK, Constants.AZURE_CLIENT_SDK_SURVEY_DESCRIPTION, Constants.AZURE_ICON) {
+    AZURE_CLIENT_SDK(Constants.AZURE_CLIENT_SDK_SURVEY_LINK, Constants.AZURE_SDK_SURVEY, Constants.AZURE_ICON) {
         @Override
         public String getLink() {
             return String.format(super.getLink(), getInstallationId());
         }
     },
-    AZURE_MGMT_SDK(Constants.AZURE_MGMT_SDK_SURVEY_LINK, Constants.AZURE_MGMT_SDK_SURVEY_DESCRIPTION, Constants.AZURE_ICON) {
+    AZURE_MGMT_SDK(Constants.AZURE_MGMT_SDK_SURVEY_LINK, Constants.AZURE_SDK_SURVEY, Constants.AZURE_ICON) {
         @Override
         public String getLink() {
             return String.format(super.getLink(), getInstallationId());
@@ -69,14 +69,12 @@ public enum CustomerSurvey implements ICustomerSurvey {
     private static class Constants {
         private static final Icon AZURE_ICON = IconLoader.getIcon("/icons/azure_large.png", CustomerSurvey.class);
         // Survey for azure client&mgmt SDK users
+        private static final String AZURE_SDK_SURVEY = "Enjoy Azure SDKs?";
         private static final String AZURE_SDK_SURVEY_LINK = "https://www.surveymonkey.com/r/2D9YTRQ?src=intellij&ver=%s";
-        private static final String AZURE_SDK_SURVEY_DESCRIPTION = "Enjoy Azure SDKs?";
         // Survey for azure client SDK users
         private static final String AZURE_CLIENT_SDK_SURVEY_LINK = "https://www.surveymonkey.com/r/8P768ZY?src=intellij&ver=%s";
-        private static final String AZURE_CLIENT_SDK_SURVEY_DESCRIPTION = "Enjoy Azure SDKs?";
         // Survey for azure mgmt SDK users
         private static final String AZURE_MGMT_SDK_SURVEY_LINK = "https://www.surveymonkey.com/r/8HXDGTG?src=intellij&ver=%s";
-        private static final String AZURE_MGMT_SDK_SURVEY_DESCRIPTION = "Enjoy Azure SDKs?";
         // Survey for azure spring SDK users
         private static final String AZURE_SPRING_SDK_SURVEY_LINK = "https://forms.office.com/r/f0RbyN1idu ";
         private static final String AZURE_SPRING_SDK_SURVEY_DESCRIPTION = "Enjoy Azure Spring Starters?";

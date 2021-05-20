@@ -52,7 +52,7 @@ public class SurveyPopUpDialog extends JDialog {
 
     private Point dragPosition;
     private Color buttonOnHoverColor = JBColor.WHITE;
-    private boolean isDisposed = false;
+    private boolean isDisposed;
 
     private final Timer disposeTimer;
     private final LafManagerListener themeListener;
