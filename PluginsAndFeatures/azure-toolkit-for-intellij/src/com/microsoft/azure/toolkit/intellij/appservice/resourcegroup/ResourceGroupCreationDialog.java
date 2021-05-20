@@ -6,15 +6,15 @@
 package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 
 import com.intellij.ui.components.JBLabel;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
-import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.ValidationUtils;
 
@@ -42,7 +42,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
 
     private AzureValidationInfo validateName() {
         try {
-            ValidationUtils.validateResourceGroupName(this.subscription.subscriptionId(), this.textName.getValue());
+            ValidationUtils.validateResourceGroupName(this.subscription.getId(), this.textName.getValue());
         } catch (final IllegalArgumentException e) {
             final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
@@ -68,16 +68,13 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
 
     @Override
     public DraftResourceGroup getData() {
-        final DraftResourceGroup.DraftResourceGroupBuilder builder = DraftResourceGroup.builder();
-        builder.subscription(this.subscription)
-               .name(this.textName.getValue());
-        return builder.build();
+        return new DraftResourceGroup(this.subscription, this.textName.getValue());
     }
 
     @Override
     public void setData(final DraftResourceGroup data) {
         this.subscription = data.getSubscription();
-        this.textName.setValue(data.name());
+        this.textName.setValue(data.getName());
     }
 
     @Override

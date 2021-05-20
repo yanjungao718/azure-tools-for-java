@@ -38,9 +38,6 @@ import java.util.stream.Collectors;
 
 
 public class IdentityAzureManager extends AzureManagerBase {
-    private IdentityAzureManager() {
-        settings.setSubscriptionsDetailsFileName(Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_IDENTITY);
-    }
 
     protected AzureTokenCredentials getCredentials(String tenantId) {
         return Azure.az(AzureAccount.class).account().getTokenCredentialForTenantV1(tenantId);
@@ -57,7 +54,8 @@ public class IdentityAzureManager extends AzureManagerBase {
     /**
      * Override the getSubscriptionDetails since az account has already loaded the subscriptions
      */
-    public java.util.List<SubscriptionDetail> getSubscriptionDetails() {
+    @Deprecated
+    public List<SubscriptionDetail> getSubscriptionDetails() {
         return Azure.az(AzureAccount.class).account().getSubscriptions().stream().map(subscription -> new SubscriptionDetail(
                 subscription.getId(),
                 subscription.getName(),
@@ -65,8 +63,16 @@ public class IdentityAzureManager extends AzureManagerBase {
                 subscription.isSelected())).collect(Collectors.toList());
     }
 
+    @Deprecated
+    public List<Subscription> getSubscriptions() {
+        return Azure.az(AzureAccount.class).account().getSubscriptions();
+    }
     public void selectSubscriptionByIds(List<String> subscriptionIds) {
         Azure.az(AzureAccount.class).account().selectSubscription(subscriptionIds);
+    }
+    @Override
+    public Subscription getSubscriptionById(String sid) {
+        return Azure.az(AzureAccount.class).account().getSubscription(sid);
     }
 
     public List<String> getSelectedSubscriptionIds() {
@@ -78,6 +84,13 @@ public class IdentityAzureManager extends AzureManagerBase {
             return selectedSubscriptions.stream().map(Subscription::getId).collect(Collectors.toList());
         }
         return null;
+    }
+    @Override
+    public List<Subscription> getSelectedSubscriptions() {
+        if (!isSignedIn()) {
+            return new ArrayList<>();
+        }
+        return Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
     }
 
     @Override

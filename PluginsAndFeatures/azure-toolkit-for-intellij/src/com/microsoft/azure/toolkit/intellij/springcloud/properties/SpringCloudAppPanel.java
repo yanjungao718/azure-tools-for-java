@@ -11,7 +11,6 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -20,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudApp
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureEntityManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -240,7 +240,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
     public SpringCloudAppConfig getData(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
-        appConfig.setSubscriptionId(Optional.ofNullable(this.selectorSubscription.getValue()).map(Subscription::subscriptionId).orElse(null));
+        appConfig.setSubscriptionId(Optional.ofNullable(this.selectorSubscription.getValue()).map(Subscription::getId).orElse(null));
         appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(IAzureEntityManager::name).orElse(null));
         appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(IAzureEntityManager::name).orElse(null));
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
@@ -258,7 +258,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
     public void setData(SpringCloudAppConfig app) {
         final SpringCloudDeploymentConfig deployment = app.getDeployment();
         Optional.ofNullable(app.getSubscriptionId())
-            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::subscriptionId))));
+            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
         Optional.ofNullable(app.getClusterName())
             .ifPresent((name -> this.selectorCluster.setValue(new ItemReference<>(name, SpringCloudCluster::name))));
         Optional.ofNullable(app.getAppName())

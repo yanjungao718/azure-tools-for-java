@@ -16,7 +16,7 @@ public class ResourceManagementModulePresenter<V extends ResourceManagementModul
     public void onModuleRefresh() throws CanceledByUserException {
         final ResourceManagementModuleView view = getMvpView();
         if (view != null) {
-            view.renderChildren(AzureMvpModel.getInstance().getResourceGroups(true));
+            view.renderChildren(AzureMvpModel.getInstance().getResourceGroups());
         }
     }
 

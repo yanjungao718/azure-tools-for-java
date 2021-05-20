@@ -6,7 +6,7 @@
 package com.microsoft.applicationinsights.preference;
 
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import java.io.Serializable;
 /**
@@ -27,12 +27,12 @@ public class ApplicationInsightsResource implements Serializable, Comparable<App
         super();
     }
 
-    public ApplicationInsightsResource(ApplicationInsightsComponent component, SubscriptionDetail subscription, boolean imported) {
+    public ApplicationInsightsResource(ApplicationInsightsComponent component, Subscription subscription, boolean imported) {
         super();
         this.resourceName = component.name();
         this.instrumentationKey = component.instrumentationKey();
-        this.subscriptionName = subscription.getSubscriptionName();
-        this.subscriptionId = subscription.getSubscriptionId();
+        this.subscriptionName = subscription.getName();
+        this.subscriptionId = subscription.getId();
         this.location = component.regionName();
         this.resourceGroup = component.resourceGroupName();
         this.imported = imported;
