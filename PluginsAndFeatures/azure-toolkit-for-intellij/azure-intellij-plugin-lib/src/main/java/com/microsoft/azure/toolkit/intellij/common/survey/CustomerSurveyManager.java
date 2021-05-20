@@ -44,7 +44,7 @@ public class CustomerSurveyManager {
     private static final int TAKE_SURVEY_DELAY_BY_DAY = 180;
 
     private final CustomerSurveyConfiguration customerSurveyConfiguration;
-    private final AtomicBoolean aBoolean = new AtomicBoolean(true);
+    private final AtomicBoolean surveyLock = new AtomicBoolean(true);
 
     public static CustomerSurveyManager getInstance() {
         return LazyHolder.INSTANCE;
@@ -65,9 +65,9 @@ public class CustomerSurveyManager {
             saveSurveyStatus();
             return;
         }
-        if (LocalDateTime.now().isAfter(status.getNextSurveyDate()) && aBoolean.get()) {
+        if (LocalDateTime.now().isAfter(status.getNextSurveyDate()) && surveyLock.get()) {
             // show survey pop up
-            aBoolean.set(false);
+            surveyLock.set(false);
             ApplicationManager.getApplication().invokeLater(() -> showSurveyPopup(project, survey));
         }
     }
@@ -81,7 +81,7 @@ public class CustomerSurveyManager {
                 }
                 trackCustomerSurvey(survey, response);
             } finally {
-                aBoolean.set(true);
+                surveyLock.set(true);
             }
         });
         popUpDialog.setVisible(true);
@@ -136,7 +136,6 @@ public class CustomerSurveyManager {
             }
             writer.writeValue(file, customerSurveyConfiguration);
         } catch (final IOException e) {
-            e.printStackTrace();
             // swallow exceptions for survey
         }
     }
