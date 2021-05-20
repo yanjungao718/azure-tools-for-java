@@ -83,7 +83,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                     switch (event.opsType) {
                         case ADD:
                             final IWebApp newWebApp = AzureWebAppMvpModel.getInstance()
-                                    .getAzureAppServiceClient(webAppDetails.subscriptionDetail.getSubscriptionId())
+                                    .getAzureAppServiceClient(webAppDetails.subscription.getId())
                                     .webapp(webAppDetails.webApp.id());
                             DefaultLoader.getIdeHelper().invokeLater(() -> {
                                 addChildNode(new WebAppNode(WebAppModule.this,

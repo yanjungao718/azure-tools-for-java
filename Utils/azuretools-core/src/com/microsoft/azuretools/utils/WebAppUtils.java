@@ -18,6 +18,7 @@ import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -543,7 +544,7 @@ public class WebAppUtils {
     }
 
     public static class WebAppDetails {
-        public SubscriptionDetail subscriptionDetail;
+        public Subscription subscription;
         public ResourceGroup resourceGroup;
         public AppServicePlan appServicePlan;
         public ResourceGroup appServicePlanResourceGroup;
@@ -554,12 +555,12 @@ public class WebAppUtils {
 
         public WebAppDetails(ResourceGroup resourceGroup, WebApp webApp,
                              AppServicePlan appServicePlan, ResourceGroup appServicePlanResourceGroup,
-                             SubscriptionDetail subscriptionDetail) {
+                             Subscription subscription) {
             this.resourceGroup = resourceGroup;
             this.webApp = webApp;
             this.appServicePlan = appServicePlan;
             this.appServicePlanResourceGroup = appServicePlanResourceGroup;
-            this.subscriptionDetail = subscriptionDetail;
+            this.subscription = subscription;
         }
     }
 

@@ -190,7 +190,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
         validateEmptyFields();
 
-        if (vmSizeComboBox.getItemCount() == 0 || vmSizeComboBox.getItemAt(0).contains("<Loading...>")) {
+        if (model.getRegion() != null && (vmSizeComboBox.getItemCount() == 0 || vmSizeComboBox.getItemAt(0).contains("<Loading...>"))) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
             final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().getName());

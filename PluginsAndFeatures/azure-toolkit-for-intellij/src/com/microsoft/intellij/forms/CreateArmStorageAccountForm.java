@@ -26,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -242,7 +241,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             operation.start();
             boolean isNewResourceGroup = createNewRadioButton.isSelected();
             final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
-            AzureSDKManager.createStorageAccount(((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId(),
+            AzureSDKManager.createStorageAccount(((Subscription) subscriptionComboBox.getSelectedItem()).getId(),
                                                  nameTextField.getText(),
                                                  ((Region) regionComboBox.getSelectedItem()).getName(),
                                                  isNewResourceGroup,
@@ -267,7 +266,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             return true;
         } catch (Exception e) {
             String msg = "An error occurred while attempting to create the specified storage account in subscription "
-                    + ((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId() + ".\n"
+                    + ((Subscription) subscriptionComboBox.getSelectedItem()).getId() + ".\n"
                     + String.format(message("webappExpMsg"), e.getMessage());
             final AzureTask.Modality modality = AzureTask.Modality.ANY;
             AzureTaskManager.getInstance().runAndWait(() -> DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true), modality);
