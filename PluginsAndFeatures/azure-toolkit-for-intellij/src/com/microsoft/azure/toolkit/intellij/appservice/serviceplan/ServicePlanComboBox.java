@@ -97,7 +97,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     @Override
     @AzureOperation(
         name = "appservice|plan.list.subscription|region|os",
-        params = {"this.subscription.subscriptionId()", "this.region.name()", "this.os.name()"},
+        params = {"this.subscription.getId()", "this.region.getName()", "this.os.name()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AppServicePlan> loadItems() throws Exception {
@@ -114,7 +114,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
-                stream = stream.filter(p -> Objects.equals(p.region(), this.region));
+                stream = stream.filter(p -> Objects.equals(p.regionName(), this.region.getLabel()));
             }
             if (Objects.nonNull(this.os)) {
                 stream = stream.filter(p -> p.operatingSystem() == this.os);

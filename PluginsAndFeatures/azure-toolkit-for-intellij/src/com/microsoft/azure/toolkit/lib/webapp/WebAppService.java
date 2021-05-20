@@ -59,8 +59,8 @@ public class WebAppService {
         final WebAppSettingModel settings = new WebAppSettingModel();
         settings.setSubscriptionId(config.getSubscription().getId());
         // creating if id is empty
-        settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().id()));
-        settings.setResourceGroup(config.getResourceGroup().name());
+        settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().getId()));
+        settings.setResourceGroup(config.getResourceGroup().getName());
         settings.setWebAppName(config.getName());
         settings.setRegion(config.getRegion().getName());
         settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
