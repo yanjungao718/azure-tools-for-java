@@ -47,7 +47,7 @@ public class CustomerSurveyManager {
     private final AtomicBoolean aBoolean = new AtomicBoolean(true);
 
     public static CustomerSurveyManager getInstance() {
-        return HOLDER.INSTANCE;
+        return LazyHolder.INSTANCE;
     }
 
     private CustomerSurveyManager(CustomerSurveyConfiguration customerSurveyConfiguration) {
@@ -145,32 +145,39 @@ public class CustomerSurveyManager {
         return new File(BASE_FOLDER, FILE_NAME_SURVEY_CONFIG);
     }
 
-    private static final class HOLDER {
+    private static final class LazyHolder {
         private static final CustomerSurveyManager INSTANCE;
 
         static {
-            CustomerSurveyConfiguration surveyConfiguration;
+            INSTANCE = new CustomerSurveyManager(readSurveyStatus());
+        }
+
+        private static CustomerSurveyConfiguration readSurveyStatus() {
             final ObjectMapper mapper = new ObjectMapper();
             final File configurationFile = getConfigurationFile();
             try {
-                surveyConfiguration = mapper.readValue(configurationFile, CustomerSurveyConfiguration.class);
+                return mapper.readValue(configurationFile, CustomerSurveyConfiguration.class);
             } catch (final JsonProcessingException jsonException) {
-                try {
-                    final SurveyConfig config = mapper.readValue(configurationFile, SurveyConfig.class);
-                    final CustomerSurveyConfiguration.CustomerSurveyStatus surveyStatus = CustomerSurveyConfiguration.CustomerSurveyStatus.builder()
-                            .type(CustomerSurvey.AZURE_INTELLIJ_TOOLKIT.name())
-                            .surveyTimes(config.surveyTimes)
-                            .lastSurveyDate(config.lastSurveyDate)
-                            .nextSurveyDate(config.nextSurveyDate).build();
-                    surveyConfiguration = new CustomerSurveyConfiguration();
-                    surveyConfiguration.getSurveyStatus().add(surveyStatus);
-                } catch (final IOException e) {
-                    surveyConfiguration = new CustomerSurveyConfiguration();
-                }
+                return readToolkitSurveyStatusFromOldConfiguration(configurationFile, mapper);
             } catch (final IOException e) {
-                surveyConfiguration = new CustomerSurveyConfiguration();
+                return new CustomerSurveyConfiguration();
             }
-            INSTANCE = new CustomerSurveyManager(surveyConfiguration);
+        }
+
+        private static CustomerSurveyConfiguration readToolkitSurveyStatusFromOldConfiguration(final File configurationFile, final ObjectMapper mapper) {
+            try {
+                final SurveyConfig config = mapper.readValue(configurationFile, SurveyConfig.class);
+                final CustomerSurveyConfiguration.CustomerSurveyStatus surveyStatus = CustomerSurveyConfiguration.CustomerSurveyStatus.builder()
+                        .type(CustomerSurvey.AZURE_INTELLIJ_TOOLKIT.name())
+                        .surveyTimes(config.surveyTimes)
+                        .lastSurveyDate(config.lastSurveyDate)
+                        .nextSurveyDate(config.nextSurveyDate).build();
+                final CustomerSurveyConfiguration surveyConfiguration = new CustomerSurveyConfiguration();
+                surveyConfiguration.getSurveyStatus().add(surveyStatus);
+                return surveyConfiguration;
+            } catch (final IOException e) {
+                return new CustomerSurveyConfiguration();
+            }
         }
     }
 
