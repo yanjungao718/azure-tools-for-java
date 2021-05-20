@@ -433,7 +433,7 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
         }
         AzureTaskManager.getInstance().runInModal(String.format("Loading properties of app(%s)", appName), () -> {
-            final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).subscription(subscription).cluster(node.getApp().getCluster().name());
+            final SpringCloudCluster cluster = node.getApp().getCluster();
             final SpringCloudApp app = Objects.requireNonNull(cluster).app(appName);
             itemVirtualFile.putUserData(SpringCloudAppPropertiesEditorProvider.APP_KEY, app);
             AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(itemVirtualFile, true, true));

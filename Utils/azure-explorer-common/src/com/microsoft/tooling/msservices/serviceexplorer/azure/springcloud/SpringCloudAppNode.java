@@ -156,24 +156,24 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     private void start() {
         status = SERVER_UPDATING;
         deploy.start();
-        this.refreshNode();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, status);
+        this.refreshNode();
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         status = SERVER_UPDATING;
         deploy.stop();
-        this.refreshNode();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, status);
+        this.refreshNode();
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         status = SERVER_UPDATING;
         deploy.restart();
-        this.refreshNode();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, status);
+        this.refreshNode();
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
