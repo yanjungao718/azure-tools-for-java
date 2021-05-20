@@ -12,7 +12,7 @@ import com.intellij.openapi.util.IconLoader;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.Optional;
@@ -58,7 +58,9 @@ public enum CustomerSurvey implements ICustomerSurvey {
     private final Icon icon;
 
     private static String getInstallationId() {
-        return AzureTelemeter.getCommonProperties().get("Installation ID");
+        return Optional.ofNullable(AzureTelemeter.getCommonProperties())
+                .map(properties -> properties.get("Installation ID"))
+                .orElse(StringUtils.EMPTY);
     }
 
     @Override
