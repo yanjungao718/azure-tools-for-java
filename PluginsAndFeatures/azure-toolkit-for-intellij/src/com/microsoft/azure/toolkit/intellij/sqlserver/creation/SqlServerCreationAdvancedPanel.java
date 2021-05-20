@@ -11,9 +11,9 @@ import com.microsoft.azure.toolkit.intellij.appservice.subscription.Subscription
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.intellij.mysql.AdminUsernameTextField;
-import com.microsoft.azure.toolkit.intellij.mysql.ConnectionSecurityPanel;
-import com.microsoft.azure.toolkit.intellij.mysql.creation.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerRegionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;

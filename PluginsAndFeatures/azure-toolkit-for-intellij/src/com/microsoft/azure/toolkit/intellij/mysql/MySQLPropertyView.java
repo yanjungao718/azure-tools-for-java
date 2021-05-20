@@ -11,6 +11,9 @@ import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseI
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
+import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
