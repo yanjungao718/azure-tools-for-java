@@ -5,8 +5,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import org.apache.commons.lang3.StringUtils;
 
 public class SpringCloudAppEvent {
     enum EventKind {
@@ -15,15 +16,17 @@ public class SpringCloudAppEvent {
     private EventKind kind;
     private String id;
     private String clusterId;
-    private AppResourceInner appInner;
-    private DeploymentResourceInner deploymentInner;
+    private SpringCloudApp app;
+    private SpringCloudDeployment deployment;
 
-    public SpringCloudAppEvent(EventKind kind, String clusterId, AppResourceInner appInner, DeploymentResourceInner deploymentInner) {
+    public SpringCloudAppEvent(EventKind kind, String clusterId, SpringCloudApp app) {
         this.kind = kind;
         this.clusterId = clusterId;
-        this.appInner = appInner;
-        this.id = appInner == null ? null : appInner.id();
-        this.deploymentInner = deploymentInner;
+        this.app = app;
+        this.id = app == null ? null : app.entity().getId();
+        if (StringUtils.isNotBlank(app.getActiveDeploymentName())) {
+            this.deployment = app.deployment(app.getActiveDeploymentName());
+        }
     }
 
     public SpringCloudAppEvent(EventKind kind, String clusterId, String id) {
@@ -44,12 +47,12 @@ public class SpringCloudAppEvent {
         return clusterId;
     }
 
-    public AppResourceInner getAppInner() {
-        return appInner;
+    public SpringCloudApp getApp() {
+        return app;
     }
 
-    public DeploymentResourceInner getDeploymentInner() {
-        return deploymentInner;
+    public SpringCloudDeployment getDeployment() {
+        return deployment;
     }
 
     public boolean isDelete() {
