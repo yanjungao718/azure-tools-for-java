@@ -13,8 +13,9 @@ import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
-import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerRegionValidator;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -37,7 +38,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     @Getter
     private ResourceGroupComboBox resourceGroupComboBox;
     @Getter
-    private SqlServerNameTextField serverNameTextField;
+    private ServerNameTextField serverNameTextField;
     @Getter
     private RegionComboBox regionComboBox;
     @Getter
@@ -65,6 +66,9 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
         regionComboBox.setValidateFunction(new SqlServerRegionValidator());
+        serverNameTextField.setMinLength(1);
+        serverNameTextField.setMaxLength(63);
+        serverNameTextField.setValidateFunction(new SqlServerNameValidator());
     }
 
     private void initListeners() {

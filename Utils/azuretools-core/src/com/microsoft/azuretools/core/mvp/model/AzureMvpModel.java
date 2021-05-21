@@ -6,7 +6,7 @@
 package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
+import static com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.WEB_APP_PRICING;
 
 public class AzureMvpModel {
 
@@ -252,7 +253,7 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<PricingTier> listPricingTier() {
-        final List<PricingTier> ret = new ArrayList<>(PricingTier.getAll());
+        final List<PricingTier> ret = new ArrayList<>(WEB_APP_PRICING);
         ret.sort(getComparator(PricingTier::toString));
         return correctPricingTiers(ret);
     }

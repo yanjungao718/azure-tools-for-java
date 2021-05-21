@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.docker.utils;
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 
 public class Constant {
     public static final int TIMEOUT_STOP_CONTAINER = 5;
