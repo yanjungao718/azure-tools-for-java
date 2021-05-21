@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.common;
 
+import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -21,10 +22,13 @@ public class SqlServerRegionValidator implements Function<RegionComboBox, AzureV
     @Override
     public AzureValidationInfo apply(RegionComboBox comboBox) {
         AzureSqlServer service = Azure.az(AzureSqlServer.class);
-        if (!service.checkRegionCapability(comboBox.getSubscription().getId(), comboBox.getValue().getName())) {
-            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+        try {
+            if (service.checkRegionCapability(comboBox.getSubscription().getId(), comboBox.getValue().getName())) {
+                return AzureValidationInfo.OK;
+            }
+        } catch (ManagementException e) {
         }
-        return AzureValidationInfo.OK;
+        final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+        return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
     }
 }
