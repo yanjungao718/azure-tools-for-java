@@ -296,10 +296,10 @@ public class AuthMethodManager {
                     List<String> savedSubscriptionList = persistSubscriptions.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
                     identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
-
+                initFuture.complete(true);
                 // pre-load regions
                 AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-                Optional.of(identityAzureManager.getSelectedSubscriptionIds()).ifPresent(sids -> sids.forEach(az::listRegions));
+                Optional.of(identityAzureManager.getSelectedSubscriptionIds()).ifPresent(sids -> sids.stream().limit(5).forEach(az::listRegions));
 
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
@@ -308,7 +308,6 @@ public class AuthMethodManager {
                         put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
                     }
                 };
-                initFuture.complete(true);
                 EventUtil.logEvent(EventType.info, operation, telemetryProperties);
             } catch (RuntimeException exception) {
                 initFuture.complete(true);
