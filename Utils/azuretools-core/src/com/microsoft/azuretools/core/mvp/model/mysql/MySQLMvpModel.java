@@ -13,17 +13,14 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerUpdateParameters;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
 import com.microsoft.azure.management.mysql.v2020_01_01.SslEnforcementEnum;
-import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.NameAvailabilityInner;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.RegionType;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +30,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySQLMvpModel {
 
@@ -48,13 +47,13 @@ public class MySQLMvpModel {
 
     public static List<Server> listMySQLServers() {
         final List<Server> servers = new ArrayList<>();
-        final List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        final List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         if (CollectionUtils.isEmpty(subscriptions)) {
             return servers;
         }
         subscriptions.parallelStream().forEach(subscription -> {
             try {
-                List<Server> subServers = MySQLMvpModel.listMySQLServersBySubscriptionId(subscription.subscriptionId());
+                List<Server> subServers = MySQLMvpModel.listMySQLServersBySubscriptionId(subscription.getId());
                 synchronized (servers) {
                     servers.addAll(subServers);
                 }
@@ -75,7 +74,7 @@ public class MySQLMvpModel {
                                 Region region, final ServerPropertiesForDefaultCreate properties) {
         final MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
         /*Sku sku = new Sku().withName("GP_Gen5_4");*/
-        Server result = manager.servers().define(serverName).withRegion(region.name()).withExistingResourceGroup(resourceGroupName)
+        Server result = manager.servers().define(serverName).withRegion(region.getName()).withExistingResourceGroup(resourceGroupName)
                 .withProperties(properties)/*.withSku(sku)*/.create();
         return result;
     }
@@ -120,18 +119,15 @@ public class MySQLMvpModel {
         // TODO (qianijn): remove join logic
         return Arrays.asList(com.microsoft.azure.arm.resources.Region.values()).stream()
                 .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
-                .map(e -> Region.findByLabelOrName(e.name()))
-                .sorted(Comparator.comparing(Region::label))
+                .map(e -> Region.fromName(e.name()))
+                .sorted(Comparator.comparing(Region::getLabel))
                 .collect(Collectors.toList());
     }
 
     public static List<Region> listSupportedRegions(Subscription subscription) {
-        PagedList<Location> locationList = subscription.listLocations();
-        locationList.loadAll();
+        List<com.microsoft.azure.toolkit.lib.common.model.Region> locationList = az(AzureAccount.class).listRegions(subscription.getId());
         return locationList.stream()
-                .filter(e -> RegionType.PHYSICAL.equals(e.regionType()))
-                .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
-                .map(e -> e.region())
+                .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.getName()))
                 .distinct()
                 .collect(Collectors.toList());
     }

@@ -2,9 +2,11 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
+package com.microsoft.azure.toolkit.intellij.common.survey;
 
-package com.microsoft.azuretools.authmanage;
-
-public interface AdAuthManagerBuilder {
-    BaseADAuthManager getInstance();
+public enum CustomerSurveyResponse {
+    ACCEPT,
+    PUT_OFF,
+    PUT_OFF_AUTO,
+    NEVER_SHOW_AGAIN
 }
