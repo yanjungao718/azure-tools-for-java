@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -69,7 +70,9 @@ public class AuthMethodManager {
     static {
         // fix the class load problem for intellij plugin
         ClassLoader current = Thread.currentThread().getContextClassLoader();
+        Logger.getLogger("com.microsoft.aad.adal4j.AuthenticationContext").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
+        Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
 
         try {
             Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
@@ -289,13 +292,15 @@ public class AuthMethodManager {
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
                 List<SubscriptionDetail> persistSubscriptions = identityAzureManager.getSubscriptionManager().loadSubscriptions();
-                List<String> allSubscriptionIds = identityAzureManager.getSubscriptionDetails().stream()
-                        .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
-                List<String> savedSubscriptionList = null;
                 if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
-                    savedSubscriptionList = persistSubscriptions.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                    List<String> savedSubscriptionList = persistSubscriptions.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                    identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
-                identityAzureManager.selectSubscriptionByIds(savedSubscriptionList != null ? savedSubscriptionList : allSubscriptionIds);
+
+                // pre-load regions
+                AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+                Optional.of(identityAzureManager.getSelectedSubscriptionIds()).ifPresent(sids -> sids.forEach(az::listRegions));
+
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {

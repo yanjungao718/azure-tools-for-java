@@ -182,6 +182,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         numCpuModel.addAll(IntStream.range(1, 1 + (basic ? 1 : 4)).boxed().collect(Collectors.toList()));
         numMemoryModel.removeAllElements();
         numMemoryModel.addAll(IntStream.range(1, 1 + (basic ? 2 : 8)).boxed().collect(Collectors.toList()));
+        this.numInstance.prepare();
         this.numInstance.setMaximum(basic ? 25 : 500);
         this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);

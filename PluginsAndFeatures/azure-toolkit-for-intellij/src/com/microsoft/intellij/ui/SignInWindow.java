@@ -7,23 +7,18 @@ package com.microsoft.intellij.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileChooser.FileChooser;
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -32,16 +27,14 @@ import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.Disposable;
@@ -55,7 +48,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -67,16 +59,11 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
     private static final String SIGN_IN_ERROR = "Sign In Error";
-
+    private static final IdeaSecureStore secureStore = IdeaSecureStore.getInstance();
     private JPanel contentPane;
 
     private JRadioButton deviceLoginRadioButton;
-
     private JRadioButton spRadioButton;
-    private JLabel authFileLabel;
-    private JTextField authFileTextField;
-    private JButton browseButton;
-    private JButton createNewAuthenticationFileButton;
     private JLabel servicePrincipalCommentLabel;
     private JLabel deviceLoginCommentLabel;
     private JRadioButton azureCliRadioButton;
@@ -90,7 +77,7 @@ public class SignInWindow extends AzureDialogWrapper {
     private String accountEmail;
 
     private Project project;
-    private Map<AbstractButton, List<JComponent>> radioButtonComponentsMap = new HashMap<>(3);
+    private Map<AbstractButton, JComponent> radioButtonComponentsMap = new HashMap<>(3);
 
     public SignInWindow(AuthMethodDetails authMethodDetails, Project project) {
         super(project, true, IdeModalityType.PROJECT);
@@ -100,7 +87,6 @@ public class SignInWindow extends AzureDialogWrapper {
         setOKButtonText("Sign in");
 
         this.authMethodDetails = authMethodDetails;
-        authFileTextField.setText(authMethodDetails == null ? null : authMethodDetails.getCredFilePath());
 
         oauthLoginRadioButton.addItemListener(e -> refreshAuthControlElements());
 
@@ -110,15 +96,6 @@ public class SignInWindow extends AzureDialogWrapper {
 
         azureCliRadioButton.addActionListener(e -> refreshAuthControlElements());
 
-        browseButton.addActionListener(e -> {
-            refreshAuthControlElements();
-            doSelectCredFilepath();
-        });
-
-        createNewAuthenticationFileButton.addActionListener(e -> {
-            refreshAuthControlElements();
-            doCreateServicePrincipal();
-        });
 
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(oauthLoginRadioButton);
@@ -127,14 +104,12 @@ public class SignInWindow extends AzureDialogWrapper {
         buttonGroup.add(azureCliRadioButton);
         azureCliRadioButton.setSelected(true);
 
-        radioButtonComponentsMap.put(spRadioButton, Arrays.asList(servicePrincipalCommentLabel,
-                                                                  authFileLabel, authFileTextField, browseButton, createNewAuthenticationFileButton));
-        radioButtonComponentsMap.put(deviceLoginRadioButton, Collections.singletonList(deviceLoginCommentLabel));
-
-        radioButtonComponentsMap.put(oauthLoginRadioButton, Collections.singletonList(labelOAuthLogin));
-
-        radioButtonComponentsMap.put(azureCliRadioButton, Collections.singletonList(azureCliCommentLabel));
+        radioButtonComponentsMap.put(spRadioButton, servicePrincipalCommentLabel);
+        radioButtonComponentsMap.put(deviceLoginRadioButton, deviceLoginCommentLabel);
+        radioButtonComponentsMap.put(oauthLoginRadioButton, labelOAuthLogin);
+        radioButtonComponentsMap.put(azureCliRadioButton, azureCliCommentLabel);
         init();
+        this.setOKActionEnabled(false);
         checkAccountAvailability();
     }
 
@@ -195,15 +170,12 @@ public class SignInWindow extends AzureDialogWrapper {
             properties.put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
-            final String authPath = authFileTextField.getText();
-            if (StringUtils.isNullOrWhiteSpace(authPath)) {
-                final String title = "Sign in dialog info";
-                final String message = "Select authentication file";
-                DefaultLoader.getUIHelper().showMessageDialog(contentPane, message, title, Messages.getInformationIcon());
-                return null;
-            }
 
-            authMethodDetailsResult = doServicePrincipalLogin(authPath);
+            if (ApplicationManager.getApplication().isDispatchThread()) {
+                doServicePrincipalLogin();
+            } else {
+                AzureTaskManager.getInstance().runAndWait(() -> doServicePrincipalLogin());
+            }
         } else if (deviceLoginRadioButton.isSelected()) {
             authMethodDetailsResult = doDeviceLogin();
         } else if (azureCliRadioButton.isSelected()) {
@@ -212,6 +184,18 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), signInAZProp);
         }
         return authMethodDetailsResult;
+    }
+
+    private void doServicePrincipalLogin() {
+        final ServicePrincipalLoginDialog dialog = new ServicePrincipalLoginDialog(project);
+        if (dialog.showAndGet()) {
+            AuthConfiguration data = dialog.getData();
+            authMethodDetailsResult = doServicePrincipalLoginInternal(data);
+            if (StringUtils.isNotBlank(data.getKey())) {
+                secureStore.savePassword(StringUtils.joinWith("|", "account", data.getClient()), data.getKey());
+            }
+
+        }
     }
 
     private static AuthMethodDetails checkCanceled(ProgressIndicator indicator, Mono<? extends AuthMethodDetails> mono) {
@@ -249,7 +233,8 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void refreshAuthControlElements() {
-        radioButtonComponentsMap.keySet().forEach(radio -> radioButtonComponentsMap.get(radio).forEach(comp -> comp.setEnabled(radio.isSelected())));
+        radioButtonComponentsMap.keySet().forEach(radio -> radioButtonComponentsMap.get(radio).setEnabled(radio.isSelected()));
+        this.setOKActionEnabled(true);
     }
 
     private void checkAccountAvailability() {
@@ -268,7 +253,6 @@ public class SignInWindow extends AzureDialogWrapper {
                     oauthLoginRadioButton.setEnabled(false);
                     labelOAuthLogin.setEnabled(false);
                 }
-
                 if (accounts.stream().anyMatch(ac -> ac.getAuthType() == AuthType.DEVICE_CODE)) {
                     deviceLoginRadioButton.setEnabled(true);
                     deviceLoginCommentLabel.setEnabled(true);
@@ -285,6 +269,7 @@ public class SignInWindow extends AzureDialogWrapper {
                           .filter(Component::isEnabled).findFirst().ifPresent(button -> button.setSelected(true));
                 }
                 refreshAuthControlElements();
+                this.setOKActionEnabled(true);
             });
     }
 
@@ -301,27 +286,13 @@ public class SignInWindow extends AzureDialogWrapper {
         azureCliRadioButton.setText("Azure CLI (Not logged in)");
     }
 
-    private void doSelectCredFilepath() {
-        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("azureauth");
-        fileDescriptor.setTitle("Select Authentication File");
-        final VirtualFile file = FileChooser.chooseFile(
-            fileDescriptor,
-            this.project,
-            LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"))
-                                                       );
-        if (file != null) {
-            authFileTextField.setText(file.getPath());
-        }
-    }
-
-    private AuthMethodDetails doServicePrincipalLogin(final String authPath) {
+    private AuthMethodDetails doServicePrincipalLoginInternal(AuthConfiguration auth) {
         try {
             IdentityAzureManager authManager = IdentityAzureManager.getInstance();
             if (AuthMethodManager.getInstance().isSignedIn()) {
                 doSignOut();
             }
-            return authManager.signInServicePrincipal(AuthFile.fromFile(authPath)).block();
-
+            return authManager.signInServicePrincipal(auth).block();
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
@@ -398,84 +369,6 @@ public class SignInWindow extends AzureDialogWrapper {
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), "Sign Out Error");
-        }
-    }
-
-    private void doCreateServicePrincipal() {
-        final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-        final IdentityAzureManager dcAuthManager = IdentityAzureManager.getInstance();
-        try {
-            if (authMethodManager.isSignedIn()) {
-                authMethodManager.signOut();
-            }
-            doDeviceLogin();
-            if (!dcAuthManager.isSignedIn()) {
-                System.out.println(">> Canceled by the user");
-                return;
-            }
-
-            final SubscriptionManager subscriptionManager = dcAuthManager.getSubscriptionManager();
-
-            Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Loading subscriptions..."));
-            subscriptionManager.getSubscriptionDetails();
-
-            final SrvPriSettingsDialog d = SrvPriSettingsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
-            final List<SubscriptionDetail> subscriptionDetailsUpdated;
-            final String destinationFolder;
-            if (d != null) {
-                subscriptionDetailsUpdated = d.getSubscriptionDetails();
-                destinationFolder = d.getDestinationFolder();
-            } else {
-                System.out.println(">> Canceled by the user");
-                return;
-            }
-
-            Map<String, List<String>> tidSidsMap = new HashMap<>();
-            for (SubscriptionDetail sd : subscriptionDetailsUpdated) {
-                if (sd.isSelected()) {
-                    System.out.format(">> %s\n", sd.getSubscriptionName());
-                    String tid = sd.getTenantId();
-                    List<String> sidList;
-                    if (!tidSidsMap.containsKey(tid)) {
-                        sidList = new LinkedList<>();
-                    } else {
-                        sidList = tidSidsMap.get(tid);
-                    }
-                    sidList.add(sd.getSubscriptionId());
-                    tidSidsMap.put(tid, sidList);
-                }
-            }
-
-            SrvPriCreationStatusDialog d1 = SrvPriCreationStatusDialog
-                .go(dcAuthManager, tidSidsMap, destinationFolder, project);
-            if (d1 == null) {
-                System.out.println(">> Canceled by the user");
-                return;
-            }
-
-            String path = d1.getSelectedAuthFilePath();
-            if (path == null) {
-                System.out.println(">> No file was created");
-                return;
-            }
-
-            authFileTextField.setText(path);
-            PluginUtil.displayInfoDialog("Authentication File Created", String.format(
-                "Your credentials have been exported to %s, please keep the authentication file safe", path));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            //LOGGER.error("doCreateServicePrincipal", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Get Subscription Error");
-
-        } finally {
-            if (dcAuthManager != null) {
-                try {
-                    System.out.println(">> Signing out...");
-                    AuthMethodManager.getInstance().signOut();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }

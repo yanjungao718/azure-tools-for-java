@@ -5,7 +5,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.azure.core.management.AzureEnvironment;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -18,14 +17,12 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AuthFile;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
@@ -120,8 +117,22 @@ public class IdentityAzureManager extends AzureManagerBase {
         AuthType authType = authMethodDetails.getAuthType();
         try {
             if (authType == AuthType.SERVICE_PRINCIPAL) {
-                AuthFile authFile = AuthFile.fromFile(authMethodDetails.getCredFilePath());
-                return signInServicePrincipal(authFile).map(ac -> authMethodDetails);
+                AuthConfiguration auth = new AuthConfiguration();
+                auth.setType(AuthType.SERVICE_PRINCIPAL);
+                auth.setClient(authMethodDetails.getClientId());
+                auth.setTenant(authMethodDetails.getTenantId());
+                if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
+                    auth.setCertificate(authMethodDetails.getCertificate());
+                } else {
+                    String key = MvpUIHelperFactory.getInstance().getMvpUIHelper().loadPasswordFromSecureStore(
+                        StringUtils.joinWith("|", "account", authMethodDetails.getClientId()));
+                    if (StringUtils.isBlank(key)) {
+                        throw new AzureToolkitRuntimeException(
+                                String.format("Cannot find SP security key for '%s' in intellij key pools.", authMethodDetails.getClientId()));
+                    }
+                    auth.setKey(key);
+                }
+                return signInServicePrincipal(auth).map(ac -> authMethodDetails);
             } else {
                 if (StringUtils.isNoneBlank(authMethodDetails.getClientId())) {
                     AccountEntity entity = new AccountEntity();
@@ -143,28 +154,11 @@ public class IdentityAzureManager extends AzureManagerBase {
         }
     }
 
-    public Mono<AuthMethodDetails> signInServicePrincipal(AuthFile authFile) {
-        AuthConfiguration auth = new AuthConfiguration();
-        String environmentName = Environment.ENVIRONMENT_LIST.stream().filter(env -> StringUtils.contains(
-                env.getAzureEnvironment().managementEndpoint(),
-                authFile.getManagementURI()
-        )).map(Environment::getName).findFirst().orElse(null);
-        if (StringUtils.isBlank(environmentName)) {
-            throw new AzureToolkitAuthenticationException(String.format("Bad managementURI %s in auth file: %s",
-                    authFile.getManagementURI(), authFile.getFilePath()));
-        }
-        AzureEnvironment environment = AzureEnvironmentUtils.stringToAzureEnvironment(environmentName);
-        auth.setEnvironment(environment);
-        auth.setType(AuthType.SERVICE_PRINCIPAL);
-        auth.setClient(authFile.getClient());
-        auth.setKey(authFile.getKey());
-        auth.setCertificate(authFile.getCertificate());
-        auth.setCertificatePassword(authFile.getCertificatePassword());
-        auth.setTenant(authFile.getTenant());
+    public Mono<AuthMethodDetails> signInServicePrincipal(AuthConfiguration auth) {
         return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
             AuthMethodDetails authMethodDetails = fromAccountEntity(account.getEntity());
             // special handle for SP
-            authMethodDetails.setCredFilePath(authFile.getFilePath());
+            authMethodDetails.setCertificate(auth.getCertificate());
             return authMethodDetails;
         });
     }
