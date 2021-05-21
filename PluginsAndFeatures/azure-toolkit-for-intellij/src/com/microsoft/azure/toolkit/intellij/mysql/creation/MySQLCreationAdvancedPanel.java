@@ -11,9 +11,11 @@ import com.microsoft.azure.toolkit.intellij.appservice.subscription.Subscription
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.intellij.mysql.AdminUsernameTextField;
-import com.microsoft.azure.toolkit.intellij.mysql.ConnectionSecurityPanel;
-import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionComboBox;
+import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -40,7 +42,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     @Getter
     private ServerNameTextField serverNameTextField;
     @Getter
-    private MySQLRegionComboBox regionComboBox;
+    private RegionComboBox regionComboBox;
     @Getter
     private VersionComboBox versionComboBox;
     @Getter
@@ -67,6 +69,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        regionComboBox.setValidateFunction(new MySQLRegionValidator());
     }
 
     private void initListeners() {
