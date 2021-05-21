@@ -8,6 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceStatus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azuretools.ActionConstants;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class SpringCloudAppNode extends Node implements TelemetryProperties {
 
@@ -123,11 +125,11 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
 
     private void syncActionState() {
         if (status != null) {
-            boolean stopped = DeploymentResourceStatus.STOPPED.equals(status);
-            boolean running = DeploymentResourceStatus.RUNNING.equals(status);
-            boolean unknown = DeploymentResourceStatus.UNKNOWN.equals(status);
-            boolean allocating = DeploymentResourceStatus.ALLOCATING.equals(status);
-            boolean hasURL = StringUtils.isNotEmpty(app.entity().getApplicationUrl()) && app.entity().getApplicationUrl().startsWith("http");
+            final boolean stopped = DeploymentResourceStatus.STOPPED.equals(status);
+            final boolean running = DeploymentResourceStatus.RUNNING.equals(status);
+            final boolean unknown = DeploymentResourceStatus.UNKNOWN.equals(status);
+            final boolean allocating = DeploymentResourceStatus.ALLOCATING.equals(status);
+            final boolean hasURL = StringUtils.isNotEmpty(app.entity().getApplicationUrl()) && app.entity().getApplicationUrl().startsWith("http");
             getNodeActionByName(ACTION_OPEN_IN_BROWSER).setEnabled(hasURL && running);
             getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(stopped);
             getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(!stopped && !unknown && !allocating);
@@ -151,8 +153,9 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     }
 
     private void refreshNode() {
-        if (StringUtils.isBlank(app.getActiveDeploymentName())) {
-            this.status = DeploymentResourceStatus.fromString(app.deployment(app.getActiveDeploymentName()).entity().getStatus());
+        final SpringCloudDeployment deployment = this.app.refresh().activeDeployment();
+        if (Objects.nonNull(deployment)) {
+            this.status = DeploymentResourceStatus.fromString(deployment.entity().getStatus());
         }
     }
 
@@ -194,10 +197,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
 
     @AzureOperation(name = ActionConstants.SpringCloud.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
-        DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
-        // add this statement for false updating notice to update Property view
-        // immediately
-        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(app.getCluster().id(), app);
+        AzureTaskManager.getInstance().runLater(() -> DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this));
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)

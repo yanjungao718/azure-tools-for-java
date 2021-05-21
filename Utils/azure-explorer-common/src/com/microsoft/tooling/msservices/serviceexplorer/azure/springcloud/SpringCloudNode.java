@@ -84,9 +84,9 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
 
     @Override
     protected void refreshItems() {
-        List<SpringCloudApp> springCloudApps = Azure.az(AzureSpringCloud.class).cluster(cluster.entity().getName()).apps();
-        this.setName(CollectionUtils.isEmpty(springCloudApps) ? this.cluster.name() + EMPTY_POSTFIX : this.cluster.name());
-        springCloudApps.stream().forEach(app -> {
+        final List<SpringCloudApp> apps = cluster.refresh().apps();
+        this.setName(CollectionUtils.isEmpty(apps) ? this.cluster.name() + EMPTY_POSTFIX : this.cluster.name());
+        apps.forEach(app -> {
             SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(this.cluster.id(), app);
             addChildNode(new SpringCloudAppNode(app, this));
         });
