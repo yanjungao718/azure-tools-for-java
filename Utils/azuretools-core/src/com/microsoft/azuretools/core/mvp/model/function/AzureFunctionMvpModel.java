@@ -7,8 +7,18 @@ package com.microsoft.azuretools.core.mvp.model.function;
 
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.ApplicationLogsConfig;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.FunctionApps;
+import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.microsoft.azure.management.appservice.LogLevel;
+import com.microsoft.azure.management.appservice.SkuName;
+import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
@@ -21,11 +31,18 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AppServiceUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
 public class AzureFunctionMvpModel {
-    public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
+    public static final PricingTier CONSUMPTION_PRICING_TIER = PricingTier.CONSUMPTION;
     public static final String SUBSCRIPTION_FUNCTIONS = "subscription-functions";
 
     public static AzureFunctionMvpModel getInstance() {
@@ -134,8 +151,8 @@ public class AzureFunctionMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean... force) {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
-            .flatMap((sd) -> listFunctionsInSubscription(sd.subscriptionId(), force).stream())
+        return az(AzureAccount.class).account().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listFunctionsInSubscription(sd.getId(), force).stream())
             .collect(Collectors.toList());
     }
 

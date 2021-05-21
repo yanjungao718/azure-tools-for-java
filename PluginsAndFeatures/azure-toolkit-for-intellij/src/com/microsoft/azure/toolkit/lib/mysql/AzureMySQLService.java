@@ -5,16 +5,16 @@
 
 package com.microsoft.azure.toolkit.lib.mysql;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefaultCreate;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
-import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.GetHashMac;
@@ -32,7 +32,6 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Map;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +47,7 @@ public class AzureMySQLService {
         name = "mysql.create",
         params = {
             "config.getServerName()",
-            "config.getSubscription().displayName()"
+            "config.getSubscription().getName()"
         },
         type = AzureOperation.Type.SERVICE
     )
@@ -56,20 +55,23 @@ public class AzureMySQLService {
         final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();
-            final String subscriptionId = config.getSubscription().subscriptionId();
+            final String subscriptionId = config.getSubscription().getId();
             EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(TelemetryConstants.SUBSCRIPTIONID, subscriptionId));
             // create resource group if necessary.
             if (config.getResourceGroup() instanceof Draft) {
-                Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-                ResourceGroup newResourceGroup = azure.resourceGroups().define(config.getResourceGroup().name()).withRegion(config.getRegion()).create();
-                config.setResourceGroup(newResourceGroup);
+                try {
+                    Azure.az(AzureGroup.class).get(subscriptionId, config.getResourceGroup().getName());
+                } catch (Throwable ex) {
+                    Azure.az(AzureGroup.class).subscription(subscriptionId).create(config.getResourceGroup().getName(), config.getRegion().getName());
+                }
+                config.setResourceGroup(Azure.az(AzureGroup.class).get(subscriptionId, config.getResourceGroup().getName()));
             }
             // create mysql server
             ServerPropertiesForDefaultCreate parameters = new ServerPropertiesForDefaultCreate();
             parameters.withAdministratorLogin(config.getAdminUsername())
                     .withAdministratorLoginPassword(String.valueOf(config.getPassword()))
                     .withVersion(config.getVersion());
-            Server server = MySQLMvpModel.create(subscriptionId, config.getResourceGroup().name(), config.getServerName(), config.getRegion(), parameters);
+            Server server = MySQLMvpModel.create(subscriptionId, config.getResourceGroup().getName(), config.getServerName(), config.getRegion(), parameters);
             // update access from azure services
             MySQLMvpModel.FirewallRuleMvpModel.updateAllowAccessFromAzureServices(subscriptionId, server, config.isAllowAccessFromAzureServices());
             // update access from local machine

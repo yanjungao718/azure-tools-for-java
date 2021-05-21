@@ -6,19 +6,21 @@
 package com.microsoft.azure.toolkit.intellij.mysql.creation;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.intellij.mysql.AdminUsernameTextField;
-import com.microsoft.azure.toolkit.intellij.mysql.ConnectionSecurityPanel;
-import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionComboBox;
-import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
+import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +42,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     @Getter
     private ServerNameTextField serverNameTextField;
     @Getter
-    private MySQLRegionComboBox regionComboBox;
+    private RegionComboBox regionComboBox;
     @Getter
     private VersionComboBox versionComboBox;
     @Getter
@@ -67,11 +69,14 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        regionComboBox.setValidateFunction(new MySQLRegionValidator());
+        serverNameTextField.setMinLength(3);
+        serverNameTextField.setMaxLength(63);
+        serverNameTextField.setValidateFunction(new SqlServerNameValidator());
     }
 
     private void initListeners() {
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
-        this.resourceGroupComboBox.addItemListener(this::onResourceGroupChanged);
         this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
         this.security.getAllowAccessFromAzureServicesCheckBox().addItemListener(this::onSecurityAllowAccessFromAzureServicesCheckBoxChanged);
         this.security.getAllowAccessFromLocalMachineCheckBox().addItemListener(this::onSecurityAllowAccessFromLocalMachineCheckBoxChanged);
@@ -81,14 +86,8 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
             final Subscription subscription = (Subscription) e.getItem();
             this.resourceGroupComboBox.setSubscription(subscription);
-            this.serverNameTextField.setSubscription(subscription);
-        }
-    }
-
-    private void onResourceGroupChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof ResourceGroup) {
-            final ResourceGroup resourceGroup = (ResourceGroup) e.getItem();
-            this.serverNameTextField.setResourceGroup(resourceGroup);
+            this.serverNameTextField.setSubscriptionId(subscription.getId());
+            this.regionComboBox.setSubscription(subscription);
         }
     }
 

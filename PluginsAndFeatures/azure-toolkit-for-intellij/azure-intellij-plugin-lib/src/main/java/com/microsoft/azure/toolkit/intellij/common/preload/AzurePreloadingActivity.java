@@ -17,6 +17,7 @@ public class AzurePreloadingActivity extends PreloadingActivity {
     @Override
     public void preload(@org.jetbrains.annotations.NotNull final ProgressIndicator indicator) {
         // Using progress manager as azure task manager is not initialized
-        ApplicationManager.getApplication().executeOnPooledThread(Preloader::load);
+        // TODO: remove this comment
+        // ApplicationManager.getApplication().executeOnPooledThread(Preloader::load);
     }
 }

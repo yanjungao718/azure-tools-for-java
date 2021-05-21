@@ -4,39 +4,38 @@
  */
 package com.microsoft.azure.toolkit.intellij.appservice;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceUtils;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.service.*;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
-import hu.akarnokd.rxjava3.interop.RxJavaInterop;
 import org.apache.commons.lang3.StringUtils;
-import reactor.adapter.rxjava.RxJava3Adapter;
-import rx.Observable;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -104,7 +103,7 @@ public enum AppServiceStreamingLogManager {
                             return;
                         }
                     }
-                    final Observable<String> log = logStreaming.getStreamingLogContent();
+                    final Flux<String> log = logStreaming.getStreamingLogContent();
                     if (log == null) {
                         return;
                     }
@@ -134,7 +133,7 @@ public enum AppServiceStreamingLogManager {
 
         String getTitle() throws IOException;
 
-        Observable<String> getStreamingLogContent() throws IOException;
+        Flux<String> getStreamingLogContent() throws IOException;
     }
 
     static class FunctionLogStreaming implements ILogStreaming {
@@ -144,7 +143,7 @@ public enum AppServiceStreamingLogManager {
         private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS = message("appService.logStreaming.error.noApplicationInsights");
 
         private final String resourceId;
-        private FunctionApp functionApp;
+        private IFunctionApp functionApp;
 
         FunctionLogStreaming(final String resourceId) {
             this.resourceId = resourceId;
@@ -152,12 +151,15 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public boolean isLogStreamingEnabled() {
-            return getFunctionApp().operatingSystem() == OperatingSystem.LINUX || AzureFunctionMvpModel.isApplicationLogEnabled(getFunctionApp());
+            return getFunctionApp().getRuntime().getOperatingSystem() == OperatingSystem.LINUX ||
+                    getFunctionApp().getDiagnosticConfig().isEnableApplicationLog();
         }
 
         @Override
         public void enableLogStreaming() {
-            AzureFunctionMvpModel.enableApplicationLog(getFunctionApp());
+            final DiagnosticConfig diagnosticConfig = getFunctionApp().getDiagnosticConfig();
+            diagnosticConfig.setEnableApplicationLog(true);
+            getFunctionApp().update().withDiagnosticConfig(diagnosticConfig).commit();
         }
 
         @Override
@@ -166,8 +168,8 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public Observable<String> getStreamingLogContent() throws IOException {
-            if (getFunctionApp().operatingSystem() == OperatingSystem.LINUX) {
+        public Flux<String> getStreamingLogContent() throws IOException {
+            if (getFunctionApp().getRuntime().getOperatingSystem() == OperatingSystem.LINUX) {
                 // For linux function, we will just open the "Live Metrics Stream" view in the portal
                 openLiveMetricsStream();
                 return null;
@@ -178,25 +180,19 @@ public enum AppServiceStreamingLogManager {
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
         // commands/logstream/startStreamingLogs.ts#L53
         private void openLiveMetricsStream() throws IOException {
-            final AppSetting aiAppSettings = functionApp.getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
-            if (aiAppSettings == null) {
+            final String aiKey = functionApp.entity().getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
+            if (StringUtils.isEmpty(aiKey)) {
                 throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }
-            final String aiKey = aiAppSettings.value();
             final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            final SubscriptionDetail subscriptionDetail = Optional.ofNullable(azureManager)
-                                                                  .map(AzureManager::getSubscriptionManager)
-                                                                  .map(SubscriptionManager::getSubscriptionIdToSubscriptionDetailsMap)
-                                                                  .map(map -> map.get(subscriptionId)).orElse(null);
             final List<ApplicationInsightsComponent> insightsResources =
-                subscriptionDetail == null ? Collections.EMPTY_LIST : AzureSDKManager.getInsightsResources(subscriptionDetail);
+                    subscriptionId == null ? Collections.EMPTY_LIST : AzureSDKManager.getInsightsResources(subscriptionId);
             final ApplicationInsightsComponent target = insightsResources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.instrumentationKey(), aiKey))
                     .findFirst()
                     .orElseThrow(() -> new IOException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
-            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, azureManager.getPortalUrl());
+            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, IdentityAzureManager.getInstance().getPortalUrl());
             DefaultLoader.getIdeHelper().openLinkInBrowser(aiUrl);
         }
 
@@ -210,9 +206,9 @@ public enum AppServiceStreamingLogManager {
             return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
         }
 
-        private FunctionApp getFunctionApp() {
+        private IFunctionApp getFunctionApp() {
             if (functionApp == null) {
-                functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS), resourceId);
+                functionApp = Azure.az(AzureAppService.class).functionApp(resourceId);
             }
             return functionApp;
         }
@@ -242,8 +238,8 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public Observable<String> getStreamingLogContent() {
-            return RxJavaInterop.toV1Observable(RxJava3Adapter.fluxToFlowable(webApp.streamAllLogsAsync()));
+        public Flux<String> getStreamingLogContent() {
+            return webApp.streamAllLogsAsync();
         }
     }
 
@@ -271,8 +267,8 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public Observable<String> getStreamingLogContent() {
-            return RxJavaInterop.toV1Observable(RxJava3Adapter.fluxToFlowable(deploymentSlot.streamAllLogsAsync()));
+        public Flux<String> getStreamingLogContent() {
+            return deploymentSlot.streamAllLogsAsync();
         }
     }
 

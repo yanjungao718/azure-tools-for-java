@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.dependency;
 
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.intellij.springcloud.dependency.DependencyArtifact;
 import com.microsoft.azure.toolkit.intellij.springcloud.dependency.PomXmlUpdater;
 import org.apache.commons.collections4.IterableUtils;

@@ -8,8 +8,10 @@ package com.microsoft.azure.toolkit.intellij.mysql.creation;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.intellij.mysql.AdminUsernameTextField;
-import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLNameValidator;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import lombok.Getter;
@@ -47,10 +49,12 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     }
 
     private void init() {
-        serverNameTextField.setSubscription(config.getSubscription());
-        serverNameTextField.setResourceGroup(config.getResourceGroup());
+        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        serverNameTextField.setMinLength(3);
+        serverNameTextField.setMaxLength(63);
+        serverNameTextField.setValidateFunction(new MySQLNameValidator());
     }
 
     private void initListeners() {

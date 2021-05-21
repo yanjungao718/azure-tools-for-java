@@ -5,17 +5,19 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.region;
 
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class RegionComboBox extends AzureComboBox<Region> {
 
@@ -27,7 +29,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
         if (Objects.isNull(item)) {
             return AzureComboBox.EMPTY_ITEM;
         }
-        return ((Region) item).label();
+        return ((Region) item).getLabel();
     }
 
     public void setSubscription(Subscription subscription) {
@@ -54,13 +56,13 @@ public class RegionComboBox extends AzureComboBox<Region> {
     @Override
     @AzureOperation(
         name = "appservice|region.list.subscription|tier",
-        params = {"this.tier.toString()", "this.subscription.subscriptionId()"},
+        params = {"this.tier.toString()", "this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends Region> loadItems() throws Exception {
         if (Objects.nonNull(this.subscription)) {
-            final String sid = this.subscription.subscriptionId();
-            return AzureWebAppMvpModel.getInstance().getAvailableRegions(sid, tier);
+            final String sid = this.subscription.getId();
+            return az(AzureAccount.class).listRegions(sid);
         }
         return Collections.emptyList();
     }

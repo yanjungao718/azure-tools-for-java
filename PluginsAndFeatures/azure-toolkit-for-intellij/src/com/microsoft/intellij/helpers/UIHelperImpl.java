@@ -24,14 +24,29 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider;
+import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView;
 import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
+import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -42,20 +57,12 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
-import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
-import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
-import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
-import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditor;
 import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.QueueFileEditor;
 import com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.TableFileEditor;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -73,6 +80,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionA
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang.ArrayUtils;
@@ -87,14 +95,15 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.function.Supplier;
 
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 
 
 public class UIHelperImpl implements UIHelper {
@@ -103,9 +112,6 @@ public class UIHelperImpl implements UIHelper {
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
-    public static final Key<String> APP_ID = new Key<>("appId");
-    public static final Key<String> CLUSTER_ID = new Key<>("clusterId");
-    public static final Key<AppResourceInner> SPRING_CLOUD_APP = new Key<>("springCloudApp");
 
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key =
@@ -416,23 +422,26 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openSpringCloudAppPropertyView(SpringCloudAppNode node) {
-        Project project = (Project) node.getProject();
+        final Project project = (Project) node.getProject();
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         if (fileEditorManager == null) {
             showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
             return;
         }
-        final String id = node.getAppId();
+        final String id = node.getApp().entity().getId();
         final String subscription = getSubscriptionId(id);
-        final String appName = node.getAppName();
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(appName, subscription, id);
+        final String appName = node.getApp().name();
+        final LightVirtualFile existing = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
+        final LightVirtualFile itemVirtualFile = Objects.isNull(existing) ? createVirtualFile(appName, subscription, id) : existing;
+        if (Objects.isNull(existing)) {
             itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
         }
-        itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
-        itemVirtualFile.putUserData(APP_ID, id);
-        fileEditorManager.openFile(itemVirtualFile, true, true);
+        AzureTaskManager.getInstance().runInModal(String.format("Loading properties of app(%s)", appName), () -> {
+            final SpringCloudCluster cluster = node.getApp().getCluster();
+            final SpringCloudApp app = Objects.requireNonNull(cluster).app(appName);
+            itemVirtualFile.putUserData(SpringCloudAppPropertiesEditorProvider.APP_KEY, app);
+            AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(itemVirtualFile, true, true));
+        });
     }
 
     @Override
@@ -484,7 +493,8 @@ public class UIHelperImpl implements UIHelper {
                                                               ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, sid, resId);
-            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
+            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE,
+                AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
             itemVirtualFile.setFileType(fileType);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
@@ -590,6 +600,31 @@ public class UIHelperImpl implements UIHelper {
             for (FileEditor editor : editors) {
                 if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
                     ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().resourceGroupName(), node.getServer().name());
+                }
+            }
+        });
+    }
+
+    @Override
+    public void openSqlServerPropertyView(@NotNull SqlServerNode node) {
+        EventUtil.executeWithLog(ActionConstants.SqlServer.SHOW_PROPERTIES, (operation) -> {
+            String name = node.getName();
+            String subscriptionId = node.getSubscriptionId();
+            String nodeId = node.getId();
+            final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
+            if (fileEditorManager == null) {
+                return;
+            }
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SqlServerPropertyViewProvider.TYPE, nodeId);
+            if (itemVirtualFile == null) {
+                itemVirtualFile = createVirtualFile(name, subscriptionId, nodeId);
+                itemVirtualFile.setFileType(new AzureFileType(SqlServerPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SqlServer.MODULE)));
+            }
+            FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
+            for (FileEditor editor : editors) {
+                if (editor.getName().equals(SqlServerPropertyView.ID) && editor instanceof SqlServerPropertyView) {
+                    SqlServerEntity entity = node.getServer().entity();
+                    ((SqlServerPropertyView) editor).onReadProperty(subscriptionId, entity.getResourceGroup(), entity.getName());
                 }
             }
         });

@@ -6,23 +6,22 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azure.common.Utils;
-import com.microsoft.azure.common.appservice.OperatingSystemEnum;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.common.function.configurations.ElasticPremiumPricingTier;
-import com.microsoft.azure.common.function.configurations.FunctionExtensionVersion;
-import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.function.handlers.runtime.FunctionRuntimeHandler;
-import com.microsoft.azure.common.function.handlers.runtime.LinuxFunctionRuntimeHandler;
-import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRuntimeHandler;
-import com.microsoft.azure.common.function.utils.FunctionUtils;
-import com.microsoft.azure.common.logging.Log;
-import com.microsoft.azure.common.utils.AppServiceUtils;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.OperatingSystemEnum;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.ElasticPremiumPricingTier;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionExtensionVersion;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.FunctionRuntimeHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.LinuxFunctionRuntimeHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.WindowsFunctionRuntimeHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.common.logging.Log;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
@@ -165,7 +164,7 @@ public class CreateFunctionHandler {
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
         final RuntimeConfiguration runtime = ctx.getRuntime();
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
-            return Utils.parseOperationSystem(runtime.getOs());
+            return OperatingSystemEnum.fromString(runtime.getOs());
         }
         return DEFAULT_OS;
     }

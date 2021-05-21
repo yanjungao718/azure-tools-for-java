@@ -17,6 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,10 +138,8 @@ public class ValidationUtils {
             throw new IllegalArgumentException(message("springCloud.app.name.validate.empty"));
         } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
             throw new IllegalArgumentException(message("springCloud.app.name.validate.invalid"));
-        } else {
-            if (cluster.app(name).exists()) {
-                throw new IllegalArgumentException(message("springCloud.app.name.validate.exist", name));
-            }
+        } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
+            throw new IllegalArgumentException(message("springCloud.app.name.validate.exist", name));
         }
     }
 

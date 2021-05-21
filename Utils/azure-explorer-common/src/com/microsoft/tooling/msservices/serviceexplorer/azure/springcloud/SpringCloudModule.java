@@ -5,28 +5,22 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.ServiceResourceInner;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.List;
-
-public class SpringCloudModule extends AzureRefreshableNode implements SpringCloudModuleView {
-    protected static final String ICON_FILE = "azure-springcloud-small.png";
+public class SpringCloudModule extends AzureRefreshableNode {
     private static final String SPRING_SERVICE_MODULE_ID = SpringCloudModule.class.getName();
     private static final String BASE_MODULE_NAME = "Spring Cloud";
-    private final SpringCloudModulePresenter<SpringCloudModule> springCloudModulePresenter;
 
     public static final String MODULE_NAME = "Spring Cloud";
 
     public SpringCloudModule(final Node parent) {
-        super(SPRING_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_FILE);
-        springCloudModulePresenter = new SpringCloudModulePresenter<>();
-        springCloudModulePresenter.onAttachView(this);
+        super(SPRING_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, null);
     }
 
     @Override
@@ -36,17 +30,10 @@ public class SpringCloudModule extends AzureRefreshableNode implements SpringClo
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        springCloudModulePresenter.onSpringCloudRefresh();
-    }
-
-    @Override
-    public void renderChildren(final List<ServiceResourceInner> springCloudServices) {
-        for (final ServiceResourceInner resourceEx : springCloudServices) {
-            final SpringCloudNode node = new SpringCloudNode(this,
-                                                             SpringCloudIdHelper.getSubscriptionId(resourceEx.id()),
-                                                             resourceEx);
+        Azure.az(AzureSpringCloud.class).clusters().stream().forEach(cluster -> {
+            final SpringCloudNode node = new SpringCloudNode(this, cluster);
             addChildNode(node);
-        }
+        });
     }
 
     @Override

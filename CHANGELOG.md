@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.53.0](#3530)
   - [3.52.0](#3520)
   - [3.51.0](#3510)
   - [3.50.0](#3500)
@@ -66,6 +67,17 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.53.0
+### Added
+- Management workflow for Azure SQL Server
+- New login ui for service principal authentication
+
+### Changed
+- Deprecated file based service principal authentication
+
+### Fixed
+- [PR #5228](https://github.com/microsoft/azure-tools-for-java/pull/5228) Fix OAuth/Device login could not be cancelled
 
 ## 3.52.0
 ### Added

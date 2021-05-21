@@ -12,15 +12,18 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefau
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerUpdateParameters;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
+import com.microsoft.azure.management.mysql.v2020_01_01.Sku;
 import com.microsoft.azure.management.mysql.v2020_01_01.SslEnforcementEnum;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.NameAvailabilityInner;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,6 +33,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySQLMvpModel {
 
@@ -45,13 +50,13 @@ public class MySQLMvpModel {
 
     public static List<Server> listMySQLServers() {
         final List<Server> servers = new ArrayList<>();
-        final List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        final List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         if (CollectionUtils.isEmpty(subscriptions)) {
             return servers;
         }
         subscriptions.parallelStream().forEach(subscription -> {
             try {
-                List<Server> subServers = MySQLMvpModel.listMySQLServersBySubscriptionId(subscription.subscriptionId());
+                List<Server> subServers = MySQLMvpModel.listMySQLServersBySubscriptionId(subscription.getId());
                 synchronized (servers) {
                     servers.addAll(subServers);
                 }
@@ -71,10 +76,21 @@ public class MySQLMvpModel {
     public static Server create(final String subscriptionId, final String resourceGroupName, final String serverName,
                                 Region region, final ServerPropertiesForDefaultCreate properties) {
         final MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
-        /*Sku sku = new Sku().withName("GP_Gen5_4");*/
-        Server result = manager.servers().define(serverName).withRegion(region.name()).withExistingResourceGroup(resourceGroupName)
-                .withProperties(properties)/*.withSku(sku)*/.create();
+        List<PerformanceTierPropertiesInner> tiers = manager.locationBasedPerformanceTiers().inner().list(region.getName());
+        PerformanceTierPropertiesInner tier = tiers.stream().filter(e -> CollectionUtils.isNotEmpty(e.serviceLevelObjectives())).sorted((o1, o2) -> {
+            int priority1 = getTierPriority(o1);
+            int priority2 = getTierPriority(o2);
+            return priority1 > priority2 ? 1 : -1;
+        }).findFirst().orElseThrow(() -> new AzureToolkitRuntimeException("Currently, the service is not available in this location for your subscription."));
+        Sku sku = new Sku().withName(tier.serviceLevelObjectives().get(0).id()); // Basic,GeneralPurpose,MemoryOptimized
+        Server result = manager.servers().define(serverName).withRegion(region.getName()).withExistingResourceGroup(resourceGroupName)
+                .withProperties(properties).withSku(sku).create();
         return result;
+    }
+
+    private static int getTierPriority(PerformanceTierPropertiesInner tier) {
+        return StringUtils.equals("Basic", tier.id()) ? 1 :
+            StringUtils.equals("GeneralPurpose", tier.id()) ? 2 : StringUtils.equals("MemoryOptimized", tier.id()) ? 3 : 4;
     }
 
     public static void delete(final String subscriptionId, final String id) {
@@ -117,8 +133,16 @@ public class MySQLMvpModel {
         // TODO (qianijn): remove join logic
         return Arrays.asList(com.microsoft.azure.arm.resources.Region.values()).stream()
                 .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.name()))
-                .map(e -> Region.findByLabelOrName(e.name()))
-                .sorted(Comparator.comparing(Region::label))
+                .map(e -> Region.fromName(e.name()))
+                .sorted(Comparator.comparing(Region::getLabel))
+                .collect(Collectors.toList());
+    }
+
+    public static List<Region> listSupportedRegions(Subscription subscription) {
+        List<com.microsoft.azure.toolkit.lib.common.model.Region> locationList = az(AzureAccount.class).listRegions(subscription.getId());
+        return locationList.stream()
+                .filter(e -> MYSQL_SUPPORTED_REGIONS.contains(e.getName()))
+                .distinct()
                 .collect(Collectors.toList());
     }
 

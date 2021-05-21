@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -90,20 +91,26 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         public boolean isApplicableFor(@NotNull RunConfigurationBase<?> configuration) {
             final boolean applicable = configuration.getProject().getService(ConnectionManager.class)
                     .getConnections().stream().anyMatch(c -> c.isApplicableFor(configuration));
-            if (applicable) {
-                if (configuration.getBeforeRunTasks().stream().noneMatch(t -> t instanceof MyBeforeRunTask)) {
-                    final MyBeforeRunTask task = new MyBeforeRunTask();
-                    task.setEnabled(true);
-                    configuration.getBeforeRunTasks().add(task);
-                }
-            } else {
-                final List<BeforeRunTask<?>> tasks = configuration.getBeforeRunTasks().stream()
-                        .filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
-                if (tasks.size() > 0) {
-                    configuration.getBeforeRunTasks().removeAll(tasks);
-                }
+            final List<BeforeRunTask<?>> tasks = configuration.getBeforeRunTasks();
+            final List<BeforeRunTask<?>> myTasks = tasks.stream().filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
+            if (applicable && myTasks.isEmpty()) {
+                final MyBeforeRunTask task = new MyBeforeRunTask();
+                task.setEnabled(true);
+                this.addTask(configuration, task);
+            } else if (!myTasks.isEmpty()) {
+                tasks.removeAll(myTasks);
             }
             return applicable;
+        }
+
+        private void addTask(RunConfigurationBase<?> configuration, MyBeforeRunTask task) {
+            try {
+                configuration.getBeforeRunTasks().add(task);
+            } catch (final UnsupportedOperationException e) { // EmptyList doesn't support `add`
+                final ArrayList<BeforeRunTask<?>> newTasks = new ArrayList<>(configuration.getBeforeRunTasks());
+                newTasks.add(task);
+                configuration.setBeforeRunTasks(newTasks);
+            }
         }
     }
 }

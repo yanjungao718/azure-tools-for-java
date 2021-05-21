@@ -6,36 +6,31 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.springcloud.*;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.Utils;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.model.ScaleSettings;
-import com.microsoft.azure.tools.utils.RxUtils;
+import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
-import lombok.SneakyThrows;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+import javax.annotation.Nonnull;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloudConfigUtils.DEFAULT_DEPLOYMENT_NAME;
-
-class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppResourceInner> {
+class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<SpringCloudDeployment> {
     private static final int GET_URL_TIMEOUT = 60;
     private static final int GET_STATUS_TIMEOUT = 180;
     private static final String UPDATE_APP_WARNING = "It may take some moments for the configuration to be applied at server side!";
@@ -51,75 +46,21 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
     }
 
     @Override
-    public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
-        // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812811
-        // prepare the jar to be deployed
+    @AzureOperation(name = "springcloud|app.create_update", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    public SpringCloudDeployment executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) {
+        final MyMessager messager = new MyMessager(msg -> this.setText(processHandler, msg));
+        AzureMessager.getContext().setMessager(messager);
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
-        final File artifactFile = appConfig.getDeployment().getArtifact().getFile();
-        final boolean enableDisk = appConfig.getDeployment() != null && appConfig.getDeployment().isEnablePersistentStorage();
-        final String clusterName = appConfig.getClusterName();
-        final String appName = appConfig.getAppName();
-
-        final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        final Map<String, String> env = deploymentConfig.getEnvironment();
-        final String jvmOptions = deploymentConfig.getJvmOptions();
-        final ScaleSettings scaleSettings = deploymentConfig.getScaleSettings();
-        final String runtimeVersion = deploymentConfig.getJavaVersion();
-
-        final AzureSpringCloud az = Azure.az(AzureSpringCloud.class);
-        final SpringCloudCluster cluster = az.cluster(clusterName);
-        final SpringCloudApp app = cluster.app(appName);
-        final String deploymentName = StringUtils.firstNonBlank(
-            deploymentConfig.getDeploymentName(),
-            appConfig.getActiveDeploymentName(),
-            app.getActiveDeploymentName(),
-            DEFAULT_DEPLOYMENT_NAME);
-        final SpringCloudDeployment deployment = app.deployment(deploymentName);
-
-        final boolean toCreateApp = !app.exists();
-        final boolean toCreateDeployment = !deployment.exists();
-        operation.trackProperty("isCreateNewApp", String.valueOf(toCreateApp));
-        operation.trackProperty("isCreateNewDeployment", String.valueOf(toCreateDeployment));
-        final List<AzureTask<?>> tasks = new ArrayList<>();
-        if (toCreateApp) {
-            setText(processHandler, String.format("Creating app(%s)...", app.name()));
-            app.create().commit();
-            SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(cluster.id(), getInner(app.entity()), null);
-            setText(processHandler, "Successfully created the app.");
-        }
-        setText(processHandler, String.format("Uploading artifact(%s) to Azure...", artifactFile.getPath()));
-        final SpringCloudApp.Uploader artifactUploader = app.uploadArtifact(artifactFile.getPath());
-        artifactUploader.commit();
-        setText(processHandler, "Successfully uploaded the artifact.");
-
-        final SpringCloudDeployment.Updater deploymentModifier = (toCreateDeployment ? deployment.create() : deployment.update())
-            .configEnvironmentVariables(env)
-            .configJvmOptions(jvmOptions)
-            .configScaleSettings(scaleSettings)
-            .configRuntimeVersion(runtimeVersion)
-            .configArtifact(artifactUploader.getArtifact());
-        setText(processHandler, String.format(toCreateDeployment ? "Creating deployment(%s)..." : "Updating deployment(%s)...", deploymentName));
-        deploymentModifier.commit();
-        setText(processHandler, toCreateDeployment ? "Successfully created the deployment" : "Successfully updated the deployment");
-        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(cluster.id(), getInner(app.entity()), getInner(deployment.entity()));
-
-        final SpringCloudApp.Updater appUpdater = app.update()
-            .activate(StringUtils.firstNonBlank(StringUtils.firstNonBlank(app.getActiveDeploymentName(), toCreateDeployment ? deploymentName : null)))
-            .setPublic(appConfig.isPublic())
-            .enablePersistentDisk(enableDisk);
-        if (!appUpdater.isSkippable()) {
-            setText(processHandler, String.format("Updating app(%s)...", app.name()));
-            appUpdater.commit();
-            setText(processHandler, "Successfully updated the app.");
-            DefaultLoader.getUIHelper().showWarningNotification(NOTIFICATION_TITLE, UPDATE_APP_WARNING);
-        }
-
-        SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(cluster.id(), getInner(app.entity()), getInner(deployment.entity()));
+        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
+        final SpringCloudDeployment deployment = task.execute();
+        // TODO: notify azure explorer to refresh
+        final SpringCloudApp app = deployment.app();
+        final SpringCloudCluster cluster = app.getCluster();
         if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-            DefaultLoader.getUIHelper().showWarningNotification(NOTIFICATION_TITLE, GET_DEPLOYMENT_STATUS_TIMEOUT);
+            AzureMessager.getDefaultMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
         printPublicUrl(app, processHandler);
-        return getInner(app.entity()); // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812811
+        return deployment;
     }
 
     @Override
@@ -128,7 +69,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
     }
 
     @Override
-    protected void onSuccess(AppResourceInner result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(SpringCloudDeployment result, @NotNull RunProcessHandler processHandler) {
         setText(processHandler, "Deploy succeed");
         processHandler.notifyComplete();
     }
@@ -148,34 +89,41 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
     }
 
     private void printPublicUrl(final SpringCloudApp app, @NotNull RunProcessHandler processHandler) {
+        final IAzureMessager messager = AzureMessager.getMessager();
         if (!app.entity().isPublic()) {
             return;
         }
-        setText(processHandler, String.format("Getting public url of app(%s)...", app.name()));
+        messager.info(String.format("Getting public url of app(%s)...", app.name()));
         String publicUrl = app.entity().getApplicationUrl();
         if (StringUtils.isEmpty(publicUrl)) {
-            publicUrl = RxUtils.pollUntil(() -> app.refresh().entity().getApplicationUrl(), StringUtils::isNotBlank, GET_URL_TIMEOUT);
+            publicUrl = Utils.pollUntil(() -> app.refresh().entity().getApplicationUrl(), StringUtils::isNotBlank, GET_URL_TIMEOUT);
         }
         if (StringUtils.isEmpty(publicUrl)) {
-            DefaultLoader.getUIHelper().showWarningNotification(NOTIFICATION_TITLE, "Failed to get application url");
+            messager.warning("Failed to get application url", NOTIFICATION_TITLE);
         } else {
-            setText(processHandler, String.format("Application url: %s", publicUrl));
+            messager.info(String.format("Application url: %s", publicUrl));
         }
     }
 
-    @SneakyThrows
-    private static AppResourceInner getInner(final SpringCloudAppEntity app) {
-        // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812809
-        final Field inner = SpringCloudAppEntity.class.getDeclaredField("inner");
-        inner.setAccessible(true);
-        return (AppResourceInner) inner.get(app);
-    }
+    @RequiredArgsConstructor
+    private static class MyMessager extends IntellijAzureMessager {
+        private final Consumer<String> out;
 
-    @SneakyThrows
-    private static DeploymentResourceInner getInner(final SpringCloudDeploymentEntity deployment) {
-        // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812809
-        final Field inner = SpringCloudDeploymentEntity.class.getDeclaredField("inner");
-        inner.setAccessible(true);
-        return (DeploymentResourceInner) inner.get(deployment);
+        @Override
+        public void info(@Nonnull String message, String title) {
+            out.accept(message);
+        }
+
+        @Override
+        public void success(@Nonnull String message, String title) {
+            out.accept(message);
+            super.success(message, title);
+        }
+
+        @Override
+        public void error(@Nonnull String message, String title) {
+            out.accept(message);
+            super.error(message, title);
+        }
     }
 }
