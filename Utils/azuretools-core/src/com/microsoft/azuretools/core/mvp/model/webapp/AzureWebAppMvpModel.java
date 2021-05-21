@@ -31,9 +31,9 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -1081,7 +1081,7 @@ public class AzureWebAppMvpModel {
             params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
-    public void deployArtifactsToWebApp(@NotNull final IAppService deployTarget, @NotNull final File file,
+    public void deployArtifactsToWebApp(@NotNull final IWebAppBase deployTarget, @NotNull final File file,
                                         boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
         if (!(deployTarget instanceof IWebApp || deployTarget instanceof IWebAppDeploymentSlot)) {
             final String error = "the deployment target is not a valid (deployment slot of) Web App";

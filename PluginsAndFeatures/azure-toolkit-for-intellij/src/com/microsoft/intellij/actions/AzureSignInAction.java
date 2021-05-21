@@ -11,6 +11,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -91,7 +93,7 @@ public class AzureSignInAction extends AzureAnAction {
         final String warningMessage;
         switch (authType) {
             case SERVICE_PRINCIPAL:
-                warningMessage = String.format("Signed in using file \"%s\"", authMethodDetails.getCredFilePath());
+                warningMessage = String.format("Signed in using service principal \"%s\"", authMethodDetails.getClientId());
                 break;
             case OAUTH2:
             case DEVICE_CODE:
@@ -123,7 +125,16 @@ public class AzureSignInAction extends AzureAnAction {
                 });
             }
         } else {
-            doSignIn(authMethodManager, project).subscribe();
+            doSignIn(authMethodManager, project).subscribe(r -> {
+                if (r) {
+                    AzureAccount az = Azure.az(AzureAccount.class);
+                    authMethodManager.getAzureManager().getSelectedSubscriptions().stream().limit(5).forEach(s -> {
+                        // pre-load regions;
+                        az.listRegions(s.getId());
+                    });
+                }
+
+            });
         }
     }
 
