@@ -152,6 +152,7 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
     compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
     compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
+    compile 'io.projectreactor:reactor-core:3.4.6' , { force = true }
 
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
