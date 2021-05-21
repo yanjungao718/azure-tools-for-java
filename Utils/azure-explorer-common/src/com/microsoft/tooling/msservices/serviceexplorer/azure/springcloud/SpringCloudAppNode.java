@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResourceStatus;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
@@ -62,6 +63,16 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
                 fillData(event.getApp(), event.getDeployment());
             }
         }, this.app.entity().getId());
+        AzureEventBus.after("springcloud|app.start", this::onAppStatusChanged);
+        AzureEventBus.after("springcloud|app.stop", this::onAppStatusChanged);
+        AzureEventBus.after("springcloud|app.restart", this::onAppStatusChanged);
+    }
+
+    public void onAppStatusChanged(SpringCloudApp app) {
+        if (this.app.name().equals(app.name())) {
+            this.app.refresh();
+            this.fillData(this.app, this.app.activeDeployment());
+        }
     }
 
     @Override

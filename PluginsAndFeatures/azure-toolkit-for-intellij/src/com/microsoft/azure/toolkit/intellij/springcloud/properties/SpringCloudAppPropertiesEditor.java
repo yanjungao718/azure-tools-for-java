@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.properties;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -112,7 +113,16 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             new DeploySpringCloudAppTask(this.appPanel.getData()).execute();
             this.refresh();
         }));
-        // TODO: add listener: update view on app updated and close editor on app deleted.
+        AzureEventBus.after("springcloud|app.remove", (SpringCloudApp app) -> {
+            if (this.app.name().equals(app.name())) {
+                this.closeEditor();
+            }
+        });
+        AzureEventBus.after("springcloud|app.update", (SpringCloudApp app) -> {
+            if (this.app.name().equals(app.name())) {
+                this.refresh();
+            }
+        });
     }
 
     private void refresh() {
@@ -120,7 +130,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.saveButton.setEnabled(false);
         AzureTaskManager.getInstance().runLater(() -> {
             final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
-            AzureTaskManager.getInstance().runInModal(refreshTitle, () -> {
+            AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
                 this.appPanel.refresh();
                 this.resetToolbar();
             });

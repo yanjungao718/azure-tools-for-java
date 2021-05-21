@@ -62,6 +62,10 @@ public class AzureSlider {
         return (int) this.numValue.getValue();
     }
 
+    public void prepare() {
+        this.numSlider.setLabelTable(null);
+    }
+
     private void createUIComponents() {
         this.numValue = new JBIntSpinner(1, 0, 10);
     }
