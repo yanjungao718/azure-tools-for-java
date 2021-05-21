@@ -11,29 +11,28 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
 import com.microsoft.intellij.forms.CreateVirtualNetworkForm;
@@ -84,7 +83,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     private List<NetworkSecurityGroup> networkSecurityGroups;
     private List<AvailabilitySet> availabilitySets;
 
-    private Azure azure;
+    private com.microsoft.azure.management.Azure azure;
 
     public SettingsStep(final VMWizardModel model, Project project, Node parent) {
         super("Settings", null, null);
@@ -171,8 +170,12 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
     private void fillResourceGroups() {
         // Resource groups already initialized in cache when loading locations on SelectImageStep
-        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(model.getSubscription());
-        List<String> sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+        if (model.getSubscription() == null) {
+            return;
+        }
+        List<ResourceGroup> groups = (List<ResourceGroup>) AzureMvpModel.getInstance().getResourceGroups(model.getSubscription().getId()).stream()
+                .map(ResourceEx::getResource).collect(Collectors.toList());
+        List<String> sortedGroups = groups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
         resourceGrpCombo.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
     }
 
@@ -183,7 +186,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         model.getCurrentNavigationState().NEXT.setEnabled(false);
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(model.getSubscription().getSubscriptionId());
+            azure = azureManager.getAzure(model.getSubscription().getId());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to authenticate\n\n" + ex.getMessage(), ex);
         }
@@ -302,7 +305,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         List<Network> filteredNetworks = new ArrayList<>();
 
         for (Network network : virtualNetworks) {
-            if (network.regionName() != null && network.regionName().equals(model.getRegion().name())) {
+            if (network.regionName() != null && network.regionName().equals(model.getRegion().getName())) {
                 filteredNetworks.add(network);
             }
         }
@@ -477,7 +480,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         for (PublicIPAddress publicIpAddress : publicIpAddresses) {
 
             // VM and public ip address need to be in the same region
-            if (publicIpAddress.regionName() != null && publicIpAddress.regionName().equals(model.getRegion().name())) {
+            if (publicIpAddress.regionName() != null && publicIpAddress.regionName().equals(model.getRegion().getName())) {
                 filteredPips.add(publicIpAddress);
             }
         }
@@ -546,7 +549,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
         for (NetworkSecurityGroup nsg : networkSecurityGroups) {
             // VM and network security group
-            if (model.getRegion().name().equals(nsg.regionName())) {
+            if (model.getRegion().getName().equals(nsg.regionName())) {
                 filteredNsgs.add(nsg);
             }
         }
@@ -622,7 +625,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     private void showNewVirtualNetworkForm() {
         final String resourceGroupName = createNewRadioButton.isSelected() ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
 
-        final CreateVirtualNetworkForm form = new CreateVirtualNetworkForm(project, model.getSubscription().getSubscriptionId(), model.getRegion(),
+        final CreateVirtualNetworkForm form = new CreateVirtualNetworkForm(project, model.getSubscription().getId(), model.getRegion(),
                 model.getName());
         form.setOnCreate(new Runnable() {
             @Override
@@ -696,12 +699,12 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                 }
 
                 final com.microsoft.azure.management.compute.VirtualMachine vm = AzureSDKManager
-                    .createVirtualMachine(model.getSubscription().getSubscriptionId(),
+                    .createVirtualMachine(model.getSubscription().getId(),
                                           model.getName(),
                                           resourceGroupName,
                                           createNewRadioButton.isSelected(),
                                           model.getSize(),
-                                          model.getRegion().name(),
+                                          model.getRegion().getName(),
                                           model.getVirtualMachineImage(),
                                           model.getKnownMachineImage(),
                                           model.isKnownMachineImage(),
@@ -719,22 +722,10 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                           model.getUserName(),
                                           model.getPassword(),
                                           certData.length > 0 ? new String(certData) : null);
-                // update resource groups cache if new resource group was created when creating vm
-                ResourceGroup rg = null;
-                if (createNewRadioButton.isSelected()) {
-                    rg = azure.resourceGroups().getByName(resourceGroupName);
-                    AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
-                }
-                if (model.isWithNewStorageAccount() && model.getNewStorageAccount().isNewResourceGroup() &&
-                    (rg == null || !rg.name().equals(model.getNewStorageAccount().getResourceGroupName()))) {
-                    rg = azure.resourceGroups().getByName(model.getNewStorageAccount().getResourceGroupName());
-                    AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
-                }
-
                 AzureTaskManager.getInstance().runLater(() -> {
                     try {
                         parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.
-                            VMNode(parent, model.getSubscription().getSubscriptionId(), vm));
+                            VMNode(parent, model.getSubscription().getId(), vm));
                     } catch (AzureCmdException e) {
                         String msg = "An error occurred while attempting to refresh the list of virtual machines.";
                         DefaultLoader.getUIHelper().showException(msg, e, "Azure Services Explorer - Error Refreshing VM List", false, true);

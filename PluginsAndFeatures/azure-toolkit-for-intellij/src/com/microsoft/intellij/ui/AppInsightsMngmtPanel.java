@@ -13,9 +13,9 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTable
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -119,7 +119,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
         try {
             if (AuthMethodManager.getInstance().isSignedIn()) {
                 AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails();
+                List<Subscription> subList = azureManager.getSelectedSubscriptions();
                 if (subList.size() > 0) {
                     updateApplicationInsightsResourceRegistry(subList, myProject);
                 } else {
@@ -153,20 +153,20 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
         return elements.getElements();
     }
 
-    public static void updateApplicationInsightsResourceRegistry(List<SubscriptionDetail> subList, Project project) throws Exception {
+    public static void updateApplicationInsightsResourceRegistry(List<Subscription> subList, Project project) throws Exception {
         // remove all resourecs that were not manually added
         keeepManuallyAddedList(project);
-        for (SubscriptionDetail sub : subList) {
+        for (Subscription sub : subList) {
             if (sub.isSelected()) {
                 try {
                     // fetch resources available for particular subscription
-                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub);
+                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub.getId());
                     // Removal logic
                     List<ApplicationInsightsResource> importedList = ApplicationInsightsResourceRegistry.prepareAppResListFromRes(resourceList, sub);
                     // Addition logic
                     ApplicationInsightsResourceRegistry.getAppInsightsResrcList().addAll(importedList);
                 } catch (Exception ex) {
-                    AzurePlugin.log("Error loading AppInsights information for subscription '" + sub.getSubscriptionName() + "'");
+                    AzurePlugin.log("Error loading AppInsights information for subscription '" + sub.getName() + "'");
                 }
             }
         }
@@ -183,7 +183,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
         try {
             Project project = PluginUtil.getSelectedProject();
             if (AuthMethodManager.getInstance().isSignedIn()) {
-                List<SubscriptionDetail> subList = AuthMethodManager.getInstance().getAzureManager().getSubscriptionManager().getSubscriptionDetails();
+                List<Subscription> subList = AuthMethodManager.getInstance().getAzureManager().getSelectedSubscriptions();
                 // authenticated using AD. Proceed for updating application insights registry.
                 updateApplicationInsightsResourceRegistry(subList, project);
             } else {

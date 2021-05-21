@@ -7,24 +7,24 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.appservice.AppSetting;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.service.*;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -36,7 +36,10 @@ import rx.Observable;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -184,19 +187,14 @@ public enum AppServiceStreamingLogManager {
             }
             final String aiKey = aiAppSettings.value();
             final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            final SubscriptionDetail subscriptionDetail = Optional.ofNullable(azureManager)
-                                                                  .map(AzureManager::getSubscriptionManager)
-                                                                  .map(SubscriptionManager::getSubscriptionIdToSubscriptionDetailsMap)
-                                                                  .map(map -> map.get(subscriptionId)).orElse(null);
             final List<ApplicationInsightsComponent> insightsResources =
-                subscriptionDetail == null ? Collections.EMPTY_LIST : AzureSDKManager.getInsightsResources(subscriptionDetail);
+                    subscriptionId == null ? Collections.EMPTY_LIST : AzureSDKManager.getInsightsResources(subscriptionId);
             final ApplicationInsightsComponent target = insightsResources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.instrumentationKey(), aiKey))
                     .findFirst()
                     .orElseThrow(() -> new IOException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
-            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, azureManager.getPortalUrl());
+            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, IdentityAzureManager.getInstance().getPortalUrl());
             DefaultLoader.getIdeHelper().openLinkInBrowser(aiUrl);
         }
 

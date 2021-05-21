@@ -7,8 +7,8 @@ package com.microsoft.azuretools.azurecommons.helpers;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.RedisCacheCreator;
@@ -68,8 +68,8 @@ public final class RedisCacheUtil {
         return skus;
     }
 
-    public static void doValidate(SubscriptionDetail currentSub, String dnsNameValue,
-            String selectedRegionValue, String selectedResGrpValue, String selectedPriceTierValue) throws InvalidFormDataException {
+    public static void doValidate(Subscription currentSub, String dnsNameValue,
+                                  String selectedRegionValue, String selectedResGrpValue, String selectedPriceTierValue) throws InvalidFormDataException {
         if (currentSub == null) {
             throw new InvalidFormDataException(REQUIRE_SUBSCRIPTION);
         }
@@ -85,7 +85,7 @@ public final class RedisCacheUtil {
         if (selectedPriceTierValue == null || selectedPriceTierValue.isEmpty()) {
             throw new InvalidFormDataException(REQUIRE_PRICE_TIER);
         }
-        final Azure azure = AuthMethodManager.getInstance().getAzureClient(currentSub.getSubscriptionId());
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(currentSub.getId());
         for (final RedisCache existingRedisCache : azure.redisCaches().list()) {
             if (existingRedisCache.name().equals(dnsNameValue)) {
                 throw new InvalidFormDataException("The name " + dnsNameValue + " is not available");

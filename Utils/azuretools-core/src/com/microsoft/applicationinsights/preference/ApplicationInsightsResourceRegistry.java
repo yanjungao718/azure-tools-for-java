@@ -6,7 +6,7 @@
 package com.microsoft.applicationinsights.preference;
 
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import java.util.*;
 
@@ -192,7 +192,7 @@ public class ApplicationInsightsResourceRegistry {
      * @return
      */
     public static List<ApplicationInsightsResource> prepareAppResListFromRes(
-            List<ApplicationInsightsComponent> resourceList, SubscriptionDetail sub) {
+            List<ApplicationInsightsComponent> resourceList, Subscription sub) {
         List<ApplicationInsightsResource> list = new ArrayList<ApplicationInsightsResource>();
         for (ApplicationInsightsComponent resource : resourceList) {
             ApplicationInsightsResource resourceToAdd = new ApplicationInsightsResource(resource, sub, true);

@@ -5,12 +5,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import java.util.List;
 
 public interface ResourceManagementModuleView extends MvpView {
-
     void renderChildren(List<ResourceEx<ResourceGroup>> resourceExes);
 }
