@@ -15,7 +15,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -26,15 +25,21 @@ import com.intellij.ui.EditorCustomization;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.EditorTextFieldProvider;
 import com.intellij.ui.SoftWrapsEditorCustomization;
+import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
+import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -47,6 +52,7 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -58,7 +64,9 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class ServicePrincipalLoginDialog extends DialogWrapper {
+public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> implements AzureForm<AuthConfiguration> {
+    private static final String GUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"; //UUID v1-v5
+    private static final Pattern GUID_PATTERN = Pattern.compile(GUID_REGEX, Pattern.CASE_INSENSITIVE);
     private JTextField clientIdTextField;
     private JTextField tenantIdTextField;
     private JPanel rootPanel;
@@ -69,17 +77,17 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
     private TextFieldWithBrowseButton certFileTextField;
     private AzureCommentLabel comment;
     private final Project project;
-    private String memo; // save current json to avoid infinite update loops
     private boolean intermediateState = false;
+    private AuthConfiguration auth = new AuthConfiguration();
 
-    private static final String GUID_REGEX = "^[{]?[0-9a-fA-F]{8}" + "-([0-9a-fA-F]{4}-)" + "{3}[0-9a-fA-F]{12}[}]?$";
 
-    protected ServicePrincipalLoginDialog(@Nullable Project project) {
-        super(project, true);
+    protected ServicePrincipalLoginDialog(@Nonnull Project project) {
+        super(project);
         this.project = project;
-        init();
+
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        this.setTitle("Sign in Service Principal");
+
+        init();
         super.setOKButtonText("Sign In");
 
         pasteFromClipboard();
@@ -89,7 +97,7 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
         FileChooserDescriptor pem = FileChooserDescriptorFactory.createSingleFileDescriptor("pem");
         pem.withFileFilter(file -> StringUtils.equalsIgnoreCase(file.getExtension(), "pem"));
         certFileTextField.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Certificate File", null, certFileTextField, null,
-                pem, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT) {
+            pem, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT) {
             @Nullable
             protected VirtualFile getInitialFile() {
                 return LocalFileSystem.getInstance().findFileByPath(FileUtil.getDirectoryWithinUserHome("/").toString());
@@ -97,22 +105,19 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
         });
 
         Stream.of(clientIdTextField, tenantIdTextField, keyPasswordField, certFileTextField.getTextField()).map(JTextComponent::getDocument)
-                .forEach(document -> document.addDocumentListener(new TextDocumentListenerAdapter() {
-                    @Override
-                    public void onDocumentChanged() {
-                        uiTextComponents2Json();
-                    }
-                }));
+            .forEach(document -> document.addDocumentListener(new TextDocumentListenerAdapter() {
+                @Override
+                public void onDocumentChanged() {
+                    uiTextComponents2Json();
+                }
+            }));
 
-        this.certificateRadioButton.addActionListener((e) -> uiTextComponents2Json());
-        this.passwordRadioButton.addActionListener((e) -> uiTextComponents2Json());
+        this.certificateRadioButton.addActionListener(e -> uiTextComponents2Json());
+        this.passwordRadioButton.addActionListener(e -> uiTextComponents2Json());
 
         this.jsonDataEditor.addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(@NotNull DocumentEvent event) {
-                if (jsonDataEditor.getText().equals(memo)) {
-                    return;
-                }
                 json2UIComponents(jsonDataEditor.getText());
             }
         });
@@ -128,33 +133,43 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
     @Override
     protected @NotNull List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
-        AuthConfiguration auth = getData();
-        if (StringUtils.isBlank(auth.getTenant())) {
+        AuthConfiguration data = getData();
+        if (StringUtils.isBlank(data.getTenant())) {
             res.add(new ValidationInfo("tenant is required.", tenantIdTextField));
         }
-        if (!isGuid(auth.getTenant())) {
-            res.add(new ValidationInfo("tenant should be a guild.", tenantIdTextField));
+        if (!isGuid(data.getTenant())) {
+            res.add(new ValidationInfo("tenant should be a valid guid.", tenantIdTextField));
         }
 
-        if (StringUtils.isBlank(auth.getClient())) {
+        if (StringUtils.isBlank(data.getClient())) {
             res.add(new ValidationInfo("clientId(appId) is required.", clientIdTextField));
         }
-        if (!isGuid(auth.getClient())) {
-            res.add(new ValidationInfo("clientId(appId) should be a guild.", clientIdTextField));
+        if (!isGuid(data.getClient())) {
+            res.add(new ValidationInfo("clientId(appId) should be a valid guid.", clientIdTextField));
         }
 
         if (this.passwordRadioButton.isSelected()) {
-            if (StringUtils.isBlank(auth.getKey())) {
+            if (StringUtils.isBlank(data.getKey())) {
                 res.add(new ValidationInfo("Password is required.", keyPasswordField));
             }
         } else {
-            if (StringUtils.isBlank(auth.getCertificate())) {
+            if (StringUtils.isBlank(data.getCertificate())) {
                 res.add(new ValidationInfo("Please select a cert file.", certFileTextField));
-            } else if (!new File(auth.getCertificate()).exists()) {
+            } else if (!new File(data.getCertificate()).exists()) {
                 res.add(new ValidationInfo(String.format("Cannot find cert file(%s).", certFileTextField.getText()), certFileTextField));
             }
         }
         return res;
+    }
+
+    @Override
+    public AzureForm<AuthConfiguration> getForm() {
+        return this;
+    }
+
+    @Override
+    protected String getDialogTitle() {
+        return "Sign In - Service Principal";
     }
 
     private void syncComponentStatusWhenRadioButtonChanges() {
@@ -164,7 +179,7 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
 
     private void createUIComponents() {
         this.jsonDataEditor = this.buildCodeViewer();
-        this.comment = new AzureCommentLabel("You can copy the JSON result of 'az sp create ...' and paste it here");
+        this.comment = new AzureCommentLabel("You can copy the JSON output of 'az sp create ...' and paste it here");
     }
 
     private EditorTextField buildCodeViewer() {
@@ -178,22 +193,37 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
     }
 
     public AuthConfiguration getData() {
-        AuthConfiguration auth = new AuthConfiguration();
+        AuthConfiguration data = new AuthConfiguration();
 
-        auth.setClient(clientIdTextField.getText());
-        auth.setTenant(tenantIdTextField.getText());
+        data.setClient(clientIdTextField.getText());
+        data.setTenant(tenantIdTextField.getText());
         if (passwordRadioButton.isSelected()) {
-            auth.setKey(String.valueOf(keyPasswordField.getPassword()));
+            data.setKey(String.valueOf(keyPasswordField.getPassword()));
         } else {
-            auth.setCertificate(this.certFileTextField.getText());
+            data.setCertificate(this.certFileTextField.getText());
         }
-        auth.setType(AuthType.SERVICE_PRINCIPAL);
-        return auth;
+        data.setType(AuthType.SERVICE_PRINCIPAL);
+        return data;
+    }
+
+    @Override
+    public void setData(AuthConfiguration data) {
+        this.auth = data;
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<AzureValidationInfo> validateData() {
+        return Collections.emptyList();
     }
 
     private void pasteFromClipboard() {
         String textFromClip = findTextInClipboard(str ->
-                StringUtils.contains(str, "appId") && StringUtils.contains(str, "tenant") && StringUtils.contains(str, "password")
+            StringUtils.contains(str, "appId") && StringUtils.contains(str, "tenant") && StringUtils.contains(str, "password")
         );
         if (StringUtils.isNotBlank(textFromClip)) {
             json2UIComponents(textFromClip);
@@ -216,6 +246,8 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
                     e.printStackTrace();
                 }
             }
+            // only for the first clip board
+            break;
         }
 
         return null;
@@ -226,20 +258,21 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
             return;
         }
         Map<String, String> map = new LinkedHashMap<>();
-        AuthConfiguration auth = getData();
+        AuthConfiguration data = getData();
 
         if (this.certificateRadioButton.isSelected()) {
-            map.put("fileWithCertAndPrivateKey", auth.getCertificate());
+            map.put("fileWithCertAndPrivateKey", data.getCertificate());
         } else {
-            String password = StringUtils.isNotBlank(auth.getKey()) ? "<hidden>" : "<empty>";
+            String password = StringUtils.isNotBlank(data.getKey()) ? "<hidden>" : "<empty>";
             map.put("password", password);
         }
-        map.put("appId", auth.getClient());
-        map.put("tenant", auth.getTenant());
+        map.put("appId", data.getClient());
+        map.put("tenant", data.getTenant());
         String text = JsonUtils.getGson().toJson(map);
-        memo = text;
-        this.jsonDataEditor.setText(text);
-        this.jsonDataEditor.setCaretPosition(0);
+        if (!StringUtils.equals(jsonDataEditor.getText(), text)) {
+            this.jsonDataEditor.setText(text);
+            this.jsonDataEditor.setCaretPosition(0);
+        }
     }
 
     private void json2UIComponents(String json) {
@@ -247,26 +280,27 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
         try {
             if (StringUtils.isNotBlank(json)) {
                 try {
-                    Map<String, String> map = new HashMap<>();
-                    map = JsonUtils.fromJson(json, map.getClass());
+                    Map<String, String> map = JsonUtils.fromJson(json, HashMap.class);
                     if (map != null) {
-                        if (map.containsKey("appId")) {
-                            this.clientIdTextField.setText(StringUtils.defaultString(map.get("appId")));
-                        }
+                        ApplicationManager.getApplication().invokeAndWait(() -> {
+                            if (map.containsKey("appId")) {
+                                this.clientIdTextField.setText(StringUtils.defaultString(map.get("appId")));
+                            }
 
-                        if (map.containsKey("tenant")) {
-                            this.tenantIdTextField.setText(StringUtils.defaultString(map.get("tenant")));
-                        }
+                            if (map.containsKey("tenant")) {
+                                this.tenantIdTextField.setText(StringUtils.defaultString(map.get("tenant")));
+                            }
 
-                        if (map.containsKey("password") && !isPlaceHolder(map.get("password"))) {
-                            this.passwordRadioButton.setSelected(true);
-                            this.keyPasswordField.setText(StringUtils.defaultString(map.get("password")));
-                        }
+                            if (map.containsKey("password") && !isPlaceHolder(map.get("password"))) {
+                                this.passwordRadioButton.setSelected(true);
+                                this.keyPasswordField.setText(StringUtils.defaultString(map.get("password")));
+                            }
 
-                        if (map.containsKey("fileWithCertAndPrivateKey")) {
-                            this.certificateRadioButton.setSelected(true);
-                            this.certFileTextField.setText(StringUtils.defaultString(map.get("fileWithCertAndPrivateKey")));
-                        }
+                            if (map.containsKey("fileWithCertAndPrivateKey")) {
+                                this.certificateRadioButton.setSelected(true);
+                                this.certFileTextField.setText(StringUtils.defaultString(map.get("fileWithCertAndPrivateKey")));
+                            }
+                        });
                     }
 
                 } catch (JsonSyntaxException ex) {
@@ -283,11 +317,10 @@ public class ServicePrincipalLoginDialog extends DialogWrapper {
     }
 
     private static boolean isGuid(String str) {
-        final Pattern p = Pattern.compile(GUID_REGEX);
         if (StringUtils.isBlank(str)) {
             return false;
         }
-        return p.matcher(str).matches();
+        return GUID_PATTERN.matcher(str).matches();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

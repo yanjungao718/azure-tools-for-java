@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.ui;
+package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.components.JBLabel;

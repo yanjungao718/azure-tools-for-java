@@ -59,11 +59,10 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
     private static final String SIGN_IN_ERROR = "Sign In Error";
-
+    private static final IdeaSecureStore secureStore = IdeaSecureStore.getInstance();
     private JPanel contentPane;
 
     private JRadioButton deviceLoginRadioButton;
-
     private JRadioButton spRadioButton;
     private JLabel servicePrincipalCommentLabel;
     private JLabel deviceLoginCommentLabel;
@@ -164,8 +163,6 @@ public class SignInWindow extends AzureDialogWrapper {
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle();
     }
 
-    private static final IdeaSecureStore secureStore = IdeaSecureStore.getInstance();
-
     private @Nullable AuthMethodDetails doLogin(ProgressIndicator indicator) {
         authMethodDetailsResult = new AuthMethodDetails();
         if (spRadioButton.isSelected()) { // automated
@@ -195,7 +192,7 @@ public class SignInWindow extends AzureDialogWrapper {
             AuthConfiguration data = dialog.getData();
             authMethodDetailsResult = doServicePrincipalLoginInternal(data);
             if (StringUtils.isNotBlank(data.getKey())) {
-                secureStore.savePassword("account", data.getClient(), data.getKey());
+                secureStore.savePassword(StringUtils.joinWith("|", "account", data.getClient()), data.getKey());
             }
 
         }
@@ -256,7 +253,6 @@ public class SignInWindow extends AzureDialogWrapper {
                     oauthLoginRadioButton.setEnabled(false);
                     labelOAuthLogin.setEnabled(false);
                 }
-                this.setOKActionEnabled(true);
                 if (accounts.stream().anyMatch(ac -> ac.getAuthType() == AuthType.DEVICE_CODE)) {
                     deviceLoginRadioButton.setEnabled(true);
                     deviceLoginCommentLabel.setEnabled(true);
@@ -273,6 +269,7 @@ public class SignInWindow extends AzureDialogWrapper {
                           .filter(Component::isEnabled).findFirst().ifPresent(button -> button.setSelected(true));
                 }
                 refreshAuthControlElements();
+                this.setOKActionEnabled(true);
             });
     }
 

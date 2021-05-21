@@ -6,7 +6,7 @@
       <xy x="0" y="0" width="604" height="346"/>
     </constraints>
     <properties>
-      <minimumSize width="386" height="246"/>
+      <minimumSize width="430" height="246"/>
     </properties>
     <border type="none"/>
     <children>
@@ -145,10 +145,11 @@
           <text value="JSON:"/>
         </properties>
       </component>
-      <component id="9015b" class="com.microsoft.intellij.ui.AzureCommentLabel" binding="comment" custom-create="true">
+      <component id="9015b" class="com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel" binding="comment" custom-create="true">
         <constraints>
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
+        <properties/>
       </component>
     </children>
   </grid>
