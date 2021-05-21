@@ -9,7 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
@@ -38,7 +38,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     private OperatingSystem os;
     private Region region;
 
-    private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.getAll());
+    private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.WEB_APP_PRICING);
     private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
 
     private Predicate<AppServicePlan> servicePlanFilter;
