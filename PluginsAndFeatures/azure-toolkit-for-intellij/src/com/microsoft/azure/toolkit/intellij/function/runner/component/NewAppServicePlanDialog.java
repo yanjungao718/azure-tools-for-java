@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.component;
 
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.SkuName;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
@@ -157,7 +157,7 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
     // We will mark function only pricing tier as recommend
     private static boolean isRecommendPricingTier(PricingTier pricingTier) {
-        final String tier = pricingTier.toSkuDescription().tier();
+        final String tier = pricingTier.getTier();
         return pricingTier == CONSUMPTION_PRICING_TIER || StringUtils.equals(SkuName.ELASTIC_PREMIUM.toString(), tier);
     }
 }

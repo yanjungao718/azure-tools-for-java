@@ -14,7 +14,7 @@ import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.SkuName;
@@ -255,7 +255,8 @@ public class AzureWebAppMvpModel {
         if (tierSize.length != 2) {
             throw new IllegalArgumentException("invalid price tier");
         }
-        final PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
+        final com.microsoft.azure.management.appservice.PricingTier pricingTier =
+            new com.microsoft.azure.management.appservice.PricingTier(tierSize[0], tierSize[1]);
 
         final AppServicePlan.DefinitionStages.WithGroup withGroup = azure
             .appServices()
@@ -357,7 +358,8 @@ public class AzureWebAppMvpModel {
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         final WebApp app;
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-        final PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
+        final com.microsoft.azure.management.appservice.PricingTier pricingTier =
+            new com.microsoft.azure.management.appservice.PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
 
         final WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
         if (model.isCreatingNewAppServicePlan()) {
@@ -949,10 +951,10 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) {
-        if (StringUtils.isEmpty(subscriptionId) || pricingTier == null || pricingTier.toSkuDescription() == null) {
+        if (StringUtils.isEmpty(subscriptionId) || pricingTier == null) {
             return Collections.emptyList();
         }
-        final SkuName skuName = SkuName.fromString(pricingTier.toSkuDescription().tier());
+        final SkuName skuName = SkuName.fromString(pricingTier.getTier());
         final List<GeoRegionInner> geoRegionInnerList = AuthMethodManager.getInstance()
                                                                          .getAzureClient(subscriptionId)
                                                                          .appServices()

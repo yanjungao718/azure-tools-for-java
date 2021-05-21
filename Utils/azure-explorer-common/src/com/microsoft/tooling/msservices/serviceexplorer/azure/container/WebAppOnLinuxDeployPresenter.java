@@ -6,7 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;

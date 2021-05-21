@@ -7,7 +7,8 @@ package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.SkuDescription;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
 import com.microsoft.azure.management.appservice.implementation.AppServicePlanInner;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
@@ -49,8 +50,11 @@ public class DraftServicePlan implements AppServicePlan, Draft {
     }
 
     @Override
-    public PricingTier pricingTier() {
-        return this.tier;
+    public com.microsoft.azure.management.appservice.PricingTier pricingTier() {
+        if (tier == null) {
+            return null;
+        }
+        return toPricingTier(this.tier);
     }
 
     @Override
@@ -126,5 +130,10 @@ public class DraftServicePlan implements AppServicePlan, Draft {
     @Override
     public Update update() {
         throw new OperationNotSupportedException();
+    }
+
+    private static com.microsoft.azure.management.appservice.PricingTier toPricingTier(PricingTier pricingTier) {
+        final SkuDescription skuDescription = new SkuDescription().withTier(pricingTier.getTier()).withSize(pricingTier.getSize());
+        return com.microsoft.azure.management.appservice.PricingTier.fromSkuDescription(skuDescription);
     }
 }
