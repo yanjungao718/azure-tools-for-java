@@ -49,7 +49,6 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
 
     private void init() {
         serverNameTextField.setSubscription(config.getSubscription());
-        serverNameTextField.setResourceGroup(config.getResourceGroup());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
     }

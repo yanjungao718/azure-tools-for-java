@@ -6,7 +6,6 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
@@ -19,18 +18,10 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
     private Subscription subscription;
-    private ResourceGroup resourceGroup;
 
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
             this.subscription = subscription;
-        }
-    }
-
-    public void setResourceGroup(ResourceGroup resourceGroup) {
-        if (!Objects.equals(resourceGroup, this.resourceGroup)) {
-            this.resourceGroup = resourceGroup;
-            this.revalidateValue();
         }
     }
 
@@ -39,6 +30,7 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
      * Server name must only contain lowercase letters, numbers, and hyphens. The server name must not start or end in a hyphen.
      * Server name must be available.
      */
+    @Override
     @NotNull
     public AzureValidationInfo doValidateValue() {
         final AzureValidationInfo info = super.doValidateValue();

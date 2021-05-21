@@ -11,15 +11,14 @@ import com.microsoft.azure.toolkit.intellij.appservice.subscription.Subscription
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import lombok.Getter;
@@ -74,7 +73,6 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
 
     private void initListeners() {
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
-        this.resourceGroupComboBox.addItemListener(this::onResourceGroupChanged);
         this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
         this.security.getAllowAccessFromAzureServicesCheckBox().addItemListener(this::onSecurityAllowAccessFromAzureServicesCheckBoxChanged);
         this.security.getAllowAccessFromLocalMachineCheckBox().addItemListener(this::onSecurityAllowAccessFromLocalMachineCheckBoxChanged);
@@ -86,13 +84,6 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
             this.resourceGroupComboBox.setSubscription(subscription);
             this.serverNameTextField.setSubscription(subscription);
             this.regionComboBox.setSubscription(subscription);
-        }
-    }
-
-    private void onResourceGroupChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof ResourceGroup) {
-            final ResourceGroup resourceGroup = (ResourceGroup) e.getItem();
-            this.serverNameTextField.setResourceGroup(resourceGroup);
         }
     }
 
