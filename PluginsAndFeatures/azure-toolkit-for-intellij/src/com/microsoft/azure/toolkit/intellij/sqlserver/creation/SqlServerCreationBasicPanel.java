@@ -10,7 +10,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
-import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
 
     private JPanel rootPanel;
     @Getter
-    private SqlServerNameTextField serverNameTextField;
+    private ServerNameTextField serverNameTextField;
     @Getter
     private AdminUsernameTextField adminUsernameTextField;
     @Getter
@@ -51,6 +52,9 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
         serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        serverNameTextField.setMinLength(1);
+        serverNameTextField.setMaxLength(63);
+        serverNameTextField.setValidateFunction(new SqlServerNameValidator());
     }
 
     private void initListeners() {

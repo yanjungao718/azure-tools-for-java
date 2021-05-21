@@ -12,15 +12,19 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefau
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerUpdateParameters;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
+import com.microsoft.azure.management.mysql.v2020_01_01.Sku;
 import com.microsoft.azure.management.mysql.v2020_01_01.SslEnforcementEnum;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.NameAvailabilityInner;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -73,9 +78,17 @@ public class MySQLMvpModel {
     public static Server create(final String subscriptionId, final String resourceGroupName, final String serverName,
                                 Region region, final ServerPropertiesForDefaultCreate properties) {
         final MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
-        /*Sku sku = new Sku().withName("GP_Gen5_4");*/
+        List<PerformanceTierPropertiesInner> tiers = manager.locationBasedPerformanceTiers().inner().list(region.getName());
+        PerformanceTierPropertiesInner tier = tiers.stream().filter(e -> StringUtils.equals("Basic", e.id())).findFirst().orElse(
+            tiers.stream().filter(e -> StringUtils.equals("GeneralPurpose", e.id())).findFirst().orElse(
+                tiers.stream().filter(e -> StringUtils.equals("MemoryOptimized", e.id())).findFirst().orElse(null)
+            ));
+        if (Objects.isNull(tier)) {
+            throw new AzureToolkitRuntimeException("Currently, the service is not available in this location for your subscription.");
+        }
+        Sku sku = new Sku().withName(tier.serviceLevelObjectives().get(0).id()); // Basic,GeneralPurpose,MemoryOptimized
         Server result = manager.servers().define(serverName).withRegion(region.getName()).withExistingResourceGroup(resourceGroupName)
-                .withProperties(properties)/*.withSku(sku)*/.create();
+                .withProperties(properties).withSku(sku).create();
         return result;
     }
 

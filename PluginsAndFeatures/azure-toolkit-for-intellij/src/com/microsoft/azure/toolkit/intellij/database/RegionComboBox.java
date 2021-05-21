@@ -29,6 +29,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
     private Function<RegionComboBox, AzureValidationInfo> validateFunction;
 
     private boolean validated;
+    private boolean loaded;
     private AzureValidationInfo validatedInfo;
 
     public void setSubscription(Subscription subscription) {
@@ -53,7 +54,9 @@ public class RegionComboBox extends AzureComboBox<Region> {
         if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
-        return Azure.az(AzureAccount.class).listRegions(subscription.getId());
+        List<? extends Region> regions = Azure.az(AzureAccount.class).listRegions(subscription.getId());
+        loaded = true;
+        return regions;
     }
 
     @Override
@@ -65,10 +68,12 @@ public class RegionComboBox extends AzureComboBox<Region> {
     }
 
     @Override
-    public void setItem(Region item) {
-        super.setItem(item);
-        if (!Objects.equals(item, getItem())) {
+    public void setSelectedItem(Object value) {
+        if (!Objects.equals(value, getSelectedItem())) {
+            super.setSelectedItem(value);
             validated = false;
+        } else {
+            super.setSelectedItem(value);
         }
     }
 
@@ -80,7 +85,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        if (Objects.isNull(subscription)) {
+        if (Objects.isNull(subscription) || !loaded) {
             return AzureValidationInfo.OK;
         }
         if (validated && Objects.nonNull(validatedInfo)) {
