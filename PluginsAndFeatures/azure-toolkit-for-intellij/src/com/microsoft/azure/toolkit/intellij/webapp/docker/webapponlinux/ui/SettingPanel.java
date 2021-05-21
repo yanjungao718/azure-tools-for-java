@@ -25,7 +25,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -414,8 +414,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
 
                 PricingTier selectedPricingTier = (PricingTier) cbPricing.getSelectedItem();
                 if (selectedPricingTier != null) {
-                    webAppOnLinuxDeployConfiguration.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
-                    webAppOnLinuxDeployConfiguration.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
+                    webAppOnLinuxDeployConfiguration.setPricingSkuTier(selectedPricingTier.getTier());
+                    webAppOnLinuxDeployConfiguration.setPricingSkuSize(selectedPricingTier.getSize());
                 } else {
                     webAppOnLinuxDeployConfiguration.setPricingSkuTier(null);
                     webAppOnLinuxDeployConfiguration.setPricingSkuSize(null);

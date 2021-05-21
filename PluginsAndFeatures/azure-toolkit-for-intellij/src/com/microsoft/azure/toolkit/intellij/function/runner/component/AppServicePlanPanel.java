@@ -9,7 +9,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -92,7 +92,7 @@ public class AppServicePlanPanel extends JPanel {
     }
 
     public String getAppServicePlanPricingTier() {
-        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier().toSkuDescription().size();
+        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier().getSize();
     }
 
     public String getAppServicePlanResourceGroup() {
@@ -217,7 +217,7 @@ public class AppServicePlanPanel extends JPanel {
             this.isNewCreate = false;
             this.name = appServicePlan.name();
             this.region = Region.fromName(appServicePlan.region().name());
-            this.pricingTier = appServicePlan.pricingTier();
+            this.pricingTier = fromPricingTier(appServicePlan.pricingTier());
             this.operatingSystem = appServicePlan.operatingSystem();
             this.resourceGroup = appServicePlan.resourceGroupName();
         }
@@ -257,5 +257,12 @@ public class AppServicePlanPanel extends JPanel {
         public String toString() {
             return isNewCreate ? String.format(NEW_CREATED_RESOURCE, name) : String.format("%s (Resource Group: %s)", name, resourceGroup);
         }
+    }
+
+    static PricingTier fromPricingTier(com.microsoft.azure.management.appservice.PricingTier pricingTier) {
+        return PricingTier.values().stream()
+            .filter(value -> StringUtils.equals(value.getSize(), pricingTier.toSkuDescription().size()) &&
+                StringUtils.equals(value.getTier(), pricingTier.toSkuDescription().tier()))
+            .findFirst().orElse(null);
     }
 }

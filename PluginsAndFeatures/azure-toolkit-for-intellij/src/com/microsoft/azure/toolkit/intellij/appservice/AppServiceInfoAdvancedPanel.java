@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
@@ -198,7 +198,10 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             final AppServicePlan plan = (AppServicePlan) e.getItem();
-            final String pricing = plan.pricingTier() == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ?
+            if (plan.pricingTier() == null) {
+                return;
+            }
+            final String pricing = StringUtils.equals(plan.pricingTier().toSkuDescription().tier(), AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER.getTier()) ?
                                    "Consumption" : plan.pricingTier().toString();
             this.textSku.setText(pricing);
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
