@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -79,17 +77,20 @@ public class MySQLMvpModel {
                                 Region region, final ServerPropertiesForDefaultCreate properties) {
         final MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
         List<PerformanceTierPropertiesInner> tiers = manager.locationBasedPerformanceTiers().inner().list(region.getName());
-        PerformanceTierPropertiesInner tier = tiers.stream().filter(e -> StringUtils.equals("Basic", e.id())).findFirst().orElse(
-            tiers.stream().filter(e -> StringUtils.equals("GeneralPurpose", e.id())).findFirst().orElse(
-                tiers.stream().filter(e -> StringUtils.equals("MemoryOptimized", e.id())).findFirst().orElse(null)
-            ));
-        if (Objects.isNull(tier)) {
-            throw new AzureToolkitRuntimeException("Currently, the service is not available in this location for your subscription.");
-        }
+        PerformanceTierPropertiesInner tier = tiers.stream().filter(e -> CollectionUtils.isNotEmpty(e.serviceLevelObjectives())).sorted((o1, o2) -> {
+            int priority1 = getTierPriority(o1);
+            int priority2 = getTierPriority(o2);
+            return priority1 > priority2 ? 1 : -1;
+        }).findFirst().orElseThrow(() -> new AzureToolkitRuntimeException("Currently, the service is not available in this location for your subscription."));
         Sku sku = new Sku().withName(tier.serviceLevelObjectives().get(0).id()); // Basic,GeneralPurpose,MemoryOptimized
         Server result = manager.servers().define(serverName).withRegion(region.getName()).withExistingResourceGroup(resourceGroupName)
                 .withProperties(properties).withSku(sku).create();
         return result;
+    }
+
+    private static int getTierPriority(PerformanceTierPropertiesInner tier) {
+        return StringUtils.equals("Basic", tier.id()) ? 1 :
+            StringUtils.equals("GeneralPurpose", tier.id()) ? 2 : StringUtils.equals("MemoryOptimized", tier.id()) ? 3 : 4;
     }
 
     public static void delete(final String subscriptionId, final String id) {
