@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.sqlserver.common;
+package com.microsoft.azure.toolkit.intellij.database;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -12,23 +12,22 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
-/**
- * TODO(Qianjin) : extend RegionComboBox
- */
-public class SqlServerRegionComboBox extends AzureComboBox<Region> {
+public class RegionComboBox extends AzureComboBox<Region> {
 
-    private static final String REGION_UNAVAILABLE_MESSAGE = "Your subscription does not have access to create a server "
-        + "in the selected region. For the latest information about region availability for your subscription, go to "
-        + "aka.ms/sqlcapacity. Please try another region or create a support ticket to request access.";
-
+    @Getter
     private Subscription subscription;
+    @Setter
+    private Function<RegionComboBox, AzureValidationInfo> validateFunction;
+
     private boolean validated;
     private AzureValidationInfo validatedInfo;
 
@@ -54,7 +53,7 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
         if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
-        return loadRegions(subscription);
+        return Azure.az(AzureAccount.class).listRegions(subscription.getId());
     }
 
     @Override
@@ -67,10 +66,10 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
 
     @Override
     public void setItem(Region item) {
-        if (!item.equals(getItem())) {
+        super.setItem(item);
+        if (!Objects.equals(item, getItem())) {
             validated = false;
         }
-        super.setItem(item);
     }
 
     @Override
@@ -81,22 +80,18 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        if (validated && Objects.isNull(validatedInfo)) {
+        if (Objects.isNull(subscription)) {
+            return AzureValidationInfo.OK;
+        }
+        if (validated && Objects.nonNull(validatedInfo)) {
             return validatedInfo;
         }
         validatedInfo = super.doValidate();
         if (AzureValidationInfo.OK.equals(validatedInfo)) {
-            AzureSqlServer service = com.microsoft.azure.toolkit.lib.Azure.az(AzureSqlServer.class);
-            if (!service.checkRegionCapability(subscription.getId(), getValue().getName())) {
-                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                validatedInfo = builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
-            }
+            validatedInfo = validateFunction.apply(this);
         }
         validated = true;
         return validatedInfo;
     }
 
-    private List<Region> loadRegions(Subscription subscription) {
-        return Azure.az(AzureAccount.class).listRegions(subscription.getId());
-    }
 }
