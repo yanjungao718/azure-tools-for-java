@@ -227,7 +227,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         appConfig.setClusterName(app.getCluster().name());
         appConfig.setAppName(app.name());
         appConfig.setIsPublic(Objects.equals(app.entity().isPublic(), true));
-        appConfig.setRuntimeVersion(deploymentEntity.getRuntimeVersion());
+        deploymentConfig.setRuntimeVersion(deploymentEntity.getRuntimeVersion());
         deploymentConfig.setEnablePersistentStorage(Objects.nonNull(disk) && disk.getSizeInGB() > 0);
         deploymentConfig.setCpu(deploymentEntity.getCpu());
         deploymentConfig.setMemoryInGB(deploymentEntity.getMemoryInGB());
@@ -245,7 +245,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(IAzureEntityManager::name).orElse(null));
         appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(IAzureEntityManager::name).orElse(null));
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
-        appConfig.setRuntimeVersion(javaVersion);
+        deploymentConfig.setRuntimeVersion(javaVersion);
         deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
         deploymentConfig.setCpu(numCpu.getItem());
         deploymentConfig.setMemoryInGB(numMemory.getItem());
@@ -266,7 +266,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
             .ifPresent((name -> this.selectorApp.setValue(new ItemReference<>(name, SpringCloudApp::name))));
         this.toggleStorage(deployment.getEnablePersistentStorage(), Optional.ofNullable(this.app).map(a -> a.entity().getPersistentDisk()).orElse(null));
         this.toggleEndpoint(app.getIsPublic(), Optional.ofNullable(this.app).map(a -> a.entity().getApplicationUrl()).orElse(null));
-        final boolean useJava11 = StringUtils.equalsIgnoreCase(app.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
+        final boolean useJava11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
         this.useJava11.setSelected(useJava11);
         this.useJava8.setSelected(!useJava11);
 
