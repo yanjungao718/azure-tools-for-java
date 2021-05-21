@@ -5,13 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.common;
 
-import com.microsoft.azure.PagedList;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.RegionType;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -19,7 +18,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * TODO(Qianjin) : extend RegionComboBox
@@ -89,7 +87,7 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
         validatedInfo = super.doValidate();
         if (AzureValidationInfo.OK.equals(validatedInfo)) {
             AzureSqlServer service = com.microsoft.azure.toolkit.lib.Azure.az(AzureSqlServer.class);
-            if (!service.checkRegionCapability(subscription.subscriptionId(), getValue().getName())) {
+            if (!service.checkRegionCapability(subscription.getId(), getValue().getName())) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 validatedInfo = builder.input(this).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
             }
@@ -98,16 +96,7 @@ public class SqlServerRegionComboBox extends AzureComboBox<Region> {
         return validatedInfo;
     }
 
-    /**
-     * TODO: replace codes after merge andy's code.
-     */
     private List<Region> loadRegions(Subscription subscription) {
-        PagedList<Location> locationList = subscription.listLocations();
-        locationList.loadAll();
-        return locationList.stream()
-            .filter((e) -> RegionType.PHYSICAL.equals(e.regionType()))
-            .map(e -> Region.fromName(e.name()))
-            .distinct()
-            .collect(Collectors.toList());
+        return Azure.az(AzureAccount.class).listRegions(subscription.getId());
     }
 }

@@ -5,21 +5,17 @@
 
 package com.microsoft.azure.toolkit.lib.sqlserver;
 
-import com.google.common.base.Preconditions;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -43,7 +39,9 @@ public class SqlServerConfig {
         final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
         final SqlServerConfig config = new SqlServerConfig();
         config.setSubscription(subscription);
-        DraftResourceGroup resourceGroup = DraftResourceGroup.builder().subscription(subscription).name("rs-" + defaultNameSuffix).build();
+        DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
+        config.setResourceGroup(resourceGroup);
+        config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
         config.setRegion(Region.US_EAST);
         config.setServerName("sqlserver-" + defaultNameSuffix);

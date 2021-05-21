@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.properties;
 
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
@@ -13,9 +12,11 @@ import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputP
 import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerDatabaseComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.database.DatabaseTemplateUtils;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
@@ -25,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -247,9 +247,9 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     // @Override
     public void showProperty(SqlServerProperty property) {
         SqlServerEntity entity = property.getServer().entity();
-        Subscription subscription = AzureMvpModel.getInstance().getSubscriptionById(entity.getSubscriptionId());
+        Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(entity.getSubscriptionId());
         if (subscription != null) {
-            overview.getSubscriptionTextField().setText(subscription.displayName());
+            overview.getSubscriptionTextField().setText(subscription.getName());
         }
         databaseComboBox.setServer(property.getServer());
         overview.getResourceGroupTextField().setText(entity.getResourceGroup());

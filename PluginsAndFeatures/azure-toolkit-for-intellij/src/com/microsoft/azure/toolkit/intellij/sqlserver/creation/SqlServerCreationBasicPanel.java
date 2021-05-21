@@ -48,7 +48,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
     }
 
     private void init() {
-        serverNameTextField.setSubscriptionId(config.getSubscription().subscriptionId());
+        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
     }
