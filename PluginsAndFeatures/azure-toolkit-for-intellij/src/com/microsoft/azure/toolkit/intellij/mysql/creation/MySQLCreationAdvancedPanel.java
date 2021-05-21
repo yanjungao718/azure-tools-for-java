@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -68,7 +69,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        regionComboBox.setValidateFunction();
+        regionComboBox.setValidateFunction(new MySQLRegionValidator());
     }
 
     private void initListeners() {
