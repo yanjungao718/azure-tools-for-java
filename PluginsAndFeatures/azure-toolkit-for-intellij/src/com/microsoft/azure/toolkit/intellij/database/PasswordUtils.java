@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.mysql.creation;
+package com.microsoft.azure.toolkit.intellij.database;
 
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -21,7 +21,7 @@ public class PasswordUtils {
     private static final int PASSWORD_CATEGORIES_MIN = 3;
     private static final int LONGEST_COMMON_SUBSEQUENCE_BETWEEN_NAME_AND_PASSWORD = 3;
 
-    protected static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
+    public static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
             @Override
             public AzureValidationInfo doValidate() {
@@ -36,7 +36,7 @@ public class PasswordUtils {
         };
     }
 
-    protected static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
+    public static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
         return new AzurePasswordFieldInput(confirmPasswordField) {
             @Override
             public AzureValidationInfo doValidate() {

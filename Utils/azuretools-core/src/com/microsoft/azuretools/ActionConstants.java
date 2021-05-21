@@ -107,6 +107,23 @@ public final class ActionConstants {
         String UPDATE_PASSWORD = OPERATION_PREFIX + "update-password";
     }
 
+    public interface SqlServer {
+        String MODULE = "sql-server";
+        String OPERATION_PREFIX = MODULE + SEPARATOR + MODULE + OPERATION_SEPARATOR;
+
+        String CREATE = OPERATION_PREFIX + "create";
+        String DELETE = OPERATION_PREFIX + "delete";
+        String SAVE = OPERATION_PREFIX + "save";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-in-portal";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "show-properties";
+        String CONNECT_TO_SERVER = OPERATION_PREFIX + "connect-to-server";
+        String BIND_INTO = OPERATION_PREFIX + "bind-into";
+        String LINK_TO_MODULE = OPERATION_PREFIX + "link-to-module";
+        String DO_SERVICE_LINK = OPERATION_PREFIX + "link";
+        String TEST_CONNECTION = OPERATION_PREFIX + "test-connection";
+        String UPDATE_PASSWORD = OPERATION_PREFIX + "update-password";
+    }
+
     public interface SpringCloud {
         String MODULE = "springcloud";
         String OPERATION_PREFIX = MODULE + SEPARATOR;

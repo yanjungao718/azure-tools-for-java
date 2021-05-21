@@ -3,14 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.mysql;
+package com.microsoft.azure.toolkit.intellij.sqlserver.properties;
 
 import com.microsoft.azure.toolkit.intellij.common.ui.TextFieldUtils;
 import lombok.Getter;
 
 import javax.swing.*;
 
-public class MySQLPropertryOverviewPanel extends JPanel {
+public class SqlServerPropertryOverviewPanel extends JPanel {
     private JPanel rootPanel;
     @Getter
     private JTextField resourceGroupTextField;
@@ -23,24 +23,18 @@ public class MySQLPropertryOverviewPanel extends JPanel {
     @Getter
     private JTextField locationTextField;
     @Getter
-    private JTextField mysqlVersionTextField;
+    private JTextField versionTextField;
     @Getter
     private JTextField subscriptionTextField;
     @Getter
-    private JTextField performanceConfigurationsTextField;
-    @Getter
     private JTextField subscriptionIDTextField;
-    @Getter
-    private JTextField sslEnforceStatusTextField;
 
-    MySQLPropertryOverviewPanel() {
+    SqlServerPropertryOverviewPanel() {
         super();
         TextFieldUtils.disableTextBoard(resourceGroupTextField, serverNameTextField, statusTextField, serverAdminLoginNameTextField,
-            locationTextField, mysqlVersionTextField, subscriptionTextField, performanceConfigurationsTextField,
-            subscriptionIDTextField, sslEnforceStatusTextField);
+            locationTextField, versionTextField, subscriptionTextField, subscriptionIDTextField);
         TextFieldUtils.makeTextOpaque(resourceGroupTextField, serverNameTextField, statusTextField, serverAdminLoginNameTextField,
-            locationTextField, mysqlVersionTextField, subscriptionTextField, performanceConfigurationsTextField,
-            subscriptionIDTextField, sslEnforceStatusTextField);
+            locationTextField, versionTextField, subscriptionTextField, subscriptionIDTextField);
     }
 
     @Override

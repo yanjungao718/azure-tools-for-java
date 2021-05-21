@@ -3,16 +3,16 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.mysql.creation;
+package com.microsoft.azure.toolkit.intellij.sqlserver.creation;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
-import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,11 +21,11 @@ import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
 
-public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<AzureMySQLConfig> {
+public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPanel<SqlServerConfig> {
 
     private JPanel rootPanel;
     @Getter
-    private ServerNameTextField serverNameTextField;
+    private SqlServerNameTextField serverNameTextField;
     @Getter
     private AdminUsernameTextField adminUsernameTextField;
     @Getter
@@ -36,9 +36,9 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private AzureMySQLConfig config;
+    private SqlServerConfig config;
 
-    MySQLCreationBasicPanel(AzureMySQLConfig config) {
+    SqlServerCreationBasicPanel(SqlServerConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -48,8 +48,7 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     }
 
     private void init() {
-        serverNameTextField.setSubscription(config.getSubscription());
-        serverNameTextField.setResourceGroup(config.getResourceGroup());
+        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
     }
@@ -76,7 +75,7 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     }
 
     @Override
-    public AzureMySQLConfig getData() {
+    public SqlServerConfig getData() {
         config.setServerName(serverNameTextField.getText());
         config.setAdminUsername(adminUsernameTextField.getText());
         config.setPassword(passwordField.getPassword());
@@ -85,7 +84,7 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     }
 
     @Override
-    public void setData(AzureMySQLConfig data) {
+    public void setData(SqlServerConfig data) {
         if (StringUtils.isNotBlank(config.getServerName())) {
             serverNameTextField.setText(config.getServerName());
         }
@@ -102,13 +101,7 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        final AzureFormInput<?>[] inputs = {
-            serverNameTextField,
-            adminUsernameTextField,
-            passwordFieldInput,
-            confirmPasswordFieldInput
-        };
-        return Arrays.asList(inputs);
+        return Arrays.asList(serverNameTextField, adminUsernameTextField, passwordFieldInput, confirmPasswordFieldInput);
     }
 
 }
