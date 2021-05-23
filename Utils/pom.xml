@@ -43,7 +43,7 @@
         <azure.azure-mgmt-appplatform.version>1.0.0-beta</azure.azure-mgmt-appplatform.version>
         <azure.client.version>1.7.10</azure.client.version>
         <azure.identity.version>1.2.1</azure.identity.version>
-        <azure.resourcemanager.version>2.1.0</azure.resourcemanager.version>
+        <azure.resourcemanager.version>2.4.0</azure.resourcemanager.version>
         <azure.toolkit-auth.version>${project.version}</azure.toolkit-auth.version>
         <azure.version>1.41.1</azure.version>
 
