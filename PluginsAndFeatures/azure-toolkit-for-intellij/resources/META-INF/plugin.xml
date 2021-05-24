@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.53.0-SNAPSHOT</version>
+  <version>3.53.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,20 +25,23 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.52.0</h3>
+        <h3>3.53.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>Support OAuth for authentication</li>
-            <li>Add support for management/client sdk in Azure SDK reference book</li>
+            <li>Management workflow for Azure SQL Server</li>
+        
+            <li>New login ui for service principal authentication</li>
         </ul>
         <h4>Changed</h4>
         <ul>
-            <li>Improve UI for azure service connector</li>
+            <li>Deprecated file based service principal authentication</li>
         </ul>
         <h4>Fixed</h4>
         <ul>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5121">#5121</a> Fix project disposed exception for workspace tagging</li>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5163">PR #5163</a> Fix enable local access may not work for Azure MySQL</li>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5228">PR #5228</a>
+                Fix OAuth/Device login could not be cancelled
+            </li>
         </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

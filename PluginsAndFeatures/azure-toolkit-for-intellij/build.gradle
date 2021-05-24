@@ -103,7 +103,7 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.8'
         annotationProcessor 'org.projectlombok:lombok:1.18.8'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.7.0-SNAPSHOT', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.7.0', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -171,24 +171,24 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.7.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.7.0-SNAPSHOT', { force = true }
-    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.7.0-SNAPSHOT",  {
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.7.0', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.7.0', { force = true }
+    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.7.0",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
-    compile 'com.microsoft.azuretools:azuretools-core:3.53.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.53.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.53.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.53.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.53.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.53.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
