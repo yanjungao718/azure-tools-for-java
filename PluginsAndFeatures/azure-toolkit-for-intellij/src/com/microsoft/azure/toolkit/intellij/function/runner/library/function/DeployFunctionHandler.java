@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeplo
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IPrompter;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.DeployTarget;
@@ -72,20 +73,20 @@ public class DeployFunctionHandler {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
-        prompt(message("function.deploy.hint.startDeployFunction"));
+        AzureMessager.getMessager().info(message("function.deploy.hint.startDeployFunction"));
         getArtifactHandler().publish(deployTarget);
-        prompt(message("function.deploy.hint.deployDone", model.getAppName()));
+        AzureMessager.getMessager().info(message("function.deploy.hint.deployDone", model.getAppName()));
         listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
 
     private void updateFunctionAppSettings(final FunctionApp app) throws AzureExecutionException {
-        prompt(message("function.deploy.hint.updateFunctionApp"));
+        AzureMessager.getMessager().info(message("function.deploy.hint.updateFunctionApp"));
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        prompt(message("function.deploy.hint.updateDone", model.getAppName()));
+        AzureMessager.getMessager().info(message("function.deploy.hint.updateDone", model.getAppName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -113,13 +114,13 @@ public class DeployFunctionHandler {
                                             AuthorizationLevel.ANONYMOUS.toString()))
                             .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(httpFunction) || CollectionUtils.isEmpty(anonymousTriggers)) {
-            prompt(message("function.deploy.hint.noAnonymousHttpTrigger"));
+            AzureMessager.getMessager().info(message("function.deploy.hint.noAnonymousHttpTrigger"));
             return;
         }
-        prompt(message("function.deploy.hint.httpTriggerUrls"));
-        anonymousTriggers.forEach(trigger -> prompt(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
+        AzureMessager.getMessager().info(message("function.deploy.hint.httpTriggerUrls"));
+        anonymousTriggers.forEach(trigger -> AzureMessager.getMessager().info(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
         if (anonymousTriggers.size() < httpFunction.size()) {
-            prompt(message("function.deploy.error.listHttpTriggerFailed"));
+            AzureMessager.getMessager().info(message("function.deploy.error.listHttpTriggerFailed"));
         }
     }
 
@@ -141,7 +142,7 @@ public class DeployFunctionHandler {
         for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
             try {
                 Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
-                prompt(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
+                AzureMessager.getMessager().info(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
                 functionApp.syncTriggers();
                 final List<FunctionResource> triggers =
                         model.getAzureClient().appServices().functionApps()
@@ -209,7 +210,7 @@ public class DeployFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            prompt(settingIsEmptyMessage);
+            AzureMessager.getMessager().info(settingIsEmptyMessage);
             result.put(settingName, settingValue);
         }
     }
@@ -219,9 +220,9 @@ public class DeployFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            prompt(settingIsEmptyMessage);
+            AzureMessager.getMessager().info(settingIsEmptyMessage);
         } else if (!setting.equals(settingValue)) {
-            prompt(String.format(changeSettingMessage, setting));
+            AzureMessager.getMessager().info(String.format(changeSettingMessage, setting));
         }
         result.put(settingName, settingValue);
     }
@@ -258,7 +259,4 @@ public class DeployFunctionHandler {
                 .build();
     }
 
-    private void prompt(String promptMessage) {
-        prompter.prompt(promptMessage);
-    }
 }
