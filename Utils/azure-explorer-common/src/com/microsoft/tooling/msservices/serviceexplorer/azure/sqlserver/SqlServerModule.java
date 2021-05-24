@@ -37,7 +37,7 @@ public class SqlServerModule extends AzureRefreshableNode {
     @Override
     protected void refreshItems() throws AzureCmdException {
         List<ISqlServer> servers = Azure.az(AzureSqlServer.class).sqlServers();
-        servers.parallelStream()
+        servers.stream()
             .filter(server -> Objects.nonNull(server.entity()))
             .map(server -> new SqlServerNode(this, server.entity().getSubscriptionId(), server))
             .forEach(this::addChildNode);
