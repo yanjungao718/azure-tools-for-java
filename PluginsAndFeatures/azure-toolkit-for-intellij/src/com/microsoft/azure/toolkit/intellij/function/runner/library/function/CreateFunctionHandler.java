@@ -224,6 +224,7 @@ public class CreateFunctionHandler {
                                   FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
                              FUNCTIONS_EXTENSION_VERSION_VALUE);
+        com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.saveAppSettingsToSecurityStorage(ctx.getAppSettingsKey(), settings);
         return settings;
     }
 }
