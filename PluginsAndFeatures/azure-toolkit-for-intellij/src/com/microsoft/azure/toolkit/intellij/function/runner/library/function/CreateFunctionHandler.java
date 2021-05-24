@@ -127,7 +127,8 @@ public class CreateFunctionHandler {
             try {
                 insights = AzureSDKManager.getOrCreateApplicationInsights(ctx.getSubscription(), ctx.getResourceGroup(), ctx.getInsightsName(), region);
                 instrumentationKey = insights.instrumentationKey();
-            } catch (final IOException e) {
+            } catch (final IOException | RuntimeException e) {
+                // swallow exception for application insights, which should not block function creation
                 Log.prompt(message("function.create.error.createApplicationInsightsFailed", ctx.getAppName()));
             }
         }
