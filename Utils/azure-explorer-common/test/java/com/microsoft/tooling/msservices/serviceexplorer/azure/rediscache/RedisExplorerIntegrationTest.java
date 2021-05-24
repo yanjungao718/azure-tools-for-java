@@ -50,8 +50,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 
-import junit.framework.Assert;
-
 @PowerMockIgnore("javax.*")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ AuthMethodManager.class, AzureManager.class, SubscriptionManager.class, DefaultLoader.class })
@@ -302,7 +300,6 @@ public class RedisExplorerIntegrationTest extends IntegrationTestBase {
         when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
         when(azureManagerMock.getAzure(anyString())).thenReturn(azure);
         when(azureManagerMock.getSubscriptionManager()).thenReturn(subscriptionManagerMock);
-        when(subscriptionManagerMock.getAccountSidList()).thenReturn(sidList);
 
         PowerMockito.mockStatic(DefaultLoader.class);
         when(DefaultLoader.getUIHelper()).thenReturn(uiHelper);

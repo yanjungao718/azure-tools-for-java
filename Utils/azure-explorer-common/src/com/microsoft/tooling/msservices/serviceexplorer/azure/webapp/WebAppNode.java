@@ -45,6 +45,10 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         loadActions();
     }
 
+    public IWebApp getWebappManager() {
+        return webappManager;
+    }
+
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
         boolean isLinux = webappManager.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
@@ -67,8 +71,8 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
-        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this::getWebapp));
-        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this::getWebapp));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webappManager));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webappManager));
     }
 
     @Override

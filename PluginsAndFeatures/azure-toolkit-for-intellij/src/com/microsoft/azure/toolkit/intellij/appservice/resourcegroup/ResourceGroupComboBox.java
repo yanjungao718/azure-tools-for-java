@@ -7,16 +7,16 @@ package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
-import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,17 +27,19 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private Subscription subscription;
-    private final List<DraftResourceGroup> localItems = new ArrayList<>();
+    private final List<ResourceGroup> draftItems = new ArrayList<>();
 
     @Override
     protected String getItemText(final Object item) {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
         }
+
+        ResourceGroup entity = (ResourceGroup) item;
         if (item instanceof Draft) {
-            return "(New) " + ((ResourceGroup) item).name();
+            return "(New) " + entity.getName();
         }
-        return ((ResourceGroup) item).name();
+        return entity.getName();
     }
 
     public void setSubscription(Subscription subscription) {
@@ -56,18 +58,18 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     @Override
     @AzureOperation(
         name = "arm|rg.list.subscription",
-        params = {"this.subscription.subscriptionId()"},
+        params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends ResourceGroup> loadItems() throws Exception {
         final List<ResourceGroup> groups = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
-            if (CollectionUtils.isNotEmpty(this.localItems)) {
-                groups.addAll(this.localItems.stream()
-                    .filter(i -> this.subscription.equals(i.getSubscription()))
+            if (CollectionUtils.isNotEmpty(this.draftItems)) {
+                groups.addAll(this.draftItems.stream()
+                    .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
                     .collect(Collectors.toList()));
             }
-            final String sid = subscription.subscriptionId();
+            final String sid = subscription.getId();
             final List<ResourceGroup> remoteGroups = AzureMvpModel
                 .getInstance()
                 .getResourceGroupsBySubscriptionId(sid);
@@ -86,9 +88,9 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private void showResourceGroupCreationPopup() {
         final ResourceGroupCreationDialog dialog = new ResourceGroupCreationDialog(this.subscription);
         dialog.setOkActionListener((group) -> {
-            this.localItems.add(0, group);
+            this.draftItems.add(0, group);
             dialog.close();
-            final List<ResourceGroup> items = this.getItems();
+            final List<ResourceGroup> items = new ArrayList<>(this.getItems());
             items.add(0, group);
             this.setItems(items);
             this.setValue(group);

@@ -5,7 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.dependency;
 
-import com.microsoft.azure.common.utils.IndentUtil;
+import com.microsoft.azure.toolkit.lib.common.utils.TextUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.intellij.util.XmlUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -28,15 +29,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.common.utils.TextUtils.splitLines;
-
 public class PomXmlUpdater {
     private static String formatElements(String originalXml, LocationAwareElement parent, List<Element> newNodes) {
         if (newNodes.isEmpty()) {
             return originalXml;
         }
-        final String[] originXmlLines = splitLines(originalXml);
-        final String baseIndent = IndentUtil.calcXmlIndent(originXmlLines, parent.getLineNumber() - 1,
+        final String[] originXmlLines = TextUtils.splitLines(originalXml);
+        final String baseIndent = Utils.calcXmlIndent(originXmlLines, parent.getLineNumber() - 1,
                 parent.getColumnNumber() - 2);
         final String placeHolder = String.format("@PLACEHOLDER_RANDOM_%s@", RandomUtils.nextLong());
         final Text placeHolderNode = new DefaultText("\n" + placeHolder);
@@ -49,9 +48,9 @@ public class PomXmlUpdater {
         final String xmlWithPlaceholder = parent.getDocument().asXML();
 
         final List<String> newXmlLines = new ArrayList(
-                Arrays.asList(splitLines(XmlUtils.prettyPrintElementNoNamespace(newNode))));
+                Arrays.asList(TextUtils.splitLines(XmlUtils.prettyPrintElementNoNamespace(newNode))));
         for (int i = 1; i < newNodes.size(); i++) {
-            newXmlLines.addAll(Arrays.asList(splitLines(XmlUtils.prettyPrintElementNoNamespace(newNodes.get(i)))));
+            newXmlLines.addAll(Arrays.asList(TextUtils.splitLines(XmlUtils.prettyPrintElementNoNamespace(newNodes.get(i)))));
         }
 
         final String replacement = newXmlLines.stream().map(t -> baseIndent + "    " + t)

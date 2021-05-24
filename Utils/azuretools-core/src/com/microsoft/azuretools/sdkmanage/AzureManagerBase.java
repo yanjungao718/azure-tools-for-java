@@ -12,15 +12,15 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
 import com.microsoft.azuretools.authmanage.interact.INotification;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
@@ -29,6 +29,7 @@ import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 
+import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.authmanage.Environment.CHINA;
 import static com.microsoft.azuretools.authmanage.Environment.GERMAN;
 import static com.microsoft.azuretools.authmanage.Environment.GLOBAL;
@@ -67,7 +69,7 @@ public abstract class AzureManagerBase implements AzureManager {
     protected static final Settings settings = new Settings();
 
     protected AzureManagerBase() {
-        this.subscriptionManager = new SubscriptionManagerPersist(this);
+        this.subscriptionManager = new SubscriptionManager();
     }
 
     @Override
@@ -103,7 +105,7 @@ public abstract class AzureManagerBase implements AzureManager {
     public String getTenantIdBySubscription(String subscriptionId) {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
-                .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
+                .filter(pair -> StringUtils.equals(pair.first().getId(), subscriptionId))
                 .findFirst().orElseThrow(() -> new AzureRuntimeException(ErrorEnum.INVALID_SUBSCRIPTION_CACHE));
         return subscriptionTenantPair.second().tenantId();
     }
@@ -230,11 +232,6 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public Settings getSettings() {
-        return settings;
-    }
-
-    @Override
     public void drop() {
         LOGGER.log(Level.INFO, "ServicePrincipalAzureManager.drop()");
         this.subscriptionManager.cleanSubscriptions();
@@ -260,10 +257,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     @AzureOperation(name = "account|subscription.list.tenant", params = {"authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
-        return authentication.subscriptions().listAsync()
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+        return az(AzureAccount.class).account().getSubscriptions();
     }
 
     @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)

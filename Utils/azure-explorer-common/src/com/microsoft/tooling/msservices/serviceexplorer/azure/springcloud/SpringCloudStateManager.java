@@ -5,8 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -29,11 +28,9 @@ public enum SpringCloudStateManager {
                                                                       event.getId())).subscribe(onNext);
     }
 
-    public void notifySpringAppUpdate(String clusterId, AppResourceInner appInner, DeploymentResourceInner deploymentInner) {
+    public void notifySpringAppUpdate(String clusterId, SpringCloudApp appInner) {
         DefaultLoader.getIdeHelper().invokeLater(() -> {
-            appSubject.onNext(new SpringCloudAppEvent(SpringCloudAppEvent.EventKind.SPRING_APP_UPDATE, clusterId,
-                                                      appInner,
-                                                      deploymentInner));
+            appSubject.onNext(new SpringCloudAppEvent(SpringCloudAppEvent.EventKind.SPRING_APP_UPDATE, clusterId, appInner));
         });
 
     }

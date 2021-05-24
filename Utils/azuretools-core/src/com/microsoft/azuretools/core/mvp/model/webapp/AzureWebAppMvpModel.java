@@ -14,7 +14,7 @@ import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.SkuName;
@@ -24,8 +24,6 @@ import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
@@ -33,20 +31,22 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.IProgressIndicator;
@@ -74,6 +74,8 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 @Deprecated
 @Log
@@ -253,7 +255,8 @@ public class AzureWebAppMvpModel {
         if (tierSize.length != 2) {
             throw new IllegalArgumentException("invalid price tier");
         }
-        final PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
+        final com.microsoft.azure.management.appservice.PricingTier pricingTier =
+            new com.microsoft.azure.management.appservice.PricingTier(tierSize[0], tierSize[1]);
 
         final AppServicePlan.DefinitionStages.WithGroup withGroup = azure
             .appServices()
@@ -355,22 +358,25 @@ public class AzureWebAppMvpModel {
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         final WebApp app;
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-        final PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
+        final com.microsoft.azure.management.appservice.PricingTier pricingTier =
+            new com.microsoft.azure.management.appservice.PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
 
         final WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
         if (model.isCreatingNewAppServicePlan()) {
             // new asp
             final AppServicePlan.DefinitionStages.WithCreate asp;
+            final com.microsoft.azure.management.resources.fluentcore.arm.Region region =
+                com.microsoft.azure.management.resources.fluentcore.arm.Region.findByLabelOrName(model.getLocationName());
             if (model.isCreatingNewResourceGroup()) {
                 // new rg
                 asp = azure.appServices().appServicePlans()
                         .define(model.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withNewResourceGroup(model.getResourceGroupName())
                         .withPricingTier(pricingTier)
                         .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withNewResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
@@ -380,12 +386,12 @@ public class AzureWebAppMvpModel {
                 // old rg
                 asp = azure.appServices().appServicePlans()
                         .define(model.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withExistingResourceGroup(model.getResourceGroupName())
                         .withPricingTier(pricingTier)
                         .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withExistingResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
@@ -689,8 +695,8 @@ public class AzureWebAppMvpModel {
     )
     public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
+        for (final Subscription sub : az(AzureAccount.class).account().getSelectedSubscriptions()) {
+            final String sid = sub.getId();
             webApps.addAll(listWebAppsOnWindows(sid, force));
         }
         return webApps;
@@ -719,8 +725,8 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listAllWebApps(final boolean... force) {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
-            .flatMap((sd) -> listWebApps(sd.subscriptionId(), force).stream())
+        return az(AzureAccount.class).account().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listWebApps(sd.getId(), force).stream())
             .collect(Collectors.toList());
     }
 
@@ -863,8 +869,8 @@ public class AzureWebAppMvpModel {
     )
     public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
+        for (final Subscription sub : az(AzureAccount.class).account().getSelectedSubscriptions()) {
+            final String sid = sub.getId();
             webApps.addAll(listWebAppsOnLinux(sid, force));
         }
         return webApps;
@@ -945,10 +951,10 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) {
-        if (StringUtils.isEmpty(subscriptionId) || pricingTier == null || pricingTier.toSkuDescription() == null) {
+        if (StringUtils.isEmpty(subscriptionId) || pricingTier == null) {
             return Collections.emptyList();
         }
-        final SkuName skuName = SkuName.fromString(pricingTier.toSkuDescription().tier());
+        final SkuName skuName = SkuName.fromString(pricingTier.getTier());
         final List<GeoRegionInner> geoRegionInnerList = AuthMethodManager.getInstance()
                                                                          .getAzureClient(subscriptionId)
                                                                          .appServices()
@@ -968,8 +974,8 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public List<IWebApp> listAzureWebApps(final boolean force) {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions().stream()
-                .flatMap(sub -> listAzureWebAppsBySubscription(sub.subscriptionId(), force).stream())
+        return az(AzureAccount.class).account().getSelectedSubscriptions().stream()
+                .flatMap(sub -> listAzureWebAppsBySubscription(sub.getId(), force).stream())
                 .collect(Collectors.toList());
     }
 
@@ -1077,7 +1083,7 @@ public class AzureWebAppMvpModel {
             params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
-    public void deployArtifactsToWebApp(@NotNull final IAppService deployTarget, @NotNull final File file,
+    public void deployArtifactsToWebApp(@NotNull final IWebAppBase deployTarget, @NotNull final File file,
                                         boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
         if (!(deployTarget instanceof IWebApp || deployTarget instanceof IWebAppDeploymentSlot)) {
             final String error = "the deployment target is not a valid (deployment slot of) Web App";

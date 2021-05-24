@@ -8,8 +8,8 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 
@@ -61,14 +61,14 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
     @Override
     @AzureOperation(
         name = "mysql|database.list.server|subscription",
-        params = {"this.server.name()", "this.subscription.subscriptionId()"},
+        params = {"this.server.name()", "this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends DatabaseInner> loadItems() throws Exception {
         if (Objects.isNull(subscription) || Objects.isNull(server) || !ServerState.READY.equals(server.userVisibleState())) {
             return new ArrayList<>();
         }
-        return MySQLMvpModel.DatabaseMvpModel.listDatabases(subscription.subscriptionId(), server);
+        return MySQLMvpModel.DatabaseMvpModel.listDatabases(subscription.getId(), server);
     }
 
     @Override

@@ -167,14 +167,14 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(((VMWizardModel) model).getSubscription().getSubscriptionId());
+            azure = azureManager.getAzure(model.getSubscription().getId());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to authenticate\n\n" + ex.getMessage(), ex);
         }
         if (model.isKnownMachineImage()) {
             isLinux = model.getKnownMachineImage() instanceof KnownLinuxVirtualMachineImage;
         } else {
-            isLinux = model.getVirtualMachineImage().osDiskImage().operatingSystem().equals(OperatingSystemTypes.LINUX);
+            isLinux = model.getVirtualMachineImage().osDiskImage().operatingSystem() == OperatingSystemTypes.LINUX;
         }
         if (isLinux) {
             certificateCheckBox.setEnabled(true);
@@ -190,16 +190,16 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
         validateEmptyFields();
 
-        if (vmSizeComboBox.getItemCount() == 0) {
+        if (model.getRegion() != null && (vmSizeComboBox.getItemCount() == 0 || vmSizeComboBox.getItemAt(0).contains("<Loading...>"))) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
-            final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().name());
+            final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().getName());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
 
                 PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes =
-                    azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
+                    azure.virtualMachines().sizes().listByRegion(model.getRegion().getName());
                 sizes.sort((t0, t1) -> {
                     if (t0.name().contains("Basic") && t1.name().contains("Basic")) {
                         return t0.name().compareTo(t1.name());

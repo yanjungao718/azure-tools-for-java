@@ -53,8 +53,7 @@ public class StorageModule extends AzureRefreshableNode {
                 return;
             }
 
-            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            Set<String> sidList = subscriptionManager.getAccountSidList();
+            List<String> sidList = azureManager.getSelectedSubscriptionIds();
             for (String sid : sidList) {
                 try {
                     Azure azure = azureManager.getAzure(sid);

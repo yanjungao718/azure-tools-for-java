@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import lombok.Builder;
