@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.similarity.LongestCommonSubsequence;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -73,17 +72,35 @@ public class PasswordUtils {
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate longest common subsequence between username and password.
-        LongestCommonSubsequence algorithm = new LongestCommonSubsequence();
-        int longestCommonSubsequenceLength = algorithm.apply(username, password);
+        int longestCommonSubstringLength = longestCommonSubstringLength(username, password);
         int usernameLength = StringUtils.length(username);
-        if ((usernameLength > 0 && longestCommonSubsequenceLength == usernameLength)
-                || longestCommonSubsequenceLength >= LONGEST_COMMON_SUBSEQUENCE_BETWEEN_NAME_AND_PASSWORD) {
+        if ((usernameLength > 0 && longestCommonSubstringLength == usernameLength)
+                || longestCommonSubstringLength >= LONGEST_COMMON_SUBSEQUENCE_BETWEEN_NAME_AND_PASSWORD) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(input).message("Your password cannot contain all or part of the login name." +
                     " Part of a login name is defined as three or more consecutive alphanumeric characters.")
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
+    }
+
+    private static int longestCommonSubstringLength(String left, String right) {
+        if (StringUtils.isAnyBlank(left, right)) {
+            return 0;
+        }
+        int max = 0;
+        final int[][] dp = new int[left.length() + 1][right.length() + 1];
+        for (int i = 0; i < left.length(); i++) {
+            for (int j = 0; j < right.length(); j++) {
+                if (left.charAt(i) == right.charAt(j)) {
+                    dp[i + 1][j + 1] = dp[i][j] + 1;
+                } else {
+                    dp[i + 1][j + 1] = 0;
+                }
+                max = Math.max(max, dp[i + 1][j + 1]);
+            }
+        }
+        return max;
     }
 
     private static int countCharacterCategories(final String value) {
