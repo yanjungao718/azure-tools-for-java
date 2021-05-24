@@ -28,6 +28,7 @@ import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.management.storage.StorageAccountSkuType;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -249,12 +250,12 @@ public class AzureSDKManager {
                 .create();
     }
 
-    public static ApplicationInsightsComponent createInsightsResource(@NotNull SubscriptionDetail subscription,
+    public static ApplicationInsightsComponent createInsightsResource(@NotNull Subscription subscription,
                                                                       @NotNull String resourceGroupName,
                                                                       boolean isNewGroup,
                                                                       @NotNull String resourceName,
                                                                       @NotNull String location) throws IOException {
-        return createInsightsResource(subscription.getSubscriptionId(), resourceGroupName, resourceName, location);
+        return createInsightsResource(subscription.getId(), resourceGroupName, resourceName, location);
     }
 
     public static List<String> getLocationsForInsights(String subscriptionId) throws IOException {

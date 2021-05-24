@@ -6,8 +6,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -19,12 +19,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
@@ -34,15 +29,15 @@ import java.util.Map;
 
 @Log
 public class AppServiceFileNode extends AzureRefreshableNode implements TelemetryProperties {
-    private static final String MODULE_ID = WebAppModule.class.getName();
     private static final long SIZE_20MB = 20 * 1024 * 1024;
-    private final AppServiceFileService fileService;
-    private final AppServiceFile file;
 
-    public AppServiceFileNode(final AppServiceFile file, final Node parent, AppServiceFileService service) {
+    private final AppServiceFile file;
+    private final IAppService appService;
+
+    public AppServiceFileNode(final AppServiceFile file, final Node parent, IAppService webApp) {
         super(file.getName(), file.getName(), parent, null);
         this.file = file;
-        this.fileService = service;
+        this.appService = webApp;
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             this.addDownloadAction();
         }
@@ -69,8 +64,8 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
             if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
                 return;
             }
-            this.fileService.getFilesInDirectory(this.file.getPath()).stream()
-                    .map(file -> new AppServiceFileNode(file, this, fileService))
+            appService.getFilesInDirectory(this.file.getPath()).stream()
+                    .map(file -> new AppServiceFileNode(file, this, appService))
                     .forEach(this::addChildNode);
         });
     }
@@ -127,5 +122,4 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
             runnable.run();
         });
     }
-
 }

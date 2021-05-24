@@ -14,7 +14,8 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.DeploymentMode;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -22,7 +23,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import org.apache.commons.io.IOUtils;
@@ -31,8 +31,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.FileReader;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.BROWSE_TEMPLATE_SAMPLES;
 import static com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_FAIL;
 import static com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_SUCCESS;
@@ -101,9 +104,10 @@ public class UpdateDeploymentForm extends DeploymentBaseForm {
     }
 
     private void fill() {
-        Map<String, Subscription> sidMap = AzureModel.getInstance().getSidToSubscriptionMap();
+        final List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
+        final Map<String, Subscription> sidMap = subscriptions.stream().collect(Collectors.toMap(Subscription::getId, s -> s));
         if (sidMap.containsKey(deploymentNode.getSubscriptionId())) {
-            subsNameLabel.setText(sidMap.get(deploymentNode.getSubscriptionId()).displayName());
+            subsNameLabel.setText(sidMap.get(deploymentNode.getSubscriptionId()).getName());
         }
         rgNameLabel.setText(deploymentNode.getDeployment().resourceGroupName());
         deploymentNameLabel.setText(deploymentNode.getDeployment().name());

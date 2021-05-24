@@ -6,31 +6,29 @@
 package com.microsoft.azure.toolkit.lib.appservice.jfr;
 
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.ProcessInfo;
+import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
+import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class WindowFlightRecorderStarter extends FlightRecorderStarterBase {
     private static final String HOME_PATH = "d:/home";
 
-    public WindowFlightRecorderStarter(final WebAppBase appService) {
+    public WindowFlightRecorderStarter(final IAppService appService) {
         super(appService);
     }
 
     public List<ProcessInfo> listProcess() {
-        return client.listProcess().map(processInfos -> Arrays.stream(processInfos)
-                                                   .filter(processInfo -> StringUtils.equalsIgnoreCase(processInfo.getName(), "java"))
-                                                   .collect(Collectors.toList())).toBlocking().first();
+        return appService.listProcess().stream()
+                .filter(processInfo -> StringUtils.equalsIgnoreCase(processInfo.getName(), "java"))
+                .collect(Collectors.toList());
     }
 
     public CommandOutput startFlightRecorder(int pid, int timeInSeconds, String fileName) {
-        return client.execute(constructJcmdCommand(pid, timeInSeconds, fileName), HOME_PATH)
-                     .toBlocking()
-                     .first();
+        return appService.execute(constructJcmdCommand(pid, timeInSeconds, fileName), HOME_PATH);
     }
 
     @Override

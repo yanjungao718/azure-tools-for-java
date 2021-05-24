@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.runner;
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 
 public class Constants {
     public static final String LINUX_JAVA_SE_RUNTIME = "JAVA|8-jre8";

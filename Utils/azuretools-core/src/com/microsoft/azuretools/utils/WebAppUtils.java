@@ -7,17 +7,23 @@ package com.microsoft.azuretools.utils;
 
 
 import com.microsoft.applicationinsights.web.dependencies.apachecommons.io.FileUtils;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PublishingProfile;
+import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.Constants;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
@@ -25,8 +31,17 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -449,25 +464,6 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        name = "webapp.delete_detail",
-        params = {"webAppDetails.webApp.name()"},
-        type = AzureOperation.Type.SERVICE
-    )
-    public static void deleteAppService(WebAppDetails webAppDetails) {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        Azure azure = azureManager.getAzure(webAppDetails.subscriptionDetail.getSubscriptionId());
-        azure.webApps().deleteById(webAppDetails.webApp.id());
-        // check asp still exists
-        AppServicePlan asp = azure.appServices().appServicePlans().getById(webAppDetails.appServicePlan.id());
-        System.out.println("asp is " + (asp == null ? "null -> removing form cache" : asp.name()));
-        // update cache
-        AzureModelController.removeWebAppFromResourceGroup(webAppDetails.resourceGroup, webAppDetails.webApp);
-        if (asp == null) {
-            AzureModelController.removeAppServicePlanFromResourceGroup(webAppDetails.appServicePlanResourceGroup, webAppDetails.appServicePlan);
-        }
-    }
-
-    @AzureOperation(
         name = "webapp|artifact.update",
         params = {"webApp.name()"},
         type = AzureOperation.Type.SERVICE
@@ -548,7 +544,7 @@ public class WebAppUtils {
     }
 
     public static class WebAppDetails {
-        public SubscriptionDetail subscriptionDetail;
+        public Subscription subscription;
         public ResourceGroup resourceGroup;
         public AppServicePlan appServicePlan;
         public ResourceGroup appServicePlanResourceGroup;
@@ -559,12 +555,12 @@ public class WebAppUtils {
 
         public WebAppDetails(ResourceGroup resourceGroup, WebApp webApp,
                              AppServicePlan appServicePlan, ResourceGroup appServicePlanResourceGroup,
-                             SubscriptionDetail subscriptionDetail) {
+                             Subscription subscription) {
             this.resourceGroup = resourceGroup;
             this.webApp = webApp;
             this.appServicePlan = appServicePlan;
             this.appServicePlanResourceGroup = appServicePlanResourceGroup;
-            this.subscriptionDetail = subscriptionDetail;
+            this.subscription = subscription;
         }
     }
 

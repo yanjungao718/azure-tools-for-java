@@ -63,7 +63,7 @@ public class CreateDeploymentAction extends NodeActionListener {
                 CreateDeploymentForm createDeploymentForm = new CreateDeploymentForm(project);
                 if (node instanceof ResourceManagementNode) {
                     ResourceManagementNode rmNode = (ResourceManagementNode) node;
-                    createDeploymentForm.filleSubsAndRg(rmNode);
+                    createDeploymentForm.fillSubsAndRg(rmNode);
                 }
                 createDeploymentForm.show();
             }

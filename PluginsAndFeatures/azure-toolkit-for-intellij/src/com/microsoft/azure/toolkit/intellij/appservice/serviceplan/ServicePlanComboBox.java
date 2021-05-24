@@ -9,12 +9,12 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -38,7 +38,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     private OperatingSystem os;
     private Region region;
 
-    private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.getAll());
+    private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.WEB_APP_PRICING);
     private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
 
     private Predicate<AppServicePlan> servicePlanFilter;
@@ -97,7 +97,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     @Override
     @AzureOperation(
         name = "appservice|plan.list.subscription|region|os",
-        params = {"this.subscription.subscriptionId()", "this.region.name()", "this.os.name()"},
+        params = {"this.subscription.getId()", "this.region.getName()", "this.os.name()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AppServicePlan> loadItems() throws Exception {
@@ -110,11 +110,11 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             }
             final List<AppServicePlan> remotePlans = AzureWebAppMvpModel
                 .getInstance()
-                .listAppServicePlanBySubscriptionId(subscription.subscriptionId());
+                .listAppServicePlanBySubscriptionId(subscription.getId());
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
-                stream = stream.filter(p -> Objects.equals(p.region(), this.region));
+                stream = stream.filter(p -> Objects.equals(p.regionName(), this.region.getLabel()));
             }
             if (Objects.nonNull(this.os)) {
                 stream = stream.filter(p -> p.operatingSystem() == this.os);

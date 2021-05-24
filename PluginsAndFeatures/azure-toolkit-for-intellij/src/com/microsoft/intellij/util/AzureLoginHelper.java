@@ -4,10 +4,10 @@
  */
 package com.microsoft.intellij.util;
 
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
@@ -24,13 +24,12 @@ public class AzureLoginHelper {
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             throw new AzureExecutionException(NEED_SIGN_IN);
         }
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        final List<SubscriptionDetail> subscriptions = azureManager.getSubscriptionManager().getSubscriptionDetails();
+        IdentityAzureManager azureManager = IdentityAzureManager.getInstance();
+        final List<Subscription> subscriptions = azureManager.getSubscriptions();
         if (CollectionUtils.isEmpty(subscriptions)) {
             throw new AzureExecutionException(NO_SUBSCRIPTION);
         }
-        final List<SubscriptionDetail> selectedSubscriptions =
-            azureManager.getSubscriptionManager().getSelectedSubscriptionDetails();
+        final List<Subscription> selectedSubscriptions = azureManager.getSelectedSubscriptions();
         if (CollectionUtils.isEmpty(selectedSubscriptions)) {
             throw new AzureExecutionException(MUST_SELECT_SUBSCRIPTION);
         }

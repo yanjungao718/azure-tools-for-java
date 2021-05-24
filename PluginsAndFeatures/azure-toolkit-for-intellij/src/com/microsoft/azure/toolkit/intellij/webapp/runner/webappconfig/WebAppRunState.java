@@ -8,7 +8,8 @@ package com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
@@ -69,7 +70,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
         }
         webAppConfiguration.setTargetName(file.getName());
-        final IAppService deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
+        final IWebAppBase deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
         updateApplicationSettings(deployTarget, processHandler);
         AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, file, webAppSettingModel.isDeployToRoot(), processHandler);
         return deployTarget;
@@ -138,7 +139,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     }
 
     @NotNull
-    private IAppService getOrCreateDeployTargetFromAppSettingModel(@NotNull RunProcessHandler processHandler) throws Exception {
+    private IWebAppBase getOrCreateDeployTargetFromAppSettingModel(@NotNull RunProcessHandler processHandler) throws Exception {
         final AzureAppService azureAppService = AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(webAppSettingModel.getSubscriptionId());
         final IWebApp webApp = getOrCreateWebappFromAppSettingModel(azureAppService, processHandler);
         if (!isDeployToSlot()) {

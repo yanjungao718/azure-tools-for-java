@@ -5,10 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
-import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -24,39 +21,24 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 import javax.swing.*;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements TelemetryProperties {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String MODULE_NAME = "Files";
     private static final String ROOT_PATH = "/site/wwwroot";
 
-    protected WebAppBase app;
-    protected Supplier<WebAppBase> supplier;
-
+    protected IAppService appService;
     protected final String subscriptionId;
-    private AppServiceFileService fileService;
-
-    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final WebAppBase app) {
-        this(MODULE_NAME, parent, subscriptionId, app);
-    }
-
-    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final WebAppBase app) {
-        super(MODULE_ID, name, parent, null);
-        this.subscriptionId = subscriptionId;
-        this.app = app;
-    }
 
     // Lazy load for WebAppBase
-    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
-        this(MODULE_NAME, parent, subscriptionId, supplier);
+    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final IAppService appService) {
+        this(MODULE_NAME, parent, subscriptionId, appService);
     }
 
-    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final Supplier<WebAppBase> supplier) {
+    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final IAppService appService) {
         super(MODULE_ID, name, parent, null);
         this.subscriptionId = subscriptionId;
-        this.supplier = supplier;
+        this.appService = appService;
     }
 
     @Override
@@ -68,9 +50,8 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
     protected void refreshItems() {
         EventUtil.executeWithLog(getServiceName(), TelemetryConstants.LIST_FILE, operation -> {
             operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
-            final AppServiceFileService service = this.getFileService();
-            service.getFilesInDirectory(getRootPath()).stream()
-                    .map(file -> new AppServiceFileNode(file, this, service))
+            appService.getFilesInDirectory(getRootPath()).stream()
+                    .map(file -> new AppServiceFileNode(file, this, appService))
                     .forEach(this::addChildNode);
         });
     }
@@ -80,23 +61,10 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
         return ROOT_PATH;
     }
 
-    public AppServiceFileService getFileService() {
-        if (Objects.isNull(this.fileService)) {
-            this.fileService = AppServiceFileService.forApp(getTargetAppService());
-        }
-        return this.fileService;
-    }
-
-    private WebAppBase getTargetAppService() {
-        if (app == null) {
-            app = supplier.get();
-        }
-        return app;
-    }
-
     @Override
     public String getServiceName() {
-        return (app != null && app instanceof FunctionApp) ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
+        // todo: update after function track2 migration
+        return TelemetryConstants.WEBAPP;
     }
 
     @Override

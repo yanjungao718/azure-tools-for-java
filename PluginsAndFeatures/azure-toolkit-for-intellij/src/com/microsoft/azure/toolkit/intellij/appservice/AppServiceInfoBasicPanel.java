@@ -7,16 +7,17 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import lombok.SneakyThrows;
@@ -31,6 +32,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
@@ -59,7 +62,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     }
 
     private void init() {
-        this.subscription = AzureMvpModel.getInstance().getSelectedSubscriptions().get(0);
+        this.subscription = az(AzureAccount.class).account().getSelectedSubscriptions().get(0);
         this.textName.setRequired(true);
         this.textName.setSubscription(subscription);
         this.selectorPlatform.setRequired(true);
@@ -96,14 +99,13 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     private T initConfig() {
         final String appName = String.format("app-%s-%s", this.project.getName(), DATE_FORMAT.format(new Date()));
-        final DraftResourceGroup group = DraftResourceGroup.builder().build();
-        group.setName(StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
+        final DraftResourceGroup group = new DraftResourceGroup(subscription, StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
         group.setSubscription(subscription);
         T result = supplier.get(); // need platform region pricing
         final DraftServicePlan plan = DraftServicePlan.builder().build();
         plan.setSubscription(subscription);
         plan.setName(StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH));
-        plan.setRegion(result.getRegion());
+        plan.setRegion(Region.fromName(result.getRegion().getName()));
         plan.setOs(result.getPlatform().getOs());
         plan.setTier(result.getPricingTier());
         result.setName(appName);

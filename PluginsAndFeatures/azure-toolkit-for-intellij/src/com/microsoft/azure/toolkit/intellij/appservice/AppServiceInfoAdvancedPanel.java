@@ -9,10 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
@@ -23,6 +20,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
@@ -198,7 +198,10 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             final AppServicePlan plan = (AppServicePlan) e.getItem();
-            final String pricing = plan.pricingTier() == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ?
+            if (plan.pricingTier() == null) {
+                return;
+            }
+            final String pricing = StringUtils.equals(plan.pricingTier().toSkuDescription().tier(), AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER.getTier()) ?
                                    "Consumption" : plan.pricingTier().toString();
             this.textSku.setText(pricing);
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {

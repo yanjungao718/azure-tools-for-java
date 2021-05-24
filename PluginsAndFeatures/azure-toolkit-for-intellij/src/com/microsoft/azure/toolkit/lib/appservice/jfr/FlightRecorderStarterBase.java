@@ -5,20 +5,21 @@
 
 package com.microsoft.azure.toolkit.lib.appservice.jfr;
 
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.ProcessInfo;
+import com.azure.core.util.FluxUtil;
+import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
+import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
 
 public abstract class FlightRecorderStarterBase {
-    protected WebAppBase appService;
-    protected FlightRecorderKuduClient client;
+    protected IAppService appService;
 
-    public FlightRecorderStarterBase(@NotNull WebAppBase appService) {
+    public FlightRecorderStarterBase(@NotNull IAppService appService) {
         this.appService = appService;
-        client = new FlightRecorderKuduClient(appService);
     }
 
     public abstract List<ProcessInfo> listProcess() throws IOException;
@@ -33,6 +34,7 @@ public abstract class FlightRecorderStarterBase {
     public abstract CommandOutput startFlightRecorder(int pid, int timeInSeconds, String fileName) throws IOException;
 
     public byte[] downloadJFRFile(String fileName) {
-        return client.getFileContent(getFinalJfrPath(fileName));
+        return FluxUtil.collectBytesInByteBufferStream(appService.getFileContent(getFinalJfrPath(fileName))).blockOptional()
+                .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("Failed to download JFR file %s from %s", fileName, appService.name())));
     }
 }
