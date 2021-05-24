@@ -105,7 +105,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
             return functionAppService.createFunctionApp(config);
         });
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
-            AzureMessager.getMessager().success(message("function.create.success.title"), message("function.create.success.message", app.name()));
+            AzureMessager.getMessager().success(message("function.create.success.message", app.name()), message("function.create.success.title"));
             this.refreshAzureExplorer(app);
         });
     }
