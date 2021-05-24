@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.core.mvp.model;
 
+@Deprecated
 public class ResourceEx<T> {
     private T resource;
     private String subscriptionId;

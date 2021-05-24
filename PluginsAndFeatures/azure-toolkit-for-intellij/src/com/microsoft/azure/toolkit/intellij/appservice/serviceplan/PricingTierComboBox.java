@@ -5,13 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -33,7 +34,12 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
 
     @Override
     protected String getItemText(final Object item) {
-        return item == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ? message("appService.pricingTier.consumption") : super.getItemText(item);
+        if (Objects.isNull(item)) {
+            return EMPTY_ITEM;
+        }
+        PricingTier pricingTier = (PricingTier) item;
+        return pricingTier == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ? message("appService.pricingTier.consumption") :
+            pricingTier.getTier() + "_" + pricingTier.getSize();
     }
 
     @NotNull

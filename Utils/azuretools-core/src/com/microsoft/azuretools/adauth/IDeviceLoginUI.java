@@ -11,7 +11,8 @@ import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import reactor.core.Disposable;
+
+import java.util.concurrent.Future;
 
 public interface IDeviceLoginUI {
     @Nullable
@@ -26,7 +27,7 @@ public interface IDeviceLoginUI {
 
     }
 
-    default void setDisposable(Disposable disposable) {
+    default void setFuture(Future future) {
 
     }
 

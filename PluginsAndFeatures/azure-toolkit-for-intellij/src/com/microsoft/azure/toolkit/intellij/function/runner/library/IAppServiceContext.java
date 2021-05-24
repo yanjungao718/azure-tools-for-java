@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.library;
 
-import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.project.IProject;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.toolkit.lib.common.IProject;
 
 import java.util.Map;
 

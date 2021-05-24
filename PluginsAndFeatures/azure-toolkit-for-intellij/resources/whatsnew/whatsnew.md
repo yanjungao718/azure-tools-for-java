@@ -1,6 +1,17 @@
 <!-- Version: 3.51.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.53.0
+### Added
+- Management workflow for Azure SQL Server
+- New login ui for service principal authentication
+
+### Changed
+- Deprecated file based service principal authentication
+
+### Fixed
+- [PR #5228](https://github.com/microsoft/azure-tools-for-java/pull/5228) Fix OAuth/Device login could not be cancelled
+
 ## 3.52.0
 ### Added
 - Support OAuth for authentication

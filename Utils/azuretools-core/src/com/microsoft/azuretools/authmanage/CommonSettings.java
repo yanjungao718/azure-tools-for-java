@@ -39,8 +39,6 @@ public class CommonSettings {
             FILE_NAME_AAD_PROVIDER,
             FILE_NAME_AUTH_METHOD_DETAILS,
             FILE_NAME_CORE_LIB_LOG,
-            FILE_NAME_SUBSCRIPTIONS_DETAILS_AT,
-            FILE_NAME_SUBSCRIPTIONS_DETAILS_SP,
             FILE_NAME_SURVEY_CONFIG
     );
 

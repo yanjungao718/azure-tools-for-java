@@ -36,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class UIUtils {
 
@@ -128,38 +129,17 @@ public class UIUtils {
     public static JComboBox selectByText(JComboBox combo, String name) {
         if (combo.getItemCount() > 0 && name != null && !name.isEmpty()) {
             for (int i = 0; i < combo.getItemCount(); i++) {
-                String itemText = ((ElementWrapper) combo.getItemAt(i)).getKey();
+                String itemText = Objects.toString(combo.getItemAt(i));
                 if (name.equals(itemText)) {
                     combo.setSelectedIndex(i);
                     return combo;
                 }
             }
         }
-        combo.setSelectedIndex(0);
+        if (combo.getItemCount() > 0) {
+            combo.setSelectedIndex(0);
+        }
         return combo;
-    }
-
-    public static class ElementWrapper<T> {
-        private String key;
-        private T value;
-
-        public ElementWrapper(String key, T value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public T getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return key;
-        }
     }
 
     /**

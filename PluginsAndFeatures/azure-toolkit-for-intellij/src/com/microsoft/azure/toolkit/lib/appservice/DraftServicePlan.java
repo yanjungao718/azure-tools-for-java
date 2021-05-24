@@ -7,13 +7,14 @@ package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.SkuDescription;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
 import com.microsoft.azure.management.appservice.implementation.AppServicePlanInner;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,13 +45,16 @@ public class DraftServicePlan implements AppServicePlan, Draft {
     }
 
     @Override
-    public Region region() {
-        return this.region;
+    public com.microsoft.azure.management.resources.fluentcore.arm.Region region() {
+        return this.region == null ? null : com.microsoft.azure.management.resources.fluentcore.arm.Region.fromName(this.region.getName());
     }
 
     @Override
-    public PricingTier pricingTier() {
-        return this.tier;
+    public com.microsoft.azure.management.appservice.PricingTier pricingTier() {
+        if (tier == null) {
+            return null;
+        }
+        return toPricingTier(this.tier);
     }
 
     @Override
@@ -126,5 +130,10 @@ public class DraftServicePlan implements AppServicePlan, Draft {
     @Override
     public Update update() {
         throw new OperationNotSupportedException();
+    }
+
+    private static com.microsoft.azure.management.appservice.PricingTier toPricingTier(PricingTier pricingTier) {
+        final SkuDescription skuDescription = new SkuDescription().withTier(pricingTier.getTier()).withSize(pricingTier.getSize());
+        return com.microsoft.azure.management.appservice.PricingTier.fromSkuDescription(skuDescription);
     }
 }

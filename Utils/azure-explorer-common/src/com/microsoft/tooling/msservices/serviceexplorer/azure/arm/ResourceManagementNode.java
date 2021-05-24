@@ -6,7 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 
 import com.microsoft.azure.management.resources.Deployment;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -31,11 +31,11 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
     private final String rgName;
 
     public ResourceManagementNode(ResourceManagementModule parent, String subscriptionId, ResourceGroup resourceGroup) {
-        super(resourceGroup.id(), resourceGroup.name(), parent, null, true);
+        super(resourceGroup.getId(), resourceGroup.getName(), parent, null, true);
         rmNodePresenter = new ResourceManagementNodePresenter();
         rmNodePresenter.onAttachView(this);
         sid = subscriptionId;
-        rgName = resourceGroup.name();
+        rgName = resourceGroup.getName();
         loadActions();
     }
 

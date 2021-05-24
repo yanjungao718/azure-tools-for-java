@@ -8,9 +8,9 @@ import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import rx.Observable;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
 import static com.intellij.execution.ui.ConsoleViewContentType.SYSTEM_OUTPUT;
@@ -22,7 +22,7 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
 
     private boolean isDisposed;
     private String resourceId;
-    private Subscription subscription;
+    private Disposable subscription;
 
     public AppServiceStreamingLogConsoleView(@NotNull Project project, String resourceId) {
         super(project, true);
@@ -30,10 +30,10 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
         this.resourceId = resourceId;
     }
 
-    public void startStreamingLog(Observable<String> logStreaming) {
+    public void startStreamingLog(Flux<String> logStreaming) {
         if (!isActive()) {
             printlnToConsole(message("appService.logStreaming.hint.connect"), SYSTEM_OUTPUT);
-            subscription = logStreaming.subscribeOn(Schedulers.io())
+            subscription = logStreaming.subscribeOn(Schedulers.boundedElastic())
                                        .doAfterTerminate(() -> printlnToConsole(message("appService.logStreaming.hint.disconnected"), SYSTEM_OUTPUT))
                                        .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
         }
@@ -41,13 +41,13 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
 
     public void closeStreamingLog() {
         if (isActive()) {
-            subscription.unsubscribe();
+            subscription.dispose();
             printlnToConsole(message("appService.logStreaming.hint.disconnected"), SYSTEM_OUTPUT);
         }
     }
 
     public boolean isActive() {
-        return subscription != null && !subscription.isUnsubscribed();
+        return subscription != null && !subscription.isDisposed();
     }
 
     public boolean isDisposed() {

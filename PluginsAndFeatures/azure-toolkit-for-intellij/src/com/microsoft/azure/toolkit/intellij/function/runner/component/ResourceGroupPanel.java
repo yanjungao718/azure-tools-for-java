@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.component;
 
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -175,7 +175,7 @@ public class ResourceGroupPanel extends JPanel {
 
         public ResourceGroupWrapper(ResourceGroup resourceGroup) {
             this.isCreateNewResourceGroup = false;
-            this.resourceGroup = resourceGroup.name();
+            this.resourceGroup = resourceGroup.getName();
         }
 
         public String getResourceGroup() {

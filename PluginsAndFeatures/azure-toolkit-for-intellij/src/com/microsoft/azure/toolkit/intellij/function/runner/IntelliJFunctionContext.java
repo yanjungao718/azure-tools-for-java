@@ -5,12 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner;
 
-import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IFunctionContext;
+import com.microsoft.azure.toolkit.lib.common.IProject;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;

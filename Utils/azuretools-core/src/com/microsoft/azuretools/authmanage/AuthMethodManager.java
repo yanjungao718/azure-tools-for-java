@@ -6,6 +6,7 @@
 package com.microsoft.azuretools.authmanage;
 
 import com.azure.core.implementation.http.HttpClientProviders;
+import com.microsoft.aad.msal4j.PublicClientApplication;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
@@ -28,8 +29,10 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import org.apache.commons.collections4.CollectionUtils;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,17 +40,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
+
+import lombok.Lombok;
+import reactor.core.publisher.Hooks;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import rx.exceptions.Exceptions;
 
 public class AuthMethodManager {
-    private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
+    private static final org.apache.log4j.Logger LOGGER =
+        org.apache.log4j.Logger.getLogger(PublicClientApplication.class);
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
@@ -57,6 +70,10 @@ public class AuthMethodManager {
     static {
         // fix the class load problem for intellij plugin
         ClassLoader current = Thread.currentThread().getContextClassLoader();
+        Logger.getLogger("com.microsoft.aad.adal4j.AuthenticationContext").setLevel(Level.OFF);
+        Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
+        Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
+
         try {
             Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
             HttpClientProviders.createInstance();
@@ -65,6 +82,14 @@ public class AuthMethodManager {
                 com.microsoft.azure.toolkit.lib.Azure.az(AzureCloud.class)
                                                      .set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
             }
+            Hooks.onErrorDropped(ex -> {
+                if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
+                    LOGGER.info(ex.getMessage());
+                }
+                throw Lombok.sneakyThrow(ex);
+            });
+
+
         } finally {
             Thread.currentThread().setContextClassLoader(current);
         }
@@ -83,7 +108,7 @@ public class AuthMethodManager {
             try {
                 initAuthMethodManagerFromSettings();
             } catch (Throwable ex) {
-                LOGGER.warning("Cannot restore login due to error: " + ex.getMessage());
+                LOGGER.warn("Cannot restore login due to error: " + ex.getMessage());
             }
             return true;
         }).subscribeOn(Schedulers.boundedElastic()).subscribe();
@@ -255,7 +280,7 @@ public class AuthMethodManager {
                         }
                         case AD:
                             // we don't support it now
-                            LOGGER.warning("The AD auth method is not supported now, ignore the credential.");
+                            LOGGER.warn("The AD auth method is not supported now, ignore the credential.");
                             break;
                         case SP:
                             targetAuthMethodDetails.setAuthType(AuthType.SERVICE_PRINCIPAL);
@@ -266,9 +291,16 @@ public class AuthMethodManager {
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
-                List<String> allSubscriptionIds = identityAzureManager.getSubscriptionDetails().stream()
-                        .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
-                identityAzureManager.selectSubscriptionByIds(allSubscriptionIds);
+                List<SubscriptionDetail> persistSubscriptions = identityAzureManager.getSubscriptionManager().loadSubscriptions();
+                if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
+                    List<String> savedSubscriptionList = persistSubscriptions.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                    identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
+                }
+                initFuture.complete(true);
+                // pre-load regions
+                AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+                Optional.of(identityAzureManager.getSelectedSubscriptionIds()).ifPresent(sids -> sids.stream().limit(5).forEach(az::listRegions));
+
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {
@@ -276,7 +308,6 @@ public class AuthMethodManager {
                         put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
                     }
                 };
-                initFuture.complete(true);
                 EventUtil.logEvent(EventType.info, operation, telemetryProperties);
             } catch (RuntimeException exception) {
                 initFuture.complete(true);

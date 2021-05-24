@@ -5,30 +5,29 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
-import com.microsoft.azure.common.Utils;
-import com.microsoft.azure.common.appservice.DeployTargetType;
-import com.microsoft.azure.common.appservice.DeploymentType;
-import com.microsoft.azure.common.appservice.OperatingSystemEnum;
-import com.microsoft.azure.common.deploytarget.DeployTarget;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.function.handlers.artifact.DockerArtifactHandler;
-import com.microsoft.azure.common.function.handlers.artifact.MSDeployArtifactHandlerImpl;
-import com.microsoft.azure.common.function.handlers.artifact.RunFromBlobArtifactHandlerImpl;
-import com.microsoft.azure.common.function.handlers.artifact.RunFromZipArtifactHandlerImpl;
-import com.microsoft.azure.common.function.model.FunctionResource;
-import com.microsoft.azure.common.handlers.ArtifactHandler;
-import com.microsoft.azure.common.handlers.artifact.ArtifactHandlerBase;
-import com.microsoft.azure.common.handlers.artifact.FTPArtifactHandlerImpl;
-import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
-import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.IPrompter;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.DeployTarget;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.DeployTargetType;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.DeploymentType;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.OperatingSystemEnum;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.ArtifactHandler;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.artifact.ArtifactHandlerBase;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.artifact.FTPArtifactHandlerImpl;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.artifact.ZIPArtifactHandlerImpl;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.DockerArtifactHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.MSDeployArtifactHandlerImpl;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.RunFromBlobArtifactHandlerImpl;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.RunFromZipArtifactHandlerImpl;
+import com.microsoft.azure.toolkit.lib.legacy.function.model.FunctionResource;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +39,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.common.appservice.DeploymentType.*;
+import static com.microsoft.azure.toolkit.lib.legacy.appservice.DeploymentType.*;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 /**
@@ -164,7 +163,7 @@ public class DeployFunctionHandler {
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
         final RuntimeConfiguration runtime = model.getRuntime();
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
-            return Utils.parseOperationSystem(runtime.getOs());
+            return OperatingSystemEnum.fromString(runtime.getOs());
         }
         return DEFAULT_OS;
     }
