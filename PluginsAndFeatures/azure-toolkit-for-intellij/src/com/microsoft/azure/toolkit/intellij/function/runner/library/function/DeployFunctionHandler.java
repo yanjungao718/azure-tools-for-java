@@ -9,7 +9,6 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
-import com.microsoft.azure.toolkit.intellij.function.runner.library.IPrompter;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -34,13 +33,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.toolkit.lib.legacy.appservice.DeploymentType.*;
+import static com.microsoft.azure.toolkit.lib.legacy.appservice.DeploymentType.DOCKER;
+import static com.microsoft.azure.toolkit.lib.legacy.appservice.DeploymentType.RUN_FROM_BLOB;
+import static com.microsoft.azure.toolkit.lib.legacy.appservice.DeploymentType.RUN_FROM_ZIP;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 /**
@@ -58,13 +58,11 @@ public class DeployFunctionHandler {
     private static final String HTTP_TRIGGER = "httpTrigger";
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
-    private FunctionDeployModel model;
-    private IPrompter prompter;
-    private Operation operation;
+    private final FunctionDeployModel model;
+    private final Operation operation;
 
-    public DeployFunctionHandler(@NotNull FunctionDeployModel model, @NotNull IPrompter prompter, @NotNull Operation operation) {
+    public DeployFunctionHandler(@NotNull FunctionDeployModel model, @NotNull Operation operation) {
         this.model = model;
-        this.prompter = prompter;
         this.operation = operation;
     }
 
@@ -80,7 +78,7 @@ public class DeployFunctionHandler {
         return (FunctionApp) deployTarget.getApp();
     }
 
-    private void updateFunctionAppSettings(final FunctionApp app) throws AzureExecutionException {
+    private void updateFunctionAppSettings(final FunctionApp app) {
         AzureMessager.getMessager().info(message("function.deploy.hint.updateFunctionApp"));
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
@@ -128,9 +126,6 @@ public class DeployFunctionHandler {
      * Sync triggers and return function list of deployed function app
      * Will retry when get empty result, the max retry times is LIST_TRIGGERS_MAX_RETRY
      * @return List of functions in deployed function app
-     * @throws AzureExecutionException Throw if get empty result after LIST_TRIGGERS_MAX_RETRY times retry
-     * @throws IOException Throw if meet IOException while getting Azure client
-     * @throws InterruptedException Throw when thread was interrupted while sleeping between retry
      */
     @AzureOperation(
         name = "function|trigger.list",

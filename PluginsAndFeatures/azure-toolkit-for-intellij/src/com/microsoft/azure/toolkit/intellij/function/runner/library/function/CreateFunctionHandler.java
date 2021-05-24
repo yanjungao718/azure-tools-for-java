@@ -48,8 +48,8 @@ public class CreateFunctionHandler {
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private static final String APP_INSIGHTS_INSTRUMENTATION_KEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
-    private FunctionDeployModel ctx;
-    private Operation operation;
+    private final FunctionDeployModel ctx;
+    private final Operation operation;
 
     public CreateFunctionHandler(FunctionDeployModel ctx, Operation operation) {
         Preconditions.checkNotNull(ctx);
@@ -93,7 +93,7 @@ public class CreateFunctionHandler {
         appSettings.putAll(bindingApplicationInsights());
         withCreate.withAppSettings(appSettings);
 
-        FunctionApp result = withCreate.create();
+        final FunctionApp result = withCreate.create();
         operation.trackProperty("pricingTier", ctx.getPricingTier());
         AzureMessager.getMessager().info(message("function.create.hint.functionCreated", ctx.getAppName()));
         return result;
