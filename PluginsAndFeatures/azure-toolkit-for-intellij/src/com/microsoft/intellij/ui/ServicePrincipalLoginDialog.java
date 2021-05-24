@@ -276,39 +276,38 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     }
 
     private void json2UIComponents(String json) {
-        intermediateState = true;
         try {
-            if (StringUtils.isNotBlank(json)) {
-                try {
-                    Map<String, String> map = JsonUtils.fromJson(json, HashMap.class);
-                    if (map != null) {
-                        ApplicationManager.getApplication().invokeAndWait(() -> {
-                            if (map.containsKey("appId")) {
-                                this.clientIdTextField.setText(StringUtils.defaultString(map.get("appId")));
-                            }
+            Map<String, String> map = JsonUtils.fromJson(json, HashMap.class);
+            if (map != null) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    intermediateState = true;
+                    try {
+                        if (map.containsKey("appId")) {
+                            this.clientIdTextField.setText(StringUtils.defaultString(map.get("appId")));
+                        }
 
-                            if (map.containsKey("tenant")) {
-                                this.tenantIdTextField.setText(StringUtils.defaultString(map.get("tenant")));
-                            }
+                        if (map.containsKey("tenant")) {
+                            this.tenantIdTextField.setText(StringUtils.defaultString(map.get("tenant")));
+                        }
 
-                            if (map.containsKey("password") && !isPlaceHolder(map.get("password"))) {
-                                this.passwordRadioButton.setSelected(true);
-                                this.keyPasswordField.setText(StringUtils.defaultString(map.get("password")));
-                            }
+                        if (map.containsKey("password") && !isPlaceHolder(map.get("password"))) {
+                            this.passwordRadioButton.setSelected(true);
+                            this.keyPasswordField.setText(StringUtils.defaultString(map.get("password")));
+                        }
 
-                            if (map.containsKey("fileWithCertAndPrivateKey")) {
-                                this.certificateRadioButton.setSelected(true);
-                                this.certFileTextField.setText(StringUtils.defaultString(map.get("fileWithCertAndPrivateKey")));
-                            }
-                        });
+                        if (map.containsKey("fileWithCertAndPrivateKey")) {
+                            this.certificateRadioButton.setSelected(true);
+                            this.certFileTextField.setText(StringUtils.defaultString(map.get("fileWithCertAndPrivateKey")));
+                        }
+                    } finally {
+                        intermediateState = false;
                     }
 
-                } catch (JsonSyntaxException ex) {
-                    // ignore all json errors
-                }
+                });
             }
-        } finally {
-            intermediateState = false;
+
+        } catch (JsonSyntaxException ex) {
+            // ignore all json errors
         }
     }
 
