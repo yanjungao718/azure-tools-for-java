@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeplo
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.DeployTarget;
@@ -60,10 +61,12 @@ public class DeployFunctionHandler {
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private final FunctionDeployModel model;
     private final Operation operation;
+    private final IAzureMessager messenger;
 
     public DeployFunctionHandler(@NotNull FunctionDeployModel model, @NotNull Operation operation) {
         this.model = model;
         this.operation = operation;
+        this.messenger = AzureMessager.getMessager();
     }
 
     @AzureOperation(name = "function.deploy_artifact", type = AzureOperation.Type.SERVICE)
@@ -71,20 +74,20 @@ public class DeployFunctionHandler {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
-        AzureMessager.getMessager().info(message("function.deploy.hint.startDeployFunction"));
+        messenger.info(message("function.deploy.hint.startDeployFunction"));
         getArtifactHandler().publish(deployTarget);
-        AzureMessager.getMessager().info(message("function.deploy.hint.deployDone", model.getAppName()));
+        messenger.info(message("function.deploy.hint.deployDone", model.getAppName()));
         listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
 
     private void updateFunctionAppSettings(final FunctionApp app) {
-        AzureMessager.getMessager().info(message("function.deploy.hint.updateFunctionApp"));
+        messenger.info(message("function.deploy.hint.updateFunctionApp"));
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        AzureMessager.getMessager().info(message("function.deploy.hint.updateDone", model.getAppName()));
+        messenger.info(message("function.deploy.hint.updateDone", model.getAppName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -112,13 +115,13 @@ public class DeployFunctionHandler {
                                             AuthorizationLevel.ANONYMOUS.toString()))
                             .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(httpFunction) || CollectionUtils.isEmpty(anonymousTriggers)) {
-            AzureMessager.getMessager().info(message("function.deploy.hint.noAnonymousHttpTrigger"));
+            messenger.info(message("function.deploy.hint.noAnonymousHttpTrigger"));
             return;
         }
-        AzureMessager.getMessager().info(message("function.deploy.hint.httpTriggerUrls"));
-        anonymousTriggers.forEach(trigger -> AzureMessager.getMessager().info(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
+        messenger.info(message("function.deploy.hint.httpTriggerUrls"));
+        anonymousTriggers.forEach(trigger -> messenger.info(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
         if (anonymousTriggers.size() < httpFunction.size()) {
-            AzureMessager.getMessager().info(message("function.deploy.error.listHttpTriggerFailed"));
+            messenger.info(message("function.deploy.error.listHttpTriggerFailed"));
         }
     }
 
@@ -137,7 +140,7 @@ public class DeployFunctionHandler {
         for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
             try {
                 Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
-                AzureMessager.getMessager().info(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
+                messenger.info(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
                 functionApp.syncTriggers();
                 final List<FunctionResource> triggers =
                         model.getAzureClient().appServices().functionApps()
@@ -206,7 +209,7 @@ public class DeployFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            AzureMessager.getMessager().info(settingIsEmptyMessage);
+            messenger.info(settingIsEmptyMessage);
             result.put(settingName, settingValue);
         }
     }
@@ -216,9 +219,9 @@ public class DeployFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            AzureMessager.getMessager().info(settingIsEmptyMessage);
+            messenger.info(settingIsEmptyMessage);
         } else if (!setting.equals(settingValue)) {
-            AzureMessager.getMessager().warning(String.format(changeSettingMessage, setting));
+            messenger.warning(String.format(changeSettingMessage, setting));
         }
         result.put(settingName, settingValue);
     }

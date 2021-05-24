@@ -6,10 +6,19 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.OperatingSystemEnum;
+import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.OperatingSystemEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.ElasticPremiumPricingTier;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
@@ -17,14 +26,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.Function
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.LinuxFunctionRuntimeHandler;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.WindowsFunctionRuntimeHandler;
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
@@ -50,11 +51,13 @@ public class CreateFunctionHandler {
 
     private final FunctionDeployModel ctx;
     private final Operation operation;
+    private final IAzureMessager messenger;
 
     public CreateFunctionHandler(FunctionDeployModel ctx, Operation operation) {
         Preconditions.checkNotNull(ctx);
         this.ctx = ctx;
         this.operation = operation;
+        this.messenger = AzureMessager.getMessager();
     }
 
     public FunctionApp execute() {
@@ -77,7 +80,7 @@ public class CreateFunctionHandler {
         type = AzureOperation.Type.SERVICE
     )
     private FunctionApp createFunctionApp() {
-        AzureMessager.getMessager().info(message("function.create.hint.startCreateFunction"));
+        messenger.info(message("function.create.hint.startCreateFunction"));
         final WithCreate withCreate;
         try {
             final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
@@ -95,7 +98,7 @@ public class CreateFunctionHandler {
 
         final FunctionApp result = withCreate.create();
         operation.trackProperty("pricingTier", ctx.getPricingTier());
-        AzureMessager.getMessager().info(message("function.create.hint.functionCreated", ctx.getAppName()));
+        messenger.info(message("function.create.hint.functionCreated", ctx.getAppName()));
         return result;
     }
 
@@ -129,7 +132,7 @@ public class CreateFunctionHandler {
                 instrumentationKey = insights.instrumentationKey();
             } catch (final IOException | RuntimeException e) {
                 // swallow exception for application insights, which should not block function creation
-                AzureMessager.getMessager().warning(message("function.create.error.createApplicationInsightsFailed", ctx.getAppName()));
+                messenger.warning(message("function.create.error.createApplicationInsightsFailed", ctx.getAppName()));
             }
         }
         return Collections.singletonMap(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
@@ -175,7 +178,7 @@ public class CreateFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            AzureMessager.getMessager().info(settingIsEmptyMessage);
+            messenger.info(settingIsEmptyMessage);
             result.put(settingName, settingValue);
         }
     }
@@ -185,9 +188,9 @@ public class CreateFunctionHandler {
 
         final String setting = (String) result.get(settingName);
         if (StringUtils.isEmpty(setting)) {
-            AzureMessager.getMessager().info(settingIsEmptyMessage);
+            messenger.info(settingIsEmptyMessage);
         } else if (!setting.equals(settingValue)) {
-            AzureMessager.getMessager().warning(String.format(changeSettingMessage, setting));
+            messenger.warning(String.format(changeSettingMessage, setting));
         }
         result.put(settingName, settingValue);
     }
