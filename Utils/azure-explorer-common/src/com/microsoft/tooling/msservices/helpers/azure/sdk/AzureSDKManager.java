@@ -28,6 +28,7 @@ import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.management.storage.StorageAccountSkuType;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -264,7 +265,8 @@ public class AzureSDKManager {
         if (azureManager == null) {
             return Collections.emptyList();
         }
-        final String accessToken = azureManager.getAccessToken(azureManager.getTenantIdBySubscription(subscriptionId));
+        Subscription subscription = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
+        final String accessToken = azureManager.getAccessToken(subscription.getTenantId());
         request.setHeader("Authorization", String.format("Bearer %s", accessToken));
         final CloseableHttpResponse response = HttpClients.createDefault().execute(request);
         final InputStream responseStream = response.getEntity().getContent();

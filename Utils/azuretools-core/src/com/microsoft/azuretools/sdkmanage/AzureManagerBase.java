@@ -100,16 +100,6 @@ public abstract class AzureManagerBase implements AzureManager {
         }
     }
 
-    @Override
-    @AzureOperation(name = "account|subscription.get_tenant", params = {"subscriptionId"}, type = AzureOperation.Type.TASK)
-    public String getTenantIdBySubscription(String subscriptionId) {
-        final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
-                .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
-                .filter(pair -> StringUtils.equals(pair.first().getId(), subscriptionId))
-                .findFirst().orElseThrow(() -> new AzureRuntimeException(ErrorEnum.INVALID_SUBSCRIPTION_CACHE));
-        return subscriptionTenantPair.second().tenantId();
-    }
-
     protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
         return configurable.withInterceptor(new TelemetryInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT);
