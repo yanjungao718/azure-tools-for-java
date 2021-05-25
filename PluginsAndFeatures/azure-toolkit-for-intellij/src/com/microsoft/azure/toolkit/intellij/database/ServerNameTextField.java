@@ -36,6 +36,9 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
     @Override
     @NotNull
     public AzureValidationInfo doValidateValue() {
+        if (StringUtils.isBlank(subscriptionId)) {
+            return AzureValidationInfo.UNINITIALIZED;
+        }
         final AzureValidationInfo info = super.doValidateValue();
         if (!AzureValidationInfo.OK.equals(info)) {
             return info;
