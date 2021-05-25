@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 public class WebAppSettingModel {
@@ -123,8 +124,13 @@ public class WebAppSettingModel {
             if (properties != null) {
                 result.putAll(properties);
             }
-            result.put(TelemetryConstants.RUNTIME, os == OperatingSystem.LINUX ?
-                    "linux-" + getLinuxRuntime().toString() : "windows-" + getWebContainer() + (jdkVersion == null ? "" : "-" + jdkVersion.toString()));
+            final Runtime runtime = getRuntime();
+            final String osValue = Optional.ofNullable(runtime.getOperatingSystem())
+                    .map(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem::toString).orElse(StringUtils.EMPTY);
+            final String webContainerValue = Optional.ofNullable(runtime.getWebContainer()).map(WebContainer::getValue).orElse(StringUtils.EMPTY);
+            final String javaVersionValue = Optional.ofNullable(runtime.getJavaVersion())
+                    .map(com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion::getValue).orElse(StringUtils.EMPTY);
+            result.put(TelemetryConstants.RUNTIME, String.format("%s-%s-%s", osValue, webContainerValue, javaVersionValue));
             result.put(TelemetryConstants.WEBAPP_DEPLOY_TO_SLOT, String.valueOf(isDeployToSlot()));
             result.put(TelemetryConstants.SUBSCRIPTIONID, getSubscriptionId());
             result.put(TelemetryConstants.CREATE_NEWWEBAPP, String.valueOf(isCreatingNew()));
