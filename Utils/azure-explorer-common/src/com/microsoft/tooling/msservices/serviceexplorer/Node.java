@@ -7,6 +7,9 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -429,10 +432,10 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
             return;
         }
         final String portalUrl = azureManager.getPortalUrl();
-        final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
+        Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
         final String url = portalUrl
                 + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
-                + tenantId
+                + subscription.getTenantId()
                 + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
                 + resourceId;
         DefaultLoader.getIdeHelper().openLinkInBrowser(url);
