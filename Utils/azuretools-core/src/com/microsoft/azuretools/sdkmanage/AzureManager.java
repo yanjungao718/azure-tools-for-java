@@ -52,6 +52,8 @@ public interface AzureManager {
 
     String getStorageEndpointSuffix();
 
+    String getTenantIdBySubscription(String subscriptionId);
+
     String getScmSuffix();
 
     Environment getEnvironment();

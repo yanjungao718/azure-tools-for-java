@@ -28,8 +28,8 @@ public class RegionComboBox extends AzureComboBox<Region> {
     @Setter
     private Function<RegionComboBox, AzureValidationInfo> validateFunction;
 
-    private boolean validateRequired;
-    private boolean itemLoaded;
+    private boolean validated;
+    private boolean loaded;
     private AzureValidationInfo validatedInfo;
 
     public void setSubscription(Subscription subscription) {
@@ -55,7 +55,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
             return new ArrayList<>();
         }
         List<? extends Region> regions = Azure.az(AzureAccount.class).listRegions(subscription.getId());
-        itemLoaded = true;
+        loaded = true;
         return regions;
     }
 
@@ -71,7 +71,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
     public void setSelectedItem(Object value) {
         if (!Objects.equals(value, getSelectedItem())) {
             super.setSelectedItem(value);
-            validateRequired = true;
+            validated = false;
         } else {
             super.setSelectedItem(value);
         }
@@ -85,17 +85,17 @@ public class RegionComboBox extends AzureComboBox<Region> {
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        if (Objects.isNull(subscription) || !itemLoaded) {
-            return AzureValidationInfo.UNINITIALIZED;
+        if (Objects.isNull(subscription) || !loaded) {
+            return AzureValidationInfo.OK;
         }
-        if (!validateRequired) {
-            return Objects.nonNull(validatedInfo) ? validatedInfo : AzureValidationInfo.UNINITIALIZED;
+        if (validated && Objects.nonNull(validatedInfo)) {
+            return validatedInfo;
         }
         validatedInfo = super.doValidate();
         if (AzureValidationInfo.OK.equals(validatedInfo)) {
             validatedInfo = validateFunction.apply(this);
         }
-        validateRequired = false;
+        validated = true;
         return validatedInfo;
     }
 
