@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.sqlserver.common;
 
+import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
@@ -11,17 +12,19 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 public class SqlServerNameValidator implements Function<ServerNameTextField, AzureValidationInfo> {
-
-    private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
 
     @Override
     public AzureValidationInfo apply(ServerNameTextField textField) {
         final String value = textField.getValue();
         // validate availability
-        CheckNameAvailabilityResultEntity resultEntity = Azure.az(AzureSqlServer.class).checkNameAvailability(textField.getSubscriptionId(), value);
+        CheckNameAvailabilityResultEntity resultEntity = null;
+        try {
+            resultEntity = Azure.az(AzureSqlServer.class).checkNameAvailability(textField.getSubscriptionId(), value);
+        } catch (ManagementException e) {
+            return AzureValidationInfo.builder().input(textField).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+        }
         if (!resultEntity.isAvailable()) {
             String message = resultEntity.getUnavailabilityReason();
             if ("AlreadyExists".equalsIgnoreCase(resultEntity.getUnavailabilityReason())) {
