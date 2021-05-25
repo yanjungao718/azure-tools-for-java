@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.azure.core.management.exception.ManagementException;
+import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
@@ -28,7 +29,8 @@ public class MySQLRegionValidator implements Function<RegionComboBox, AzureValid
             if (tiers.stream().anyMatch(e -> CollectionUtils.isNotEmpty(e.serviceLevelObjectives()))) {
                 return AzureValidationInfo.OK;
             }
-        } catch (ManagementException e) {
+        } catch (CloudException e) {
+            return AzureValidationInfo.builder().input(comboBox).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
         final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
         return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
