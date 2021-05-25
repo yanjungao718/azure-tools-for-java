@@ -27,6 +27,7 @@ public class SqlServerRegionValidator implements Function<RegionComboBox, AzureV
                 return AzureValidationInfo.OK;
             }
         } catch (ManagementException e) {
+            return AzureValidationInfo.builder().input(comboBox).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
         final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
         return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
