@@ -441,6 +441,7 @@ public class AzureWebAppMvpModel {
     public IWebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .id(model.getAppServicePlanId())
                 .subscriptionId(model.getSubscriptionId())
                 .name(model.getAppServicePlanName())
                 .resourceGroup(model.getResourceGroupName())
@@ -1002,6 +1003,7 @@ public class AzureWebAppMvpModel {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
         final String[] tierSize = model.getPricing().split("_");
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .id(model.getAppServicePlanId())
                 .subscriptionId(model.getSubscriptionId())
                 .name(model.getAppServicePlanName())
                 .resourceGroup(model.getResourceGroup())
