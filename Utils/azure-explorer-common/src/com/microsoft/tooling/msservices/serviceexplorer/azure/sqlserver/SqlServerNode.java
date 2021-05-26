@@ -77,7 +77,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         this.openResourcesInPortal(this.subscriptionId, this.server.entity().getId());
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SqlServer.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openSqlServerPropertyView(SqlServerNode.this);
     }

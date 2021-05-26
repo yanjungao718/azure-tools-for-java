@@ -62,7 +62,7 @@ public class CreateVirtualNetworkForm extends AzureDialogWrapper {
         subnetNameField.getDocument().addDocumentListener(docListener);
         subnetAddressRangeField.getDocument().addDocumentListener(docListener);
 
-        regionField.setText(region.toString());
+        regionField.setText(region.getLabel().toString());
 
         validateFields();
         init();

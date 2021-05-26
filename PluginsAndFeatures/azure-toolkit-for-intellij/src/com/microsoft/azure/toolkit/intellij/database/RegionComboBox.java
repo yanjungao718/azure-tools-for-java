@@ -68,12 +68,12 @@ public class RegionComboBox extends AzureComboBox<Region> {
     }
 
     @Override
-    public void setSelectedItem(Object value) {
-        if (!Objects.equals(value, getSelectedItem())) {
-            super.setSelectedItem(value);
+    public void setValue(Region value) {
+        if (!Objects.equals(value, getValue())) {
+            super.setValue(value);
             validateRequired = true;
         } else {
-            super.setSelectedItem(value);
+            super.setValue(value);
         }
     }
 
