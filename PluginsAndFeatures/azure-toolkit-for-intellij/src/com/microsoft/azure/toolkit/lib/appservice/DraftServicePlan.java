@@ -99,7 +99,7 @@ public class DraftServicePlan implements AppServicePlan, Draft {
 
     @Override
     public String regionName() {
-        throw new OperationNotSupportedException();
+        return this.region == null ? null : this.region.getName();
     }
 
     @Override
