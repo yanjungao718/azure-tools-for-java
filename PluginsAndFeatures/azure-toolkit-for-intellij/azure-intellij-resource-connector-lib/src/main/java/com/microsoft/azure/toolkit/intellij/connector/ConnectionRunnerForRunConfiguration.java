@@ -96,7 +96,7 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
                 final MyBeforeRunTask task = new MyBeforeRunTask();
                 task.setEnabled(true);
                 this.addTask(configuration, task);
-            } else if (!myTasks.isEmpty()) {
+            } else if (!applicable && !myTasks.isEmpty()) {
                 tasks.removeAll(myTasks);
             }
             return applicable;
