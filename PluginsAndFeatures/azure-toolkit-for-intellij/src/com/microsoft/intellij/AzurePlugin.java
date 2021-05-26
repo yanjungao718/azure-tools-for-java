@@ -26,6 +26,7 @@ import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
@@ -38,7 +39,6 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
-import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
@@ -50,6 +50,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
@@ -58,6 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -72,6 +75,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
     private static PluginStateListener pluginStateListener = null;
+    private static final int POP_UP_DELAY = 30;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
@@ -105,7 +109,6 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
         initializeAIRegistry(project);
         // Showing dialog needs to be run in UI thread
-        initializeFeedbackNotification(project);
         initializeWhatsNew(project);
 
         if (!IS_ANDROID_STUDIO) {
@@ -117,6 +120,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings(project);
+                runWorkspaceTaggingActivity(project);
             } catch (ProcessCanceledException e) {
                 throw e;
             } catch (Exception e) {
@@ -137,8 +141,13 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             });
     }
 
-    private void initializeFeedbackNotification(Project myProject) {
-        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
+    private void runWorkspaceTaggingActivity(Project myProject) {
+        Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .take(1)
+                .subscribe(next -> {
+                    WorkspaceTaggingActivity.runActivity(myProject);
+                });
     }
 
     private synchronized void initializeTelemetry() throws Exception {
