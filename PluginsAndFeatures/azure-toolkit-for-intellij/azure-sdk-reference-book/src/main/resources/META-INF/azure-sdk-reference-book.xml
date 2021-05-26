@@ -2,7 +2,6 @@
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity"/>
     </extensions>
     <actions>
         <action id="AzureToolkit.OpenSdkReferenceBook"

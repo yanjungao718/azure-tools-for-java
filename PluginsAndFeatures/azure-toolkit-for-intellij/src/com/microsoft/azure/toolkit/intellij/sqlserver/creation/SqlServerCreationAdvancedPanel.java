@@ -66,6 +66,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
         regionComboBox.setValidateFunction(new SqlServerRegionValidator());
+        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         serverNameTextField.setMinLength(1);
         serverNameTextField.setMaxLength(63);
         serverNameTextField.setValidateFunction(new SqlServerNameValidator());
