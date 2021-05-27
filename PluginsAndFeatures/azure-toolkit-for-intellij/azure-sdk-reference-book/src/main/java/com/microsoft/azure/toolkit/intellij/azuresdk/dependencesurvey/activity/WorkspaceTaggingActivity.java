@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
-import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.WorkspaceTaggingService;
 import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurvey;
 import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurveyManager;
@@ -26,7 +25,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
+public class WorkspaceTaggingActivity {
     private static final Logger logger = Logger.getLogger(WorkspaceTaggingActivity.class.getName());
 
     private static final Pattern PATTERN = Pattern.compile("(Gradle|Maven): (.+):(.+):(.+)");
@@ -40,8 +39,8 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
     private static final String MGMT = "mgmt";
     private static final String SPRING = "spring";
 
-    @Override
-    public void runActivity(@NotNull final Project project) {
+    public static void runActivity(@NotNull final Project project) {
+
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
                 final Set<String> workspaceTags = getWorkspaceTags(project);
@@ -54,7 +53,7 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
         });
     }
 
-    private void showCustomerSurvey(final Project project, final Set<String> workspaceTags) {
+    private static void showCustomerSurvey(final Project project, final Set<String> workspaceTags) {
         if (workspaceTags.containsAll(Arrays.asList(CLIENT, MGMT))) {
             CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_SDK);
         }
@@ -68,9 +67,10 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
         if (workspaceTags.contains(CLIENT)) {
             CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_CLIENT_SDK);
         }
+        CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_INTELLIJ_TOOLKIT);
     }
 
-    private Set<String> getWorkspaceTags(@NotNull final Project project) {
+    private static Set<String> getWorkspaceTags(@NotNull final Project project) {
         final Set<String> tagSet = new HashSet<>();
         OrderEnumerator.orderEntries(project).forEachLibrary(library -> {
             if (StringUtils.isNotEmpty(library.getName())) {
@@ -87,7 +87,7 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
         return tagSet;
     }
 
-    private void trackWorkspaceTagging(final Set<String> tagSet) {
+    private static void trackWorkspaceTagging(final Set<String> tagSet) {
         final Map<String, String> properties = new HashMap<>();
         properties.put(SERVICE_NAME, SYSTEM);
         properties.put(OPERATION_NAME, WORKSPACE_TAGGING);

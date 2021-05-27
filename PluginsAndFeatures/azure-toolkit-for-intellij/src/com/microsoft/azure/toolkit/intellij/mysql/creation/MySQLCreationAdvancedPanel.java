@@ -70,6 +70,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
         regionComboBox.setValidateFunction(new MySQLRegionValidator());
+        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         serverNameTextField.setMinLength(3);
         serverNameTextField.setMaxLength(63);
         serverNameTextField.setValidateFunction(new SqlServerNameValidator());
