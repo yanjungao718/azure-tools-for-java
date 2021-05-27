@@ -14,22 +14,24 @@ import com.microsoft.azure.toolkit.intellij.connector.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.utils.NetUtils;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.net.URL;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -168,12 +170,8 @@ public class AzureMySQLService {
         }
 
         private String getAccessFromLocalRuleName() {
-            String hostname = "UNKNOWN_HOST";
-            try {
-                hostname = InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException e) {
-            }
-            final String macAddress = GetHashMac.getMac();
+            final String hostname = NetUtils.getHostName();
+            final String macAddress = NetUtils.getMac();
             final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + hostname + "_" + macAddress;
             return ruleName;
         }

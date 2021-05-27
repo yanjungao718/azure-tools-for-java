@@ -23,12 +23,9 @@ import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.interact.INotification;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.enums.ErrorEnum;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
-
 import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
@@ -98,16 +95,6 @@ public abstract class AzureManagerBase implements AzureManager {
         } else {
             return GLOBAL_SCM_SUFFIX;
         }
-    }
-
-    @Override
-    @AzureOperation(name = "account|subscription.get_tenant", params = {"subscriptionId"}, type = AzureOperation.Type.TASK)
-    public String getTenantIdBySubscription(String subscriptionId) {
-        final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
-                .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
-                .filter(pair -> StringUtils.equals(pair.first().getId(), subscriptionId))
-                .findFirst().orElseThrow(() -> new AzureRuntimeException(ErrorEnum.INVALID_SUBSCRIPTION_CACHE));
-        return subscriptionTenantPair.second().tenantId();
     }
 
     protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
