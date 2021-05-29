@@ -24,9 +24,6 @@ public class UIFactory implements IUIFactory{
     }
 
     @Override
-    public IWebUi getWebUi() { return new WebUi(); }
-
-    @Override
     public IDeviceLoginUI getDeviceLoginUI() { return new DeviceLoginUI(); }
 
     @Override
