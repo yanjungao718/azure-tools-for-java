@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.intellij.connector.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.utils.MacUtils;
 import com.microsoft.azure.toolkit.lib.common.utils.NetUtils;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.ActionConstants;
@@ -171,7 +172,7 @@ public class AzureMySQLService {
 
         private String getAccessFromLocalRuleName() {
             final String hostname = NetUtils.getHostName();
-            final String macAddress = NetUtils.getMac();
+            final String macAddress = MacUtils.getMac();
             final String ruleName = NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL + hostname + "_" + macAddress;
             return ruleName;
         }
