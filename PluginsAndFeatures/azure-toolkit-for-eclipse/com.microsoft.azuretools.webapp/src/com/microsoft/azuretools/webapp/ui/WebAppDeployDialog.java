@@ -109,6 +109,7 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
 import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
@@ -250,6 +251,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             fillAppServiceDetails();
             fillSlot();
         });
+        AccessibilityUtils.setAccessibilityNameForUIComponent(table, "App service");
 
         TableColumn tblclmnName = new TableColumn(table, SWT.LEFT);
         tblclmnName.setWidth(200);
@@ -436,6 +438,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnSlotUseExisting.setSelection(true);
         btnSlotUseExisting.setText("Use existing");
         comboSlot = new Combo(compositeSlot, SWT.READ_ONLY);
+        AccessibilityUtils.setAccessibilityNameForUIComponent(comboSlot, "Existing deployment slot");
         comboSlot.setEnabled(false);
         comboSlot.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboSlot.setBounds(0, 0, 26, 22);
@@ -464,6 +467,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 cleanError();
             }
         });
+        AccessibilityUtils.setAccessibilityNameForUIComponent(textSlotName, "New depoyment slot");
         textSlotName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         textSlotName.setBounds(0, 0, 64, 19);
         textSlotName.setMessage("Slot Name");
@@ -488,6 +492,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 cleanError();
             }
         });
+        AccessibilityUtils.setAccessibilityNameForUIComponent(comboSlotConf, "Deployment slot configuration source");
         decComboSlotConf = decorateContorolAndRegister(comboSlotConf);
 
         scrolledComposite.setContent(grpSlot);
