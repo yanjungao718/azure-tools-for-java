@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SpringCloudAppNode extends Node implements TelemetryProperties {
 
@@ -35,7 +36,6 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     @Getter
     private SpringCloudApp app;
     private DeploymentResourceStatus status;
-    private SpringCloudDeployment deploy;
 
     private final Disposable rxSubscription;
 
@@ -54,15 +54,15 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
         super(app.entity().getId(), app.name(), parent, null, true);
         this.app = app;
         if (StringUtils.isNotBlank(app.getActiveDeploymentName())) {
-            this.deploy = app.deployment(app.getActiveDeploymentName());
+            final SpringCloudDeployment deploy = app.deployment(app.getActiveDeploymentName());
             this.status = DeploymentResourceStatus.fromString(deploy.entity().getStatus());
         } else {
             this.status = DeploymentResourceStatus.UNKNOWN;
         }
-        fillData(app, deploy);
+        fillData(app);
         rxSubscription = SpringCloudStateManager.INSTANCE.subscribeSpringAppEvent(event -> {
             if (event.isUpdate()) {
-                fillData(event.getApp(), event.getDeployment());
+                fillData(event.getApp());
             }
         }, this.app.entity().getId());
         AzureEventBus.after("springcloud|app.start", this::onAppStatusChanged);
@@ -73,7 +73,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     public void onAppStatusChanged(SpringCloudApp app) {
         if (this.app.name().equals(app.name())) {
             this.refreshNode();
-            this.fillData(this.app, this.app.activeDeployment());
+            this.fillData(this.app);
         }
     }
 
@@ -129,7 +129,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
             final boolean running = DeploymentResourceStatus.RUNNING.equals(status);
             final boolean unknown = DeploymentResourceStatus.UNKNOWN.equals(status);
             final boolean allocating = DeploymentResourceStatus.ALLOCATING.equals(status);
-            final boolean hasURL = StringUtils.isNotEmpty(app.entity().getApplicationUrl()) && app.entity().getApplicationUrl().startsWith("http");
+            final boolean hasURL = Optional.ofNullable(app.entity().getApplicationUrl()).filter(u->u.startsWith("http")).isPresent();
             getNodeActionByName(ACTION_OPEN_IN_BROWSER).setEnabled(hasURL && running);
             getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(stopped);
             getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(!stopped && !unknown && !allocating);
@@ -142,9 +142,8 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
         }
     }
 
-    private void fillData(SpringCloudApp newApp, SpringCloudDeployment deploy) {
+    private void fillData(SpringCloudApp newApp) {
         this.app = newApp;
-        this.deploy = deploy;
         this.setName(String.format("%s - %s", app.name(), getStatusDisplay(status)));
         if (getNodeActionByName(AzureActionEnum.START.getName()) == null) {
             loadActions();
@@ -163,30 +162,26 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     private void delete() {
         status = SERVER_UPDATING;
         app.remove();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, null);
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.START, type = AzureOperation.Type.ACTION)
     private void start() {
         status = SERVER_UPDATING;
-        deploy.start();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, status);
+        app.start();
         this.refreshNode();
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         status = SERVER_UPDATING;
-        deploy.stop();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, status);
+        app.stop();
         this.refreshNode();
     }
 
     @AzureOperation(name = ActionConstants.SpringCloud.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         status = SERVER_UPDATING;
-        deploy.restart();
-        SpringCloudMonitorUtil.awaitAndMonitoringStatus(app, status);
+        app.restart();
         this.refreshNode();
     }
 
