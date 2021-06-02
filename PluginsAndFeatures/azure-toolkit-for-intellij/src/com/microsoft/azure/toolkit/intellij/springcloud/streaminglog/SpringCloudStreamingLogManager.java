@@ -5,17 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.StreamingLogsToolWindowManager;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.intellij.util.PluginUtil;
 import lombok.SneakyThrows;
@@ -40,7 +36,7 @@ public class SpringCloudStreamingLogManager {
         return SpringCloudStreamingLogManager.SingletonHolder.INSTANCE;
     }
 
-    public void showStreamingLog(Project project, String appId, String instanceName) {
+    public void showStreamingLog(Project project, SpringCloudApp app, String instanceName) {
         final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
                 instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
         final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.start", instanceName);
@@ -48,7 +44,7 @@ public class SpringCloudStreamingLogManager {
             try {
                 consoleView.startLog(() -> {
                     try {
-                        return getLogStream(appId, instanceName, 0, 10, 0, true);
+                        return getLogStream(app, instanceName, 0, 10, 0, true);
                     } catch (final IOException | HttpException e) {
                         return null;
                     }
@@ -83,11 +79,7 @@ public class SpringCloudStreamingLogManager {
     }
 
     @SneakyThrows
-    public static InputStream getLogStream(String appId, String instanceName, int sinceSeconds, int tailLines, int limitBytes, boolean follow) throws IOException, HttpException {
-        final ResourceId id = ResourceId.fromString(appId);
-        final AzureSpringCloud az = Azure.az(AzureSpringCloud.class).subscription(id.subscriptionId());
-        final SpringCloudCluster cluster = az.cluster(id.parent().name());
-        final SpringCloudApp app = cluster.app(id.name());
+    public static InputStream getLogStream(SpringCloudApp app, String instanceName, int sinceSeconds, int tailLines, int limitBytes, boolean follow) throws IOException, HttpException {
         final URIBuilder endpoint = new URIBuilder(app.entity().getLogStreamingEndpoint(instanceName));
         endpoint.addParameter("follow", String.valueOf(follow));
         if (sinceSeconds > 0) {
@@ -99,7 +91,7 @@ public class SpringCloudStreamingLogManager {
         if (limitBytes > 0) {
             endpoint.addParameter("limitBytes", String.valueOf(limitBytes));
         }
-        final String password = cluster.entity().getTestKey();
+        final String password = app.getCluster().entity().getTestKey();
         final String userPass = "primary:" + password;
         final String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes()));
         final HttpURLConnection connection = (HttpURLConnection) endpoint.build().toURL().openConnection();
