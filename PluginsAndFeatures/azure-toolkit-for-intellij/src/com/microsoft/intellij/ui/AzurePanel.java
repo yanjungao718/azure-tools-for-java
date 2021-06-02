@@ -22,7 +22,7 @@ import javax.swing.JTextPane;
 
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.utils.HashMacUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
@@ -89,8 +89,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
                 }
                 String instID = DataOperations.getProperty(dataFile, message("instID"));
-                if (instID == null || instID.isEmpty() || !HashMacUtils.isValidHashMac(instID)) {
-                    DataOperations.updatePropertyValue(doc, message("instID"), HashMacUtils.getHashMac());
+                if (instID == null || instID.isEmpty() || !InstallationIdUtils.isValidHashMac(instID)) {
+                    DataOperations.updatePropertyValue(doc, message("instID"), InstallationIdUtils.getHashMac());
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
                     EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
                 }
@@ -123,7 +123,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private void setValues(String dataFile) throws Exception {
         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
         DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
-        DataOperations.updatePropertyValue(doc, message("instID"), HashMacUtils.getHashMac());
+        DataOperations.updatePropertyValue(doc, message("instID"), InstallationIdUtils.getHashMac());
         DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf(checkBox1.isSelected()));
         ParserXMLUtility.saveXMLFile(dataFile, doc);
     }

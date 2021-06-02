@@ -12,7 +12,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import com.microsoft.azure.toolkit.lib.common.utils.HashMacUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -37,11 +37,11 @@ public class TelemetryUtils {
                 return ret;
             }
             ret = DataOperations.getProperty(dataFile, instId);
-            if (ret == null || ret.isEmpty() || !HashMacUtils.isValidHashMac(ret)) {
-                ret = HashMacUtils.getHashMac();
+            if (ret == null || ret.isEmpty() || !InstallationIdUtils.isValidHashMac(ret)) {
+                ret = InstallationIdUtils.getHashMac();
             }
         } else {
-            ret = HashMacUtils.getHashMac();
+            ret = InstallationIdUtils.getHashMac();
         }
 
         return ret;
