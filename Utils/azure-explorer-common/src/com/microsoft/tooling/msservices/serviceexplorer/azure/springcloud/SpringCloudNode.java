@@ -5,17 +5,19 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
-import io.reactivex.rxjava3.disposables.Disposable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Arrays;
@@ -29,7 +31,6 @@ import java.util.Map;
 public class SpringCloudNode extends RefreshableNode implements TelemetryProperties {
     private static final String EMPTY_POSTFIX = " (Empty)";
 
-    private Disposable rxSubscription;
     private SpringCloudCluster cluster;
 
     public SpringCloudNode(AzureRefreshableNode parent, SpringCloudCluster cluster) {
@@ -86,18 +87,12 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     protected void refreshItems() {
         final List<SpringCloudApp> apps = cluster.refresh().apps();
         this.setName(CollectionUtils.isEmpty(apps) ? this.cluster.name() + EMPTY_POSTFIX : this.cluster.name());
-        apps.forEach(app -> {
-            SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(this.cluster.id(), app);
-            addChildNode(new SpringCloudAppNode(app, this));
-        });
-        rxSubscription = SpringCloudStateManager.INSTANCE.subscribeSpringAppEvent(event -> {
-            notifyDataRefresh(event);
-        }, this.cluster.id());
+        apps.forEach(app -> addChildNode(new SpringCloudAppNode(app, this)));
     }
 
     @Override
     public void removeAllChildNodes() {
-        SpringCloudAppNode[] childNodes = getChildNodes().toArray(new SpringCloudAppNode[0]);
+        final SpringCloudAppNode[] childNodes = getChildNodes().toArray(new SpringCloudAppNode[0]);
         super.removeAllChildNodes();
         for (final SpringCloudAppNode child : childNodes) {
             child.unsubscribe();
@@ -124,9 +119,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     }
 
     public void unsubscribe() {
-        if (rxSubscription != null && !rxSubscription.isDisposed()) {
-            rxSubscription.dispose();
-        }
+        // TODO: remove cluster event listeners
     }
 
     private void openInPortal() {

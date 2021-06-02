@@ -37,8 +37,6 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     private SpringCloudApp app;
     private DeploymentResourceStatus status;
 
-    private final Disposable rxSubscription;
-
     static {
         STATUS_TO_ICON_MAP.put(SERVER_UPDATING, AzureIconSymbol.SpringCloud.UPDATING);
         STATUS_TO_ICON_MAP.put(DeploymentResourceStatus.UNKNOWN, AzureIconSymbol.SpringCloud.UNKNOWN);
@@ -60,11 +58,6 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
             this.status = DeploymentResourceStatus.UNKNOWN;
         }
         fillData(app);
-        rxSubscription = SpringCloudStateManager.INSTANCE.subscribeSpringAppEvent(event -> {
-            if (event.isUpdate()) {
-                fillData(event.getApp());
-            }
-        }, this.app.entity().getId());
         AzureEventBus.after("springcloud|app.start", this::onAppStatusChanged);
         AzureEventBus.after("springcloud|app.stop", this::onAppStatusChanged);
         AzureEventBus.after("springcloud|app.restart", this::onAppStatusChanged);
@@ -89,9 +82,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     }
 
     public void unsubscribe() {
-        if (rxSubscription != null && !rxSubscription.isDisposed()) {
-            rxSubscription.dispose();
-        }
+        // TODO: remove app event listeners
     }
 
     @Override
