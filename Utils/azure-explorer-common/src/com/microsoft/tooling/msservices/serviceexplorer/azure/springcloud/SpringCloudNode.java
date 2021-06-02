@@ -20,7 +20,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ import java.util.Map;
 public class SpringCloudNode extends RefreshableNode implements TelemetryProperties {
     private static final String EMPTY_POSTFIX = " (Empty)";
 
-    private SpringCloudCluster cluster;
+    private final SpringCloudCluster cluster;
 
     public SpringCloudNode(AzureRefreshableNode parent, SpringCloudCluster cluster) {
         super(cluster.id(), cluster.name(), parent, null, true);
@@ -50,25 +49,6 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
         return AzureIconSymbol.SpringCloud.CLUSTER;
-    }
-
-    private void notifyDataRefresh(SpringCloudAppEvent event) {
-        if (event.isDelete()) {
-            SpringCloudAppNode matchedNode =
-                    Arrays.stream(childNodes.toArray(new SpringCloudAppNode[0])).filter(node -> event.getId().equals(node.getId())).findFirst().orElse(null);
-            if (matchedNode != null) {
-                matchedNode.unsubscribe();
-                this.removeDirectChildNode(matchedNode);
-            }
-            if (this.childNodes.isEmpty()) {
-                this.setName(this.cluster.name() + EMPTY_POSTFIX);
-            }
-        } else {
-            if (Arrays.stream(childNodes.toArray(new SpringCloudAppNode[0])).noneMatch(node -> event.getId().equals(node.getId()))) {
-                addChildNode(new SpringCloudAppNode(event.getApp(), this));
-            }
-            this.setName(this.cluster.name());
-        }
     }
 
     @Override
