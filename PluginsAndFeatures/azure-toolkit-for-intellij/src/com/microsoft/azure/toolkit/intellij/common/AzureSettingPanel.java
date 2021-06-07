@@ -33,6 +33,7 @@ import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.*;
 
+
 public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
 
     private static final JLabel EMPTY_LABEL = new JLabel();
@@ -219,7 +220,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             return;
         }
         List<AzureArtifact> azureArtifacts =
-                configuration instanceof SpringCloudDeploymentConfiguration ?
+            configuration instanceof SpringCloudDeploymentConfiguration ?
                 AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
                 AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
         getCbAzureArtifact().removeAllItems();
@@ -227,7 +228,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             for (AzureArtifact azureArtifact : azureArtifacts) {
                 getCbAzureArtifact().addItem(azureArtifact);
                 if (StringUtils.equals(AzureArtifactManager.getInstance(project).getArtifactIdentifier(azureArtifact)
-                        , artifactIdentifier)) {
+                    , artifactIdentifier)) {
                     getCbAzureArtifact().setSelectedItem(azureArtifact);
                 }
             }

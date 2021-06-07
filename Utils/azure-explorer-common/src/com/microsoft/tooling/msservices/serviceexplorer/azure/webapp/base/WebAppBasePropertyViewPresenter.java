@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.management.appservice.AppSetting;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
