@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
+public class WebAppNode extends WebAppBaseNode {
     private static final String LABEL = "WebApp";
     public static final String SSH_INTO = "SSH into Web App (Preview)";
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
@@ -38,9 +38,8 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private WebApp webapp; // Track one client, keep for file service
     private final IWebApp webappManager;
 
-    public WebAppNode(WebAppModule parent, String subscriptionId, IWebApp webAppManager) {
-        super(webAppManager.id(), webAppManager.name(), LABEL, parent, subscriptionId, webAppManager.hostName(),
-              webAppManager.getRuntime().getOperatingSystem().toString(), webAppManager.state());
+    public WebAppNode(WebAppModule parent, IWebApp webAppManager) {
+        super(parent, LABEL, webAppManager);
         this.webappManager = webAppManager;
         loadActions();
     }
@@ -68,7 +67,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         this.renderSubModules();
     }
 
-    @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webappManager));
