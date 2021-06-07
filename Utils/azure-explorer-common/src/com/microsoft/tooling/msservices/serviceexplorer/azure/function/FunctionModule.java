@@ -5,9 +5,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -21,8 +21,6 @@ public class FunctionModule extends AzureRefreshableNode {
     private static final String ICON_PATH = "azure-functions-small.png";
     private static final String BASE_MODULE_NAME = "Function App";
     private static final String FUNCTION_MODULE = "FunctionModule";
-    private static final String FAILED_TO_DELETE_FUNCTION_APP = "Failed to delete Function App %s";
-    private static final String ERROR_DELETING_FUNCTION_APP = "Azure Services Explorer - Error Deleting Function App";
 
     public static final String MODULE_NAME = "Function App";
 
@@ -80,6 +78,6 @@ public class FunctionModule extends AzureRefreshableNode {
     }
 
     private static boolean isFunctionModuleEvent(Object eventObject) {
-        return eventObject != null && eventObject instanceof FunctionApp;
+        return eventObject != null && eventObject instanceof IFunctionApp;
     }
 }

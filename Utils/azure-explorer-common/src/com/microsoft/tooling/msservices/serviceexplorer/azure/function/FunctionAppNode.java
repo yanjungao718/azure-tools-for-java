@@ -5,12 +5,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -52,7 +52,7 @@ public class FunctionAppNode extends WebAppBaseNode {
 
     public void renderSubModules() {
         // todo: implement with app service library
-        addChildNode(new FunctionsNode(this, null));
+        addChildNode(new FunctionsNode(this, functionApp));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, null));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, null));
     }
@@ -96,23 +96,20 @@ public class FunctionAppNode extends WebAppBaseNode {
 
     @AzureOperation(name = "function.start", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
-        AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
-        this.renderNode(WebAppBaseState.fromString(target.state()));
+        Azure.az(AzureAppService.class).functionApp(id).start();
+        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
     }
 
     @AzureOperation(name = "function.stop", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
-        AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
-        this.renderNode(WebAppBaseState.fromString(target.state()));
+        Azure.az(AzureAppService.class).functionApp(id).stop();
+        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
     }
 
     @AzureOperation(name = "function.restart", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
-        AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
-        this.renderNode(WebAppBaseState.fromString(target.state()));
+        Azure.az(AzureAppService.class).functionApp(id).restart();
+        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
     }
 
     @AzureOperation(name = "function.delete", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
