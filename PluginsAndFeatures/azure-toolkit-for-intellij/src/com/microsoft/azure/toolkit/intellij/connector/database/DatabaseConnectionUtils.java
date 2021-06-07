@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azuretools.ActionConstants;
@@ -12,6 +12,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.mysql.cj.jdbc.ConnectionImpl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,8 +21,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
 
-public class MySQLConnectionUtils {
+public class DatabaseConnectionUtils {
 
+    private static final String SQL_URL_PREFIX = "jdbc:sqlserver:";
     private static final String CONNECTION_ISSUE_MESSAGE = "%s Please follow https://docs.microsoft.com/en-us/azure/mysql/howto-manage-firewall-using-portal "
             + "to create a firewall rule to unblock your local access.";
     private static final int CONNECTION_ERROR_CODE = 9000;
@@ -31,7 +33,11 @@ public class MySQLConnectionUtils {
 
     public static boolean connect(JdbcUrl url, String username, String password) {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            if (StringUtils.startsWith(url.toString(), SQL_URL_PREFIX)) {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            } else {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
             DriverManager.getConnection(url.toString(), username, password);
             return true;
         } catch (final ClassNotFoundException | SQLException ignored) {
@@ -47,7 +53,11 @@ public class MySQLConnectionUtils {
         String serverVersion = null;
         // refresh property
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            if (StringUtils.startsWith(url.toString(), SQL_URL_PREFIX)) {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            } else {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
             final long start = System.currentTimeMillis();
             final Connection connection = DriverManager.getConnection(url.toString(), username, password);
             connected = true;

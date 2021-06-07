@@ -3,14 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
+package com.microsoft.azure.toolkit.intellij.connector.database.component;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
+import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -89,7 +89,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         final String password = String.valueOf(passwordField.getPassword());
         final Runnable runnable = () -> {
-            final MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(jdbcUrl, username, password);
+            final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils.connectWithPing(jdbcUrl, username, password);
             testConnectionActionPanel.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
             final Icon icon = connectResult.isConnected() ? AllIcons.General.InspectionsOK : AllIcons.General.BalloonError;
@@ -102,7 +102,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         AzureTaskManager.getInstance().runInBackground(task);
     }
 
-    private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {
+    private String getConnectResultMessage(DatabaseConnectionUtils.ConnectResult result) {
         final StringBuilder messageBuilder = new StringBuilder();
         if (result.isConnected()) {
             messageBuilder.append("Connected successfully.").append(System.lineSeparator());
