@@ -97,19 +97,19 @@ public class FunctionAppNode extends WebAppBaseNode {
     @AzureOperation(name = "function.start", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         Azure.az(AzureAppService.class).functionApp(id).start();
-        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
+        refreshStatus();
     }
 
     @AzureOperation(name = "function.stop", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         Azure.az(AzureAppService.class).functionApp(id).stop();
-        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
+        refreshStatus();
     }
 
     @AzureOperation(name = "function.restart", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         Azure.az(AzureAppService.class).functionApp(id).restart();
-        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
+        refreshStatus();
     }
 
     @AzureOperation(name = "function.delete", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
@@ -125,5 +125,11 @@ public class FunctionAppNode extends WebAppBaseNode {
     @AzureOperation(name = "function.show_properties", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
+    }
+
+    // todo: replace with Azure Event Bus
+    private void refreshStatus() {
+        functionApp.refresh();
+        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
     }
 }
