@@ -58,7 +58,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
             .map(r -> new LineMarkerInfo<>(
                 element, element.getTextRange(),
                 AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
-                element2 -> String.format("Connect to Azure Database for MySQL (%s)", r.getJdbcUrl().getHost()),
+                element2 -> String.format("Connect to Azure Database for MySQL (%s)", r.getJdbcUrl().getServerHost()),
                 new SpringDatasourceNavigationHandler(r),
                 GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
     }

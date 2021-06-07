@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.connector.mysql.component.PasswordSa
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.ServerComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.TestConnectionActionPanel;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.UsernameComboBox;
+import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -96,7 +97,7 @@ public class MySQLDatabaseResourcePanel implements AzureFormJPanel<MySQLDatabase
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         final String username = usernameComboBox.getValue();
         final String password = String.valueOf(inputPasswordField.getPassword());
-        final String title = String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getHost());
+        final String title = String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getServerHost());
         AzureTaskManager.getInstance().runInBackground(title, false, () -> {
             final MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(this.jdbcUrl, username, password);
             // show result info
@@ -141,7 +142,7 @@ public class MySQLDatabaseResourcePanel implements AzureFormJPanel<MySQLDatabase
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final String server = Optional.ofNullable(this.serverComboBox.getValue()).map(Server::fullyQualifiedDomainName).orElse(null);
             final String database = Optional.ofNullable((DatabaseInner) e.getItem()).map(DatabaseInner::name).orElse(null);
-            this.jdbcUrl = this.jdbcUrl == null ? JdbcUrl.mysql(server, database) : this.jdbcUrl.setServer(server).setDatabase(database);
+            this.jdbcUrl = this.jdbcUrl == null ? JdbcUrl.mysql(server, database) : this.jdbcUrl.setServerHost(server).setDatabase(database);
             this.urlTextField.setText(this.jdbcUrl.toString());
             this.urlTextField.setCaretPosition(0);
         }
@@ -149,8 +150,8 @@ public class MySQLDatabaseResourcePanel implements AzureFormJPanel<MySQLDatabase
 
     private void onUrlEdited(FocusEvent e) {
         try {
-            this.jdbcUrl = new JdbcUrl(this.urlTextField.getText());
-            this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServer(), Server::fullyQualifiedDomainName));
+            this.jdbcUrl = JdbcUrl.from(this.urlTextField.getText());
+            this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(), Server::fullyQualifiedDomainName));
             this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getDatabase(), DatabaseInner::name));
         } catch (final Exception exception) {
             // TODO: messager.warning(...)

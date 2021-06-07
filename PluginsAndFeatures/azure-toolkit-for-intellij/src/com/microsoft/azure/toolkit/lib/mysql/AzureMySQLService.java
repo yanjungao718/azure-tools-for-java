@@ -10,9 +10,9 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefau
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.NetUtils;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
