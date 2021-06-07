@@ -44,9 +44,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -77,12 +75,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Log
@@ -412,53 +405,7 @@ public class IDEHelperImpl implements IDEHelper {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    @AzureOperation(
-            name = "appservice|file.open",
-            params = {"target.getName()"},
-            type = AzureOperation.Type.SERVICE
-    )
-    @SneakyThrows
-    public void openAppServiceFile(final AppServiceFileLegacy target, Object context) {
-        final AppServiceFileService fileService = AppServiceFileService.forApp(target.getApp());
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
-        final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
-        final OutputStream output = virtualFile.getOutputStream(null);
-        final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
-        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
-        final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
-            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-            indicator.setIndeterminate(true);
-            indicator.setText2("Checking file existence");
-            final AppServiceFileLegacy file = fileService.getFileByPath(target.getPath());
-            if (file == null) {
-                final String failureFileDeleted = String.format("Target file (%s) has been deleted", target.getName());
-                UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(failureFileDeleted, "Open File"));
-                return;
-            }
-            indicator.setText2("Loading file content");
-            fileService
-                    .getFileContent(file.getPath())
-                    .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
-                        final Consumer<String> contentSaver = content -> saveFileToAzure(target, content, fileEditorManager.getProject());
-                        if (!openFileInEditor(contentSaver, virtualFile, fileEditorManager)) {
-                            Messages.showWarningDialog(failure, "Open File");
-                        }
-                    }, AzureTask.Modality.NONE))
-                    .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
-                    .subscribe(bytes -> {
-                        try {
-                            IOUtils.write(bytes, output);
-                        } catch (final IOException e) {
-                            final String error = "failed to load data into editor";
-                            final String action = "try later or downloading it first";
-                            throw new AzureToolkitRuntimeException(error, e, action);
-                        }
-                    }, AzureExceptionHandler::onRxException);
-        });
-        AzureTaskManager.getInstance().runInModal(task);
-    }
-
-    private boolean openFileInEditor(final Consumer<String> contentSaver, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
+    private boolean openFileInEditor(final Consumer<? super String> contentSaver, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
         final FileEditor[] editors = fileEditorManager.openFile(virtualFile, true, true);
         if (editors.length == 0) {
             return false;
@@ -502,11 +449,15 @@ public class IDEHelperImpl implements IDEHelper {
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
         final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             final IAppService appService = appServiceFile.getApp();
             final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
-            final boolean outDated = ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()));
+            final boolean outDated = Optional.ofNullable(target)
+                                             .map(AppServiceFile::getMtime)
+                                             .map(ZonedDateTime::parse)
+                                             .map(mTime -> mTime.isAfter(ZonedDateTime.parse(appServiceFile.getMtime())))
+                                             .orElse(false);
             boolean toSave = true;
             if (deleted) {
                 toSave = DefaultLoader.getUIHelper().showYesNoDialog(null, String.format(FILE_HAS_BEEN_DELETED, appServiceFile.getName()),
@@ -520,71 +471,6 @@ public class IDEHelperImpl implements IDEHelper {
                 PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile.getName()));
             }
         }));
-    }
-
-    @Deprecated
-    @AzureOperation(
-        name = "appservice|file.save",
-        params = {"appServiceFile.getName()"},
-        type = AzureOperation.Type.SERVICE
-    )
-    private void saveFileToAzure(final AppServiceFileLegacy appServiceFile, final String content, final Project project) {
-        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
-            final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
-            final AppServiceFileLegacy target = fileService.getFileByPath(appServiceFile.getPath());
-            final boolean deleted = target == null;
-            final boolean outDated = ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()));
-            boolean toSave = true;
-            if (deleted) {
-                toSave = DefaultLoader.getUIHelper().showYesNoDialog(null, String.format(FILE_HAS_BEEN_DELETED, appServiceFile.getName()),
-                                                                     APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
-            } else if (outDated) {
-                toSave = DefaultLoader.getUIHelper().showYesNoDialog(
-                    null, String.format(FILE_HAS_BEEN_MODIFIED, appServiceFile.getName()), APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
-            }
-            if (toSave) {
-                fileService.uploadFileToPath(content, appServiceFile.getPath());
-                PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile.getName()));
-            }
-        }));
-    }
-
-    /**
-     * user is asked to choose where to save the file is @param dest is null
-     */
-    @AzureOperation(
-        name = "appservice|file.download",
-        params = {"file.getName()"},
-        type = AzureOperation.Type.SERVICE
-    )
-    @SneakyThrows
-    public void saveAppServiceFile(@NotNull final AppServiceFileLegacy file, @NotNull Object context, @Nullable File dest) {
-        final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
-        if (Objects.isNull(destFile)) {
-            return;
-        }
-        final OutputStream output = new FileOutputStream(destFile);
-        final Project project = (Project) context;
-        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.download", file.getName());
-        final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
-            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            AppServiceFileService
-                .forApp(file.getApp())
-                .getFileContent(file.getPath())
-                .doOnCompleted(() -> notifyDownloadSuccess(file.getName(), destFile, ((Project) context)))
-                .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
-                .subscribe(bytes -> {
-                    try {
-                        IOUtils.write(bytes, output);
-                    } catch (final IOException e) {
-                        final String error = "failed to write data into local file";
-                        final String action = "try later";
-                        throw new AzureToolkitRuntimeException(error, e, action);
-                    }
-                }, AzureExceptionHandler::onRxException);
-        });
-        AzureTaskManager.getInstance().runInModal(task);
     }
 
     @SneakyThrows
@@ -641,15 +527,6 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     private synchronized VirtualFile getOrCreateVirtualFile(final AppServiceFile file, FileEditorManager manager) {
-        synchronized (file) {
-            return Arrays.stream(manager.getOpenFiles())
-                    .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))
-                    .findFirst().orElse(createVirtualFile(file.getId(), file.getFullName(), manager));
-        }
-    }
-
-    @Deprecated
-    private synchronized VirtualFile getOrCreateVirtualFile(final AppServiceFileLegacy file, FileEditorManager manager) {
         synchronized (file) {
             return Arrays.stream(manager.getOpenFiles())
                     .filter(f -> StringUtils.equals(f.getUserData(APP_SERVICE_FILE_ID), file.getId()))

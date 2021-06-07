@@ -17,8 +17,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy.AppServiceLogFilesRootNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy.AppServiceUserFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
@@ -53,8 +53,8 @@ public class FunctionAppNode extends WebAppBaseNode {
     public void renderSubModules() {
         // todo: implement with app service library
         addChildNode(new FunctionsNode(this, functionApp));
-        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, null));
-        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, null));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, functionApp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, functionApp));
     }
 
     @Override

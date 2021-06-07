@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -18,6 +19,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.Collections;
 import java.util.Map;
@@ -30,12 +32,12 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
     protected IAppService appService;
     protected final String subscriptionId;
 
-    // Lazy load for WebAppBase
-    public AppServiceUserFilesRootNode(final Node parent, final String subscriptionId, final IAppService appService) {
+    public AppServiceUserFilesRootNode(@Nonnull final Node parent, @Nonnull final String subscriptionId, @Nonnull final IAppService appService) {
         this(MODULE_NAME, parent, subscriptionId, appService);
     }
 
-    public AppServiceUserFilesRootNode(final String name, final Node parent, final String subscriptionId, final IAppService appService) {
+    public AppServiceUserFilesRootNode(@Nonnull final String name, @Nonnull final Node parent, @Nonnull final String subscriptionId,
+                                       @Nonnull final IAppService appService) {
         super(MODULE_ID, name, parent, null);
         this.subscriptionId = subscriptionId;
         this.appService = appService;
@@ -63,8 +65,7 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
 
     @Override
     public String getServiceName() {
-        // todo: update after function track2 migration
-        return TelemetryConstants.WEBAPP;
+        return appService instanceof IFunctionAppBase ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
     }
 
     @Override
