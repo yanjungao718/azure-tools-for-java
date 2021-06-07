@@ -12,13 +12,13 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 
 public class TelemetryUtils {
@@ -37,11 +37,11 @@ public class TelemetryUtils {
                 return ret;
             }
             ret = DataOperations.getProperty(dataFile, instId);
-            if (ret == null || ret.isEmpty() || !GetHashMac.isValidHashMac(ret)) {
-                ret = GetHashMac.getHashMac();
+            if (ret == null || ret.isEmpty() || !InstallationIdUtils.isValidHashMac(ret)) {
+                ret = InstallationIdUtils.getHashMac();
             }
         } else {
-            ret = GetHashMac.getHashMac();
+            ret = InstallationIdUtils.getHashMac();
         }
 
         return ret;
