@@ -165,7 +165,8 @@
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
     <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResourceConnectionStartupActivity"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceCompletionContributor"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLSpringDatasourceCompletionContributor"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.sql.SQLSpringDatasourceCompletionContributor"/>
     <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceLineMarkerProvider"/>
   </extensions>
 

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -12,9 +12,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.module.Module;
@@ -27,14 +25,14 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.helpers.AzureIconLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
-public class SpringDatasourceCompletionContributor extends CompletionContributor {
+public abstract class SpringDatasourceCompletionContributor extends CompletionContributor {
 
     public SpringDatasourceCompletionContributor() {
         super();
@@ -45,19 +43,23 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                 if (module == null) {
                     return;
                 }
-                resultSet.addElement(LookupElementBuilder
-                        .create("spring.datasource.url")
-                        .withIcon(AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO))
-                        .withInsertHandler(new MyInsertHandler())
-                        .withBoldness(true)
-                        .withTypeText("String")
-                        .withTailText(" (Azure Database for MySQL)")
-                        .withAutoCompletionPolicy(AutoCompletionPolicy.SETTINGS_DEPENDENT));
+                List<LookupElement> lookupElements = generateLookupElements();
+                if (CollectionUtils.isNotEmpty(lookupElements)) {
+                    lookupElements.forEach(e -> resultSet.addElement(e));
+                }
             }
         });
     }
 
-    private static class MyInsertHandler implements InsertHandler<LookupElement> {
+    public abstract List<LookupElement> generateLookupElements();
+
+    protected static class MyInsertHandler implements InsertHandler<LookupElement> {
+
+        private String resourceType;
+
+        public MyInsertHandler(String resourceType) {
+            this.resourceType = resourceType;
+        }
 
         @Override
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
@@ -66,8 +68,8 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
             if (module != null) {
                 project.getService(ConnectionManager.class)
                         .getConnectionsByConsumerId(module.getName()).stream()
-                        .filter(c -> MySQLDatabaseResource.TYPE.equals(c.getResource().getType()))
-                        .map(c -> ((Connection<MySQLDatabaseResource, ModuleResource>) c)).findAny()
+                        .filter(c -> StringUtils.equals(resourceType, c.getResource().getType()))
+                        .map(c -> ((Connection<DatabaseResource, ModuleResource>) c)).findAny()
                         .ifPresentOrElse(c -> this.insert(c, context), () -> this.createAndInsert(module, context));
             }
         }
@@ -75,10 +77,10 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
         private void createAndInsert(Module module, @NotNull InsertionContext context) {
             final Project project = context.getProject();
             AzureTaskManager.getInstance().runLater(() -> {
-                final var dialog = new ConnectorDialog<MySQLDatabaseResource, ModuleResource>(project);
+                final var dialog = new ConnectorDialog<DatabaseResource, ModuleResource>(project);
                 dialog.setConsumer(new ModuleResource(module.getName()));
                 if (dialog.showAndGet()) {
-                    final Connection<MySQLDatabaseResource, ModuleResource> c = dialog.getData();
+                    final Connection<DatabaseResource, ModuleResource> c = dialog.getData();
                     WriteCommandAction.runWriteCommandAction(project, () -> this.insert(c, context));
                 } else {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
@@ -88,7 +90,7 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
             });
         }
 
-        private void insert(Connection<MySQLDatabaseResource, ModuleResource> c, @NotNull InsertionContext context) {
+        private void insert(Connection<DatabaseResource, ModuleResource> c, @NotNull InsertionContext context) {
             final String envPrefix = c.getResource().getEnvPrefix();
             final String builder = "=${" + envPrefix + "URL}" + StringUtils.LF
                     + "spring.datasource.username=${" + envPrefix + "USERNAME}" + StringUtils.LF
