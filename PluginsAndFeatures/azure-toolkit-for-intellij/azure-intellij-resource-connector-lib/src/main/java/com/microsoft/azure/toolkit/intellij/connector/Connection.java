@@ -8,7 +8,10 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * the <b>{@code resource connection}</b>
@@ -51,5 +54,11 @@ public interface Connection<R extends Resource, C extends Resource> {
      * update java parameters exactly before start the {@code configuration}
      */
     default void updateJavaParametersAtRun(RunConfiguration configuration, @NotNull JavaParameters parameters) {
+    }
+
+    default String getType() {
+        final String resourceType = Objects.nonNull(getResource()) && StringUtils.isNotBlank(getResource().getType()) ? getResource().getType() : "default";
+        final String consumerType = Objects.nonNull(getConsumer()) && StringUtils.isNotBlank(getConsumer().getType()) ? getConsumer().getType() : "default";
+        return resourceType + ":" + consumerType;
     }
 }
