@@ -136,7 +136,7 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     @Nonnull
     private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final MySQLDatabaseResource mysql) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
-        final IAzureOperationTitle title = AzureOperationBundle.title("azure-mysql.azure-mysql-update-password");
+        final IAzureOperationTitle title = AzureOperationBundle.title("mysql.update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(module.getProject(), mysql.getUsername(), mysql.getJdbcUrl());
             if (dialog.showAndGet()) {
