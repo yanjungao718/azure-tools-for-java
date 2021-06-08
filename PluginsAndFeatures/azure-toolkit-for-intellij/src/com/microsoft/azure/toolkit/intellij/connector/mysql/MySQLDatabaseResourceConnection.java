@@ -77,7 +77,7 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     }
 
     @Override
-    @AzureOperation(name = "connector|mysql.before_run_task", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "connector|mysql.prepare_before_run", type = AzureOperation.Type.ACTION)
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
         this.env = this.initEnv();
         if (configuration instanceof WebAppConfiguration) { // set envs for remote deploy
