@@ -10,8 +10,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.JdbcUrl;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
+import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -54,7 +54,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         this.username = username;
         this.jdbcUrl = url;
         setTitle(TITLE);
-        headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getHost()));
+        headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getServerHost()));
         testConnectionButton.setEnabled(false);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
@@ -97,7 +97,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
             testConnectionButton.setIcon(null);
             testConnectionButton.setEnabled(true);
         };
-        final String title = AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getHost());
+        final String title = AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getServerHost());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }

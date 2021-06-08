@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
