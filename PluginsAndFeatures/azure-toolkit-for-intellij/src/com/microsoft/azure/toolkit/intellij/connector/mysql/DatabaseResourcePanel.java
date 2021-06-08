@@ -14,10 +14,11 @@ import com.microsoft.azure.toolkit.intellij.appservice.subscription.Subscription
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.DatabaseComboBox;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.component.PasswordSaveComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.ServerComboBox;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.component.TestConnectionActionPanel;
+import com.microsoft.azure.toolkit.intellij.connector.database.component.TestConnectionActionPanel;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.UsernameComboBox;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -99,7 +100,7 @@ public class MySQLDatabaseResourcePanel implements AzureFormJPanel<MySQLDatabase
         final String password = String.valueOf(inputPasswordField.getPassword());
         final String title = String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getServerHost());
         AzureTaskManager.getInstance().runInBackground(title, false, () -> {
-            final MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(this.jdbcUrl, username, password);
+            final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils.connectWithPing(this.jdbcUrl, username, password);
             // show result info
             testConnectionActionPanel.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
@@ -110,7 +111,7 @@ public class MySQLDatabaseResourcePanel implements AzureFormJPanel<MySQLDatabase
         });
     }
 
-    private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {
+    private String getConnectResultMessage(DatabaseConnectionUtils.ConnectResult result) {
         final StringBuilder messageBuilder = new StringBuilder();
         if (result.isConnected()) {
             messageBuilder.append("Connected successfully.").append(System.lineSeparator());
