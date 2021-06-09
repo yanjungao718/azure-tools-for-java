@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ConnectorDialog<R extends Resource, C extends Resource> extends AzureDialog<Connection<R, C>>
         implements AzureForm<Connection<R, C>> {
@@ -83,21 +85,10 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
                     return;
                 }
             }
-            final GridConstraints constraints = new GridConstraints();
-            constraints.setFill(GridConstraints.FILL_HORIZONTAL);
-            constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
-            constraints.setUseParentLayout(true);
-            final ResourceDefinition<? extends Resource> definition = (ResourceDefinition<? extends Resource>) e.getItem();
             if (Objects.equals(e.getSource(), this.consumerTypeSelector)) {
-                this.consumerPanel = (AzureFormJPanel<C>) consumerDefinition.getResourcesPanel(consumerDefinition.getType(), this.project);
-                Optional.ofNullable(this.consumer).ifPresent(c -> this.consumerPanel.setData(c));
-                this.consumerPanelContainer.removeAll();
-                this.consumerPanelContainer.add(this.consumerPanel.getContentPanel(), constraints);
+                this.updateConsumerPanel(this.consumerTypeSelector.getValue());
             } else {
-                this.resourcePanel = (AzureFormJPanel<R>) resourceDefinition.getResourcesPanel(resourceDefinition.getType(), this.project);
-                Optional.ofNullable(this.resource).ifPresent(c -> this.resourcePanel.setData(c));
-                this.resourcePanelContainer.removeAll();
-                this.resourcePanelContainer.add(this.resourcePanel.getContentPanel(), constraints);
+                this.updateResourcePanel(this.resourceTypeSelector.getValue());
             }
         }
         this.contentPane.revalidate();
@@ -160,14 +151,58 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
         return inputs;
     }
 
+    @Override
+    public void show() {
+        // initialize resource panel if missing
+        if (Objects.isNull(this.resource)) {
+            ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE).stream().findFirst().get();
+            Optional.ofNullable(definition).ifPresent(d -> this.updateResourcePanel(d));
+        }
+        // initialize consumer panel if missing
+        if (Objects.isNull(this.consumer)) {
+            ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.CONSUMER).stream().findFirst().get();
+            Optional.ofNullable(definition).ifPresent(d -> this.updateConsumerPanel(d));
+        }
+        // call original super method
+        super.show();
+    }
+
     public void setResource(final R resource) {
         this.resource = resource;
         this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
+        ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE)
+                .stream().filter(e -> StringUtils.equals(e.getType(), resource.getType())).findFirst().get();
+        Optional.ofNullable(definition).ifPresent(d -> this.updateResourcePanel(d));
     }
 
     public void setConsumer(final C consumer) {
         this.consumer = consumer;
         this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
+        ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.CONSUMER)
+                .stream().filter(e -> StringUtils.equals(e.getType(), consumer.getType())).findFirst().get();
+        Optional.ofNullable(definition).ifPresent(d -> this.updateConsumerPanel(d));
+    }
+
+    private void updateResourcePanel(ResourceDefinition<? extends Resource> definition) {
+        final GridConstraints constraints = new GridConstraints();
+        constraints.setFill(GridConstraints.FILL_HORIZONTAL);
+        constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
+        constraints.setUseParentLayout(true);
+        this.resourcePanel = (AzureFormJPanel<R>) definition.getResourcesPanel(definition.getType(), this.project);
+        Optional.ofNullable(this.resource).ifPresent(c -> this.resourcePanel.setData(c));
+        this.resourcePanelContainer.removeAll();
+        this.resourcePanelContainer.add(this.resourcePanel.getContentPanel(), constraints);
+    }
+
+    private void updateConsumerPanel(ResourceDefinition<? extends Resource> definition) {
+        final GridConstraints constraints = new GridConstraints();
+        constraints.setFill(GridConstraints.FILL_HORIZONTAL);
+        constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
+        constraints.setUseParentLayout(true);
+        this.consumerPanel = (AzureFormJPanel<C>) definition.getResourcesPanel(definition.getType(), this.project);
+        Optional.ofNullable(this.consumer).ifPresent(c -> this.consumerPanel.setData(c));
+        this.consumerPanelContainer.removeAll();
+        this.consumerPanelContainer.add(this.consumerPanel.getContentPanel(), constraints);
     }
 
     private void fixResourceType(ResourceDefinition<? extends Resource> definition) {
