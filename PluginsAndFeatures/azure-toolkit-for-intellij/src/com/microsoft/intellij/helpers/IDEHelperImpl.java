@@ -453,11 +453,7 @@ public class IDEHelperImpl implements IDEHelper {
             final IAppService appService = appServiceFile.getApp();
             final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
-            final boolean outDated = Optional.ofNullable(target)
-                                             .map(AppServiceFile::getMtime)
-                                             .map(ZonedDateTime::parse)
-                                             .map(mTime -> mTime.isAfter(ZonedDateTime.parse(appServiceFile.getMtime())))
-                                             .orElse(false);
+            final boolean outDated = !deleted && ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()));
             boolean toSave = true;
             if (deleted) {
                 toSave = DefaultLoader.getUIHelper().showYesNoDialog(null, String.format(FILE_HAS_BEEN_DELETED, appServiceFile.getName()),
