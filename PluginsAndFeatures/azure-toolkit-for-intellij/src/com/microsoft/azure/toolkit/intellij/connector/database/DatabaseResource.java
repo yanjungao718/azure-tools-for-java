@@ -45,16 +45,16 @@ public final class DatabaseResource implements Resource {
     private String envPrefix;
 
     public DatabaseResource(String type, @Nonnull final String serverId, @Nullable final String databaseName) {
+        this.type = type;
         this.databaseName = databaseName;
         this.serverId = ResourceId.fromString(serverId);
-        this.type = type;
     }
 
     public DatabaseResource(String type, @Nonnull final String databaseId) {
+        this.type = type;
         final ResourceId dbId = ResourceId.fromString(databaseId);
         this.serverId = dbId.parent();
         this.databaseName = dbId.name();
-        this.type = type;
     }
 
     public ResourceId getServerId() {
@@ -74,7 +74,7 @@ public final class DatabaseResource implements Resource {
 
     @Override
     public String toString() {
-        return String.format("MySQL database: \"%s/%s\"", this.getServerId().name(), this.databaseName);
+        return String.format("%s database: \"%s/%s\"", Definition.getTitleByType(this.type), this.getServerId().name(), this.databaseName);
     }
 
     @Getter
