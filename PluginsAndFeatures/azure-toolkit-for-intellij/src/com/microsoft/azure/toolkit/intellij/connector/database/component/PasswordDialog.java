@@ -106,7 +106,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         final StringBuilder messageBuilder = new StringBuilder();
         if (result.isConnected()) {
             messageBuilder.append("Connected successfully.").append(System.lineSeparator());
-            messageBuilder.append("MySQL version: ").append(result.getServerVersion()).append(System.lineSeparator());
+            messageBuilder.append("Version: ").append(result.getServerVersion()).append(System.lineSeparator());
             messageBuilder.append("Ping cost: ").append(result.getPingCost()).append("ms");
         } else {
             messageBuilder.append("Failed to connect with above parameters.").append(System.lineSeparator());
