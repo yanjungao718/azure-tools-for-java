@@ -89,7 +89,7 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
-        envPrefixTextField.setText(DatabaseResource.Definition.SQL_SERVER == definition ? "AZURE_MYSQL_" : "AZURE_SQL_");
+        envPrefixTextField.setText(DatabaseResource.Definition.SQL_SERVER == definition ? "AZURE_SQL_" : "AZURE_MYSQL_");
     }
 
     protected void initListeners() {
