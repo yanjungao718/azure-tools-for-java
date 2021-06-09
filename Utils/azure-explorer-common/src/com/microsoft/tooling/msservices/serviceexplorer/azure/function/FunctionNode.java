@@ -23,15 +23,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +40,6 @@ public class FunctionNode extends Node implements TelemetryProperties {
     private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
-    private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
 
     private final IFunctionApp functionApp;
     private final FunctionEntity functionEntity;
@@ -62,7 +57,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
             @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
                 final IAzureOperationTitle title = AzureOperationBundle.title("function|trigger.start");
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), title, false, () -> trigger()));
+                AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, () -> trigger()));
             }
         }));
         // todo: find whether there is sdk to enable/disable trigger
@@ -76,7 +71,6 @@ public class FunctionNode extends Node implements TelemetryProperties {
         return properties;
     }
 
-    // todo: leverage sdk to trigger functions
     @AzureOperation(
         name = "function|trigger.start.detail",
         params = {"this.functionApp.name()"},
@@ -96,52 +90,13 @@ public class FunctionNode extends Node implements TelemetryProperties {
                 triggerHttpTrigger(trigger);
                 break;
             case "timertrigger":
-                triggerTimerTrigger();
-                break;
-            case "eventhubtrigger":
-                triggerEventHubTrigger();
+                functionApp.triggerFunction(this.name, new Object()); // no input for timer trigger
                 break;
             default:
-                final String error = String.format("unknown trigger type[%s]", triggerType);
-                final String action = "only HttpTrigger, TimerTrigger, EventHubTrigger is supported for now.";
-                throw new AzureToolkitRuntimeException(error, action);
-        }
-
-    }
-
-    // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
-    @AzureOperation(
-        name = "function|trigger.start_timer",
-        params = {"this.functionApp.name()"},
-        type = AzureOperation.Type.TASK
-    )
-    private void triggerTimerTrigger() {
-        try {
-            final HttpPost request = getFunctionTriggerRequest();
-            final StringEntity entity = new StringEntity("{}");
-            request.setEntity(entity);
-            HttpClients.createDefault().execute(request);
-        } catch (IOException e) {
-            final String error = String.format("failed to trigger function[%s] with TimerTrigger", functionApp.name());
-            throw new AzureToolkitRuntimeException(error, e);
-        }
-    }
-
-    @AzureOperation(
-        name = "function|trigger.start_event",
-        params = {"this.functionApp.name()"},
-        type = AzureOperation.Type.TASK
-    )
-    private void triggerEventHubTrigger() {
-        try {
-            final HttpPost request = getFunctionTriggerRequest();
-            final String value = DefaultLoader.getUIHelper().showInputDialog(tree.getParent(), "Please input test value: ", "Trigger Event Hub", null);
-            final StringEntity entity = new StringEntity(String.format("{\"input\":\"'%s'\"}", value));
-            request.setEntity(entity);
-            HttpClients.createDefault().execute(request);
-        } catch (IOException e) {
-            final String error = String.format("failed to trigger function[%s] with EventHubTrigger", functionApp.name());
-            throw new AzureToolkitRuntimeException(error, e);
+                final String input = DefaultLoader.getUIHelper().showInputDialog(tree.getParent(), "Please set the input value: ",
+                        String.format("Trigger function %s", this.name), null);
+                functionApp.triggerFunction(this.name, new TriggerRequest(input));
+                break;
         }
     }
 
@@ -179,32 +134,17 @@ public class FunctionNode extends Node implements TelemetryProperties {
         if (functionApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) {
             return getAdminHttpTriggerUrl();
         }
-        final Map<String, String> keyMap = listFunctionKeys();
-        final String key = keyMap.values().stream().filter(StringUtils::isNotBlank)
-                .findFirst().orElse(getFunctionMasterKey());
+        final String key = functionApp.listFunctionKeys(this.name).values().stream().filter(StringUtils::isNotBlank)
+                .findFirst().orElse(functionApp.getMasterKey());
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.hostName(), this.name, key);
     }
 
     private String getAdminHttpTriggerUrl() {
-        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.hostName(), this.name,
-                getFunctionMasterKey());
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.hostName(), this.name, functionApp.getMasterKey());
     }
 
-    private HttpPost getFunctionTriggerRequest() {
-        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.hostName(), this.name);
-        final HttpPost request = new HttpPost(targetUrl);
-        request.setHeader("x-functions-key", getFunctionMasterKey());
-        request.setHeader("Content-Type", "application/json");
-        return request;
-    }
-
-    private String getFunctionMasterKey() {
-        // todo: imply with app service library
-        return StringUtils.EMPTY;
-    }
-
-    private Map<String, String> listFunctionKeys() {
-        // todo: imply with app service library
-        return Collections.EMPTY_MAP;
+    @RequiredArgsConstructor
+    static class TriggerRequest {
+        private final String input;
     }
 }
