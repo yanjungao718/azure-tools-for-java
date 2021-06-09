@@ -79,6 +79,7 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
             AzureTaskManager.getInstance().runLater(() -> {
                 final var dialog = new ConnectorDialog<DatabaseResource, ModuleResource>(project);
                 dialog.setConsumer(new ModuleResource(module.getName()));
+                dialog.setResource(new DatabaseResource(resourceType, null, null));
                 if (dialog.showAndGet()) {
                     final Connection<DatabaseResource, ModuleResource> c = dialog.getData();
                     WriteCommandAction.runWriteCommandAction(project, () -> this.insert(c, context));
