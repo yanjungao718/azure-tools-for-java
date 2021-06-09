@@ -13,6 +13,7 @@ import com.mysql.cj.jdbc.ConnectionImpl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,7 +24,7 @@ import java.util.Collections;
 
 public class DatabaseConnectionUtils {
 
-    private static final String SQL_URL_PREFIX = "jdbc:sqlserver:";
+    private static final String SQL_SERVER_URL_PREFIX = "jdbc:sqlserver:";
     private static final String CONNECTION_ISSUE_MESSAGE = "%s Please follow https://docs.microsoft.com/en-us/azure/mysql/howto-manage-firewall-using-portal "
             + "to create a firewall rule to unblock your local access.";
     private static final int CONNECTION_ERROR_CODE = 9000;
@@ -33,7 +34,7 @@ public class DatabaseConnectionUtils {
 
     public static boolean connect(JdbcUrl url, String username, String password) {
         try {
-            if (StringUtils.startsWith(url.toString(), SQL_URL_PREFIX)) {
+            if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
                 Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             } else {
                 Class.forName("com.mysql.jdbc.Driver");
@@ -53,7 +54,7 @@ public class DatabaseConnectionUtils {
         String serverVersion = null;
         // refresh property
         try {
-            if (StringUtils.startsWith(url.toString(), SQL_URL_PREFIX)) {
+            if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
                 Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             } else {
                 Class.forName("com.mysql.jdbc.Driver");
@@ -68,7 +69,15 @@ public class DatabaseConnectionUtils {
                 connected = "hi".equals(result);
             }
             pingCost = System.currentTimeMillis() - start;
-            serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
+            if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
+                try {
+                    serverVersion = (String) FieldUtils.readField(connection, "sqlServerVersion", true);
+                } catch (IllegalAccessException e) {
+                    serverVersion = "unknown";
+                }
+            } else {
+                serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
+            }
         } catch (final SQLException exception) {
             errorCode = exception.getErrorCode();
             errorMessage = exception.getErrorCode() == CONNECTION_ERROR_CODE ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
