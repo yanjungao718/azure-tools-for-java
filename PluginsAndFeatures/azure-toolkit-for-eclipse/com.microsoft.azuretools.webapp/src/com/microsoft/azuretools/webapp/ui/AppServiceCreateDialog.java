@@ -546,7 +546,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboResourceGroup.setBounds(0, 0, 26, 22);
         dec_comboSelectResGr = decorateContorolAndRegister(comboResourceGroup);
         AccessibilityUtils.setAccessibilityNameForUIComponent(comboResourceGroup, "Existing resource group");
-        
+
         btnResourceGroupCreateNew = new Button(compositeResourceGroup, SWT.RADIO);
         btnResourceGroupCreateNew.addSelectionListener(new SelectionAdapter() {
             @Override
