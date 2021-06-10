@@ -77,7 +77,7 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     }
 
     @Override
-    @AzureOperation(name = "connector|mysql.before_run_task", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "connector|mysql.prepare_before_run", type = AzureOperation.Type.ACTION)
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
         this.env = this.initEnv();
         if (configuration instanceof WebAppConfiguration) { // set envs for remote deploy
@@ -136,7 +136,7 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     @Nonnull
     private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final MySQLDatabaseResource mysql) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
-        final IAzureOperationTitle title = AzureOperationBundle.title("azure-mysql.azure-mysql-update-password");
+        final IAzureOperationTitle title = AzureOperationBundle.title("mysql.update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(module.getProject(), mysql.getUsername(), mysql.getJdbcUrl());
             if (dialog.showAndGet()) {

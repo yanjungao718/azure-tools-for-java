@@ -90,7 +90,7 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
         return rgName;
     }
 
-    @AzureOperation(name = ActionConstants.ResourceManagement.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "arm|rg.delete", params = {"this.rgName"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         getParent().removeNode(sid, rgName, ResourceManagementNode.this);
     }

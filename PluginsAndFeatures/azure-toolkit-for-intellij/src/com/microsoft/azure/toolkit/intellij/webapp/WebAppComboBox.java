@@ -43,7 +43,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "webapp.list.detail|subscription|selected",
+        name = "webapp.list.detail|java|subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     protected List<WebAppComboBoxModel> loadAppServiceModels() {
@@ -51,7 +51,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         return webApps.stream()
                       .filter(webApp -> webApp.getRuntime().getJavaVersion() != null && webApp.getRuntime().getJavaVersion() != JavaVersion.OFF)
                       .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
-                      .map(webApp -> new WebAppComboBoxModel(webApp))
+                      .map(WebAppComboBoxModel::new)
                       .collect(Collectors.toList());
     }
 }
