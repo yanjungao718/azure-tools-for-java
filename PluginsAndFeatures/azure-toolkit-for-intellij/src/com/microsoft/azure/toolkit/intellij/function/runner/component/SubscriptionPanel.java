@@ -56,7 +56,7 @@ public class SubscriptionPanel extends JPanel {
     }
 
     @AzureOperation(
-        name = "load selected subscriptions",
+        name = "account|subscription.list.selected",
         type = AzureOperation.Type.SERVICE
     )
     public void loadSubscription() {
