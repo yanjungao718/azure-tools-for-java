@@ -89,7 +89,7 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
-        envPrefixTextField.setText(DatabaseResource.Definition.SQL_SERVER == definition ? "AZURE_MYSQL_" : "AZURE_SQL_");
+        envPrefixTextField.setText(DatabaseResource.Definition.SQL_SERVER == definition ? "AZURE_SQL_" : "AZURE_MYSQL_");
     }
 
     protected void initListeners() {
@@ -130,7 +130,7 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         final StringBuilder messageBuilder = new StringBuilder();
         if (result.isConnected()) {
             messageBuilder.append("Connected successfully.").append(System.lineSeparator());
-            messageBuilder.append("MySQL version: ").append(result.getServerVersion()).append(System.lineSeparator());
+            messageBuilder.append("Version: ").append(result.getServerVersion()).append(System.lineSeparator());
             messageBuilder.append("Ping cost: ").append(result.getPingCost()).append("ms");
         } else {
             messageBuilder.append("Failed to connect with above parameters.").append(System.lineSeparator());
