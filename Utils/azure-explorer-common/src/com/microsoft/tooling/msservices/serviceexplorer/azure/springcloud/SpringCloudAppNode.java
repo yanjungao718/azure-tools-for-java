@@ -95,37 +95,37 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
         getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(!stopped && !unknown && !allocating);
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.delete", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         app.remove();
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.start", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         app.start();
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.stop", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         app.stop();
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.restart", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         app.restart();
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.open_portal", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         openResourcesInPortal(app.entity().getSubscriptionId(), app.entity().getId());
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.show_properties", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         AzureTaskManager.getInstance().runLater(() -> DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this));
     }
 
-    @AzureOperation(name = ActionConstants.SpringCloud.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.open_browser", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         if (StringUtils.isNotEmpty(app.entity().getApplicationUrl())) {
             DefaultLoader.getUIHelper().openInBrowser(app.entity().getApplicationUrl());

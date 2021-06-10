@@ -164,7 +164,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "common|function.validate_project",
+        name = "function.validate_project",
         params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
