@@ -133,35 +133,35 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return webapp;
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.start", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         this.webappManager.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.stop", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         this.webappManager.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.restart", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         this.webappManager.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.webappManager.hostName());
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.show_properties", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }

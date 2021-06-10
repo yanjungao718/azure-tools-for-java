@@ -56,7 +56,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
-    @AzureOperation(name = "webapp.delete", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete", params = {"nameFromResourceId(id)"}, type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         webAppModulePresenter.onDeleteWebApp(sid, id);
         removeDirectChildNode(node);

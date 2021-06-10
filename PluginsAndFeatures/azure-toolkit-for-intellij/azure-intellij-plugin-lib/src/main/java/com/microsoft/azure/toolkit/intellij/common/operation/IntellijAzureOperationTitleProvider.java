@@ -1,42 +1,60 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.common.operation;
 
-import com.intellij.AbstractBundle;
+import com.intellij.CommonBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.jetbrains.annotations.NotNull;
 
-public class IntellijAzureOperationTitleProvider extends AbstractBundle implements AzureOperationBundle.Provider {
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
+public class IntellijAzureOperationTitleProvider implements AzureOperationBundle.Provider {
+
+    private static final Map<String, Optional<ResourceBundle>> libBundles = new ConcurrentHashMap<>();
+    private static final Map<String, Optional<ResourceBundle>> intellijBundles = new ConcurrentHashMap<>();
     private static final IntellijAzureOperationTitleProvider INSTANCE = new IntellijAzureOperationTitleProvider();
-
-    private IntellijAzureOperationTitleProvider() {
-        super(AzureOperationBundle.TITLES);
-    }
 
     @Override
     public @NotNull String getMessage(@NotNull final String key, final Object @NotNull ... params) {
-        return super.messageOrDefault(key, String.format("!%s!", key), params);
+        final String notFound = String.format("!%s!", key);
+        final String subGroup = key.split("\\.")[0].replaceAll("\\|", "_");
+        final String supGroup = key.split("[|.]")[0];
+        final ArrayList<Supplier<String>> suppliers = new ArrayList<>();
+        suppliers.add(() -> this.getIjOperationTitle(supGroup, key, params));
+        suppliers.add(() -> this.getIjOperationTitle(subGroup, key, params));
+        suppliers.add(() -> this.getLibOperationTitle(supGroup, key, params));
+        suppliers.add(() -> this.getLibOperationTitle(subGroup, key, params));
+        for (final Supplier<String> supplier : suppliers) {
+            final String title = supplier.get();
+            if (Objects.nonNull(title)) {
+                return title;
+            }
+        }
+        return notFound;
+    }
+
+    public String getLibOperationTitle(@Nonnull final String group, @NotNull final String key, final Object @NotNull ... params) {
+        return libBundles.computeIfAbsent(group, k -> {
+            final String bundleName = String.format("com.microsoft.azure.toolkit.operation.titles_%s", group);
+            return Optional.ofNullable(ResourceBundle.getBundle(bundleName));
+        }).map(b -> CommonBundle.messageOrNull(b, key, params)).orElse(null);
+    }
+
+    public String getIjOperationTitle(@Nonnull final String group, @NotNull final String key, final Object @NotNull ... params) {
+        return libBundles.computeIfAbsent(group, k -> {
+            final String bundleName = String.format("com.microsoft.azure.toolkit.operation.titles_%s_intellij", group);
+            return Optional.ofNullable(ResourceBundle.getBundle(bundleName));
+        }).map(b -> CommonBundle.messageOrNull(b, key, params)).orElse(null);
     }
 
     public static void register() {
