@@ -174,10 +174,6 @@
             <version>4.5.12</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
-            <artifactId>azure-mgmt-appplatform</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
         </dependency>

@@ -8,7 +8,6 @@ package com.microsoft.azuretools.authmanage;
 import com.azure.core.implementation.http.HttpClientProviders;
 import com.microsoft.aad.msal4j.PublicClientApplication;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -29,10 +28,14 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import reactor.core.publisher.Hooks;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import rx.exceptions.Exceptions;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,16 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
-
-import lombok.Lombok;
-import reactor.core.publisher.Hooks;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import rx.exceptions.Exceptions;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class AuthMethodManager {
     private static final org.apache.log4j.Logger LOGGER =
@@ -132,21 +126,6 @@ public class AuthMethodManager {
         final String action = "Confirm you have already signed in with subscription: " + sid;
         final String errorCode = "001";
         throw new AzureToolkitRuntimeException(error, null, action, errorCode);
-    }
-
-    @AzureOperation(
-        name = "common|rest_client.create_asc",
-        params = {"sid"},
-        type = AzureOperation.Type.TASK
-    )
-    public AppPlatformManager getAzureSpringCloudClient(String sid) {
-        final AzureManager manager = getAzureManager();
-        if (manager != null) {
-            return getAzureManager().getAzureSpringCloudClient(sid);
-        }
-        final String error = "Failed to connect Azure service with current account";
-        final String action = "Confirm you have already signed in with subscription: " + sid;
-        throw new AzureToolkitRuntimeException(error, action);
     }
 
     @AzureOperation(
