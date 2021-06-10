@@ -11,7 +11,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * the <b>{@code resource connection}</b>
@@ -57,8 +57,8 @@ public interface Connection<R extends Resource, C extends Resource> {
     }
 
     default String getType() {
-        final String resourceType = Objects.nonNull(getResource()) && StringUtils.isNotBlank(getResource().getType()) ? getResource().getType() : "default";
-        final String consumerType = Objects.nonNull(getConsumer()) && StringUtils.isNotBlank(getConsumer().getType()) ? getConsumer().getType() : "default";
+        final String resourceType = Optional.ofNullable(getResource()).map(e -> e.getType()).filter(StringUtils::isNotBlank).orElse("default");
+        final String consumerType = Optional.ofNullable(getConsumer()).map(e -> e.getType()).filter(StringUtils::isNotBlank).orElse("default");
         return resourceType + ":" + consumerType;
     }
 }
