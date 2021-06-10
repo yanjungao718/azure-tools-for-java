@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ConnectorDialog<R extends Resource, C extends Resource> extends AzureDialog<Connection<R, C>>
         implements AzureForm<Connection<R, C>> {
@@ -153,16 +152,16 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
 
     @Override
     public void show() {
-        // initialize resource panel if missing
-        if (Objects.isNull(this.resource)) {
-            ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE).stream().findFirst().get();
-            Optional.ofNullable(definition).ifPresent(d -> this.updateResourcePanel(d));
-        }
-        // initialize consumer panel if missing
-        if (Objects.isNull(this.consumer)) {
-            ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.CONSUMER).stream().findFirst().get();
-            Optional.ofNullable(definition).ifPresent(d -> this.updateConsumerPanel(d));
-        }
+        // initialize resource panel
+        final List<ResourceDefinition<? extends Resource>> resourceDefinitions = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE);
+        final ResourceDefinition<? extends Resource> resourceDefinition = Objects.nonNull(this.resource) ? resourceDefinitions.stream()
+                .filter(e -> StringUtils.equals(e.getType(), this.resource.getType())).findFirst().get() : resourceDefinitions.stream().findFirst().get();
+        Optional.ofNullable(resourceDefinition).ifPresent(d -> this.updateResourcePanel(d));
+        // initialize consumer panel
+        final List<ResourceDefinition<? extends Resource>> consumerDefinitions = ResourceManager.getDefinitions(ResourceDefinition.CONSUMER);
+        final ResourceDefinition<? extends Resource> consumerDefinition = Objects.nonNull(this.consumer) ? consumerDefinitions.stream()
+                .filter(e -> StringUtils.equals(e.getType(), this.consumer.getType())).findFirst().get() : consumerDefinitions.stream().findFirst().get();
+        Optional.ofNullable(consumerDefinition).ifPresent(d -> this.updateConsumerPanel(d));
         // call original super method
         super.show();
     }
@@ -170,22 +169,16 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     public void setResource(final R resource) {
         this.resource = resource;
         this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
-        ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE)
-                .stream().filter(e -> StringUtils.equals(e.getType(), resource.getType())).findFirst().get();
-        Optional.ofNullable(definition).ifPresent(d -> this.updateResourcePanel(d));
     }
 
     public void setConsumer(final C consumer) {
         this.consumer = consumer;
         this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
-        ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinitions(ResourceDefinition.CONSUMER)
-                .stream().filter(e -> StringUtils.equals(e.getType(), consumer.getType())).findFirst().get();
-        Optional.ofNullable(definition).ifPresent(d -> this.updateConsumerPanel(d));
     }
 
     private void updateResourcePanel(ResourceDefinition<? extends Resource> definition) {
         final GridConstraints constraints = new GridConstraints();
-        constraints.setFill(GridConstraints.FILL_HORIZONTAL);
+        constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
         this.resourcePanel = (AzureFormJPanel<R>) definition.getResourcesPanel(definition.getType(), this.project);
@@ -196,7 +189,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
 
     private void updateConsumerPanel(ResourceDefinition<? extends Resource> definition) {
         final GridConstraints constraints = new GridConstraints();
-        constraints.setFill(GridConstraints.FILL_HORIZONTAL);
+        constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
         this.consumerPanel = (AzureFormJPanel<C>) definition.getResourcesPanel(definition.getType(), this.project);
