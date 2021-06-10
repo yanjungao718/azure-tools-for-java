@@ -51,7 +51,6 @@
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
   <idea-version since-build="202.6397.94" until-build="202.*"/>
-  <resource-bundle>com.microsoft.azure.toolkit.operation.titles</resource-bundle>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true" config-file="">org.intellij.scala</depends>
@@ -61,6 +60,7 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
+  <xi:include href="/META-INF/operation-titles.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-resource-connector-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
