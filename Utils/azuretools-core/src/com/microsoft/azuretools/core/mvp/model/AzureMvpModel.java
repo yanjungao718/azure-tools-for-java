@@ -169,7 +169,7 @@ public class AzureMvpModel {
     }
 
     @AzureOperation(
-        name = "deployment.list.subscription|selected",
+        name = "arm|deployment.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<Deployment> listAllDeployments() {
@@ -188,7 +188,7 @@ public class AzureMvpModel {
     }
 
     @AzureOperation(
-        name = "deployment.list.subscription",
+        name = "arm|deployment.list.subscription",
         params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -205,7 +205,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "deployment.list.subscription|rg",
+        name = "arm|deployment.list.subscription|rg",
         params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )

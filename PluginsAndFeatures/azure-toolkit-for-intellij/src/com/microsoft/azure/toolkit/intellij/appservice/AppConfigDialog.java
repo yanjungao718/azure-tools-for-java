@@ -39,7 +39,7 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
     }
 
 
-    @AzureOperation(name = "appservice.toggle", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "appservice.toggle_mode.ui", type = AzureOperation.Type.TASK)
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
         final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();
