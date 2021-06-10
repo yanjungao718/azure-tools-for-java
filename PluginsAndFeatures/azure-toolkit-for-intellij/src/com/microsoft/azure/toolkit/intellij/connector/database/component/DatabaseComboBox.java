@@ -12,7 +12,7 @@ import lombok.Setter;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class ServerDependComboBox<S, T> extends AzureComboBox<T> {
+public class DatabaseComboBox<S, T> extends AzureComboBox<T> {
 
     @Getter
     private S server;

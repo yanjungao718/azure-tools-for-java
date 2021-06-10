@@ -34,11 +34,7 @@ public class DatabaseConnectionUtils {
 
     public static boolean connect(JdbcUrl url, String username, String password) {
         try {
-            if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
-                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            } else {
-                Class.forName("com.mysql.jdbc.Driver");
-            }
+            Class.forName(getDriverClassName(url));
             DriverManager.getConnection(url.toString(), username, password);
             return true;
         } catch (final ClassNotFoundException | SQLException ignored) {
@@ -54,11 +50,7 @@ public class DatabaseConnectionUtils {
         String serverVersion = null;
         // refresh property
         try {
-            if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
-                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            } else {
-                Class.forName("com.mysql.jdbc.Driver");
-            }
+            Class.forName(getDriverClassName(url));
             final long start = System.currentTimeMillis();
             final Connection connection = DriverManager.getConnection(url.toString(), username, password);
             connected = true;
@@ -89,6 +81,14 @@ public class DatabaseConnectionUtils {
                 ActionConstants.parse(ActionConstants.MySQL.TEST_CONNECTION).getOperationName(),
                 Collections.singletonMap("result", String.valueOf(connected)));
         return new ConnectResult(connected, errorMessage, pingCost, serverVersion, errorCode);
+    }
+
+    private static String getDriverClassName(JdbcUrl url) {
+        if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
+            return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        } else {
+            return "com.mysql.jdbc.Driver";
+        }
     }
 
     @Getter
