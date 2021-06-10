@@ -62,7 +62,6 @@
         <constraints>
           <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
       </component>
       <component id="523f0" class="javax.swing.JLabel">
         <constraints>
@@ -80,7 +79,6 @@
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
       </component>
       <component id="2bfe4" class="javax.swing.JLabel">
         <constraints>
@@ -155,14 +153,6 @@
           <text value="Save:"/>
         </properties>
       </component>
-      <component id="5f3cd" class="javax.swing.JTextPane" binding="testResultTextPane">
-        <constraints>
-          <grid row="8" column="1" row-span="1" col-span="3" vsize-policy="6" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="50"/>
-          </grid>
-        </constraints>
-        <properties/>
-      </component>
       <component id="82ad6" class="com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox" binding="passwordSaveComboBox">
         <constraints>
           <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
@@ -196,6 +186,21 @@
           <text value="Env prefix:"/>
         </properties>
       </component>
+      <scrollpane id="f946">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalScrollBarPolicy value="31"/>
+        </properties>
+        <border type="empty"/>
+        <children>
+          <component id="5f3cd" class="javax.swing.JTextPane" binding="testResultTextPane">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>
