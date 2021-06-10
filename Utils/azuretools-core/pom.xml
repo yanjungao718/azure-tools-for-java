@@ -268,10 +268,6 @@
             <artifactId>rxjava</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
-            <artifactId>azure-mgmt-appplatform</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>
             <artifactId>azure-mgmt-mysql</artifactId>
             <version>1.0.0-beta</version>

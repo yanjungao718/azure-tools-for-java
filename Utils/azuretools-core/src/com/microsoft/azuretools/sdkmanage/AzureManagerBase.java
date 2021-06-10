@@ -10,7 +10,6 @@ import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -59,7 +58,6 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
-    protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
     protected Map<String, MySQLManager> sidToMySQLManagerMap = new ConcurrentHashMap<>();
     protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
@@ -151,17 +149,6 @@ public abstract class AzureManagerBase implements AzureManager {
         AzureRegisterProviderNamespaces.registerAzureNamespaces(azure);
         sidToAzureMap.put(sid, azure);
         return azure;
-    }
-
-    @Override
-    public @Nullable AppPlatformManager getAzureSpringCloudClient(String sid) {
-        if (!isSignedIn()) {
-            return null;
-        }
-        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
-            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
-            return authSpringCloud(sid, tid);
-        });
     }
 
     @Override
@@ -263,14 +250,6 @@ public abstract class AzureManagerBase implements AzureManager {
                 .withInterceptor(new RestExceptionHandlerInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
                 .authenticate(credentials);
-    }
-
-    protected AppPlatformManager authSpringCloud(String subscriptionId, String tenantId) {
-        final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(AppPlatformManager.configure())
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .authenticate(credentials, subscriptionId);
     }
 
     protected MySQLManager authMySQL(String subscriptionId, String tenantId) {

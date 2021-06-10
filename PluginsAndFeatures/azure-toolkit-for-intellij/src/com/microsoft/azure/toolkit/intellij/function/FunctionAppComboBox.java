@@ -43,10 +43,10 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
     @NotNull
     @Override
     @AzureOperation(
-        name = "function.list.detail|subscription|selected",
+        name = "function.list.detail|java|subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
-    protected List<FunctionAppComboBoxModel> loadAppServiceModels() throws Exception {
+    protected List<FunctionAppComboBoxModel> loadAppServiceModels() {
         return AzureFunctionMvpModel.getInstance().listJavaFunctionApps(false).parallelStream()
             .map(FunctionAppComboBoxModel::new)
             .sorted((app1, app2) -> app1.getAppName().compareToIgnoreCase(app2.getAppName()))
