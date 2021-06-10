@@ -61,23 +61,23 @@ public class SqlServerNode extends Node implements TelemetryProperties {
 
     @Override
     public List<NodeAction> getNodeActions() {
-        boolean updating = SERVER_UPDATING.equals(serverState);
+        final boolean updating = SERVER_UPDATING.equals(serverState);
         this.getNodeActionByName(AzureActionEnum.DELETE.getName()).setEnabled(!updating);
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = ActionConstants.SqlServer.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver.delete", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.subscriptionId, this.getId(), SqlServerNode.this);
     }
 
-    @AzureOperation(name = ActionConstants.SqlServer.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver.open_portal", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.subscriptionId, this.server.entity().getId());
     }
 
-    @AzureOperation(name = ActionConstants.SqlServer.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver.show_properties", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openSqlServerPropertyView(SqlServerNode.this);
     }

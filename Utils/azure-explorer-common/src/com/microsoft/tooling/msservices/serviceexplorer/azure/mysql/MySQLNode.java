@@ -86,43 +86,43 @@ public class MySQLNode extends Node implements TelemetryProperties {
     }
 
     private void refreshNode() {
-        Server result = MySQLMvpModel.findServer(subscriptionId, server.resourceGroupName(), server.name());
+        final Server result = MySQLMvpModel.findServer(subscriptionId, server.resourceGroupName(), server.name());
         this.serverState = result.userVisibleState();
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.delete", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), MySQLNode.this);
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.start", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         this.serverState = SERVER_UPDATING;
         MySQLMvpModel.start(this.getSubscriptionId(), this.getServer());
         this.refreshNode();
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.stop", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         this.serverState = SERVER_UPDATING;
         MySQLMvpModel.stop(this.getSubscriptionId(), this.getServer());
         this.refreshNode();
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.restart", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         this.serverState = SERVER_UPDATING;
         MySQLMvpModel.restart(this.getSubscriptionId(), this.getServer());
         this.refreshNode();
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.open_portal", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.subscriptionId, this.server.id());
     }
 
-    @AzureOperation(name = ActionConstants.MySQL.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.show_properties", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
     }
