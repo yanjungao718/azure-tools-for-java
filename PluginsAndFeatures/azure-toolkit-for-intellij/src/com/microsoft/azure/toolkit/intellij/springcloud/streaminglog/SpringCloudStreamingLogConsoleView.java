@@ -47,7 +47,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
         this.status = status;
     }
 
-    public void startLog(Supplier<InputStream> inputStreamSupplier) throws IOException {
+    public void startLog(Supplier<? extends InputStream> inputStreamSupplier) throws IOException {
         synchronized (this) {
             if (getStatus() != ConsoleViewStatus.STOPPED) {
                 return;
@@ -74,12 +74,10 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
                     SpringCloudStreamingLogConsoleView.this.print(log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
                     Thread.sleep(50);
                 }
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 // swallow interrupt exception while shutdown
-                if (!(e instanceof InterruptedException)) {
-                    this.print(String.format("Streaming Log is interrupted due to error : %s.\n", e.getMessage()),
-                               ConsoleViewContentType.SYSTEM_OUTPUT);
-                }
+            } catch (final Exception e) {
+                this.print(String.format("Streaming Log is interrupted due to error : %s.\n", e.getMessage()), ConsoleViewContentType.SYSTEM_OUTPUT);
             } finally {
                 print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
                 setStatus(ConsoleViewStatus.STOPPED);
@@ -95,18 +93,16 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             setStatus(ConsoleViewStatus.STOPPING);
         }
         final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.close", resourceName);
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, () -> {
             try {
                 if (logInputStream != null) {
-                    try {
-                        logInputStream.close();
-                    } catch (IOException e) {
-                        // swallow io exception when close
-                    }
+                    logInputStream.close();
                 }
                 if (executorService != null) {
                     ThreadPoolUtils.stop(executorService, 100, TimeUnit.MICROSECONDS);
                 }
+            } catch (final IOException e) {
+                // swallow io exception when close
             } finally {
                 setStatus(ConsoleViewStatus.STOPPED);
             }

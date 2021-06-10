@@ -79,7 +79,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         });
     }
 
-    @AzureOperation(name = "sdk|reference_book.select_feature", params = "feature.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sdk|reference_book.show_details", params = "feature.getName()", type = AzureOperation.Type.ACTION)
     private void selectFeature(final AzureSdkFeatureEntity feature) {
         this.onSdkFeatureNodeSelected.accept(feature);
     }
@@ -89,7 +89,6 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.filter.debounce();
     }
 
-    @AzureOperation(name = "sdk|reference_book.search", params = "text", type = AzureOperation.Type.ACTION)
     private void filter(final String text) {
         final String[] filters = Arrays.stream(text.split("\\s+")).filter(StringUtils::isNoneBlank).map(String::toLowerCase).toArray(String[]::new);
         this.loadData(this.services, filters);

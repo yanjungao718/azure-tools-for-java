@@ -52,7 +52,7 @@ public class AzureFunctionMvpModel {
     @NotNull
     @AzureOperation(
         name = "function.get",
-        params = {"nameFromResourceId(id)", "sid"},
+        params = {"nameFromResourceId(id)"},
         type = AzureOperation.Type.SERVICE
     )
     public FunctionApp getFunctionById(String sid, String id) throws AzureToolkitRuntimeException {
@@ -67,7 +67,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.get",
-        params = {"name", "sid"},
+        params = {"name"},
         type = AzureOperation.Type.SERVICE
     )
     public FunctionApp getFunctionByName(String sid, String resourceGroup, String name) {
@@ -76,7 +76,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.delete",
-        params = {"nameFromResourceId(appId)", "sid"},
+        params = {"nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     @CacheEvict(cacheName = SUBSCRIPTION_FUNCTIONS, key = "$sid")
@@ -86,7 +86,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.restart",
-        params = {"nameFromResourceId(appId)", "sid"},
+        params = {"nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void restartFunction(String sid, String appId) {
@@ -95,7 +95,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.start",
-        params = {"nameFromResourceId(appId)", "sid"},
+        params = {"nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void startFunction(String sid, String appId) {
@@ -104,7 +104,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function.stop",
-        params = {"nameFromResourceId(appId)", "sid"},
+        params = {"nameFromResourceId(appId)"},
         type = AzureOperation.Type.SERVICE
     )
     public void stopFunction(String sid, String appId) {
@@ -170,7 +170,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         name = "function|envelops.list",
-        params = {"nameFromResourceId(id)", "sid"},
+        params = {"nameFromResourceId(id)"},
         type = AzureOperation.Type.SERVICE
     )
     public List<FunctionEnvelope> listFunctionEnvelopeInFunctionApp(String sid, String id) {

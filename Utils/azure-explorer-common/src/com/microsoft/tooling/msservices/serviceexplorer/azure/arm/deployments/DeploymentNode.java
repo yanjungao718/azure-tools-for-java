@@ -77,7 +77,7 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
         DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
     }
 
-    @AzureOperation(name = ActionConstants.ResourceManagement.Deployment.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "arm|deployment.delete", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
     }

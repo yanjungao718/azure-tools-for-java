@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class AzureSdkLibraryService {
                     final AzureSdkServiceEntity service = getOrCreateService(services, raw);
                     for (final AzureSdkFeatureEntity feature : service.getContent()) {
                         final boolean specified = Optional.ofNullable(feature.getClientSource())
-                                .filter(s -> s.getGroupId().equals(raw.getGroupId()) && s.getArtifactId().equals(raw.getPackageName()))
+                                .filter(s -> s.getGroupId().equals(raw.getGroupId()) && s.getArtifactId().equals(raw.getArtifactId()))
                                 .isPresent();
                         final boolean sameFeatureName = trim(feature.getName()).equals(trim(raw.getDisplayName()));
                         if (specified || sameFeatureName) {
@@ -66,7 +67,7 @@ public class AzureSdkLibraryService {
                     // if no mapping feature found.
                     final AzureSdkFeatureEntity feature = AzureSdkFeatureEntity.builder()
                             .name(raw.getDisplayName())
-                            .msdocs(buildMsdocsUrl(raw))
+                            .msdocs(raw.getMsdocsUrl())
                             .artifacts(new ArrayList<>(Collections.singletonList(toSdkArtifactEntity(raw))))
                             .build();
                     service.getContent().add(feature);
@@ -90,7 +91,7 @@ public class AzureSdkLibraryService {
 
     private static AzureSdkServiceEntity getOrCreateService(Map<String, AzureSdkServiceEntity> services, AzureJavaSdkEntity raw) {
         final Function<String, AzureSdkServiceEntity> serviceComputer = (key) -> {
-            final AzureSdkFeatureEntity feature = AzureSdkFeatureEntity.builder().name(raw.getDisplayName()).msdocs(buildMsdocsUrl(raw)).build();
+            final AzureSdkFeatureEntity feature = AzureSdkFeatureEntity.builder().name(raw.getDisplayName()).msdocs(raw.getMsdocsUrl()).build();
             return AzureSdkServiceEntity.builder()
                     .name(raw.getServiceName())
                     .content(new ArrayList<>(Collections.singletonList(feature)))
@@ -107,7 +108,7 @@ public class AzureSdkLibraryService {
     private static AzureSdkArtifactEntity toSdkArtifactEntity(@Nonnull AzureJavaSdkEntity entity) {
         final AzureSdkArtifactEntity artifact = new AzureSdkArtifactEntity();
         artifact.setGroupId(entity.getGroupId());
-        artifact.setArtifactId(entity.getPackageName());
+        artifact.setArtifactId(entity.getArtifactId());
         artifact.setType(entity.getType());
         artifact.setVersionGA(entity.getVersionGA());
         artifact.setVersionPreview(entity.getVersionPreview());
@@ -119,63 +120,11 @@ public class AzureSdkLibraryService {
      * @see <a href=https://github.com/Azure/azure-sdk/blob/master/eng/README.md#link-templates>Link templates</a>
      */
     private static Map<String, String> buildLinks(AzureJavaSdkEntity entity) {
-        final String mavenUrl = buildMavenArtifactUrl(entity);
-        final String msdocsUrl = buildMsdocsUrl(entity);
-        final String javadocUrl = buildJavadocUrl(entity);
-        final String githubUrl = buildGitHubSourceUrl(entity);
+        final String mavenUrl = entity.getMavenArtifactUrl();
+        final String msdocsUrl = entity.getMsdocsUrl();
+        final String javadocUrl = entity.getJavadocUrl();
+        final String githubUrl = entity.getGitHubSourceUrl();
         return ImmutableMap.of("github", githubUrl, "repopath", mavenUrl, "msdocs", msdocsUrl, "javadoc", javadocUrl);
-    }
-
-    /**
-     * {% assign package_url_template = "https://search.maven.org/artifact/item.GroupId/item.Package/item.Version/jar/" %}
-     * repopath: https://search.maven.org/artifact/com.azure/azure-security-keyvault-jca
-     */
-    private static String buildMavenArtifactUrl(AzureJavaSdkEntity entity) {
-        return String.format("https://search.maven.org/artifact/%s/%s/", entity.getGroupId(), entity.getPackageName());
-    }
-
-    /**
-     * {% assign msdocs_url_template =  "https://docs.microsoft.com/java/api/overview/azure/item.TrimmedPackage-readme" %}
-     * msdocs: https://docs.microsoft.com/java/api/overview/azure/security-keyvault-jca-readme?view=azure-java-preview
-     */
-    private static String buildMsdocsUrl(AzureJavaSdkEntity entity) {
-        final String url = entity.getMsDocs();
-        if ("NA".equals(url)) {
-            return "";
-        } else if (url.startsWith("http")) {
-            return url;
-        }
-        final String trimmed = entity.getPackageName().replace("azure-", "");
-        return String.format("https://docs.microsoft.com/java/api/overview/azure/%s-readme", trimmed);
-    }
-
-    /**
-     * {% assign ghdocs_url_template = "https://azuresdkdocs.blob.core.windows.net/$web/java/item.Package/item.Version/index.html" %}
-     * javadoc: https://azuresdkdocs.blob.core.windows.net/$web/java/azure-security-keyvault-jca/1.0.0-beta.4/index.html
-     */
-    private static String buildJavadocUrl(AzureJavaSdkEntity entity) {
-        final String url = entity.getGhDocs();
-        if ("NA".equals(url)) {
-            return "";
-        } else if (url.startsWith("http")) {
-            return url;
-        }
-        return String.format("https://azuresdkdocs.blob.core.windows.net/$web/java/%s/${azure.version}/index.html", entity.getPackageName());
-    }
-
-    /**
-     * {% assign source_url_template = "https://github.com/Azure/azure-sdk-for-java/tree/item.Package_item.Version/sdk/item.RepoPath/item.Package/" %}
-     * github: https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/keyvault/azure-security-keyvault-jca
-     */
-    private static String buildGitHubSourceUrl(final AzureJavaSdkEntity entity) {
-        final String url = entity.getRepoPath();
-        if ("NA".equals(url)) {
-            return "";
-        } else if (url.startsWith("http")) {
-            return url;
-        }
-        return String.format("https://github.com/Azure/azure-sdk-for-java/tree/%s_${azure.version}/sdk/%s/%s/", entity.getPackageName(), url,
-                entity.getPackageName());
     }
 
     @AzureOperation(name = "sdk.load_meta_data", type = AzureOperation.Type.TASK)
@@ -191,17 +140,35 @@ public class AzureSdkLibraryService {
         }
     }
 
-    @Cacheable(value = "workspace-tag-azure")
+    @Cacheable(value = "azure-sdk-entities")
     @AzureOperation(name = "sdk.load_meta_data", type = AzureOperation.Type.TASK)
     public static List<AzureJavaSdkEntity> getAzureSDKEntities() {
         try {
             final URL destination = new URL(CLIENT_MGMT_SDK_METADATA_URL);
             final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkEntity.class).with(CsvSchema.emptySchema().withHeader());
             final MappingIterator<AzureJavaSdkEntity> data = reader.readValues(destination);
-            return data.readAll();
+            return data.readAll().stream()
+                    .filter(e -> StringUtils.isNotBlank(e.getArtifactId()) && StringUtils.isNotBlank(e.getGroupId()))
+                    .collect(Collectors.toList());
         } catch (final IOException e) {
             final String message = String.format("failed to load Azure SDK list from \"%s\"", CLIENT_MGMT_SDK_METADATA_URL);
             throw new AzureToolkitRuntimeException(message, e);
         }
+    }
+
+    /**
+     * get deprecated Azure SDK libs.
+     * refer https://github.com/Azure/azure-sdk/blob/master/eng/README.md
+     */
+    @Cacheable(value = "deprecated-azure-sdk-entities")
+    public static List<AzureJavaSdkEntity> getDeprecatedAzureSDKEntities() {
+        final List<AzureJavaSdkEntity> entities = getAzureSDKEntities();
+        // refer https://github.com/Azure/azure-sdk/blob/master/eng/README.md
+        // > Hide - This field will determine whether we hide this package from various places like the package index, docs, as well as automated updates.
+        // > The value is either true to hide or empty to not hide. This is useful to filter older packages that are still on the package managers,
+        // > but we don't want to promote or display anywhere.
+        return entities.stream()
+                .filter(e -> e.getIsHide() == Boolean.TRUE || (StringUtils.isNotBlank(e.getReplace()) && !"active".equals(e.getSupport())))
+                .collect(Collectors.toList());
     }
 }

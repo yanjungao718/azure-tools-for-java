@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudDeploymentStatus;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -155,25 +156,25 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.closeEditor();
             return;
         }
-        final String status = deployment.entity().getStatus();
+        final SpringCloudDeploymentStatus status = deployment.entity().getStatus();
         switch (status) {
-            case "Stopped":
+            case STOPPED:
                 this.setEnabled(true);
                 this.stopButton.setEnabled(false);
                 this.restartButton.setEnabled(false);
                 break;
-            case "Running":
+            case RUNNING:
                 this.setEnabled(true);
                 this.startButton.setEnabled(false);
                 break;
-            case "failed":
+            case FAILED:
                 this.setEnabled(false);
                 this.deleteButton.setEnabled(true);
                 break;
-            case "Allocating":
-            case "Upgrading":
-            case "Compiling":
-            case "Unknown":
+            case ALLOCATING:
+            case UPGRADING:
+            case COMPILING:
+            case UNKNOWN:
                 this.setEnabled(false);
                 break;
         }
