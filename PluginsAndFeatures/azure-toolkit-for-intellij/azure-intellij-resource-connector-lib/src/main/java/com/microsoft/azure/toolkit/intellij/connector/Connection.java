@@ -57,8 +57,8 @@ public interface Connection<R extends Resource, C extends Resource> {
     }
 
     default String getType() {
-        final String resourceType = Optional.ofNullable(getResource()).map(e -> e.getType()).filter(StringUtils::isNotBlank).orElse("default");
-        final String consumerType = Optional.ofNullable(getConsumer()).map(e -> e.getType()).filter(StringUtils::isNotBlank).orElse("default");
+        final String resourceType = Optional.ofNullable(getResource()).map(Resource::getType).filter(StringUtils::isNotBlank).orElse("default");
+        final String consumerType = Optional.ofNullable(getConsumer()).map(Resource::getType).filter(StringUtils::isNotBlank).orElse("default");
         return resourceType + ":" + consumerType;
     }
 }
