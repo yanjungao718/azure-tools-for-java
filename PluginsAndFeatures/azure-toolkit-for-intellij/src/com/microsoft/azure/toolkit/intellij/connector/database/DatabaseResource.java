@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -25,6 +24,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,13 +44,13 @@ public final class DatabaseResource implements Resource {
     private Password password;
     private String envPrefix;
 
-    public DatabaseResource(String type, @Nonnull final String serverId, @Nullable final String databaseName) {
+    public DatabaseResource(@Nonnull String type, @Nonnull final String serverId, @Nullable final String databaseName) {
         this.type = type;
         this.databaseName = databaseName;
         this.serverId = ResourceId.fromString(serverId);
     }
 
-    public DatabaseResource(String type, @Nonnull final String databaseId) {
+    public DatabaseResource(@Nonnull String type, @Nonnull final String databaseId) {
         this.type = type;
         final ResourceId dbId = ResourceId.fromString(databaseId);
         this.serverId = dbId.parent();
@@ -86,7 +86,7 @@ public final class DatabaseResource implements Resource {
         private final String title;
 
         @Override
-        public AzureFormJPanel<DatabaseResource> getResourcesPanel(String type, final Project project) {
+        public AzureFormJPanel<DatabaseResource> getResourcesPanel(@NotNull String type, final Project project) {
             return new DatabaseResourcePanel(this);
         }
 
@@ -104,7 +104,6 @@ public final class DatabaseResource implements Resource {
         }
 
         @Override
-        @Nullable
         public DatabaseResource read(Element resourceEle) {
             final DatabaseResource resource = new DatabaseResource(resourceEle.getAttributeValue("type"), resourceEle.getChildTextTrim("azureResourceId"));
             resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));

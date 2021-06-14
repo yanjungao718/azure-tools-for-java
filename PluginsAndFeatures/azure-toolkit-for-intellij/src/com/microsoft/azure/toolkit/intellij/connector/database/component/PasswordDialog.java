@@ -11,6 +11,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
+import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -34,7 +35,7 @@ import java.util.List;
 
 public class PasswordDialog extends AzureDialog<Password> implements AzureForm<Password> {
 
-    private static final String TITLE = "Credential for Azure Database for MySQL";
+    private static final String TITLE = "Credential for %s";
     private static final String HEADER_PATTERN = "Please provide credential for user (%s) to access database (%s) on server (%s).";
 
     private JPanel root;
@@ -46,15 +47,13 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
     private JPasswordField passwordField;
     private PasswordSaveComboBox passwordSaveComboBox;
 
-    private final String username;
-    private final JdbcUrl jdbcUrl;
+    private final DatabaseResource resource;
 
-    public PasswordDialog(Project project, String username, JdbcUrl url) {
+    public PasswordDialog(Project project, DatabaseResource resource) {
         super(project);
-        this.username = username;
-        this.jdbcUrl = url;
-        setTitle(TITLE);
-        headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getServerHost()));
+        this.resource = resource;
+        setTitle(String.format(TITLE, DatabaseResource.Definition.getTitleByType(resource.getType())));
+        headerTextPane.setText(String.format(HEADER_PATTERN, resource.getUsername(), resource.getJdbcUrl().getDatabase(), resource.getJdbcUrl().getServerHost()));
         testConnectionButton.setEnabled(false);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
@@ -89,7 +88,8 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         final String password = String.valueOf(passwordField.getPassword());
         final Runnable runnable = () -> {
-            final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils.connectWithPing(jdbcUrl, username, password);
+            final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils
+                    .connectWithPing(this.resource.getJdbcUrl(), this.resource.getUsername(), password);
             testConnectionActionPanel.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
             final Icon icon = connectResult.isConnected() ? AllIcons.General.InspectionsOK : AllIcons.General.BalloonError;
@@ -97,7 +97,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
             testConnectionButton.setIcon(null);
             testConnectionButton.setEnabled(true);
         };
-        final String title = AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getServerHost());
+        final String title = AzureBundle.message("azure.mysql.link.connection.title", this.resource.getJdbcUrl().getServerHost());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }

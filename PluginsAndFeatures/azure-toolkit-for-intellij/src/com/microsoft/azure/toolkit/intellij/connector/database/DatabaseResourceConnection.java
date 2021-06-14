@@ -129,9 +129,12 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         return env;
     }
 
-    private static Optional<String> loadPassword(@Nonnull final Module module, @Nonnull final DatabaseResource mysql) {
-        final String saved = PasswordStore.loadPassword(mysql.getId(), mysql.getUsername(), mysql.getPassword().saveType());
-        final DatabaseConnectionUtils.ConnectResult result = DatabaseConnectionUtils.connectWithPing(mysql.getJdbcUrl(), mysql.getUsername(), saved);
+    private static Optional<String> loadPassword(@Nonnull final Module module, @Nonnull final DatabaseResource resource) {
+        if (Optional.ofNullable(resource.getPassword()).map(Password::saveType).get() == Password.SaveType.NEVER) {
+            return Optional.empty();
+        }
+        final String saved = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.getPassword().saveType());
+        final DatabaseConnectionUtils.ConnectResult result = DatabaseConnectionUtils.connectWithPing(resource.getJdbcUrl(), resource.getUsername(), saved);
         if (StringUtils.isNotBlank(saved) && result.isConnected()) {
             return Optional.of(saved);
         }
@@ -142,15 +145,15 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
     }
 
     @Nonnull
-    private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final DatabaseResource mysql) {
+    private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final DatabaseResource resource) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
         final IAzureOperationTitle title = AzureOperationBundle.title("mysql.update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
-            final PasswordDialog dialog = new PasswordDialog(module.getProject(), mysql.getUsername(), mysql.getJdbcUrl());
+            final PasswordDialog dialog = new PasswordDialog(module.getProject(), resource);
             if (dialog.showAndGet()) {
                 final Password password = dialog.getData();
-                mysql.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(mysql.getId(), mysql.getUsername(), password.password(), password.saveType());
+                resource.getPassword().saveType(password.saveType());
+                PasswordStore.savePassword(resource.getId(), resource.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
         });
