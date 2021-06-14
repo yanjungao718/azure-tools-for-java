@@ -87,7 +87,7 @@ public class DatabaseConnectionUtils {
         if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
             return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         } else {
-            return "com.mysql.jdbc.Driver";
+            return "com.mysql.cj.jdbc.Driver";
         }
     }
 
