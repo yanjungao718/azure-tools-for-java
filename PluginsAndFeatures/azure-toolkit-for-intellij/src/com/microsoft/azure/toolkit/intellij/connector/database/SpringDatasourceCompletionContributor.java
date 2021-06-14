@@ -45,7 +45,7 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
                 }
                 List<LookupElement> lookupElements = generateLookupElements();
                 if (CollectionUtils.isNotEmpty(lookupElements)) {
-                    lookupElements.forEach(e -> resultSet.addElement(e));
+                    lookupElements.forEach(resultSet::addElement);
                 }
             }
         });
@@ -55,7 +55,7 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
 
     protected static class MyInsertHandler implements InsertHandler<LookupElement> {
 
-        private String resourceType;
+        private final String resourceType;
 
         public MyInsertHandler(String resourceType) {
             this.resourceType = resourceType;
@@ -79,7 +79,7 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
             AzureTaskManager.getInstance().runLater(() -> {
                 final var dialog = new ConnectorDialog<DatabaseResource, ModuleResource>(project);
                 dialog.setConsumer(new ModuleResource(module.getName()));
-                dialog.setResource(new DatabaseResource(resourceType, null, null));
+                dialog.setResourceType(resourceType);
                 if (dialog.showAndGet()) {
                     final Connection<DatabaseResource, ModuleResource> c = dialog.getData();
                     WriteCommandAction.runWriteCommandAction(project, () -> this.insert(c, context));
