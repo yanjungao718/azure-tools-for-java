@@ -14,6 +14,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployConfiguration;
@@ -67,9 +68,8 @@ public class DeployFunctionAppAction extends NodeActionListener {
         }
         final RunConfiguration runConfiguration = settings.getConfiguration();
         if (runConfiguration instanceof FunctionDeployConfiguration) {
-            ((FunctionDeployConfiguration) runConfiguration).setFunctionId(functionNode.getFunctionAppId());
-            ((FunctionDeployConfiguration) runConfiguration).setAppName(functionNode.getFunctionAppName());
-            ((FunctionDeployConfiguration) runConfiguration).setSubscription(functionNode.getSubscriptionId());
+            ((FunctionDeployConfiguration) runConfiguration).saveConfig(FunctionAppConfig.builder()
+                    .name(functionNode.getFunctionAppName()).resourceId(functionNode.getFunctionAppId()).build());
         }
         return settings;
     }

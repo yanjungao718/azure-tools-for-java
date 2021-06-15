@@ -6,9 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.library.function;
 
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
+import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -23,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.ArtifactHandle
 import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.artifact.ArtifactHandlerBase;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.artifact.FTPArtifactHandlerImpl;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.handlers.artifact.ZIPArtifactHandlerImpl;
-import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.DockerArtifactHandler;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.MSDeployArtifactHandlerImpl;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.artifact.RunFromBlobArtifactHandlerImpl;
@@ -48,6 +49,8 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
  * Deploy artifacts to target Azure Functions in Azure.
  * Todo: Move the handler to tools-common
  */
+// todo: replace handler with service library
+@Deprecated
 public class DeployFunctionHandler {
     private static final int LIST_TRIGGERS_MAX_RETRY = 3;
     private static final int LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS = 10;
@@ -76,7 +79,7 @@ public class DeployFunctionHandler {
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
         messenger.info(message("function.deploy.hint.startDeployFunction"));
         getArtifactHandler().publish(deployTarget);
-        messenger.info(message("function.deploy.hint.deployDone", model.getAppName()));
+        messenger.info(message("function.deploy.hint.deployDone", model.getFunctionAppConfig().getName()));
         listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
@@ -87,7 +90,7 @@ public class DeployFunctionHandler {
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        messenger.info(message("function.deploy.hint.updateDone", model.getAppName()));
+        messenger.info(message("function.deploy.hint.updateDone", model.getFunctionAppConfig().getName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -143,8 +146,8 @@ public class DeployFunctionHandler {
                 messenger.info(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
                 functionApp.syncTriggers();
                 final List<FunctionResource> triggers =
-                        model.getAzureClient().appServices().functionApps()
-                             .listFunctions(model.getResourceGroup(), model.getAppName()).stream()
+                        getAzureClient().appServices().functionApps()
+                             .listFunctions(model.getFunctionAppConfig().getResourceGroup().getName(), (model.getFunctionAppConfig().getName())).stream()
                              .map(FunctionResource::parseFunction)
                              .collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(triggers)) {
@@ -154,22 +157,17 @@ public class DeployFunctionHandler {
                 // swallow sdk request runtime exception
             }
         }
-        final String error = String.format("No triggers found in function app[%s]", model.getAppName());
+        final String error = String.format("No triggers found in function app[%s]", (model.getFunctionAppConfig().getName()));
         final String action = "try recompile the project by and deploy again.";
         throw new AzureToolkitRuntimeException(error, action);
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
-        final RuntimeConfiguration runtime = model.getRuntime();
-        if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
-            return OperatingSystemEnum.fromString(runtime.getOs());
+        final Runtime runtime = model.getFunctionAppConfig().getRuntime();
+        if (runtime != null) {
+            return OperatingSystemEnum.fromString(runtime.getOperatingSystem().getValue());
         }
         return DEFAULT_OS;
-    }
-
-    private DeploymentType getDeploymentType() throws AzureExecutionException {
-        final DeploymentType deploymentType = DeploymentType.fromString(model.getDeploymentType());
-        return deploymentType == DeploymentType.EMPTY ? getDeploymentTypeByRuntime() : deploymentType;
     }
 
     private DeploymentType getDeploymentTypeByRuntime() throws AzureExecutionException {
@@ -185,11 +183,11 @@ public class DeployFunctionHandler {
     }
 
     private boolean isDedicatedPricingTier() {
-        return AppServiceUtils.getPricingTierFromString(model.getPricingTier()) != null;
+        return AppServiceUtils.getPricingTierFromString(model.getFunctionAppConfig().getPricingTier().getSize()) != null;
     }
 
     private FunctionApp getFunctionApp() {
-        return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
+        return getAzureClient().appServices().functionApps().getById(model.getFunctionAppConfig().getResourceId());
     }
 
     // region get App Settings
@@ -228,11 +226,11 @@ public class DeployFunctionHandler {
 
     private ArtifactHandler getArtifactHandler() throws AzureExecutionException {
         final ArtifactHandlerBase.Builder builder;
-        final DeploymentType deploymentType = getDeploymentType();
+        final DeploymentType deploymentType = getDeploymentTypeByRuntime();
         operation.trackProperty("deploymentType", deploymentType.name());
         switch (deploymentType) {
             case MSDEPLOY:
-                builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.model.getAppName());
+                builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.model.getFunctionAppConfig().getName());
                 break;
             case FTP:
                 builder = new FTPArtifactHandlerImpl.Builder();
@@ -258,4 +256,7 @@ public class DeployFunctionHandler {
                 .build();
     }
 
+    private Azure getAzureClient(){
+        return null;
+    }
 }

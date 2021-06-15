@@ -25,7 +25,7 @@ public class FunctionAppService {
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {
         return EventUtil.executeWithLog(FUNCTION, CREATE_FUNCTION_APP, operation -> {
             final FunctionDeployModel functionDeployModel = new FunctionDeployModel();
-            functionDeployModel.saveModel(new FunctionAppComboBoxModel(config));
+            functionDeployModel.setFunctionAppConfig(config);
             operation.trackProperties(functionDeployModel.getTelemetryProperties());
 
             final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployModel, operation);
