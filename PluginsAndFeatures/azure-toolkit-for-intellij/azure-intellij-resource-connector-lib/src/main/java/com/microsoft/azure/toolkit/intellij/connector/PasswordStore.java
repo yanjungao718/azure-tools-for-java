@@ -28,7 +28,7 @@ public class PasswordStore {
     @Nullable
     public static String loadPassword(String resourceId, String username, Password.SaveType passwordSave) {
         if (Password.SaveType.FOREVER == passwordSave) {
-            passwordSafe.getPassword(new CredentialAttributes(resourceId, username));
+            return passwordSafe.getPassword(new CredentialAttributes(resourceId, username));
         } else if (Password.SaveType.UNTIL_RESTART == passwordSave) {
             return memoStore.get(new CredentialAttributes(resourceId, username));
         }

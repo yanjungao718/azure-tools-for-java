@@ -10,7 +10,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefau
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
+import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -135,7 +135,7 @@ public class AzureMySQLService {
 
         private String getPublicIp(final Server server) {
             // try to get public IP by ping Azure MySQL server
-            MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(JdbcUrl.mysql(server.fullyQualifiedDomainName()),
+            DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils.connectWithPing(JdbcUrl.mysql(server.fullyQualifiedDomainName()),
                     server.administratorLogin() + "@" + server.name(), StringUtils.EMPTY);
             if (StringUtils.isNotBlank(connectResult.getMessage())) {
                 Matcher matcher = IPADDRESS_PATTERN.matcher(connectResult.getMessage());
