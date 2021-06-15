@@ -26,6 +26,7 @@ public class AppServiceConfig {
     @Builder.Default
     private MonitorConfig monitorConfig = MonitorConfig.builder().build();
     private String name;
+    private String resourceId;
     private Path application;
     private Subscription subscription;
     private ResourceGroup resourceGroup;
