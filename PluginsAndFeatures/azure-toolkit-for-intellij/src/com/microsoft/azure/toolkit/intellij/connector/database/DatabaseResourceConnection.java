@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configurations.JavaParameters;
@@ -22,8 +22,9 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.component.PasswordDialog;
+import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -42,27 +43,34 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils.ACCESS_DENIED_ERROR_CODE;
+import static com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils.ACCESS_DENIED_ERROR_CODE;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabaseResource, ModuleResource> {
+public class DatabaseResourceConnection implements Connection<DatabaseResource, ModuleResource> {
     public static final Key<Map<String, String>> ENV_VARS = Key.create("ConnectAzureResourceEnvVars");
     private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     private static final String AZURE_WEBAPP_CONFIGURATION = "com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration";
     @Getter
     @Nonnull
-    private final MySQLDatabaseResource resource;
+    private final DatabaseResource resource;
     @Getter
     @Nonnull
-    @EqualsAndHashCode.Include // a module can only connect to one MySQL database
+    @EqualsAndHashCode.Include
     private final ModuleResource consumer;
     private Map<String, String> env = new HashMap<>();
+
+    @Override
+    @EqualsAndHashCode.Include
+    public String getType() {
+        return Connection.super.getType();
+    }
 
     @Override
     public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
@@ -113,7 +121,7 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     private Map<String, String> initEnv() {
         final Map<String, String> env = new HashMap<>();
         final Module module = this.consumer.getModule();
-        final MySQLDatabaseResource mysql = this.resource;
+        final DatabaseResource mysql = this.resource;
         assert module != null : "loading password from unknown module";
         env.put(mysql.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
         env.put(mysql.getEnvPrefix() + "USERNAME", this.resource.getUsername());
@@ -121,9 +129,12 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
         return env;
     }
 
-    private static Optional<String> loadPassword(@Nonnull final Module module, @Nonnull final MySQLDatabaseResource mysql) {
-        final String saved = PasswordStore.loadPassword(mysql.getId(), mysql.getUsername(), mysql.getPassword().saveType());
-        final MySQLConnectionUtils.ConnectResult result = MySQLConnectionUtils.connectWithPing(mysql.getJdbcUrl(), mysql.getUsername(), saved);
+    private static Optional<String> loadPassword(@Nonnull final Module module, @Nonnull final DatabaseResource resource) {
+        if (Optional.ofNullable(resource.getPassword()).map(Password::saveType).get() == Password.SaveType.NEVER) {
+            return Optional.empty();
+        }
+        final String saved = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.getPassword().saveType());
+        final DatabaseConnectionUtils.ConnectResult result = DatabaseConnectionUtils.connectWithPing(resource.getJdbcUrl(), resource.getUsername(), saved);
         if (StringUtils.isNotBlank(saved) && result.isConnected()) {
             return Optional.of(saved);
         }
@@ -134,15 +145,15 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     }
 
     @Nonnull
-    private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final MySQLDatabaseResource mysql) {
+    private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final DatabaseResource resource) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
         final IAzureOperationTitle title = AzureOperationBundle.title("mysql.update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
-            final PasswordDialog dialog = new PasswordDialog(module.getProject(), mysql.getUsername(), mysql.getJdbcUrl());
+            final PasswordDialog dialog = new PasswordDialog(module.getProject(), resource);
             if (dialog.showAndGet()) {
                 final Password password = dialog.getData();
-                mysql.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(mysql.getId(), mysql.getUsername(), password.password(), password.saveType());
+                resource.getPassword().saveType(password.saveType());
+                PasswordStore.savePassword(resource.getId(), resource.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
         });
@@ -150,20 +161,21 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
     }
 
     @RequiredArgsConstructor
-    public enum Definition implements ConnectionDefinition<MySQLDatabaseResource, ModuleResource> {
-        MODULE_MYSQL;
+    public enum Definition implements ConnectionDefinition<DatabaseResource, ModuleResource> {
+        MODULE_MYSQL,
+        MODULE_SQL;
 
         private static final String PROMPT_TITLE = "Azure Resource Connector";
         private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
 
         @Override
-        public MySQLDatabaseResourceConnection create(MySQLDatabaseResource resource, ModuleResource consumer) {
-            return new MySQLDatabaseResourceConnection(resource, consumer);
+        public DatabaseResourceConnection create(DatabaseResource resource, ModuleResource consumer) {
+            return new DatabaseResourceConnection(resource, consumer);
         }
 
         @Override
-        public boolean write(@Nonnull Element connectionEle, @Nonnull Connection<? extends MySQLDatabaseResource, ? extends ModuleResource> connection) {
-            final MySQLDatabaseResource resource = connection.getResource();
+        public boolean write(@Nonnull Element connectionEle, @Nonnull Connection<? extends DatabaseResource, ? extends ModuleResource> connection) {
+            final DatabaseResource resource = connection.getResource();
             final ModuleResource consumer = connection.getConsumer();
             if (StringUtils.isNotBlank(resource.getEnvPrefix())) {
                 connectionEle.setAttribute("envPrefix", resource.getEnvPrefix());
@@ -173,15 +185,16 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
             return true;
         }
 
+        @Override
         @Nullable
-        public MySQLDatabaseResourceConnection read(@Nonnull Element connectionEle) {
+        public DatabaseResourceConnection read(@Nonnull Element connectionEle) {
             final ResourceManager manager = ServiceManager.getService(ResourceManager.class);
             // TODO: check if module exists
             final ModuleResource consumer = new ModuleResource(connectionEle.getChildTextTrim("consumer"));
-            final MySQLDatabaseResource resource = (MySQLDatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
+            final DatabaseResource resource = (DatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
             if (Objects.nonNull(resource)) {
                 resource.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
-                return new MySQLDatabaseResourceConnection(resource, consumer);
+                return new DatabaseResourceConnection(resource, consumer);
             } else {
                 // TODO: alert user to create new resource
                 return null;
@@ -189,36 +202,52 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
         }
 
         @Override
-        public boolean validate(Connection<MySQLDatabaseResource, ModuleResource> connection, Project project) {
-            final MySQLDatabaseResource mysql = connection.getResource();
-            final ModuleResource module = connection.getConsumer();
-            final ConnectionManager connectionManager = project.getService(ConnectionManager.class);
+        public boolean validate(Connection<DatabaseResource, ModuleResource> connection, Project project) {
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            final var existedConnections = connectionManager.getConnectionsByConsumerId(module.getId());
-            final var existedResource = (MySQLDatabaseResource) resourceManager.getResourceById(mysql.getId());
+            final DatabaseResource databaseResource = connection.getResource();
+            final DatabaseResource existedResource = (DatabaseResource) resourceManager.getResourceById(databaseResource.getId());
             if (Objects.nonNull(existedResource)) { // not new
-                final boolean urlModified = !Objects.equals(mysql.getJdbcUrl(), existedResource.getJdbcUrl());
-                final boolean usernameModified = !StringUtils.equals(mysql.getUsername(), existedResource.getUsername());
-                final boolean passwordSaveTypeModified = mysql.getPassword().saveType() != existedResource.getPassword().saveType();
+                final boolean urlModified = !Objects.equals(databaseResource.getJdbcUrl(), existedResource.getJdbcUrl());
+                final boolean usernameModified = !StringUtils.equals(databaseResource.getUsername(), existedResource.getUsername());
+                final boolean passwordSaveTypeModified = databaseResource.getPassword().saveType() != existedResource.getPassword().saveType();
                 if (urlModified || usernameModified || passwordSaveTypeModified) { // modified
                     // TODO: @qianjin what if only password is changed.
-                    final String template = "MySQL database \"%s/%s\" with different configuration is found on your PC. \nDo you want to override it?";
-                    final String msg = String.format(template, mysql.getServerId().name(), mysql.getDatabaseName());
+                    final String template = "%s database \"%s/%s\" with different configuration is found on your PC. \nDo you want to override it?";
+                    final String msg = String.format(template, DatabaseResource.Definition.getTitleByType(databaseResource.getType()),
+                            databaseResource.getServerId().name(), databaseResource.getDatabaseName());
+                    boolean validated = DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
+                    if (!validated) {
+                        return false;
+                    }
+                }
+            }
+            final ConnectionManager connectionManager = project.getService(ConnectionManager.class);
+            final ModuleResource module = connection.getConsumer();
+            final List<Connection<? extends Resource, ? extends Resource>> existedConnections = connectionManager.getConnectionsByConsumerId(module.getId());
+            if (CollectionUtils.isNotEmpty(existedConnections)) {
+                Connection<? extends Resource, ? extends Resource> existedConnection = existedConnections.stream()
+                        .filter(e -> StringUtils.equals(e.getConsumer().getId(), module.getId()) && e.getResource() instanceof DatabaseResource &&
+                                StringUtils.equals(((DatabaseResource) e.getResource()).getEnvPrefix(), databaseResource.getEnvPrefix()))
+                        .findFirst().orElse(null);
+                if (Objects.nonNull(existedConnection)) { // modified
+                    final DatabaseResource connectedDatabaseResource = (DatabaseResource) existedConnection.getResource();
+                    final String template = "Module \"%s\" with \"%s\" env prefix has already connected to %s database \"%s/%s\". \n" +
+                            "Do you want to reconnect it to %s database \"%s/%s\"?";
+                    final String msg = String.format(template,
+                            module.getModuleName(),
+                            databaseResource.getEnvPrefix(),
+                            DatabaseResource.Definition.getTitleByType(connectedDatabaseResource.getType()),
+                            connectedDatabaseResource.getServerId().name(),
+                            connectedDatabaseResource.getDatabaseName(),
+                            DatabaseResource.Definition.getTitleByType(databaseResource.getType()),
+                            databaseResource.getServerId().name(),
+                            databaseResource.getDatabaseName());
                     return DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
                 }
-            } else if (CollectionUtils.isNotEmpty(existedConnections)) {
-                final MySQLDatabaseResource connectedMySQL = (MySQLDatabaseResource) existedConnections.get(0).getResource();
-                final String template = "Module \"%s\" has already connected to MySQL database \"%s/%s\". \nDo you want to reconnect it to database \"%s/%s\"?";
-                final String msg = String.format(template,
-                                                 module.getModuleName(),
-                                                 connectedMySQL.getServerId().name(),
-                                                 connectedMySQL.getDatabaseName(),
-                                                 mysql.getServerId().name(),
-                                                 mysql.getDatabaseName());
-                return DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
             }
 
             return true; // is new or not modified.
         }
+
     }
 }
