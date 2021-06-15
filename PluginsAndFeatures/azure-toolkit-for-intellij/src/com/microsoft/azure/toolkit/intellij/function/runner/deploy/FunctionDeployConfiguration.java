@@ -16,10 +16,14 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +36,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
     implements RunProfileWithCompileBeforeLaunchOption {
 
-    private final FunctionDeployModel functionDeployModel;
+    private FunctionDeployModel functionDeployModel;
     private Module module;
 
     public FunctionDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -139,5 +143,22 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public void setFunctionId(String id) {
         functionDeployModel.getFunctionAppConfig().setResourceId(id);
+    }
+
+    @Override
+    public void readExternal(Element element) throws InvalidDataException {
+        this.functionDeployModel = Optional.ofNullable(element.getChild("FunctionDeployModel"))
+                .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.class))
+                .orElseGet(() -> Optional.ofNullable(element)
+                        .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.DeprecatedDeployModel.class))
+                        .map(FunctionDeployModel::new)
+                        .orElse(new FunctionDeployModel()));
+    }
+
+    @Override
+    public void writeExternal(Element element) throws WriteExternalException {
+        Optional.ofNullable(this.functionDeployModel)
+                .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"appSettings".equalsIgnoreCase(accessor.getName())))
+                .ifPresent(element::addContent);
     }
 }
