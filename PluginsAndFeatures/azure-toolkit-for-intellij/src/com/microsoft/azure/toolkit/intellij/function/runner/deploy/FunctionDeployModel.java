@@ -21,7 +21,9 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -31,6 +33,8 @@ import java.util.Map;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FunctionDeployModel {
     private String appSettingsKey;
     private String deploymentStagingDirectoryPath;
@@ -38,16 +42,11 @@ public class FunctionDeployModel {
 
     private FunctionAppConfig functionAppConfig = FunctionAppConfig.builder().build();
 
-    public FunctionDeployModel() {
-
-    }
-
     public FunctionDeployModel(DeprecatedDeployModel deprecatedDeployModel) {
         this.moduleName = deprecatedDeployModel.moduleName;
         this.appSettingsKey = deprecatedDeployModel.appSettingsKey;
         this.deploymentStagingDirectoryPath = deprecatedDeployModel.deploymentStagingDirectoryPath;
-        final Subscription subscription = Azure.az(AzureAccount.class).getSubscriptions().stream()
-                .filter(s -> StringUtils.equalsIgnoreCase(s.getId(), deprecatedDeployModel.subscription)).findFirst().orElse(null);
+        final Subscription subscription = Subscription.builder().id(deprecatedDeployModel.subscription).build();
         final PricingTier pricingTier = PricingTier.fromString(deprecatedDeployModel.pricingTier);
         final OperatingSystem operatingSystem = OperatingSystem.fromString(deprecatedDeployModel.os);
         final JavaVersion javaVersion = JavaVersion.fromString(deprecatedDeployModel.javaVersion);
@@ -84,6 +83,10 @@ public class FunctionDeployModel {
     }
 
     // for migrate old configuration to new resource config
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     static class DeprecatedDeployModel {
         private boolean isNewResource;
         private String functionId;

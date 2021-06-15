@@ -6,12 +6,20 @@
 package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
+@Setter
 @SuperBuilder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
 public class MonitorConfig {
     private ApplicationInsightsConfig applicationInsightsConfig;
     @Builder.Default
