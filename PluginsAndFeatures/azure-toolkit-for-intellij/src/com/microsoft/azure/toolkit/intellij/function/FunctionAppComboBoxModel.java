@@ -5,33 +5,24 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import lombok.Getter;
+import org.parboiled.common.StringUtils;
 
 @Getter
-public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionApp> {
+public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionApp, FunctionAppConfig> {
     private String runtime;
-    private FunctionDeployModel functionDeployModel;
     private FunctionAppConfig functionAppConfig;
 
     public FunctionAppComboBoxModel(IFunctionApp functionApp) {
         super(functionApp);
-        final Runtime runtimeConfig = functionApp.getRuntime();
-        this.runtime = String.format("%s-Java %s", runtimeConfig.getOperatingSystem().getValue(), runtimeConfig.getJavaVersion().getValue());
-    }
-
-    public FunctionAppComboBoxModel(FunctionDeployModel functionDeployModel) {
-        this.isNewCreateResource = functionDeployModel.isNewResource();
-        this.subscriptionId = functionDeployModel.getSubscription();
-        this.resourceId = functionDeployModel.getFunctionId();
-        this.appName = isNewCreateResource ? functionDeployModel.getAppName() : AzureMvpModel.getSegment(resourceId, "sites");
-        this.resourceGroup = functionDeployModel.getResourceGroup();
-        this.runtime = String.format("%s-Java %s", functionDeployModel.getOs(), functionDeployModel.getJavaVersion());
-        this.functionDeployModel = functionDeployModel;
+        this.config = FunctionAppConfig.builder()
+                .resourceId(this.resourceId)
+                .name(this.appName)
+                .region(functionApp.entity().getRegion())
+                .servicePlan(AppServicePlanEntity.builder().id(functionApp.entity().getAppServicePlanId()).build()).build();
     }
 
     public FunctionAppComboBoxModel(FunctionAppConfig functionAppConfig) {
@@ -40,7 +31,8 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionA
         this.resourceGroup = functionAppConfig.getResourceGroup().getName();
         this.subscriptionId = functionAppConfig.getSubscription().getId();
         this.functionAppConfig = functionAppConfig;
-        final Runtime runtime = functionAppConfig.getRuntime();
-        this.runtime =  String.format("%s-Java %s", runtime.getOperatingSystem().getValue(), runtime.getJavaVersion().getValue());
+        this.resourceId = functionAppConfig.getResourceId();
+        this.isNewCreateResource = StringUtils.isEmpty(resourceId);
+        this.config = functionAppConfig;
     }
 }

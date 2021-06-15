@@ -8,13 +8,14 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 @Getter
-public class WebAppComboBoxModel extends AppServiceComboBoxModel<IWebApp> {
+public class WebAppComboBoxModel extends AppServiceComboBoxModel<IWebApp, WebAppConfig> {
 
     private String runtime;
     private WebAppSettingModel webAppSettingModel;

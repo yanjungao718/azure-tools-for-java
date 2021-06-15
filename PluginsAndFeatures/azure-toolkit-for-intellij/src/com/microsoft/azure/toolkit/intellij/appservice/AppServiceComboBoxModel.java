@@ -5,15 +5,21 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice;
 
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
-public abstract class AppServiceComboBoxModel<T extends IAppService> {
+public abstract class AppServiceComboBoxModel<R extends IAppService, T extends AppServiceConfig> {
     @Setter
     protected boolean isNewCreateResource;
     protected String subscriptionId;
@@ -21,13 +27,14 @@ public abstract class AppServiceComboBoxModel<T extends IAppService> {
     protected String appName;
     protected String os;
     protected String resourceId;
-    protected T resource;
+    protected R resource;
+    protected T config;
 
     public AppServiceComboBoxModel() {
 
     }
 
-    public AppServiceComboBoxModel(T appService) {
+    public AppServiceComboBoxModel(R appService) {
         this.resource = appService;
         this.resourceId = appService.id();
         this.appName = appService.name();
@@ -47,5 +54,14 @@ public abstract class AppServiceComboBoxModel<T extends IAppService> {
                         StringUtils.equalsIgnoreCase(first.subscriptionId, second.subscriptionId));
     }
 
-    public abstract String getRuntime();
+    // todo: remove duplicate with runtime combobox
+    public String getRuntime() {
+        final Runtime runtime = config.getRuntime();
+        final String os = runtime.getOperatingSystem().getValue();
+        final String javaVersion = runtime.getJavaVersion() == JavaVersion.OFF ? null : String.format("Java %s", runtime.getJavaVersion().getValue());
+        final String webContainer = runtime.getWebContainer() == WebContainer.JAVA_OFF ? null : runtime.getWebContainer().getValue();
+        return Stream.of(os, javaVersion, webContainer)
+                .filter(StringUtils::isNotEmpty)
+                .map(StringUtils::capitalize).collect(Collectors.joining("-"));
+    }
 }
