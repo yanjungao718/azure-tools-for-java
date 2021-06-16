@@ -11,12 +11,10 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
@@ -29,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionAppService {
     private static final String CREATE_NEW_FUNCTION_APP = "isCreateNewFunctionApp";
@@ -49,6 +49,10 @@ public class FunctionAppService {
     private static final String APPLICATION_INSIGHTS_CREATE_FAILED = "Unable to create the Application Insights " +
             "for the Function App due to error %s. Please use the Azure Portal to manually create and configure the " +
             "Application Insights if needed.";
+    private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
+    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
+    private static final String FUNCTIONS_EXTENSION_VERSION_NAME = "FUNCTIONS_EXTENSION_VERSION";
+    private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
     private static final String DEPLOY_START = "Starting deployment...";
     private static final String DEPLOY_FINISH = "Deployment done, you may access your resource through %s";
     private static final String RUNNING = "Running";
@@ -63,10 +67,10 @@ public class FunctionAppService {
 
     public IFunctionApp createFunctionApp(final FunctionAppConfig config) {
         AzureTelemetry.getContext().setProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
-        final ResourceGroup resourceGroup = getOrCreateResourceGroup(config.getResourceGroup());
-        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(config.getServicePlan());
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(config);
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
         AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP, config.getName()));
-        final Map<String, String> appSettings = config.getAppSettings();
+        final Map<String, String> appSettings = getAppSettings(config);
         // get/create ai instances only if user didn't specify ai connection string in app settings
         bindApplicationInsights(appSettings, config);
         final IFunctionApp result = Azure.az(AzureAppService.class).functionApp(resourceGroup.getName(), config.getName()).create()
@@ -81,22 +85,45 @@ public class FunctionAppService {
         return result;
     }
 
-    private ResourceGroup getOrCreateResourceGroup(final ResourceGroup resourceGroup) {
+    private Map<String, String> getAppSettings(final FunctionAppConfig config) {
+        final Map<String, String> settings = config.getAppSettings();
+        setDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
+                FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
+        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
+                FUNCTIONS_EXTENSION_VERSION_VALUE, null);
+        return settings;
+    }
+
+    private void setDefaultAppSetting(final Map<String, String> result, String settingName, String settingIsEmptyMessage,
+                                      String defaultValue, String warningMessage) {
+        final String setting = result.get(settingName);
+        if (StringUtils.isEmpty(setting)) {
+            AzureMessager.getMessager().info(settingIsEmptyMessage);
+            result.put(settingName, defaultValue);
+            return;
+        }
+        // Show warning message when user set a different value
+        if (!StringUtils.equalsIgnoreCase(setting, defaultValue) && StringUtils.isNotEmpty(warningMessage)) {
+            AzureMessager.getMessager().warning(warningMessage);
+        }
+    }
+
+    private ResourceGroup getOrCreateResourceGroup(final FunctionAppConfig config) {
         try {
-            return Azure.az(AzureGroup.class).getByName(resourceGroup.getName());
+            return Azure.az(AzureGroup.class).getByName(config.getResourceGroup().getName());
         } catch (final ManagementException e) {
-            AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP, resourceGroup.getName(), resourceGroup.getRegion()));
+            AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP, config.getResourceGroup().getName(), config.getRegion().getName()));
             AzureTelemetry.getContext().setProperty(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
-            final ResourceGroup result = Azure.az(AzureGroup.class).create(resourceGroup.getName(), resourceGroup.getRegion());
+            final ResourceGroup result = Azure.az(AzureGroup.class).create(config.getResourceGroup().getName(), config.getRegion().getName());
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP_DONE, result.getName()));
             return result;
         }
     }
 
-    private IAppServicePlan getOrCreateAppServicePlan(final AppServicePlanEntity appServicePlanEntity) {
-        final String servicePlanName = appServicePlanEntity.getName();
-        final String servicePlanGroup = appServicePlanEntity.getResourceGroup();
-        final IAppServicePlan appServicePlan = Azure.az(AzureAppService.class).subscription(appServicePlanEntity.getSubscriptionId())
+    private IAppServicePlan getOrCreateAppServicePlan(final FunctionAppConfig config) {
+        final String servicePlanName = config.getServicePlan().getName();
+        final String servicePlanGroup = StringUtils.firstNonBlank(config.getServicePlan().getResourceGroup(), config.getResourceGroup().getName());
+        final IAppServicePlan appServicePlan = Azure.az(AzureAppService.class).subscription(config.getSubscription().getId())
                 .appServicePlan(servicePlanGroup, servicePlanName);
         if (!appServicePlan.exists()) {
             AzureMessager.getMessager().info(CREATE_APP_SERVICE_PLAN);
@@ -104,9 +131,9 @@ public class FunctionAppService {
             appServicePlan.create()
                     .withName(servicePlanName)
                     .withResourceGroup(servicePlanGroup)
-                    .withRegion(Region.fromName(appServicePlanEntity.getRegion()))
-                    .withPricingTier(appServicePlanEntity.getPricingTier())
-                    .withOperatingSystem(appServicePlanEntity.getOperatingSystem())
+                    .withRegion(config.getRegion())
+                    .withPricingTier(config.getServicePlan().getPricingTier())
+                    .withOperatingSystem(config.getRuntime().getOperatingSystem())
                     .commit();
             AzureMessager.getMessager().info(String.format(CREATE_APP_SERVICE_DONE, appServicePlan.name()));
         }
@@ -119,7 +146,7 @@ public class FunctionAppService {
             return;
         }
         String instrumentationKey = config.getMonitorConfig().getApplicationInsightsConfig().getInstrumentationKey();
-        if (StringUtils.isNotEmpty(instrumentationKey)) {
+        if (StringUtils.isEmpty(instrumentationKey)) {
             final ApplicationInsightsEntity applicationInsightsComponent = getOrCreateApplicationInsights(config);
             instrumentationKey = applicationInsightsComponent == null ? null : applicationInsightsComponent.getInstrumentationKey();
         }
