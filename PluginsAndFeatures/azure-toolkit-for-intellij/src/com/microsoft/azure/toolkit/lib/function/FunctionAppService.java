@@ -11,17 +11,20 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +66,16 @@ public class FunctionAppService {
 
     public static FunctionAppService getInstance() {
         return FunctionAppService.instance;
+    }
+
+    public FunctionAppConfig getFunctionAppConfigFromExistingFunction(@Nonnull final IFunctionApp functionApp) {
+        return FunctionAppConfig.builder()
+                .resourceId(functionApp.id())
+                .name(functionApp.name())
+                .region(functionApp.entity().getRegion())
+                .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
+                .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
+                .servicePlan(AppServicePlanEntity.builder().id(functionApp.entity().getAppServicePlanId()).build()).build();
     }
 
     public IFunctionApp createFunctionApp(final FunctionAppConfig config) {

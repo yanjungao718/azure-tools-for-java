@@ -5,37 +5,30 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import lombok.Getter;
-import org.parboiled.common.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
 
 @Getter
 public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionApp, FunctionAppConfig> {
-    private FunctionAppConfig functionAppConfig;
 
     public FunctionAppComboBoxModel(IFunctionApp functionApp) {
         super(functionApp);
-        this.config = FunctionAppConfig.builder()
-                .resourceId(this.resourceId)
-                .name(this.appName)
-                .region(functionApp.entity().getRegion())
-                .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
-                .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
-                .servicePlan(AppServicePlanEntity.builder().id(functionApp.entity().getAppServicePlanId()).build()).build();
+        this.config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(functionApp);
     }
 
     public FunctionAppComboBoxModel(FunctionAppConfig functionAppConfig) {
-        this.isNewCreateResource = true;
+        this.config = functionAppConfig;
         this.appName = functionAppConfig.getName();
-        this.resourceGroup = functionAppConfig.getResourceGroup().getName();
-        this.subscriptionId = functionAppConfig.getSubscription().getId();
-        this.functionAppConfig = functionAppConfig;
+        this.resourceGroup = Optional.ofNullable(functionAppConfig.getResourceGroup()).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
+        this.subscriptionId = Optional.ofNullable(functionAppConfig.getSubscription()).map(Subscription::getId).orElse(StringUtils.EMPTY);
         this.resourceId = functionAppConfig.getResourceId();
         this.isNewCreateResource = StringUtils.isEmpty(resourceId);
-        this.config = functionAppConfig;
     }
 }
