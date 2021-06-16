@@ -24,8 +24,10 @@ import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkCategoryEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkCategoryService;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -33,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -44,10 +47,13 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
     private final TailingDebouncer filter;
@@ -61,6 +67,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
     private SearchTextField searchBox;
     private DefaultTreeModel model;
     private List<? extends AzureSdkServiceEntity> services;
+    private Map<String, List<AzureSdkCategoryEntity>> categories;
     private TreePath lastNodePath;
 
     public AzureSdkTreePanel() {
@@ -91,12 +98,14 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
 
     private void filter(final String text) {
         final String[] filters = Arrays.stream(text.split("\\s+")).filter(StringUtils::isNoneBlank).map(String::toLowerCase).toArray(String[]::new);
-        this.loadData(this.services, filters);
+        this.loadData(this.categories, this.services, filters);
     }
 
     public void refresh(boolean... force) {
         try {
             this.services = AzureSdkLibraryService.loadAzureSdkServices(force);
+            this.categories = AzureSdkCategoryService.loadAzureSDKCategories();
+            this.fillDescriptionFromCategoryIfMissing(this.categories, this.services);
             this.filter.debounce();
             Optional.ofNullable(this.lastNodePath).ifPresent(p -> TreeUtil.selectPath(this.tree, p));
         } catch (final IOException e) {
@@ -105,21 +114,43 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         }
     }
 
-    private void loadData(final List<? extends AzureSdkServiceEntity> services, String... filters) {
+    private void fillDescriptionFromCategoryIfMissing(final Map<String, List<AzureSdkCategoryEntity>> categoryToServiceMap, final List<? extends AzureSdkServiceEntity> services) {
+        final Map<String, AzureSdkServiceEntity> serviceMap = services.stream().collect(Collectors.toMap(AzureSdkServiceEntity::getName, e -> e));
+        categoryToServiceMap.forEach((category, categoryServices) -> {
+            categoryServices.stream().forEach(categoryService -> {
+                Optional.ofNullable(serviceMap.get(categoryService.getServiceName())).ifPresent(service -> {
+                    for (final AzureSdkFeatureEntity feature : service.getContent()) {
+                        if (StringUtils.isBlank(feature.getDescription()) && StringUtils.isNotBlank(categoryService.getDescription())) {
+                            feature.setDescription(categoryService.getDescription());
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    private void loadData(final Map<String, List<AzureSdkCategoryEntity>> categoryToServiceMap, final List<? extends AzureSdkServiceEntity> services, String... filters) {
         final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.model.getRoot();
         root.removeAllChildren();
-        for (final AzureSdkServiceEntity service : services) {
-            final DefaultMutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
-            final boolean serviceMatched = Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(service.getName(), f));
-            for (final AzureSdkFeatureEntity feature : service.getContent()) {
-                final boolean featureMatched = Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(feature.getName(), f));
-                if (ArrayUtils.isEmpty(filters) || serviceMatched || featureMatched) {
-                    final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);
-                    this.model.insertNodeInto(featureNode, serviceNode, serviceNode.getChildCount());
-                }
+        final Map<String, AzureSdkServiceEntity> serviceMap = services.stream().collect(Collectors.toMap(AzureSdkServiceEntity::getName, e -> e));
+        final List<String> categories = categoryToServiceMap.keySet().stream().sorted().collect(Collectors.toList());
+        for (final String category : categories) {
+            // no feature found for current category
+            if (CollectionUtils.isEmpty(categoryToServiceMap.get(category)) || categoryToServiceMap.get(category).stream().allMatch(e ->
+                    Objects.isNull(serviceMap.get(e.getServiceName())) || CollectionUtils.isEmpty(serviceMap.get(e.getServiceName()).getContent()))) {
+                continue;
             }
-            if (ArrayUtils.isEmpty(filters) || serviceMatched || serviceNode.getChildCount() > 0) {
-                this.model.insertNodeInto(serviceNode, root, root.getChildCount());
+            // add features for current category
+            final DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
+            final boolean categoryMatched = this.isMatchedFilters(category, filters);
+            categoryToServiceMap.get(category)
+                .stream().sorted(Comparator.comparing(AzureSdkCategoryEntity::getServiceName))
+                .forEach(categoryService -> {
+                    final AzureSdkServiceEntity service = serviceMap.get(categoryService.getServiceName());
+                    this.loadServiceData(service, categoryService, categoryNode, filters);
+                });
+            if (ArrayUtils.isEmpty(filters) || categoryMatched || categoryNode.getChildCount() > 0) {
+                this.model.insertNodeInto(categoryNode, root, root.getChildCount());
             }
         }
         this.model.reload();
@@ -127,6 +158,38 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             TreeUtil.expandAll(this.tree);
         }
         TreeUtil.promiseSelectFirstLeaf(this.tree);
+    }
+
+    private void loadServiceData(AzureSdkServiceEntity service, AzureSdkCategoryEntity categoryService, DefaultMutableTreeNode categoryNode, String... filters) {
+        if (Objects.isNull(service) || CollectionUtils.isEmpty(service.getContent())) {
+            return;
+        }
+        final boolean categoryMatched = this.isMatchedFilters(categoryService.getCategory(), filters);
+        if (CollectionUtils.size(service.getContent()) == 1) {
+            final AzureSdkFeatureEntity feature = service.getContent().get(0);
+            final boolean featureMatched = this.isMatchedFilters(feature.getName(), filters);
+            if (ArrayUtils.isEmpty(filters) || categoryMatched || featureMatched) {
+                final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);
+                this.model.insertNodeInto(featureNode, categoryNode, categoryNode.getChildCount());
+            }
+            return;
+        }
+        final DefaultMutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
+        final boolean serviceMatched = this.isMatchedFilters(service.getName(), filters);
+        for (final AzureSdkFeatureEntity feature : service.getContent()) {
+            final boolean featureMatched = this.isMatchedFilters(feature.getName(), filters);
+            if (ArrayUtils.isEmpty(filters) || categoryMatched || serviceMatched || featureMatched) {
+                final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);
+                this.model.insertNodeInto(featureNode, serviceNode, serviceNode.getChildCount());
+            }
+        }
+        if (ArrayUtils.isEmpty(filters) || categoryMatched || serviceMatched || serviceNode.getChildCount() > 0) {
+            this.model.insertNodeInto(serviceNode, categoryNode, categoryNode.getChildCount());
+        }
+    }
+
+    private boolean isMatchedFilters(String content, String... filters) {
+        return Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(content, f));
     }
 
     private ActionToolbarImpl initToolbar() {
