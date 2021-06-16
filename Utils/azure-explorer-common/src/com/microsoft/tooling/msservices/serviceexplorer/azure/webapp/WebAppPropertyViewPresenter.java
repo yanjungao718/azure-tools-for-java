@@ -5,10 +5,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 import java.util.Map;
@@ -19,19 +21,16 @@ public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
                                      final Set toRemove) {
-        AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, webAppId, toUpdate, toRemove);
+        final IWebApp webApp = getWebAppBase(sid, webAppId, name);
+        final IAppServiceUpdater appServiceUpdater = webApp.update();
+        appServiceUpdater.withAppSettings(toUpdate);
+        toRemove.forEach(key -> appServiceUpdater.withoutAppSettings((String) key));
+        appServiceUpdater.commit();
     }
 
     @Override
-    protected boolean getPublishingProfile(@NotNull final String sid, @NotNull final String webAppId,
-                                           @Nullable final String name,
-                                           @NotNull final String filePath) throws Exception {
-        return AzureWebAppMvpModel.getInstance().getPublishingProfileXmlWithSecrets(sid, webAppId, filePath);
-    }
-
-    @Override
-    protected WebAppBase getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
-                                       @Nullable final String name) {
-        return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
+    protected IWebApp getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
+                                    @Nullable final String name) {
+        return Azure.az(AzureAppService.class).subscription(sid).webapp(webAppId);
     }
 }

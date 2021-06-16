@@ -877,64 +877,6 @@ public class AzureWebAppMvpModel {
         return webApps;
     }
 
-    /**
-     * Download publish profile of web app.
-     *
-     * @param sid      subscription id
-     * @param webAppId webapp id
-     * @param filePath file path to save publish profile
-     * @return status indicating whether it is successful or not
-     */
-    @AzureOperation(
-        name = "webapp.get_publishing_profile",
-        params = {"nameFromResourceId(webAppId)"},
-        type = AzureOperation.Type.SERVICE
-    )
-    public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) {
-        final WebApp app = getWebAppById(sid, webAppId);
-        return AppServiceUtils.getPublishingProfileXmlWithSecrets(app, filePath);
-    }
-
-    /**
-     * Download publish profile of deployment slot.
-     */
-    @AzureOperation(
-        name = "webapp|deployment.get_publishing_profile",
-        params = {"slotName", "nameFromResourceId(webAppId)"},
-        type = AzureOperation.Type.SERVICE
-    )
-    public boolean getSlotPublishingProfileXmlWithSecrets(final String sid,
-                                                          final String webAppId,
-                                                          final String slotName,
-                                                          final String filePath) {
-        final WebApp app = getWebAppById(sid, webAppId);
-        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
-        final String fileName = slotName + "_" + System.currentTimeMillis() + ".PublishSettings";
-        final Path path = Paths.get(filePath, fileName);
-        final File file = new File(path.toString());
-        try {
-            file.createNewFile();
-        } catch (final IOException e) {
-            log.warning("failed to create publishing profile xml file");
-            return false;
-        }
-        try (final InputStream inputStream = slot.manager().inner().webApps()
-                                                 .listPublishingProfileXmlWithSecretsSlot(slot.resourceGroupName(),
-                                                                                          app.name(),
-                                                                                          slotName,
-                                                                                          new CsmPublishingProfileOptions()
-                                                                                              .withFormat(
-                                                                                                  PublishingProfileFormat.FTP));
-             final OutputStream outputStream = new FileOutputStream(file)
-        ) {
-            IOUtils.copy(inputStream, outputStream);
-            return true;
-        } catch (final IOException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
-            return false;
-        }
-    }
-
     // Refers https://github.com/microsoft/vscode-azureappservice/blob/v0.16.5/src/explorer/SiteTreeItem.ts#L133
     public static boolean isHttpLogEnabled(WebAppBase webAppBase) {
         final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
