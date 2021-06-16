@@ -15,8 +15,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.WriteExternalException;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
@@ -81,16 +79,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         super.readExternal(element);
         Optional.ofNullable(element.getChild(JAVA_VERSION))
                 .map(javaVersionElement -> javaVersionElement.getAttributeValue(JAVA_VERSION))
-                .ifPresent(javaVersion -> webAppSettingModel.setJdkVersion(JavaVersion.fromString(javaVersion)));
-    }
-
-    @Override
-    public void writeExternal(final Element element) throws WriteExternalException {
-        super.writeExternal(element);
-        Optional.ofNullable(webAppSettingModel.getJdkVersion())
-                .map(JavaVersion::toString)
-                .map(javaVersion -> new Element(JAVA_VERSION).setAttribute(JAVA_VERSION, javaVersion))
-                .ifPresent(element::addContent);
+                .ifPresent(javaVersion -> webAppSettingModel.setWebAppJavaVersion(javaVersion));
     }
 
     @Override
