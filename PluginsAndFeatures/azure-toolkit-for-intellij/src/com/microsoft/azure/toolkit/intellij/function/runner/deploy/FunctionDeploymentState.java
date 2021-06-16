@@ -36,11 +36,16 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,18 +54,16 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> {
 
-    private static final String AUTH_LEVEL = "authLevel";
-    private static final String HTTP_TRIGGER = "httpTrigger";
-    private static final String UNABLE_TO_LIST_NONE_ANONYMOUS_HTTP_TRIGGERS = "Some http trigger urls cannot be displayed " +
-            "because they are non-anonymous. To access the non-anonymous triggers, please refer https://aka.ms/azure-functions-key.";
-    private static final String HTTP_TRIGGER_URLS = "HTTP Trigger Urls:";
-    private static final String NO_ANONYMOUS_HTTP_TRIGGER = "No anonymous HTTP Triggers found in deployed function app, skip list triggers.";
-    private static final String FAILED_TO_LIST_TRIGGERS = "Deployment succeeded, but failed to list http trigger urls.";
     private static final int LIST_TRIGGERS_MAX_RETRY = 3;
     private static final int LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS = 10;
-    private static final String SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION = "Syncing triggers and fetching function information (Attempt %d/%d)...";
-    private static final String NO_TRIGGERS_FOUNDED = "No triggers found in deployed function app, " +
-            "please try recompile the project by `mvn clean package` and deploy again.";
+    private static final String AUTH_LEVEL = "authLevel";
+    private static final String HTTP_TRIGGER = "httpTrigger";
+    private static final String HTTP_TRIGGER_URLS = "HTTP Trigger Urls:";
+    private static final String NO_ANONYMOUS_HTTP_TRIGGER = "No anonymous HTTP Triggers found in deployed function app, skip list triggers.";
+    private static final String UNABLE_TO_LIST_NONE_ANONYMOUS_HTTP_TRIGGERS = "Some http trigger urls cannot be displayed " +
+            "because they are non-anonymous. To access the non-anonymous triggers, please refer https://aka.ms/azure-functions-key.";
+    private static final String FAILED_TO_LIST_TRIGGERS = "Deployment succeeded, but failed to list http trigger urls.";
+    private static final String SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION = "Syncing triggers and fetching function information...";
 
     private final FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
@@ -86,7 +89,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
             functionApp = createFunctionApp(processHandler);
         } else {
             functionApp = Azure.az(AzureAppService.class).subscription(functionDeployConfiguration.getSubscriptionId())
-                    .functionApp(functionDeployConfiguration.getSubscriptionId());
+                    .functionApp(functionDeployConfiguration.getFunctionId());
         }
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler, operation);
@@ -102,7 +105,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         IFunctionApp functionApp = Azure.az(AzureAppService.class)
                 .subscription(functionDeployConfiguration.getSubscriptionId())
                 .functionApp(functionDeployConfiguration.getConfig().getResourceGroup().getName(), functionDeployConfiguration.getAppName());
-        AzureTelemetry.getContext().setProperty("isCreateNewApp", String.valueOf(functionApp == null));
         if (functionApp.exists()) {
             return functionApp;
         }
@@ -110,9 +112,12 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         // Load app settings from security storage
         final FunctionAppConfig config = deployModel.getFunctionAppConfig();
         config.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(functionDeployConfiguration.getAppSettingsKey()));
+        // create function app
         functionApp = FunctionAppService.getInstance().createFunctionApp(config);
         // update run configuration
         functionDeployConfiguration.setFunctionId(functionApp.id());
+        // Notify explorer refresh
+        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, functionApp));
         processHandler.setText(message("function.create.hint.created", functionDeployConfiguration.getAppName()));
         return functionApp;
     }
@@ -153,9 +158,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
-        if (AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, result));
-        }
     }
 
     @Override
@@ -224,23 +226,17 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     }
 
     private List<FunctionEntity> listFunctions(final IFunctionApp functionApp) {
-        for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
-            try {
-                AzureMessager.getMessager().info(String.format(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION, i + 1, LIST_TRIGGERS_MAX_RETRY));
-                functionApp.syncTriggers();
-                final List<FunctionEntity> triggers = functionApp.listFunctions();
-                if (CollectionUtils.isNotEmpty(triggers)) {
-                    return triggers;
-                }
-            } catch (final RuntimeException e) {
-                // swallow service exception while list triggers
-            }
-            try {
-                Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
-            } catch (final InterruptedException e) {
-                // swallow interrupted exception
-            }
-        }
-        throw new AzureToolkitRuntimeException(NO_TRIGGERS_FOUNDED);
+        AzureMessager.getMessager().info(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION);
+        return Mono.fromCallable(() -> {
+            functionApp.syncTriggers();
+            return functionApp.listFunctions();
+        }).retryWhen(Retry.withThrowable(flux ->
+                flux.zipWith(Flux.range(1, LIST_TRIGGERS_MAX_RETRY + 1), (throwable, count) -> {
+                    if (count < LIST_TRIGGERS_MAX_RETRY) {
+                        return count;
+                    } else {
+                        return Exceptions.propagate(throwable);
+                    }
+                }).flatMap(i -> Mono.delay(Duration.ofSeconds((long) i * 10))))).block();
     }
 }
