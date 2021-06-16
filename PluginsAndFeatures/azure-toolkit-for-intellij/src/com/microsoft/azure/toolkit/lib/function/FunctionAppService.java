@@ -22,8 +22,12 @@ import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import org.apache.commons.lang3.StringUtils;
+import org.zeroturnaround.zip.ZipUtil;
+
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
 
 public class FunctionAppService {
@@ -45,6 +49,12 @@ public class FunctionAppService {
     private static final String APPLICATION_INSIGHTS_CREATE_FAILED = "Unable to create the Application Insights " +
             "for the Function App due to error %s. Please use the Azure Portal to manually create and configure the " +
             "Application Insights if needed.";
+    private static final String DEPLOY_START = "Starting deployment...";
+    private static final String DEPLOY_FINISH = "Deployment done, you may access your resource through %s";
+    private static final String RUNNING = "Running";
+    private static final String PORTAL_URL_PATTERN = "%s/#@/resource%s";
+    private static final String LOCAL_SETTINGS_FILE = "local.settings.json";
+
     private static final FunctionAppService instance = new FunctionAppService();
 
     public static FunctionAppService getInstance() {
@@ -103,7 +113,7 @@ public class FunctionAppService {
         return appServicePlan;
     }
 
-    private void bindApplicationInsights(final Map<String, String> appSettings, final FunctionAppConfig config) {
+    private void bindApplicationInsights(final Map<? super String, ? super String> appSettings, final FunctionAppConfig config) {
         // Skip app insights creation when user specify ai connection string in app settings
         if (appSettings.containsKey(APPINSIGHTS_INSTRUMENTATION_KEY)) {
             return;
@@ -122,8 +132,8 @@ public class FunctionAppService {
         try {
             return Azure.az(ApplicationInsights.class).subscription(config.getSubscription())
                     .get(config.getResourceGroup().getName(), insightsConfig.getName());
-        } catch (ManagementException e) {
-           return createApplicationInsights(config);
+        } catch (final ManagementException e) {
+            return createApplicationInsights(config);
         }
     }
 
@@ -137,13 +147,26 @@ public class FunctionAppService {
             AzureMessager.getMessager().info(String.format(APPLICATION_INSIGHTS_CREATED,
                     resource.getName(), IdentityAzureManager.getInstance().getPortalUrl(), resource.getId()));
             return resource;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             AzureMessager.getMessager().warning(String.format(APPLICATION_INSIGHTS_CREATE_FAILED, e.getMessage()));
             return null;
         }
     }
 
-    public IFunctionApp deployFunctionApp(final IFunctionApp functionApp, final File stagingFolder) {
-        return null;
+    public void deployFunctionApp(final IFunctionApp functionApp, final File stagingFolder) throws IOException {
+        AzureMessager.getMessager().info(DEPLOY_START);
+        functionApp.deploy(packageStagingDirectory(stagingFolder));
+        if (!StringUtils.equalsIgnoreCase(functionApp.state(), RUNNING)) {
+            functionApp.start();
+        }
+        final String resourceUrl = String.format(PORTAL_URL_PATTERN, IdentityAzureManager.getInstance().getPortalUrl(), functionApp.id());
+        AzureMessager.getMessager().info(String.format(DEPLOY_FINISH, resourceUrl));
+    }
+
+    private File packageStagingDirectory(final File stagingFolder) throws IOException {
+        final File zipFile = Files.createTempFile("azure-toolkit", ".zip").toFile();
+        ZipUtil.pack(stagingFolder, zipFile);
+        ZipUtil.removeEntry(zipFile, LOCAL_SETTINGS_FILE);
+        return zipFile;
     }
 }
