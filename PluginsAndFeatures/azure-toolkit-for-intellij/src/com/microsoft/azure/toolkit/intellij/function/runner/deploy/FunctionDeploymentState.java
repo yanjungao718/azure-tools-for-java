@@ -8,23 +8,20 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.function.runner.library.function.CreateFunctionHandler;
-import com.microsoft.azure.toolkit.intellij.function.runner.library.function.DeployFunctionHandler;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -44,7 +41,7 @@ import java.util.Map;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
+public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> {
 
     private final FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
@@ -62,39 +59,35 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @Nullable
     @Override
     @AzureOperation(name = "function.deploy.state", type = AzureOperation.Type.ACTION)
-    public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    public IFunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) {
         final FunctionDeploymentMessenger messenger = new FunctionDeploymentMessenger(processHandler);
         AzureMessager.getContext().setMessager(messenger);
-        // Update run time information by function app
-        final FunctionApp functionApp;
+        final IFunctionApp functionApp;
         if (StringUtils.isEmpty(functionDeployConfiguration.getFunctionId())) {
-            functionApp = createFunctionApp(processHandler, operation);
-            functionDeployConfiguration.setFunctionId(functionApp.id());
+            functionApp = createFunctionApp(processHandler);
         } else {
-            functionApp = AzureFunctionMvpModel.getInstance()
-                                               .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
+            functionApp = Azure.az(AzureAppService.class).subscription(functionDeployConfiguration.getSubscriptionId())
+                    .functionApp(functionDeployConfiguration.getSubscriptionId());
         }
-        final IAppServicePlan appServicePlan = Azure.az(AzureAppService.class).appServicePlan(functionApp.appServicePlanId());
         // Deploy function to Azure
         stagingFolder = FunctionUtils.getTempStagingFolder();
-        deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());
         prepareStagingFolder(stagingFolder, processHandler, operation);
-        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, operation);
-        return deployFunctionHandler.execute();
+        FunctionAppService.getInstance().deployFunctionApp(functionApp, stagingFolder);
+        operation.trackProperties(AzureTelemetry.getContext().getProperties());
+        return functionApp;
     }
 
-    private FunctionApp createFunctionApp(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) {
-        FunctionApp functionApp =
-                AzureFunctionMvpModel.getInstance().getFunctionByName(functionDeployConfiguration.getSubscriptionId(),
-                                                                      functionDeployConfiguration.getConfig().getResourceGroup().getName(),
-                                                                      functionDeployConfiguration.getAppName());
-        operation.trackProperty("isCreateNewApp", String.valueOf(functionApp == null));
+    private IFunctionApp createFunctionApp(@NotNull RunProcessHandler processHandler) {
+        IFunctionApp functionApp = Azure.az(AzureAppService.class)
+                .subscription(functionDeployConfiguration.getSubscriptionId())
+                .functionApp(functionDeployConfiguration.getConfig().getResourceGroup().getName(), functionDeployConfiguration.getAppName());
+        AzureTelemetry.getContext().setProperty("isCreateNewApp", String.valueOf(functionApp == null));
         if (functionApp != null) {
             return functionApp;
         }
         processHandler.setText(message("function.create.hint.creating", functionDeployConfiguration.getAppName()));
-        final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployConfiguration.getModel(), operation);
-        functionApp = createFunctionHandler.execute();
+        functionApp = FunctionAppService.getInstance().createFunctionApp(deployModel.getFunctionAppConfig());
+        functionDeployConfiguration.setFunctionId(functionApp.id()); // update run configuration
         processHandler.setText(message("function.create.hint.created", functionDeployConfiguration.getAppName()));
         return functionApp;
     }
@@ -104,9 +97,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         params = {"stagingFolder.getName()", "this.deployModel.getAppName()"},
         type = AzureOperation.Type.TASK
     )
-    private void prepareStagingFolder(File stagingFolder,
-                                      RunProcessHandler processHandler,
-                                      final @NotNull Operation operation) {
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
         AzureTaskManager.getInstance().read(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
@@ -133,7 +124,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         params = {"this.deployModel.getAppName()"},
         type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(IFunctionApp result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
