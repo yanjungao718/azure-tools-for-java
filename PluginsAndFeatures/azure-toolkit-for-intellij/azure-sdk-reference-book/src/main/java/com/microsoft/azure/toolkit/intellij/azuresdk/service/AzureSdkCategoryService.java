@@ -37,7 +37,7 @@ public class AzureSdkCategoryService {
             // read
             final ObjectReader reader = CSV_MAPPER.readerFor(AzureSdkCategoryEntity.class).with(CsvSchema.emptySchema().withHeader());
             final MappingIterator<AzureSdkCategoryEntity> data = reader.readValues(stream);
-            List<AzureSdkCategoryEntity> categories = data.readAll();
+            final List<AzureSdkCategoryEntity> categories = data.readAll();
             // default category
             categories.stream().filter(c -> StringUtils.isNotBlank(c.getServiceName())).forEach(c -> {
                 if (StringUtils.isBlank(c.getCategory())) {
@@ -45,11 +45,10 @@ public class AzureSdkCategoryService {
                 }
             });
             // unique
-            List<AzureSdkCategoryEntity> uniqueCategories = categories.stream().collect(Collectors.collectingAndThen(
+            final List<AzureSdkCategoryEntity> uniqueCategories = categories.stream().collect(Collectors.collectingAndThen(
                     Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o.getCategory() + "," + o.getServiceName()))), ArrayList::new));
             // group
-            Map<String, List<AzureSdkCategoryEntity>> categoryMap = uniqueCategories.stream().collect(Collectors.groupingBy(AzureSdkCategoryEntity::getCategory));
-            return categoryMap;
+            return uniqueCategories.stream().collect(Collectors.groupingBy(AzureSdkCategoryEntity::getCategory));
         } catch (final IOException e) {
             final String message = String.format("failed to load Azure SDK categories from \"%s\"", SERVICE_CATEGORY_CSV);
             throw new AzureToolkitRuntimeException(message, e);
