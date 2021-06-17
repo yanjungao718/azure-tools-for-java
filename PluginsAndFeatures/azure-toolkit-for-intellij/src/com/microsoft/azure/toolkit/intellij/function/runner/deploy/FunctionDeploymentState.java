@@ -22,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -73,7 +72,12 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
             functionApp = AzureFunctionMvpModel.getInstance()
                                                .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
         }
-        final AppServicePlan appServicePlan = AppServiceUtils.getAppServicePlanByAppService(functionApp);
+        //TODO(hanli): fix here with track 2 service plan
+        final AppServicePlan appServicePlan = null;
+        if (functionApp != null) {
+            // this code will be removed
+            throw new AzureToolkitRuntimeException("Please wait for the service plan track 2 code to be merged.");
+        }
         functionDeployConfiguration.setOs(appServicePlan.operatingSystem().name());
         functionDeployConfiguration.setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
         // Deploy function to Azure
