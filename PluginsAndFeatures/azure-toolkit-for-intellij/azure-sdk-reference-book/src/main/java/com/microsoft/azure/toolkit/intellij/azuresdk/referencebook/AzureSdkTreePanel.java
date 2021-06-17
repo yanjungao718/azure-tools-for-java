@@ -165,7 +165,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             return;
         }
         final boolean categoryMatched = this.isMatchedFilters(categoryService.getCategory(), filters);
-        if (CollectionUtils.size(service.getContent()) == 1) {
+        if (CollectionUtils.size(service.getContent()) == 1 && StringUtils.equals(service.getName(), service.getContent().get(0).getName())) {
             final AzureSdkFeatureEntity feature = service.getContent().get(0);
             final boolean featureMatched = this.isMatchedFilters(feature.getName(), filters);
             if (ArrayUtils.isEmpty(filters) || categoryMatched || featureMatched) {
