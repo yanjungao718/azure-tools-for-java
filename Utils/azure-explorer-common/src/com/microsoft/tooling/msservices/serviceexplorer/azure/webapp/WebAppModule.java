@@ -75,21 +75,6 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                     }
                 } else if (event.object == null && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
                     load(true);
-                } else if (event.object != null && event.object.getClass().toString().equals(WebAppUtils
-                        .WebAppDetails.class.toString())) {
-                    WebAppUtils.WebAppDetails webAppDetails = (WebAppUtils.WebAppDetails) event.object;
-                    switch (event.opsType) {
-                        case ADD:
-                            final IWebApp newWebApp = AzureWebAppMvpModel.getInstance()
-                                    .getAzureAppServiceClient(webAppDetails.subscription.getId())
-                                    .webapp(webAppDetails.webApp.id());
-                            DefaultLoader.getIdeHelper().invokeLater(() -> addChildNode(new WebAppNode(WebAppModule.this, newWebApp)));
-                            break;
-                        case UPDATE:
-                        case REMOVE:
-                        default:
-                            break;
-                    }
                 }
             }
         };

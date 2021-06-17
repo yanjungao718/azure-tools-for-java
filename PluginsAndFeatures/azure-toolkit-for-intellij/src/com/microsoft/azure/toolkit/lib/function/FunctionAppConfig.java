@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.lib.function;
 
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -30,7 +30,7 @@ public class FunctionAppConfig extends AppServiceConfig {
     public static FunctionAppConfig getFunctionAppDefaultConfig() {
         return FunctionAppConfig.builder()
                                 .runtime(FunctionAppConfig.DEFAULT_RUNTIME)
-                                .pricingTier(AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER)
+                                .pricingTier(PricingTier.CONSUMPTION)
                                 .region(AppServiceConfig.DEFAULT_REGION).build();
     }
 }
