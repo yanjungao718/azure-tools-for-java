@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
+// todo: Refactor to tasks in app service library
 @Deprecated
 @Log
 public class AzureWebAppMvpModel {
