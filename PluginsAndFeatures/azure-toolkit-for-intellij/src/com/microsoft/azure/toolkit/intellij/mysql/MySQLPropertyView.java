@@ -5,25 +5,22 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
-import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
+import com.microsoft.azure.toolkit.lib.mysql.model.MySqlDatabaseEntity;
+import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -34,11 +31,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLPropert
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -91,9 +90,9 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     }
 
     private String getConnectionString(final String pattern, final String hostname, final String database, final String username) {
-        String newHostname = StringUtils.isNotBlank(hostname) ? hostname : "{your_hostname}";
-        String newDatabase = StringUtils.isNotBlank(database) ? database : "{your_database}";
-        String newUsername = StringUtils.isNotBlank(username) ? username : "{your_username}";
+        final String newHostname = StringUtils.isNotBlank(hostname) ? hostname : "{your_hostname}";
+        final String newDatabase = StringUtils.isNotBlank(database) ? database : "{your_database}";
+        final String newUsername = StringUtils.isNotBlank(username) ? username : "{your_username}";
         return String.format(pattern, newHostname, newDatabase, newUsername);
     }
 
@@ -118,7 +117,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
         if (itemEvent.getStateChange() == ItemEvent.SELECTED || itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-            Boolean changed = MySQLPropertyView.this.changed();
+            final Boolean changed = MySQLPropertyView.this.changed();
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             MySQLPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
         }
@@ -127,9 +126,9 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private void onJDBCCopyButtonClicked(ActionEvent e) {
         try {
             Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsJDBC.getOutputTextArea().getText());
-        } catch (Exception exception) {
-            String error = "copy JDBC connection strings";
-            String action = "try again later.";
+        } catch (final Exception exception) {
+            final String error = "copy JDBC connection strings";
+            final String action = "try again later.";
             throw new AzureToolkitRuntimeException(error, action);
         }
     }
@@ -137,40 +136,42 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private void onSpringCopyButtonClicked(ActionEvent e) {
         try {
             Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsSpring.getOutputTextArea().getText());
-        } catch (Exception exception) {
-            String error = "copy Spring connection strings";
-            String action = "try again later.";
+        } catch (final Exception exception) {
+            final String error = "copy Spring connection strings";
+            final String action = "try again later.";
             throw new AzureToolkitRuntimeException(error, action);
         }
     }
 
     private void onSaveButtonClicked(ActionEvent e) {
         final String actionName = "Saving";
-        String originalText = MySQLPropertyView.this.propertyActionPanel.getSaveButton().getText();
+        final String originalText = MySQLPropertyView.this.propertyActionPanel.getSaveButton().getText();
         MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(actionName);
         MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(false);
-        Runnable runnable = () -> {
-            String subscriptionId = property.getSubscriptionId();
+        final Runnable runnable = () -> {
+            final String subscriptionId = property.getSubscriptionId();
             // refresh property
-            refreshProperty(subscriptionId, property.getServer().resourceGroupName(), property.getServer().name());
-            boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
+            refreshProperty(subscriptionId, property.getServer().entity().getResourceGroup(), property.getServer().name());
+            final boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices)) {
-                boolean result = MySQLMvpModel.FirewallRuleMvpModel
-                        .updateAllowAccessFromAzureServices(subscriptionId, property.getServer(), allowAccessToAzureServices);
-                if (result) {
-                    originalAllowAccessToAzureServices = allowAccessToAzureServices;
+                if (allowAccessToAzureServices) {
+                    property.getServer().firewallRules().enableAzureAccessRule();
+                } else {
+                    property.getServer().firewallRules().disableAzureAccessRule();
                 }
+                originalAllowAccessToAzureServices = allowAccessToAzureServices;
             }
-            boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
+            final boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToLocal.equals(allowAccessToLocal)) {
-                boolean result = AzureMySQLService.FirewallRuleService.getInstance()
-                        .updateAllowAccessToLocalMachine(subscriptionId, property.getServer(), allowAccessToLocal);
-                if (result) {
-                    originalAllowAccessToLocal = allowAccessToLocal;
+                if (allowAccessToLocal) {
+                    property.getServer().firewallRules().enableLocalMachineAccessRule(property.getServer().getPublicIpForLocalMachine());
+                } else {
+                    property.getServer().firewallRules().disableLocalMachineAccessRule();
                 }
+                originalAllowAccessToLocal = allowAccessToLocal;
             }
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
-            Boolean changed = MySQLPropertyView.this.changed();
+            final Boolean changed = MySQLPropertyView.this.changed();
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             MySQLPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
             final Map<String, String> properties = new HashMap<>();
@@ -191,12 +192,12 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     }
 
     private void onDatabaseComboBoxChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof DatabaseInner) {
-            final DatabaseInner database = (DatabaseInner) e.getItem();
+        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof MySqlDatabaseEntity) {
+            final MySqlDatabaseEntity database = (MySqlDatabaseEntity) e.getItem();
             connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_JDBC,
-                    property.getServer().fullyQualifiedDomainName(), database.name(), overview.getServerAdminLoginNameTextField().getText()));
+                    property.getServer().entity().getFullyQualifiedDomainName(), database.getName(), overview.getServerAdminLoginNameTextField().getText()));
             connectionStringsSpring.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_SPRING,
-                    property.getServer().fullyQualifiedDomainName(), database.name(), overview.getServerAdminLoginNameTextField().getText()));
+                property.getServer().entity().getFullyQualifiedDomainName(), database.getName(), overview.getServerAdminLoginNameTextField().getText()));
         }
     }
 
@@ -223,66 +224,64 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     @Override
     public void onReadProperty(String sid, String resourceGroup, String name) {
         final String actionName = "Opening Property of";
-        Runnable runnable = () -> {
+        final Runnable runnable = () -> {
             // refresh property
             this.refreshProperty(sid, resourceGroup, name);
             // show property
             this.showProperty(this.property);
         };
         // show property in background
-        String taskTitle = Node.getProgressMessage(actionName, MySQLModule.MODULE_NAME, name);
+        final String taskTitle = Node.getProgressMessage(actionName, MySQLModule.MODULE_NAME, name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
     }
 
     private void refreshProperty(String sid, String resourceGroup, String name) {
-        MySQLProperty newProperty = new MySQLProperty();
+        final MySQLProperty newProperty = new MySQLProperty();
         newProperty.setSubscriptionId(sid);
         // find server
         try {
-            Server server = MySQLMvpModel.findServer(sid, resourceGroup, name);
-            newProperty.setServer(server);
-        } catch (Exception ex) {
-            String error = "find Azure Database for MySQL server information";
-            String action = "confirm your network is available and your server actually exists.";
+            newProperty.setServer(Azure.az(AzureMySql.class).subscription(sid).get(resourceGroup, name));
+        } catch (final Exception ex) {
+            final String error = "find Azure Database for MySQL server information";
+            final String action = "confirm your network is available and your server actually exists.";
             throw new AzureToolkitRuntimeException(error, action);
         }
-        if (ServerState.READY.equals(newProperty.getServer().userVisibleState())) {
+        if (StringUtils.equalsIgnoreCase("READY", newProperty.getServer().entity().getState())) {
             // find firewalls
-            List<FirewallRuleInner> firewallRules = MySQLMvpModel.FirewallRuleMvpModel.listFirewallRules(sid, resourceGroup, name);
-            newProperty.setFirewallRules(firewallRules);
+            newProperty.setFirewallRules(newProperty.getServer().firewallRules().list());
         }
         this.property = newProperty;
     }
 
     @Override
     public void showProperty(MySQLProperty property) {
-        Server server = property.getServer();
-        final String sid = AzureMvpModel.getSegment(server.id(), "subscriptions");
-        Subscription subscription = az(AzureAccount.class).account().getSubscription(sid);
+        final MySqlServer server = property.getServer();
+        final String sid = server.entity().getSubscriptionId();
+        final Subscription subscription = az(AzureAccount.class).account().getSubscription(sid);
         if (subscription != null) {
             overview.getSubscriptionTextField().setText(subscription.getName());
             databaseComboBox.setSubscription(subscription);
             databaseComboBox.setServer(server);
         }
-        overview.getResourceGroupTextField().setText(server.resourceGroupName());
-        overview.getStatusTextField().setText(server.userVisibleState().toString());
-        overview.getLocationTextField().setText(server.region().label());
+        overview.getResourceGroupTextField().setText(server.entity().getResourceGroup());
+        overview.getStatusTextField().setText(server.entity().getState());
+        overview.getLocationTextField().setText(server.entity().getRegion().getLabel());
         overview.getSubscriptionIDTextField().setText(sid);
-        overview.getServerNameTextField().setText(server.fullyQualifiedDomainName());
+        overview.getServerNameTextField().setText(server.entity().getFullyQualifiedDomainName());
         overview.getServerNameTextField().setCaretPosition(0);
-        overview.getServerAdminLoginNameTextField().setText(server.administratorLogin() + "@" + server.name());
+        overview.getServerAdminLoginNameTextField().setText(server.entity().getAdministratorLoginName() + "@" + server.name());
         overview.getServerAdminLoginNameTextField().setCaretPosition(0);
-        overview.getMysqlVersionTextField().setText(server.version().toString());
-        String skuTier = server.sku().tier().toString();
-        int skuCapacity = server.sku().capacity();
-        int storageGB = server.storageProfile().storageMB() / 1024;
-        String performanceConfigurations = skuTier + ", " + skuCapacity + " vCore(s), " + storageGB + " GB";
+        overview.getMysqlVersionTextField().setText(server.entity().getVersion());
+        final String skuTier = server.entity().getSkuTier();
+        final int skuCapacity = server.entity().getVCore();
+        final int storageGB = server.entity().getStorageInMB() / 1024;
+        final String performanceConfigurations = skuTier + ", " + skuCapacity + " vCore(s), " + storageGB + " GB";
         overview.getPerformanceConfigurationsTextField().setText(performanceConfigurations);
-        overview.getSslEnforceStatusTextField().setText(server.sslEnforcement().name());
-        if (ServerState.READY.equals(server.userVisibleState())) {
-            originalAllowAccessToAzureServices = MySQLMvpModel.FirewallRuleMvpModel.isAllowAccessFromAzureServices(property.getFirewallRules());
+        overview.getSslEnforceStatusTextField().setText(server.entity().getSslEnforceStatus());
+        if (StringUtils.equalsIgnoreCase("READY", server.entity().getState())) {
+            originalAllowAccessToAzureServices = server.firewallRules().isAzureAccessRuleEnabled();
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-            originalAllowAccessToLocal = AzureMySQLService.FirewallRuleService.getInstance().isAllowAccessFromLocalMachine(property.getFirewallRules());
+            originalAllowAccessToLocal = server.firewallRules().isLocalMachineAccessRuleEnabled();
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();

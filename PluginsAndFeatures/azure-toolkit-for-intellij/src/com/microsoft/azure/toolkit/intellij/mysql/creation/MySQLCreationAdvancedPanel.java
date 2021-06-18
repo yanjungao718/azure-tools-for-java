@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql.creation;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -127,7 +126,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setRegion(regionComboBox.getValue());
         if (StringUtils.isNotBlank(versionComboBox.getValue())) {
-            config.setVersion(ServerVersion.fromString(versionComboBox.getValue()));
+            config.setVersion(versionComboBox.getValue());
         }
         config.setAllowAccessFromAzureServices(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
         config.setAllowAccessFromLocalMachine(security.getAllowAccessFromLocalMachineCheckBox().isSelected());

@@ -582,7 +582,7 @@ public class UIHelperImpl implements UIHelper {
     public void openMySQLPropertyView(@NotNull MySQLNode node) {
         EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
             String name = node.getName();
-            String subscriptionId = node.getSubscriptionId();
+            String subscriptionId = node.getServer().entity().getSubscriptionId();
             String nodeId = node.getId();
             final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
             if (fileEditorManager == null) {
@@ -596,7 +596,7 @@ public class UIHelperImpl implements UIHelper {
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
                 if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
-                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().resourceGroupName(), node.getServer().name());
+                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().entity().getResourceGroup(), node.getServer().name());
                 }
             }
         });
