@@ -8,6 +8,9 @@ package com.microsoft.azure.toolkit.lib.webapp;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -18,7 +21,10 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
@@ -84,5 +90,14 @@ public class WebAppService {
         settings.setTargetName(config.getApplication() == null ? null : config.getApplication().toFile().getName());
         settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
         return settings;
+    }
+
+    public String getRuntimeDisplayName(@Nonnull final Runtime runtime) {
+        final String os = runtime.getOperatingSystem().getValue();
+        final String javaVersion = runtime.getJavaVersion() == JavaVersion.OFF ? null : String.format("Java %s", runtime.getJavaVersion().getValue());
+        final String webContainer = runtime.getWebContainer() == WebContainer.JAVA_OFF ? null : runtime.getWebContainer().getValue();
+        return Stream.of(os, javaVersion, webContainer)
+                     .filter(StringUtils::isNotEmpty)
+                     .map(StringUtils::capitalize).collect(Collectors.joining("-"));
     }
 }
