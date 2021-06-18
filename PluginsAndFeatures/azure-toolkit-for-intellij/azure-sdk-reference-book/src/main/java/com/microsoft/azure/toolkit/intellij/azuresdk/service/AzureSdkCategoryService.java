@@ -43,7 +43,7 @@ public class AzureSdkCategoryService {
                 if (StringUtils.isBlank(c.getCategory())) {
                     c.setCategory("Others");
                 }
-                if (!StringUtils.endsWith(c.getDescription(), ".")) {
+                if (StringUtils.isNotBlank(c.getDescription()) && !StringUtils.endsWith(c.getDescription(), ".")) {
                     c.setDescription(c.getDescription() + ".");
                 }
             });
