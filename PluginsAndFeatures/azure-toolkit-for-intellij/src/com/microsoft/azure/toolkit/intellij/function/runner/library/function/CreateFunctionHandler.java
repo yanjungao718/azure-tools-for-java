@@ -104,9 +104,9 @@ public class CreateFunctionHandler {
     private WithCreate configureApplicationLog(WithCreate withCreate) {
         if (ctx.isEnableApplicationLog()) {
             return (WithCreate) withCreate.defineDiagnosticLogsConfiguration()
-                .withApplicationLogging()
-                .withLogLevel(ctx.getApplicationLogLevel())
-                .withApplicationLogsStoredOnFileSystem().attach();
+                                          .withApplicationLogging()
+                                          .withLogLevel(ctx.getApplicationLogLevel())
+                                          .withApplicationLogsStoredOnFileSystem().attach();
         }
         return withCreate;
     }
@@ -155,13 +155,13 @@ public class CreateFunctionHandler {
                 throw new AzureExecutionException(message("function.create.error.invalidRuntime", os));
         }
         return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
-            .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
-            .servicePlanName(ctx.getAppServicePlanName())
-            .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
-            .functionExtensionVersion(getFunctionExtensionVersion())
-            .azure(this.ctx.getAzureClient())
-            .javaVersion(JavaVersion.fromString(ctx.getJavaVersion()))
-            .build();
+                      .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
+                      .servicePlanName(ctx.getAppServicePlanName())
+                      .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
+                      .functionExtensionVersion(getFunctionExtensionVersion())
+                      .azure(this.ctx.getAzureClient())
+                      .javaVersion(JavaVersion.fromString(ctx.getJavaVersion()))
+                      .build();
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
@@ -222,9 +222,9 @@ public class CreateFunctionHandler {
         final Map settings =
             com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.loadAppSettingsFromSecurityStorage(ctx.getAppSettingsKey());
         overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
-            FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
+                                  FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
-            FUNCTIONS_EXTENSION_VERSION_VALUE);
+                             FUNCTIONS_EXTENSION_VERSION_VALUE);
         com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils.saveAppSettingsToSecurityStorage(ctx.getAppSettingsKey(), settings);
         return settings;
     }

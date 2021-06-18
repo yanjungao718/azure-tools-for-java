@@ -54,7 +54,7 @@ public class ServerComboBox extends AzureComboBox<MySqlServer> {
         if (Objects.isNull(manager)) {
             return new ArrayList<>();
         }
-        return Azure.az(AzureMySql.class).list();
+        return Azure.az(AzureMySql.class).subscription(subscription.getId()).list();
     }
 
     @Override
