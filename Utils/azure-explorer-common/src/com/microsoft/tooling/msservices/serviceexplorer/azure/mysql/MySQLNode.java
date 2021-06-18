@@ -8,7 +8,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudDeploymentStatus;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -49,13 +48,20 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.server = server;
         this.serverState = server.entity().getState();
         loadActions();
-
+        AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
         AzureEventBus.before("mysql|server.start", this::onMySqlServerStatusChanging);
         AzureEventBus.before("mysql|server.stop", this::onMySqlServerStatusChanging);
         AzureEventBus.before("mysql|server.restart", this::onMySqlServerStatusChanging);
         AzureEventBus.before("mysql|server.delete", this::onMySqlServerStatusChanging);
     }
 
+    public void onMySqlServerStatusChanged(MySqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.server.id(), server.id())) {
+            this.serverState = server.entity().getState();
+        }
+    }
 
     private void onMySqlServerStatusChanging(MySqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.server.id(), server.id())) {
