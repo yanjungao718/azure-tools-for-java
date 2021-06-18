@@ -20,6 +20,7 @@ public class AzureSdkCategoryEntity {
     @Setter
     @JsonProperty("Category")
     private String category;
+    @Setter
     @JsonProperty("Description")
     private String description;
     @JsonProperty("MapTo")
