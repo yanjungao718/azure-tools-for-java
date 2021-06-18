@@ -46,8 +46,8 @@ public class DatabaseComboBox extends AzureComboBox<MySqlDatabaseEntity> {
 
     @Override
     @AzureOperation(
-        name = "mysql|database.list.server|subscription",
-        params = {"this.server.entity().getName()", "this.subscription.getId()"},
+        name = "mysql|database.list.server",
+        params = {"this.server.entity().getName()"},
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends MySqlDatabaseEntity> loadItems() {
