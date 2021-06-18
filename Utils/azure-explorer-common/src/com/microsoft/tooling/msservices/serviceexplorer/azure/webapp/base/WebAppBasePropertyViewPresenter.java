@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
@@ -72,11 +73,12 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_NAME, appServiceEntity.getName());
         propertyMap.put(KEY_RESOURCE_GRP, appServiceEntity.getResourceGroup());
         propertyMap.put(KEY_LOCATION, appServiceEntity.getRegion().getLabel());
-        propertyMap.put(KEY_SUB_ID, appServiceEntity.getAppServicePlanId());
+        propertyMap.put(KEY_SUB_ID, appService.subscriptionId());
         propertyMap.put(KEY_STATUS, appService.state());
         propertyMap.put(KEY_PLAN, plan.name());
         propertyMap.put(KEY_URL, appService.hostName());
-        propertyMap.put(KEY_PRICING, planEntity.getPricingTier().getSize());
+        final PricingTier pricingTier = planEntity.getPricingTier();
+        propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
         final JavaVersion javaVersion = runtime.getJavaVersion();
         if (javaVersion != JavaVersion.OFF) {
