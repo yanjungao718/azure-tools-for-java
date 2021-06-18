@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
@@ -12,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputP
 import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -24,6 +28,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLProperty;
@@ -72,9 +77,13 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
 
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
+    private Project project;
+    private VirtualFile virtualFile;
 
-    MySQLPropertyView() {
+    MySQLPropertyView(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         super();
+        this.project = project;
+        this.virtualFile = virtualFile;
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
         connectionStringsSeparator.addContentComponent(databaseLabel);
@@ -87,6 +96,47 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         connectionStringsSpring.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_SPRING, null, null, null));
         init();
         initListeners();
+
+        AzureEventBus.after("mysql|server.delete", (MySqlServer server) -> {
+            if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
+                this.closeEditor();
+            }
+        });
+
+        AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
+        AzureEventBus.before("mysql|server.start", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql|server.stop", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql|server.restart", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql|server.delete", this::onMySqlServerStatusDeleting);
+    }
+
+    private void onMySqlServerStatusChanged(MySqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
+            this.property.getServer().refresh();
+        }
+        showProperty(property);
+    }
+
+    private void onMySqlServerStatusChanging(MySqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
+            overview.getStatusTextField().setText("Updating...");
+        }
+    }
+
+    private void onMySqlServerStatusDeleting(MySqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
+            overview.getStatusTextField().setText("Deleting...");
+        }
+    }
+
+    private void closeEditor() {
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
+        PluginUtil.showInfoNotificationProject(project,
+            String.format("The editor for MySQL server '%s' is closed.", this.property.getServer().name()),
+            String.format("The MySQL server with name '%s' is deleted.",
+                this.property.getServer().name()));
     }
 
     private String getConnectionString(final String pattern, final String hostname, final String database, final String username) {
@@ -257,6 +307,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     public void showProperty(MySQLProperty property) {
         final MySqlServer server = property.getServer();
         final String sid = server.entity().getSubscriptionId();
+        if (!server.exists()) {
+            this.closeEditor();
+            return;
+        }
         final Subscription subscription = az(AzureAccount.class).account().getSubscription(sid);
         if (subscription != null) {
             overview.getSubscriptionTextField().setText(subscription.getName());
