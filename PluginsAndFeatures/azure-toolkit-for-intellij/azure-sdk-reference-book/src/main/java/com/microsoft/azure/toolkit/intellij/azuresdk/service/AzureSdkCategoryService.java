@@ -38,10 +38,13 @@ public class AzureSdkCategoryService {
             final ObjectReader reader = CSV_MAPPER.readerFor(AzureSdkCategoryEntity.class).with(CsvSchema.emptySchema().withHeader());
             final MappingIterator<AzureSdkCategoryEntity> data = reader.readValues(stream);
             final List<AzureSdkCategoryEntity> categories = data.readAll();
-            // default category
+            // default category & description suffix.
             categories.stream().filter(c -> StringUtils.isNotBlank(c.getServiceName())).forEach(c -> {
                 if (StringUtils.isBlank(c.getCategory())) {
                     c.setCategory("Others");
+                }
+                if (!StringUtils.endsWith(c.getDescription(), ".")) {
+                    c.setDescription(c.getDescription() + ".");
                 }
             });
             // unique
