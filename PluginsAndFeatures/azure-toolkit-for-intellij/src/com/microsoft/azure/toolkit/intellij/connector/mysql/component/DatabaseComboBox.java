@@ -5,33 +5,31 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.mysql.model.MySqlDatabaseEntity;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
+public class DatabaseComboBox extends AzureComboBox<MySqlDatabaseEntity> {
     @Getter
-    private Server server;
+    private MySqlServer server;
 
     public DatabaseComboBox() {
         super(false);
     }
 
-    public void setServer(Server server) {
+    public void setServer(MySqlServer server) {
         if (Objects.equals(server, this.server)) {
             return;
         }
         this.server = server;
-        if (server == null) {
+        if (server == null || !server.exists()) {
             this.clear();
             return;
         }
@@ -40,21 +38,23 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
     @Override
     protected String getItemText(Object item) {
-        if (item instanceof DatabaseInner) {
-            return ((DatabaseInner) item).name();
+        if (item instanceof MySqlDatabaseEntity) {
+            return ((MySqlDatabaseEntity) item).getName();
         }
         return super.getItemText(item);
     }
 
     @Override
-    protected List<? extends DatabaseInner> loadItems() {
-        final AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-        if (Objects.isNull(server) || Objects.isNull(manager)) {
+    @AzureOperation(
+        name = "mysql|database.list.server|subscription",
+        params = {"this.server.entity().getName()", "this.subscription.getId()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    protected List<? extends MySqlDatabaseEntity> loadItems() {
+        if (Objects.isNull(server)) {
             return new ArrayList<>();
         }
-        final String sid = ResourceId.fromString(server.id()).subscriptionId();
-        final MySQLManager mySQLManager = manager.getMySQLManager(sid);
-        return mySQLManager.databases().inner().listByServer(server.resourceGroupName(), server.name());
+        return server.databases();
     }
 
     @Override

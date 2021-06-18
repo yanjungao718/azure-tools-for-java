@@ -46,9 +46,7 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(e, isSuccess, project);
-        });
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(e, isSuccess, project));
     }
 
     @Override
@@ -72,11 +70,11 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
             AzurePlugin.log(message("common.error.signIn"), ex);
             DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
-        IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
+        final IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
                 .name(String.format(MYSQL_PATTERN_NAME, node.getServer().name()))
                 .driverClassName(MYSQL_DEFAULT_DRIVER)
-                .url(JdbcUrl.mysql(node.getServer().fullyQualifiedDomainName()).toString())
-                .username(node.getServer().administratorLogin() + "@" + node.getServer().name())
+                .url(JdbcUrl.mysql(node.getServer().entity().getFullyQualifiedDomainName()).toString())
+                .username(node.getServer().entity().getAdministratorLoginName() + "@" + node.getServer().name())
                 .build();
         IntellijDatasourceService.getInstance().openDataSourceManagerDialog(project, properties);
     }

@@ -5,10 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ServerComboBox extends AzureComboBox<Server> {
+public class ServerComboBox extends AzureComboBox<MySqlServer> {
 
     private Subscription subscription;
 
@@ -38,14 +39,14 @@ public class ServerComboBox extends AzureComboBox<Server> {
 
     @Override
     protected String getItemText(Object item) {
-        if (item instanceof Server) {
-            return ((Server) item).name();
+        if (item instanceof MySqlServer) {
+            return ((MySqlServer) item).name();
         }
         return super.getItemText(item);
     }
 
     @Override
-    protected List<? extends Server> loadItems() throws Exception {
+    protected List<? extends MySqlServer> loadItems() throws Exception {
         if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
@@ -53,8 +54,7 @@ public class ServerComboBox extends AzureComboBox<Server> {
         if (Objects.isNull(manager)) {
             return new ArrayList<>();
         }
-        final MySQLManager mySQLManager = manager.getMySQLManager(subscription.getId());
-        return mySQLManager.servers().list();
+        return Azure.az(AzureMySql.class).list();
     }
 
     @Override

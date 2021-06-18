@@ -11,6 +11,8 @@
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <checkstyle.skip>true</checkstyle.skip>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
     <profiles>
         <profile>
@@ -130,6 +132,10 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-springcloud-lib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-mysql-lib</artifactId>
         </dependency>
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>

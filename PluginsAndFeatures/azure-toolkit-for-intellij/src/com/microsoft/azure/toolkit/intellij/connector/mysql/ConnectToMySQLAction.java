@@ -6,9 +6,9 @@
 package com.microsoft.azure.toolkit.intellij.connector.mysql;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -38,7 +38,7 @@ public class ConnectToMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final ConnectorDialog<MySQLDatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
-        final Server server = this.node.getServer();
+        final MySqlServer server = this.node.getServer();
         dialog.setResource(new MySQLDatabaseResource(server.id(), null));
         dialog.show();
     }

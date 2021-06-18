@@ -5,8 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlFirewallRule;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,8 +16,8 @@ import java.util.List;
 @Setter
 public class MySQLProperty {
 
-    private Server server;
+    private MySqlServer server;
     private String subscriptionId;
-    private List<FirewallRuleInner> firewallRules;
+    private List<MySqlFirewallRule> firewallRules;
 
 }

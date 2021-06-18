@@ -5,10 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,18 +16,18 @@ public class UsernameComboBox extends AzureComboBox<String> {
 
     private static final String SEPARATOR = "@";
 
-    private Server server;
+    private MySqlServer server;
 
     public UsernameComboBox() {
         super(false);
     }
 
-    public void setServer(Server server) {
+    public void setServer(MySqlServer server) {
         if (Objects.equals(server, this.server)) {
             return;
         }
         this.server = server;
-        if (server == null) {
+        if (server == null || !server.exists()) {
             this.clear();
             return;
         }
@@ -37,11 +37,9 @@ public class UsernameComboBox extends AzureComboBox<String> {
     @Override
     protected List<? extends String> loadItems() {
         if (server == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-        final List<String> usernames = new ArrayList<>();
-        usernames.add(server.administratorLogin() + SEPARATOR + server.name());
-        return usernames;
+        return Collections.singletonList(server.entity().getAdministratorLoginName() + SEPARATOR + server.name());
     }
 
     @Override
