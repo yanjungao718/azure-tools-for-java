@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -25,6 +24,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,9 +34,8 @@ import javax.annotation.Nullable;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public final class MySQLDatabaseResource implements Resource {
-    public static final String TYPE = Definition.AZURE_MYSQL.type;
-    private final String type = TYPE;
+public final class DatabaseResource implements Resource {
+    private final String type;
     private final String databaseName;
     private final ResourceId serverId;
 
@@ -45,12 +44,14 @@ public final class MySQLDatabaseResource implements Resource {
     private Password password;
     private String envPrefix;
 
-    public MySQLDatabaseResource(@Nonnull final String serverId, @Nullable final String databaseName) {
+    public DatabaseResource(@Nonnull String type, @Nonnull final String serverId, @Nullable final String databaseName) {
+        this.type = type;
         this.databaseName = databaseName;
         this.serverId = ResourceId.fromString(serverId);
     }
 
-    public MySQLDatabaseResource(@Nonnull final String databaseId) {
+    public DatabaseResource(@Nonnull String type, @Nonnull final String databaseId) {
+        this.type = type;
         final ResourceId dbId = ResourceId.fromString(databaseId);
         this.serverId = dbId.parent();
         this.databaseName = dbId.name();
@@ -60,6 +61,7 @@ public final class MySQLDatabaseResource implements Resource {
         return this.serverId;
     }
 
+    @Override
     public String getId() {
         return DigestUtils.md5Hex(this.getDatabaseId());
     }
@@ -70,24 +72,26 @@ public final class MySQLDatabaseResource implements Resource {
         return serverId.id() + "/databases/" + databaseName;
     }
 
+    @Override
     public String toString() {
-        return String.format("MySQL database: \"%s/%s\"", this.getServerId().name(), this.databaseName);
+        return String.format("%s database: \"%s/%s\"", Definition.getTitleByType(this.type), this.getServerId().name(), this.databaseName);
     }
 
     @Getter
     @RequiredArgsConstructor
-    public enum Definition implements ResourceDefinition<MySQLDatabaseResource> {
-        AZURE_MYSQL("Microsoft.DBforMySQL", "Azure Database for MySQL");
+    public enum Definition implements ResourceDefinition<DatabaseResource> {
+        AZURE_MYSQL("Microsoft.DBforMySQL", "Azure Database for MySQL"),
+        SQL_SERVER("Microsoft.Sql", "SQL Server");
         private final String type;
         private final String title;
 
         @Override
-        public AzureFormJPanel<MySQLDatabaseResource> getResourcesPanel(String type, final Project project) {
-            return new MySQLDatabaseResourcePanel();
+        public AzureFormJPanel<DatabaseResource> getResourcesPanel(@NotNull String type, final Project project) {
+            return new DatabaseResourcePanel(this);
         }
 
         @Override
-        public boolean write(Element resourceEle, MySQLDatabaseResource resource) {
+        public boolean write(Element resourceEle, DatabaseResource resource) {
             resourceEle.setAttribute(new Attribute(Resource.FIELD_ID, resource.getId()));
             resourceEle.addContent(new Element("azureResourceId").addContent(resource.getDatabaseId()));
             resourceEle.addContent(new Element("url").setText(resource.jdbcUrl.toString()));
@@ -99,9 +103,9 @@ public final class MySQLDatabaseResource implements Resource {
             return true;
         }
 
-        @Nullable
-        public MySQLDatabaseResource read(Element resourceEle) {
-            final MySQLDatabaseResource resource = new MySQLDatabaseResource(resourceEle.getChildTextTrim("azureResourceId"));
+        @Override
+        public DatabaseResource read(Element resourceEle) {
+            final DatabaseResource resource = new DatabaseResource(resourceEle.getAttributeValue("type"), resourceEle.getChildTextTrim("azureResourceId"));
             resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
             resource.setUsername(resourceEle.getChildTextTrim("username"));
             resource.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
@@ -112,8 +116,18 @@ public final class MySQLDatabaseResource implements Resource {
             return resource;
         }
 
+        @Override
         public String toString() {
             return this.getTitle();
+        }
+
+        public static String getTitleByType(String type) {
+            for (Definition definition : Definition.values()) {
+                if (StringUtils.equals(definition.getType(), type)) {
+                    return definition.getTitle();
+                }
+            }
+            return type;
         }
     }
 }
