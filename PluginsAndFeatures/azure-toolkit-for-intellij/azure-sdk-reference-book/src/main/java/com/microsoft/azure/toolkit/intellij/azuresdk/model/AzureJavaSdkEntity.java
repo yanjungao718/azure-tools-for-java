@@ -8,9 +8,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@ToString
 @Getter
 @NoArgsConstructor
 public class AzureJavaSdkEntity {
@@ -101,5 +99,9 @@ public class AzureJavaSdkEntity {
 
     public String getPackageName() {
         return String.format("%s/%s", groupId, artifactId);
+    }
+
+    public String toString() {
+        return this.getPackageName();
     }
 }

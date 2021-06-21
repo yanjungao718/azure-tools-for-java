@@ -1,4 +1,5 @@
 <idea-plugin>
+    <resource-bundle>com.microsoft.azure.toolkit.operation.titles_action_common_intellij</resource-bundle>
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">

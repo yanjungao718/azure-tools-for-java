@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.intellij.common.messager.IntellijActionMessag
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijOpenInBrowserMessageAction;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,11 +41,16 @@ public class AzureSdkEnforcer {
         final SetUtils.SetView<String> deprecatedProjectLibNames = SetUtils.intersection(projectLibPackageNames, allDeprecatedAzureLibNames);
         if (CollectionUtils.isNotEmpty(deprecatedProjectLibNames)) {
             final List<AzureJavaSdkEntity> libs = deprecatedProjectLibNames.stream().map(allDeprecatedAzureLibs::get).collect(Collectors.toList());
-            final String message = buildMessage(libs);
-            final IAzureMessage.Action referenceBook = new IntellijActionMessageAction(OpenReferenceBookAction.ID);
-            final IAzureMessage.Action sdkReleases = new IntellijOpenInBrowserMessageAction("Azure SDK Releases", "https://azure.github.io/azure-sdk/releases/latest/java.html");
-            AzureMessager.getMessager().warning(message, "Deprecated Azure SDK libraries Detected", referenceBook, sdkReleases);
+            AzureSdkEnforcer.warnDeprecatedLibs(libs);
         }
+    }
+
+    @AzureOperation(name = "sdk|deprecated_libs.warn", type = AzureOperation.Type.ACTION)
+    private static void warnDeprecatedLibs(@AzureTelemetry.Property List<? extends AzureJavaSdkEntity> deprecatedLibs) {
+        final String message = buildMessage(deprecatedLibs);
+        final IAzureMessage.Action referenceBook = new IntellijActionMessageAction(OpenReferenceBookAction.ID);
+        final IAzureMessage.Action sdkReleases = new IntellijOpenInBrowserMessageAction("Azure SDK Releases", "https://azure.github.io/azure-sdk/releases/latest/java.html");
+        AzureMessager.getMessager().warning(message, "Deprecated Azure SDK libraries Detected", referenceBook, sdkReleases);
     }
 
     private static String buildMessage(@Nonnull List<? extends AzureJavaSdkEntity> libs) {
