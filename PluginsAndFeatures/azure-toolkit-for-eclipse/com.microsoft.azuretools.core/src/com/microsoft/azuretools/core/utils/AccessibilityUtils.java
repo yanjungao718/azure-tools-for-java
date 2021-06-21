@@ -27,7 +27,7 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.widgets.Control;
 
 public class AccessibilityUtils {
-    public static void setAccessibilityNameForUIComponent(Control control, String text) {
+    public static void addAccessibilityNameForUIComponent(Control control, String text) {
         control.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
             public void getName(AccessibleEvent e) {
