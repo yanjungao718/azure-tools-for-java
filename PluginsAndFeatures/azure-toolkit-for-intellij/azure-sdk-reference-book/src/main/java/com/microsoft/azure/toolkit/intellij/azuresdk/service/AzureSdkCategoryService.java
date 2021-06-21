@@ -31,9 +31,9 @@ public class AzureSdkCategoryService {
     private static final String SERVICE_CATEGORY_CSV = "/service-category.csv";
 
     @Cacheable(value = "azure-sdk-category-entities")
-    @AzureOperation(name = "sdk.load_meta_data", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "sdk.load_category_data", type = AzureOperation.Type.TASK)
     public static Map<String, List<AzureSdkCategoryEntity>> loadAzureSDKCategories() {
-        try (final InputStream stream = WorkspaceTaggingService.class.getResourceAsStream(SERVICE_CATEGORY_CSV)) {
+        try (final InputStream stream = AzureSdkCategoryService.class.getResourceAsStream(SERVICE_CATEGORY_CSV)) {
             // read
             final ObjectReader reader = CSV_MAPPER.readerFor(AzureSdkCategoryEntity.class).with(CsvSchema.emptySchema().withHeader());
             final MappingIterator<AzureSdkCategoryEntity> data = reader.readValues(stream);
@@ -43,8 +43,9 @@ public class AzureSdkCategoryService {
                 if (StringUtils.isBlank(c.getCategory())) {
                     c.setCategory("Others");
                 }
-                if (StringUtils.isNotBlank(c.getDescription()) && !StringUtils.endsWith(c.getDescription(), ".")) {
-                    c.setDescription(c.getDescription() + ".");
+                final String trimDescription = StringUtils.trim(c.getDescription());
+                if (StringUtils.isNotBlank(trimDescription) && !StringUtils.endsWith(trimDescription, ".")) {
+                    c.setDescription(trimDescription + ".");
                 }
             });
             // unique

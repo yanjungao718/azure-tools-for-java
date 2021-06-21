@@ -43,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.io.IOException;
@@ -139,7 +140,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
                 continue;
             }
             // add features for current category
-            final DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
+            final MutableTreeNode categoryNode = new DefaultMutableTreeNode(category);
             final boolean categoryMatched = this.isMatchedFilters(category, filters);
             categoryToServiceMap.get(category)
                 .stream().sorted(Comparator.comparing(AzureSdkCategoryEntity::getServiceName))
@@ -162,7 +163,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         return StringUtils.lowerCase(StringUtils.trim(name));
     }
 
-    private void loadServiceData(AzureSdkServiceEntity service, AzureSdkCategoryEntity categoryService, DefaultMutableTreeNode categoryNode, String... filters) {
+    private void loadServiceData(AzureSdkServiceEntity service, AzureSdkCategoryEntity categoryService, MutableTreeNode categoryNode, String... filters) {
         if (Objects.isNull(service) || CollectionUtils.isEmpty(service.getContent())) {
             return;
         }
@@ -176,7 +177,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             }
             return;
         }
-        final DefaultMutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
+        final MutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
         final boolean serviceMatched = this.isMatchedFilters(service.getName(), filters);
         for (final AzureSdkFeatureEntity feature : service.getContent()) {
             final boolean featureMatched = this.isMatchedFilters(feature.getName(), filters);
