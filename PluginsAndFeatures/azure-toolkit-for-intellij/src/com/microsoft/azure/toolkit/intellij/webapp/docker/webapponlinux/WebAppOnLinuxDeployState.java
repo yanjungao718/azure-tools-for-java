@@ -124,7 +124,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> 
     )
     protected void onSuccess(IAppService result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText("Updating cache ... ");
-        AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
+        AzureWebAppMvpModel.getInstance().listAzureWebApps(true); // todo: replace with cache framework
         processHandler.setText("Job done");
         processHandler.notifyComplete();
         if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {

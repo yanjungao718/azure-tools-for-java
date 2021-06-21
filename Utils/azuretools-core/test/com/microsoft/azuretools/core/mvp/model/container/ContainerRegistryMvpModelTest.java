@@ -8,7 +8,6 @@ package com.microsoft.azuretools.core.mvp.model.container;
 import com.microsoft.azure.Page;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
 import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
@@ -54,7 +53,6 @@ import static org.mockito.Mockito.when;
         AzureManager.class,
         Azure.class,
         SubscriptionManager.class,
-        AppServiceManager.class,
         AzureMvpModel.class
 })
 @Ignore
