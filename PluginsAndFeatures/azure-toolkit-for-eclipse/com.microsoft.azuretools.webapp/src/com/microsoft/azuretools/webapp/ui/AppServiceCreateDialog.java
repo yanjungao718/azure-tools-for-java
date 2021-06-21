@@ -416,7 +416,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         });
         comboAppServicePlan.setBounds(0, 0, 26, 22);
         dec_comboAppServicePlan = decorateContorolAndRegister(comboAppServicePlan);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
 
         lblAppServiceUseExictingLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExictingLocation.setEnabled(true);
@@ -465,7 +465,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         dec_textAppSevicePlanName = decorateContorolAndRegister(textAppSevicePlanName);
         textAppSevicePlanName.setText(APP_SERVICE_PLAN_PREFIX + date);
         textAppSevicePlanName.setEnabled(false);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(textAppSevicePlanName, "New app service plan");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textAppSevicePlanName, "New app service plan");
 
         lblAppServiceCreateNewLocation = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -484,7 +484,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanLocation.setEnabled(false);
         dec_comboAppServicePlanLocation = decorateContorolAndRegister(comboAppServicePlanLocation);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(comboAppServicePlanLocation, "App service plan location");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanLocation, "App service plan location");
 
         lblAppServiceCreateNewPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -496,7 +496,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanPricingTier = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlanPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanPricingTier.setEnabled(false);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(comboAppServicePlanPricingTier, "App service plan pricing tier");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanPricingTier, "App service plan pricing tier");
 
         new Label(compositeAppServicePlan, SWT.NONE);
         linkAppServicePricing = new Link(compositeAppServicePlan, SWT.NONE);
@@ -542,7 +542,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboResourceGroup.setBounds(0, 0, 26, 22);
         dec_comboSelectResGr = decorateContorolAndRegister(comboResourceGroup);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(comboResourceGroup, "Existing resource group");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboResourceGroup, "Existing resource group");
 
         btnResourceGroupCreateNew = new Button(compositeResourceGroup, SWT.RADIO);
         btnResourceGroupCreateNew.addSelectionListener(new SelectionAdapter() {
@@ -566,7 +566,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         textResourceGroupName.setText(RESOURCE_GROUP_PREFIX + date);
         textResourceGroupName.setEnabled(false);
         dec_textNewResGrName = decorateContorolAndRegister(textResourceGroupName);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(textResourceGroupName, "New resource group");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textResourceGroupName, "New resource group");
     }
 
     private void createRuntimeGroup(Composite composite) {
@@ -675,7 +675,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
             }
         });
-        AccessibilityUtils.setAccessibilityNameForUIComponent(tblAppSettings, "App settings");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(tblAppSettings, "App settings");
 
         appSettingsEditor = new TableEditor(tblAppSettings);
         appSettingsEditor.horizontalAlignment = SWT.LEFT;

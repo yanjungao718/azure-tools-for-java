@@ -251,7 +251,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             fillAppServiceDetails();
             fillSlot();
         });
-        AccessibilityUtils.setAccessibilityNameForUIComponent(table, "App service");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(table, "App service");
 
         TableColumn tblclmnName = new TableColumn(table, SWT.LEFT);
         tblclmnName.setWidth(200);
@@ -438,7 +438,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnSlotUseExisting.setSelection(true);
         btnSlotUseExisting.setText("Use existing");
         comboSlot = new Combo(compositeSlot, SWT.READ_ONLY);
-        AccessibilityUtils.setAccessibilityNameForUIComponent(comboSlot, "Existing deployment slot");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboSlot, "Existing deployment slot");
         comboSlot.setEnabled(false);
         comboSlot.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboSlot.setBounds(0, 0, 26, 22);
@@ -467,7 +467,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 cleanError();
             }
         });
-        AccessibilityUtils.setAccessibilityNameForUIComponent(textSlotName, "New depoyment slot");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textSlotName, "New depoyment slot");
         textSlotName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         textSlotName.setBounds(0, 0, 64, 19);
         textSlotName.setMessage("Slot Name");
@@ -492,7 +492,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 cleanError();
             }
         });
-        AccessibilityUtils.setAccessibilityNameForUIComponent(comboSlotConf, "Deployment slot configuration source");
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboSlotConf, "Deployment slot configuration source");
         decComboSlotConf = decorateContorolAndRegister(comboSlotConf);
 
         scrolledComposite.setContent(grpSlot);
