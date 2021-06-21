@@ -67,7 +67,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         AzureMessager.getContext().setMessager(messenger);
         // Update run time information by function app
         final FunctionApp functionApp;
-        if (deployModel.isNewResource()) {
+        if (StringUtils.isEmpty(functionDeployConfiguration.getFunctionId())) {
             functionApp = createFunctionApp(processHandler, operation);
             functionDeployConfiguration.setFunctionId(functionApp.id());
         } else {
@@ -75,8 +75,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
                                                .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
         }
         final IAppServicePlan appServicePlan = Azure.az(AzureAppService.class).appServicePlan(functionApp.appServicePlanId());
-        functionDeployConfiguration.setOs(appServicePlan.entity().getOperatingSystem().toString());
-        functionDeployConfiguration.setPricingTier(appServicePlan.entity().getPricingTier().getSize());
         // Deploy function to Azure
         stagingFolder = FunctionUtils.getTempStagingFolder();
         deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());
@@ -88,11 +86,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     private FunctionApp createFunctionApp(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) {
         FunctionApp functionApp =
                 AzureFunctionMvpModel.getInstance().getFunctionByName(functionDeployConfiguration.getSubscriptionId(),
-                                                                      functionDeployConfiguration.getResourceGroup(),
+                                                                      functionDeployConfiguration.getConfig().getResourceGroup().getName(),
                                                                       functionDeployConfiguration.getAppName());
         operation.trackProperty("isCreateNewApp", String.valueOf(functionApp == null));
         if (functionApp != null) {
-            functionDeployConfiguration.setNewResource(false);
             return functionApp;
         }
         processHandler.setText(message("function.create.hint.creating", functionDeployConfiguration.getAppName()));
@@ -140,7 +137,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
-        if (functionDeployConfiguration.isNewResource() && AzureUIRefreshCore.listeners != null) {
+        if (AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, result));
         }
     }

@@ -132,7 +132,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
         if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
-            final FunctionAppComboBoxModel configModel = new FunctionAppComboBoxModel(configuration.getModel());
+            final FunctionAppComboBoxModel configModel = new FunctionAppComboBoxModel(configuration.getConfig());
             appSettingsFunctionApp = configModel;
             functionAppComboBox.setConfigModel(configModel);
         }
@@ -154,11 +154,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
         // save app settings storage key instead of real value
-        configuration.setAppSettings(Collections.EMPTY_MAP);
         configuration.setAppSettingsKey(appSettingsKey);
         final FunctionAppComboBoxModel functionModel = functionAppComboBox.getValue();
         if (functionModel != null) {
-            configuration.saveModel(functionModel);
+            configuration.saveConfig(functionModel.getConfig());
         }
     }
 

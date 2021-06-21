@@ -8,13 +8,19 @@ package com.microsoft.azure.toolkit.lib.function;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
 @SuperBuilder(toBuilder = true)
 public class FunctionAppConfig extends AppServiceConfig {
     public static final Runtime DEFAULT_RUNTIME = Runtime.FUNCTION_WINDOWS_JAVA8;

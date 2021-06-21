@@ -9,9 +9,7 @@ import com.google.common.base.Preconditions;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -26,10 +24,8 @@ import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.LinuxFun
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.WindowsFunctionRuntimeHandler;
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -39,6 +35,8 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
  * Deploy artifacts to target Azure Functions in Azure. If target Azure
  * Functions doesn't exist, it will be created.
  */
+// todo: replace handler with service library
+@Deprecated
 public class CreateFunctionHandler {
     private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
@@ -64,7 +62,7 @@ public class CreateFunctionHandler {
         if (app == null) {
             return createFunctionApp();
         } else {
-            final String error = message("function.create.error.targetExists", ctx.getAppName());
+            final String error = message("function.create.error.targetExists", ctx.getFunctionAppConfig().getName());
             final String action = "change the name of the web app and try later";
             throw new AzureToolkitRuntimeException(error, action);
         }
@@ -85,7 +83,7 @@ public class CreateFunctionHandler {
             final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
             withCreate = runtimeHandler.defineAppWithRuntime();
         } catch (final AzureExecutionException e) {
-            final String error = String.format("failed to initialize configuration to create web app[%s]", this.ctx.getAppName());
+            final String error = String.format("failed to initialize configuration to create web app[%s]", this.ctx.getFunctionAppConfig().getName());
             final String action = "confirm if the web app is properly configured";
             throw new AzureToolkitRuntimeException(error, e, action);
         }
@@ -96,13 +94,12 @@ public class CreateFunctionHandler {
         withCreate.withAppSettings(appSettings);
 
         final FunctionApp result = withCreate.create();
-        operation.trackProperty("pricingTier", ctx.getPricingTier());
-        messenger.info(message("function.create.hint.functionCreated", ctx.getAppName()));
+        messenger.info(message("function.create.hint.functionCreated", ctx.getFunctionAppConfig().getName()));
         return result;
     }
 
     private WithCreate configureApplicationLog(WithCreate withCreate) {
-        if (ctx.isEnableApplicationLog()) {
+        if (true) {
             return (WithCreate) withCreate.defineDiagnosticLogsConfiguration()
                                           .withApplicationLogging()
                                           .withLogLevel(null)
@@ -117,21 +114,20 @@ public class CreateFunctionHandler {
         type = AzureOperation.Type.SERVICE
     )
     private Map<String, String> bindingApplicationInsights() {
-        final boolean disableAppInsights = StringUtils.isAllEmpty(ctx.getInsightsName(), ctx.getInstrumentationKey());
+        final boolean disableAppInsights = true;
         operation.trackProperty("disableAppInsights", String.valueOf(disableAppInsights));
         if (disableAppInsights) {
             return Collections.emptyMap();
         }
-        String instrumentationKey = ctx.getInstrumentationKey();
+        String instrumentationKey = null;
         if (StringUtils.isEmpty(instrumentationKey)) {
-            final String region = ctx.getRegion();
             final ApplicationInsightsComponent insights;
             try {
-                insights = AzureSDKManager.getOrCreateApplicationInsights(ctx.getSubscription(), ctx.getResourceGroup(), ctx.getInsightsName(), region);
+                insights = null;
                 instrumentationKey = insights.instrumentationKey();
-            } catch (final IOException | RuntimeException e) {
+            } catch (final RuntimeException e) {
                 // swallow exception for application insights, which should not block function creation
-                messenger.warning(message("function.create.error.createApplicationInsightsFailed", ctx.getAppName()));
+                messenger.warning(message("function.create.error.createApplicationInsightsFailed", ctx.getFunctionAppConfig().getName()));
             }
         }
         return Collections.singletonMap(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
@@ -154,18 +150,11 @@ public class CreateFunctionHandler {
             default:
                 throw new AzureExecutionException(message("function.create.error.invalidRuntime", os));
         }
-        return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
-                      .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
-                      .servicePlanName(ctx.getAppServicePlanName())
-                      .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
-                      .functionExtensionVersion(getFunctionExtensionVersion())
-                      .azure(this.ctx.getAzureClient())
-                      .javaVersion(JavaVersion.fromString(ctx.getJavaVersion()))
-                      .build();
+        return builder.build();
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
-        final RuntimeConfiguration runtime = ctx.getRuntime();
+        final RuntimeConfiguration runtime = null;
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
             return OperatingSystemEnum.fromString(runtime.getOs());
         }
@@ -195,10 +184,6 @@ public class CreateFunctionHandler {
     }
 
     public com.microsoft.azure.management.appservice.PricingTier getPricingTier() {
-        if (StringUtils.isEmpty(ctx.getPricingTier())) {
-            return null;
-        }
-
         //TODO(hanli): replace track1 PricingTier to track2
         return PricingTier.BASIC_B2;
     }
@@ -209,7 +194,7 @@ public class CreateFunctionHandler {
         type = AzureOperation.Type.TASK
     )
     private FunctionApp getFunctionApp() {
-        return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(), ctx.getAppName());
+        return null;
     }
 
     private FunctionExtensionVersion getFunctionExtensionVersion() throws AzureExecutionException {
