@@ -334,7 +334,7 @@
            class="com.intellij.openapi.actionSystem.DefaultActionGroup"
            text="Azure"
            description="Contains Azure tools plugin actions"
-           icon="/icons/azure.png"
+           icon="/icons/Common/Azure.svg"
            popup="true">
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <reference ref="AzureToolkit.SelectSubscriptions"/>
