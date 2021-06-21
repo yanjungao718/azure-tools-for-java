@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.intellij.function.action;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler.AzureExceptionAction;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -90,7 +90,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @AzureOperation(name = "function.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
-    private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
+    private Single<IFunctionApp> createFunctionApp(final FunctionAppConfig config) {
         final IAzureOperationTitle title = title("function.create_detail", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
@@ -98,7 +98,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
                 // swallow info notification for action
             }
         };
-        final AzureTask<FunctionApp> task = new AzureTask<>(null, title, false, () -> {
+        final AzureTask<IFunctionApp> task = new AzureTask<>(null, title, false, () -> {
             AzureMessager.getContext().setMessager(actionMessenger);
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -110,8 +110,9 @@ public class CreateFunctionAppAction extends NodeActionListener {
         });
     }
 
+    // todo: replace with Azure Event Hub
     @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
-    private void refreshAzureExplorer(FunctionApp app) {
+    private void refreshAzureExplorer(IFunctionApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
