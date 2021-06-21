@@ -30,7 +30,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
     public AppServiceComboBox(final Project project) {
         super(false);
         this.project = project;
-        this.setRenderer(new AppCombineBoxRender());
+        this.setRenderer(new AppComboBoxRender());
     }
 
     public void setConfigModel(T configModel) {
@@ -73,7 +73,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
 
     protected abstract void createResource();
 
-    public static class AppCombineBoxRender extends SimpleListCellRenderer {
+    public static class AppComboBoxRender extends SimpleListCellRenderer {
 
         @Override
         public void customize(JList list, Object value, int index, boolean b, boolean b1) {
