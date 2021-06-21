@@ -40,6 +40,7 @@ public class FunctionAppService {
     private static final String CREATE_NEW_FUNCTION_APP = "isCreateNewFunctionApp";
     private static final String CREATE_NEW_RESOURCE_GROUP = "createNewResourceGroup";
     private static final String CREATE_NEW_APP_SERVICE_PLAN = "createNewAppServicePlan";
+    private static final String DEPLOYMENT_TYPE = "deploymentType";
 
     private static final String CREATE_RESOURCE_GROUP = "Creating resource group %s in region %s...";
     private static final String CREATE_RESOURCE_GROUP_DONE = "Successfully created resource group %s.";
@@ -198,12 +199,23 @@ public class FunctionAppService {
 
     public void deployFunctionApp(final IFunctionApp functionApp, final File stagingFolder) throws IOException {
         AzureMessager.getMessager().info(DEPLOY_START);
-        functionApp.deploy(packageStagingDirectory(stagingFolder), getDeployType(functionApp));
+        final FunctionDeployType deployType = getDeployType(functionApp);
+        AzureTelemetry.getContext().getActionProperties().put(DEPLOYMENT_TYPE, deployType.name());
+        functionApp.deploy(packageStagingDirectory(stagingFolder), deployType);
         if (!StringUtils.equalsIgnoreCase(functionApp.state(), RUNNING)) {
             functionApp.start();
         }
         final String resourceUrl = String.format(PORTAL_URL_PATTERN, IdentityAzureManager.getInstance().getPortalUrl(), functionApp.id());
         AzureMessager.getMessager().info(String.format(DEPLOY_FINISH, resourceUrl));
+    }
+
+    private FunctionDeployType getDeployType(final IFunctionApp functionApp) {
+        if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
+            return FunctionDeployType.RUN_FROM_ZIP;
+        }
+        final PricingTier pricingTier = functionApp.plan().entity().getPricingTier();
+        return StringUtils.equalsAnyIgnoreCase(pricingTier.getTier(), "Dynamic", "ElasticPremium") ?
+                FunctionDeployType.RUN_FROM_BLOB : FunctionDeployType.RUN_FROM_ZIP;
     }
 
     private File packageStagingDirectory(final File stagingFolder) throws IOException {

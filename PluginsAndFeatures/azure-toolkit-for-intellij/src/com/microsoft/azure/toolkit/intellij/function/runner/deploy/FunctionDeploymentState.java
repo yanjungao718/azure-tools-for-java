@@ -99,6 +99,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         // list triggers after deployment
         listHTTPTriggerUrls(functionApp);
         operation.trackProperties(AzureTelemetry.getContext().getProperties());
+        operation.trackProperties(AzureTelemetry.getContext().getActionProperties());
         return functionApp;
     }
 
@@ -169,9 +170,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
 
     @Override
     protected Map<String, String> getTelemetryMap() {
-        final Map<String, String> properties = new HashMap<>(deployModel.getTelemetryProperties());
-        properties.putAll(AzureTelemetry.getContext().getActionProperties());
-        return properties;
+        return deployModel.getTelemetryProperties();
     }
 
     // todo: create shared run state messenger for all run states
