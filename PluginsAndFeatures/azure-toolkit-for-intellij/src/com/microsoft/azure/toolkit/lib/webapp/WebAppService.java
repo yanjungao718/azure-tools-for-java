@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,8 +95,10 @@ public class WebAppService {
 
     public String getRuntimeDisplayName(@Nonnull final Runtime runtime) {
         final String os = runtime.getOperatingSystem().getValue();
-        final String javaVersion = runtime.getJavaVersion() == JavaVersion.OFF ? null : String.format("Java %s", runtime.getJavaVersion().getValue());
-        final String webContainer = runtime.getWebContainer() == WebContainer.JAVA_OFF ? null : runtime.getWebContainer().getValue();
+        final String javaVersion = Objects.equals(runtime.getJavaVersion(), JavaVersion.OFF) ?
+                null : String.format("Java %s", runtime.getJavaVersion().getValue());
+        final String webContainer = Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_OFF) ?
+                null : runtime.getWebContainer().getValue();
         return Stream.of(os, javaVersion, webContainer)
                      .filter(StringUtils::isNotEmpty)
                      .map(StringUtils::capitalize).collect(Collectors.joining("-"));
