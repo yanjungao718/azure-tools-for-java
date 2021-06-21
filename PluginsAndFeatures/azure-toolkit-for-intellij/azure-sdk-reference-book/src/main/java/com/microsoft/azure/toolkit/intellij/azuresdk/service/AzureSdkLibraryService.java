@@ -14,6 +14,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkAllowListEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class AzureSdkLibraryService {
     private static final ObjectMapper YML_MAPPER = new YAMLMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final ObjectMapper CSV_MAPPER = new CsvMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final String SDK_ALLOW_LIST_CSV = "/sdk-allow-list.csv";
     private static final String SPRING_SDK_METADATA_URL = "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/master/sdk/spring/spring-reference.yml";
     private static final String CLIENT_MGMT_SDK_METADATA_URL = "https://raw.githubusercontent.com/Azure/azure-sdk/master/_data/releases/latest/java-packages.csv";
 
@@ -50,7 +53,7 @@ public class AzureSdkLibraryService {
         getAzureSDKEntities().stream()
                 .filter(raw -> AzureSdkArtifactEntity.Type.CLIENT.equals(raw.getType()))
                 .filter(raw -> !Boolean.TRUE.equals(raw.getIsHide()))
-                .filter(raw -> "com.azure".equals(raw.getGroupId()))
+                .filter(raw -> "com.azure".equals(raw.getGroupId()) || isAllowListContains(raw))
                 .sorted(Comparator.comparing(AzureJavaSdkEntity::getServiceName))
                 .forEachOrdered(raw -> {
                     final AzureSdkServiceEntity service = getOrCreateService(services, raw);
@@ -78,7 +81,7 @@ public class AzureSdkLibraryService {
         getAzureSDKEntities().stream()
                 .filter(raw -> !Boolean.TRUE.equals(raw.getIsHide()))
                 .filter(raw -> AzureSdkArtifactEntity.Type.MANAGEMENT.equals(raw.getType()))
-                .filter(raw -> "com.azure.resourcemanager".equals(raw.getGroupId()))
+                .filter(raw -> "com.azure.resourcemanager".equals(raw.getGroupId()) || isAllowListContains(raw))
                 .sorted(Comparator.comparing(AzureJavaSdkEntity::getServiceName))
                 .forEachOrdered(raw -> {
                     final AzureSdkServiceEntity service = getOrCreateService(services, raw);
@@ -168,7 +171,26 @@ public class AzureSdkLibraryService {
         // > The value is either true to hide or empty to not hide. This is useful to filter older packages that are still on the package managers,
         // > but we don't want to promote or display anywhere.
         return entities.stream()
-                .filter(e -> e.getIsHide() == Boolean.TRUE || (StringUtils.isNotBlank(e.getReplace()) && !"active".equals(e.getSupport())))
+                .filter(e -> Boolean.TRUE.equals(e.getIsHide()) || (StringUtils.isNotBlank(e.getReplace()) && !"active".equals(e.getSupport())))
                 .collect(Collectors.toList());
+    }
+
+    @Cacheable(value = "azure-sdk-allow-list")
+    public static List<AzureSdkAllowListEntity> loadSDKWhitelist() {
+        try (final InputStream stream = WorkspaceTaggingService.class.getResourceAsStream(SDK_ALLOW_LIST_CSV)) {
+            final ObjectReader reader = CSV_MAPPER.readerFor(AzureSdkAllowListEntity.class).with(CsvSchema.emptySchema().withHeader());
+            final MappingIterator<AzureSdkAllowListEntity> data = reader.readValues(stream);
+            return data.readAll().stream()
+                    .filter(e -> StringUtils.isNotBlank(e.getArtifactId()) && StringUtils.isNotBlank(e.getGroupId()))
+                    .collect(Collectors.toList());
+        } catch (final IOException e) {
+            final String message = String.format("failed to load Azure SDK allow list from \"%s\"", SDK_ALLOW_LIST_CSV);
+            throw new AzureToolkitRuntimeException(message, e);
+        }
+    }
+
+    private static boolean isAllowListContains(AzureJavaSdkEntity sdk) {
+        return AzureSdkLibraryService.loadSDKWhitelist().stream()
+                .anyMatch(e -> StringUtils.equals(e.getGroupId(), sdk.getGroupId()) && StringUtils.equals(e.getArtifactId(), sdk.getArtifactId()));
     }
 }
