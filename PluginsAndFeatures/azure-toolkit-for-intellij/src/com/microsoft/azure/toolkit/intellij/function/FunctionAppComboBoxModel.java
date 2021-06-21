@@ -24,11 +24,13 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionA
     }
 
     public FunctionAppComboBoxModel(FunctionAppConfig functionAppConfig) {
+        super();
         this.config = functionAppConfig;
         this.appName = functionAppConfig.getName();
         this.resourceGroup = Optional.ofNullable(functionAppConfig.getResourceGroup()).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
         this.subscriptionId = Optional.ofNullable(functionAppConfig.getSubscription()).map(Subscription::getId).orElse(StringUtils.EMPTY);
         this.resourceId = functionAppConfig.getResourceId();
         this.isNewCreateResource = StringUtils.isEmpty(resourceId);
+        this.runtime = functionAppConfig.getRuntime();
     }
 }

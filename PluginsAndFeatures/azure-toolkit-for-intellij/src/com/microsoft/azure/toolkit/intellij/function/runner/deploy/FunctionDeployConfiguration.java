@@ -21,6 +21,7 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -67,7 +68,8 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Override
     public String getSubscriptionId() {
-        return functionDeployModel.getFunctionAppConfig().getSubscription().getId();
+        return Optional.ofNullable(functionDeployModel.getFunctionAppConfig())
+                .map(FunctionAppConfig::getSubscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
     }
 
     @NotNull
@@ -114,7 +116,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     }
 
     public Map<String, String> getAppSettings() {
-        return Optional.ofNullable(functionDeployModel.getFunctionAppConfig()).map(FunctionAppConfig::getAppSettings).orElse(Collections.EMPTY_MAP);
+        return Optional.ofNullable(functionDeployModel.getFunctionAppConfig()).map(FunctionAppConfig::getAppSettings).orElse(Collections.emptyMap());
     }
 
     public String getAppSettingsKey() {
@@ -149,7 +151,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public void readExternal(Element element) throws InvalidDataException {
         this.functionDeployModel = Optional.ofNullable(element.getChild("FunctionDeployModel"))
                 .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.class))
-                .orElseGet(() -> Optional.ofNullable(element)
+                .orElseGet(() -> Optional.of(element)
                         .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.DeprecatedDeployModel.class))
                         .map(FunctionDeployModel::new)
                         .orElse(new FunctionDeployModel()));

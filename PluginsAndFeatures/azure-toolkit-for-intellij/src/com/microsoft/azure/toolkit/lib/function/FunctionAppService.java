@@ -154,8 +154,8 @@ public class FunctionAppService {
     }
 
     private void bindApplicationInsights(final Map<? super String, ? super String> appSettings, final FunctionAppConfig config) {
-        // Skip app insights creation when user specify ai connection string in app settings
-        if (appSettings.containsKey(APPINSIGHTS_INSTRUMENTATION_KEY)) {
+        // Skip app insights creation when user specify ai connection string in app settings or disable ai in configuration
+        if (appSettings.containsKey(APPINSIGHTS_INSTRUMENTATION_KEY) || config.getMonitorConfig().getApplicationInsightsConfig() == null) {
             return;
         }
         String instrumentationKey = config.getMonitorConfig().getApplicationInsightsConfig().getInstrumentationKey();

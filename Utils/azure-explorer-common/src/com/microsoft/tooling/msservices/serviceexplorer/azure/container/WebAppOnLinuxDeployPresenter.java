@@ -5,14 +5,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -34,8 +33,10 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     private static final String CANNOT_LIST_LOCATION = "Failed to list location.";
     private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
 
-    private List<ResourceEx<WebApp>> retrieveListOfWebAppOnLinux(boolean force) {
-        return AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(force);
+    private List<IWebApp> retrieveListOfWebAppOnLinux(boolean force) {
+        return AzureWebAppMvpModel.getInstance().listAzureWebApps(force).stream()
+                .filter(iWebApp -> iWebApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
+                .collect(Collectors.toList());
     }
 
     /**

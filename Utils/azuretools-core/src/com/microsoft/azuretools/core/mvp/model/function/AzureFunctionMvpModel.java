@@ -28,7 +28,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.AppServiceUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.util.ArrayList;
@@ -178,16 +177,6 @@ public class AzureFunctionMvpModel {
         PagedList<FunctionEnvelope> functions = app.manager().functionApps().listFunctions(app.resourceGroupName(), app.name());
         functions.loadAll();
         return new ArrayList<>(functions);
-    }
-
-    @AzureOperation(
-        name = "function.get_publishing_profile",
-        params = {"nameFromResourceId(functionAppId)"},
-        type = AzureOperation.Type.SERVICE
-    )
-    public boolean getPublishingProfileXmlWithSecrets(String sid, String functionAppId, String filePath) {
-        final FunctionApp app = getFunctionById(sid, functionAppId);
-        return AppServiceUtils.getPublishingProfileXmlWithSecrets(app, filePath);
     }
 
     @AzureOperation(

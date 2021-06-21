@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -17,13 +16,12 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public class WebAppComboBoxModel extends AppServiceComboBoxModel<IWebApp, WebAppConfig> {
 
-    private String runtime;
     private WebAppSettingModel webAppSettingModel;
 
     // todo: migrate Base Model to service library
     public WebAppComboBoxModel(final IWebApp webApp) {
         super(webApp);
-        this.runtime = getRuntimeDisplayName(webApp.getRuntime());
+        this.runtime = webApp.getRuntime();
     }
 
     public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
@@ -37,12 +35,6 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<IWebApp, WebApp
         this.subscriptionId = webAppSettingModel.getSubscriptionId();
         this.isNewCreateResource = webAppSettingModel.isCreatingNew();
         this.webAppSettingModel = webAppSettingModel;
-        this.runtime = getRuntimeDisplayName(webAppSettingModel.getRuntime());
+        this.runtime = webAppSettingModel.getRuntime();
     }
-
-    private static String getRuntimeDisplayName(Runtime runtime) {
-        return String.format("%s-%s-%s", runtime.getOperatingSystem().getValue(),
-                             runtime.getWebContainer().getValue(), runtime.getJavaVersion().getValue());
-    }
-
 }

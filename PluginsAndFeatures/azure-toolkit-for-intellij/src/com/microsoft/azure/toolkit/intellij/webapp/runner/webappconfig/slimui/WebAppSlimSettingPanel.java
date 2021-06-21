@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.slimui;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeTooltipManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBox;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -39,6 +40,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -48,7 +50,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private static final String DEPLOYMENT_SLOT = "Deployment Slot";
     private static final String DEFAULT_SLOT_NAME = "slot-%s";
 
-    private WebAppDeployViewPresenterSlim presenter = null;
+    private final WebAppDeployViewPresenterSlim presenter;
 
     private JPanel pnlSlotCheckBox;
     private JTextField txtNewSlotName;
@@ -72,7 +74,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JButton btnSlotHover;
     private AzureArtifactComboBox comboBoxArtifact;
     private WebAppComboBox comboBoxWebApp;
-    private HideableDecorator slotDecorator;
+    private final HideableDecorator slotDecorator;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project, false);
@@ -87,7 +89,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         chkDeployToSlot.addActionListener(e -> toggleSlotPanel(chkDeployToSlot.isSelected()));
 
-        Icon informationIcon = AllIcons.General.ContextHelp;
+        final Icon informationIcon = AllIcons.General.ContextHelp;
         btnSlotHover.setIcon(informationIcon);
         btnSlotHover.setHorizontalAlignment(SwingConstants.CENTER);
         btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
@@ -108,9 +110,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             }
         });
 
-        JLabel labelForNewSlotName = new JLabel("Slot Name");
+        final JLabel labelForNewSlotName = new JLabel("Slot Name");
         labelForNewSlotName.setLabelFor(txtNewSlotName);
-        JLabel labelForExistingSlotName = new JLabel("Slot Name");
+        final JLabel labelForExistingSlotName = new JLabel("Slot Name");
         labelForExistingSlotName.setLabelFor(cbxSlotName);
 
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
@@ -137,22 +139,19 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxSlotConfigurationSource.removeAllItems();
         cbxSlotConfigurationSource.addItem(DO_NOT_CLONE_SLOT_CONFIGURATION);
         cbxSlotConfigurationSource.addItem(selectedWebApp.getAppName());
-        slotList.stream().filter(slot -> slot != null).forEach(slot -> {
+        slotList.stream().filter(Objects::nonNull).forEach(slot -> {
             cbxSlotName.addItem(slot.name());
             cbxSlotConfigurationSource.addItem(slot.name());
         });
         setComboBoxDefaultValue(cbxSlotName, defaultSlot);
         setComboBoxDefaultValue(cbxSlotConfigurationSource, defaultConfigurationSource);
-        boolean existDeploymentSlot = slotList.size() > 0;
+        final boolean existDeploymentSlot = slotList.size() > 0;
         lblNewSlot.setVisible(!existDeploymentSlot);
         cbxSlotName.setVisible(existDeploymentSlot);
     }
 
     private void setComboBoxDefaultValue(JComboBox comboBox, Object value) {
-        Object defaultItem = UIUtils.listComboBoxItems(comboBox).stream().filter(item -> item.equals(value)).findFirst().orElse(null);
-        if (defaultItem != null) {
-            comboBox.setSelectedItem(value);
-        }
+        UIUtils.listComboBoxItems(comboBox).stream().filter(item -> item.equals(value)).findFirst().ifPresent(defaultItem -> comboBox.setSelectedItem(value));
     }
 
     @NotNull
@@ -164,7 +163,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     @NotNull
     @Override
     protected JComboBox<Artifact> getCbArtifact() {
-        return new JComboBox<>();
+        return new ComboBox<>();
     }
 
     @NotNull
@@ -176,7 +175,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     @NotNull
     @Override
     protected JComboBox<MavenProject> getCbMavenProject() {
-        return new JComboBox<>();
+        return new ComboBox<>();
     }
 
     @NotNull
@@ -203,8 +202,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (configuration.getWebAppId() != null && configuration.isDeployToSlot()) {
             toggleSlotPanel(true);
             chkDeployToSlot.setSelected(true);
-            final boolean useNewDeploymentSlot = Comparing.equal(configuration.getSlotName(),
-                                                                 Constants.CREATE_NEW_SLOT);
+            final boolean useNewDeploymentSlot = StringUtils.equals(configuration.getSlotName(), Constants.CREATE_NEW_SLOT);
             rbtNewSlot.setSelected(useNewDeploymentSlot);
             rbtExistingSlot.setSelected(!useNewDeploymentSlot);
             toggleSlotType(!useNewDeploymentSlot);
@@ -261,14 +259,14 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (selectedWebApp == null || azureArtifact == null) {
             return false;
         }
-        final String runtime = selectedWebApp.getRuntime();
+        final WebContainer webContainer = selectedWebApp.getRuntime().getWebContainer();
         final String packaging = AzureArtifactManager.getInstance(project).getPackaging(azureArtifact);
         final boolean isDeployingWar = StringUtils.equalsAnyIgnoreCase(packaging, MavenConstants.TYPE_WAR, "ear");
-        return isDeployingWar && StringUtils.containsIgnoreCase(runtime, "tomcat") || StringUtils.containsIgnoreCase(runtime, "jboss");
+        return isDeployingWar && StringUtils.containsAnyIgnoreCase(webContainer.getValue(), "tomcat", "jboss");
     }
 
     private void toggleSlotPanel(boolean slot) {
-        boolean isDeployToSlot = slot && (getSelectedWebApp() != null);
+        final boolean isDeployToSlot = slot && (getSelectedWebApp() != null);
         rbtNewSlot.setEnabled(isDeployToSlot);
         rbtExistingSlot.setEnabled(isDeployToSlot);
         lblSlotName.setEnabled(isDeployToSlot);
