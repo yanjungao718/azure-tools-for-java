@@ -5,34 +5,27 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.List;
-
-public class FunctionModule extends AzureRefreshableNode implements FunctionModuleView {
+public class FunctionModule extends AzureRefreshableNode {
     private static final String FUNCTION_SERVICE_MODULE_ID = FunctionModule.class.getName();
     private static final String ICON_PATH = "azure-functions-small.png";
     private static final String BASE_MODULE_NAME = "Function App";
     private static final String FUNCTION_MODULE = "FunctionModule";
-    private static final String FAILED_TO_DELETE_FUNCTION_APP = "Failed to delete Function App %s";
-    private static final String ERROR_DELETING_FUNCTION_APP = "Azure Services Explorer - Error Deleting Function App";
-    private final FunctionModulePresenter<FunctionModule> functionModulePresenter;
 
     public static final String MODULE_NAME = "Function App";
 
     public FunctionModule(Node parent) {
         super(FUNCTION_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
-        functionModulePresenter = new FunctionModulePresenter<>();
-        functionModulePresenter.onAttachView(FunctionModule.this);
         createListener();
     }
 
@@ -44,22 +37,16 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     @Override
     @AzureOperation(name = "function.delete", params = {"nameFromResourceId(id)", "sid"}, type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
-        functionModulePresenter.onDeleteFunctionApp(sid, id);
+        Azure.az(AzureAppService.class).functionApp(id).delete();
         removeDirectChildNode(node);
-    }
-
-    @Override
-    public void renderChildren(@NotNull final List<ResourceEx<FunctionApp>> resourceExes) {
-        for (final ResourceEx<FunctionApp> resourceEx : resourceExes) {
-            final FunctionAppNode node = new FunctionAppNode(this, resourceEx.getSubscriptionId(), resourceEx.getResource());
-            addChildNode(node);
-        }
     }
 
     @Override
     @AzureOperation(name = "function.reload_all", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        functionModulePresenter.onModuleRefresh();
+        Azure.az(AzureAppService.class).functionApps()
+                .stream().map(functionApp -> new FunctionAppNode(FunctionModule.this, functionApp))
+                .forEach(this::addChildNode);
     }
 
     private void createListener() {
@@ -91,6 +78,6 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     private static boolean isFunctionModuleEvent(Object eventObject) {
-        return eventObject != null && eventObject instanceof FunctionApp;
+        return eventObject != null && eventObject instanceof IFunctionApp;
     }
 }

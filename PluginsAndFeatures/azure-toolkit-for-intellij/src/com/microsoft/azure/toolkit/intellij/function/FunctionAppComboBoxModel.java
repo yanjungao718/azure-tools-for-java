@@ -4,45 +4,33 @@
  */
 package com.microsoft.azure.toolkit.intellij.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
 
 @Getter
-public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionApp> {
-    private String runtime;
-    private FunctionDeployModel functionDeployModel;
-    private FunctionAppConfig functionAppConfig;
+public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionApp, FunctionAppConfig> {
 
-    public FunctionAppComboBoxModel(final ResourceEx<FunctionApp> resourceEx) {
-        super(resourceEx);
-        final FunctionApp functionApp = resourceEx.getResource();
-        this.runtime = functionApp.operatingSystem() == OperatingSystem.WINDOWS ?
-                       String.format("%s-Java %s", "Windows", functionApp.javaVersion()) :
-                       String.format("%s-%s", "Linux", functionApp.linuxFxVersion().replace("|", " "));
-    }
-
-    public FunctionAppComboBoxModel(FunctionDeployModel functionDeployModel) {
-        this.isNewCreateResource = functionDeployModel.isNewResource();
-        this.subscriptionId = functionDeployModel.getSubscription();
-        this.resourceId = functionDeployModel.getFunctionId();
-        this.appName = isNewCreateResource ? functionDeployModel.getAppName() : AzureMvpModel.getSegment(resourceId, "sites");
-        this.resourceGroup = functionDeployModel.getResourceGroup();
-        this.runtime = String.format("%s-Java %s", functionDeployModel.getOs(), functionDeployModel.getJavaVersion());
-        this.functionDeployModel = functionDeployModel;
+    public FunctionAppComboBoxModel(IFunctionApp functionApp) {
+        super(functionApp);
+        this.config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(functionApp);
     }
 
     public FunctionAppComboBoxModel(FunctionAppConfig functionAppConfig) {
-        this.isNewCreateResource = true;
+        super();
+        this.config = functionAppConfig;
         this.appName = functionAppConfig.getName();
-        this.resourceGroup = functionAppConfig.getResourceGroup().getName();
-        this.subscriptionId = functionAppConfig.getSubscription().getId();
-        this.runtime = functionAppConfig.getPlatform().toString();
-        this.functionAppConfig = functionAppConfig;
+        this.resourceGroup = Optional.ofNullable(functionAppConfig.getResourceGroup()).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
+        this.subscriptionId = Optional.ofNullable(functionAppConfig.getSubscription()).map(Subscription::getId).orElse(StringUtils.EMPTY);
+        this.resourceId = functionAppConfig.getResourceId();
+        this.isNewCreateResource = StringUtils.isEmpty(resourceId);
+        this.runtime = functionAppConfig.getRuntime();
     }
 }

@@ -6,13 +6,14 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppBasePropertyView;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,20 +41,17 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
     protected WebAppBasePropertyViewPresenter createPresenter() {
         return new WebAppBasePropertyViewPresenter() {
             @Override
-            protected WebAppBase getWebAppBase(String subscriptionId, String functionAppId, String name) throws IOException {
-                return AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionAppId);
+            protected IFunctionApp getWebAppBase(String subscriptionId, String functionAppId, String name) {
+                return Azure.az(AzureAppService.class).subscription(subscriptionId).functionApp(functionAppId);
             }
 
             @Override
-            protected void updateAppSettings(String subscriptionId, String functionAppId, String name, Map toUpdate, Set toRemove)
-                    throws IOException {
-                AzureFunctionMvpModel.getInstance().updateWebAppSettings(subscriptionId, functionAppId, toUpdate, toRemove);
-            }
-
-            @Override
-            protected boolean getPublishingProfile(String subscriptionId, String functionAppId, String name, String filePath)
-                    throws IOException {
-                return AzureFunctionMvpModel.getInstance().getPublishingProfileXmlWithSecrets(subscriptionId, functionAppId, filePath);
+            protected void updateAppSettings(String subscriptionId, String functionAppId, String name, Map toUpdate, Set toRemove) {
+                final IFunctionApp functionApp = getWebAppBase(subscriptionId, functionAppId, name);
+                final IAppServiceUpdater appServiceUpdater = functionApp.update();
+                appServiceUpdater.withAppSettings(toUpdate);
+                toRemove.forEach(key -> appServiceUpdater.withoutAppSettings((String) key));
+                appServiceUpdater.commit();
             }
         };
     }

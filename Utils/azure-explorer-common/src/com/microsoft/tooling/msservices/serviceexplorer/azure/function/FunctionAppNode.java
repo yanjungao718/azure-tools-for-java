@@ -5,34 +5,35 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy.AppServiceLogFilesRootNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.legacy.AppServiceUserFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeView {
+public class FunctionAppNode extends WebAppBaseNode {
 
     private static final String FUNCTION_LABEL = "Function";
 
-    private FunctionApp functionApp;
+    private IFunctionApp functionApp;
 
-    public FunctionAppNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
-        super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
-                functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
+    public FunctionAppNode(@Nonnull AzureRefreshableNode parent, @Nonnull IFunctionApp functionApp) {
+        super(parent, FUNCTION_LABEL, functionApp);
         this.functionApp = functionApp;
         loadActions();
     }
@@ -49,11 +50,11 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         this.renderSubModules();
     }
 
-    @Override
     public void renderSubModules() {
-        addChildNode(new FunctionsNode(this, this.functionApp));
-        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.functionApp));
-        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.functionApp));
+        // todo: implement with app service library
+        addChildNode(new FunctionsNode(this, functionApp));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, functionApp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, functionApp));
     }
 
     @Override
@@ -81,10 +82,6 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         return properties;
     }
 
-    public FunctionApp getFunctionApp() {
-        return functionApp;
-    }
-
     public String getFunctionAppId() {
         return this.functionApp.id();
     }
@@ -94,28 +91,25 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     public String getRegion() {
-        return this.functionApp.regionName();
+        return this.functionApp.entity().getRegion().getName();
     }
 
     @AzureOperation(name = "function.start", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
-        AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
-        this.renderNode(WebAppBaseState.fromString(target.state()));
+        Azure.az(AzureAppService.class).functionApp(id).start();
+        refreshStatus();
     }
 
     @AzureOperation(name = "function.stop", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
-        AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
-        this.renderNode(WebAppBaseState.fromString(target.state()));
+        Azure.az(AzureAppService.class).functionApp(id).stop();
+        refreshStatus();
     }
 
     @AzureOperation(name = "function.restart", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
-        AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
-        this.renderNode(WebAppBaseState.fromString(target.state()));
+        Azure.az(AzureAppService.class).functionApp(id).restart();
+        refreshStatus();
     }
 
     @AzureOperation(name = "function.delete", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
@@ -131,5 +125,11 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     @AzureOperation(name = "function.show_properties", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
+    }
+
+    // todo: replace with Azure Event Bus
+    private void refreshStatus() {
+        functionApp.refresh();
+        this.renderNode(WebAppBaseState.fromString(functionApp.state()));
     }
 }

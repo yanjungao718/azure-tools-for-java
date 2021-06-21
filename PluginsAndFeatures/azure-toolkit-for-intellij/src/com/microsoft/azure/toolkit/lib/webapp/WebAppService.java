@@ -7,12 +7,12 @@ package com.microsoft.azure.toolkit.lib.webapp;
 
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -21,7 +21,10 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
@@ -63,40 +66,38 @@ public class WebAppService {
         settings.setResourceGroup(config.getResourceGroup().getName());
         settings.setWebAppName(config.getName());
         settings.setRegion(config.getRegion().getName());
-        settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
+        settings.saveRuntime(config.getRuntime());
         // creating if id is empty
-        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().id()));
+        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().getId()));
         if (settings.isCreatingAppServicePlan()) {
-            settings.setAppServicePlanName(config.getServicePlan().name());
+            settings.setAppServicePlanName(config.getServicePlan().getName());
         } else {
-            settings.setAppServicePlanId(config.getServicePlan().id());
+            settings.setAppServicePlanId(config.getServicePlan().getId());
         }
-        settings.setPricing(config.getServicePlan().pricingTier().toString());
+        settings.setPricing(config.getServicePlan().getPricingTier().getSize());
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
-            settings.setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
-            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel() == null ? null :
-                                            monitorConfig.getApplicationLogLevel().toString());
-            settings.setEnableWebServerLogging(monitorConfig.isEnableWebServerLogging());
-            settings.setWebServerLogQuota(monitorConfig.getWebServerLogQuota());
-            settings.setWebServerRetentionPeriod(monitorConfig.getWebServerRetentionPeriod());
-            settings.setEnableDetailedErrorMessage(monitorConfig.isEnableDetailedErrorMessage());
-            settings.setEnableFailedRequestTracing(monitorConfig.isEnableFailedRequestTracing());
+            final DiagnosticConfig diagnosticConfig = monitorConfig.getDiagnosticConfig();
+            settings.setEnableApplicationLog(diagnosticConfig.isEnableApplicationLog());
+            settings.setApplicationLogLevel(diagnosticConfig.getApplicationLogLevel() == null ? null :
+                    diagnosticConfig.getApplicationLogLevel().getValue());
+            settings.setEnableWebServerLogging(diagnosticConfig.isEnableWebServerLogging());
+            settings.setWebServerLogQuota(diagnosticConfig.getWebServerLogQuota());
+            settings.setWebServerRetentionPeriod(diagnosticConfig.getWebServerRetentionPeriod());
+            settings.setEnableDetailedErrorMessage(diagnosticConfig.isEnableDetailedErrorMessage());
+            settings.setEnableFailedRequestTracing(diagnosticConfig.isEnableFailedRequestTracing());
         }
         settings.setTargetName(config.getApplication() == null ? null : config.getApplication().toFile().getName());
         settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
         return settings;
     }
 
-    private static Runtime getRuntimeFromWebAppConfig(@NotNull final Platform platform) {
-        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem operatingSystem =
-            com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(platform.getOs().name());
-        if (operatingSystem == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
-            return Runtime.getRuntimeFromLinuxFxVersion(String.join(" ", platform.getStackOrWebContainer(), platform.getStackVersionOrJavaVersion()));
-        }
-        final WebContainer webContainer = WebContainer.fromString(platform.getStackOrWebContainer());
-        final com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion javaVersion =
-            com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion.fromString(platform.getStackVersionOrJavaVersion());
-        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
+    public String getRuntimeDisplayName(@Nonnull final Runtime runtime) {
+        final String os = runtime.getOperatingSystem().getValue();
+        final String javaVersion = runtime.getJavaVersion() == JavaVersion.OFF ? null : String.format("Java %s", runtime.getJavaVersion().getValue());
+        final String webContainer = runtime.getWebContainer() == WebContainer.JAVA_OFF ? null : runtime.getWebContainer().getValue();
+        return Stream.of(os, javaVersion, webContainer)
+                     .filter(StringUtils::isNotEmpty)
+                     .map(StringUtils::capitalize).collect(Collectors.joining("-"));
     }
 }

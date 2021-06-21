@@ -5,12 +5,15 @@
 
 package com.microsoft.intellij.util;
 
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
-import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
+import com.azure.core.management.exception.ManagementException;
+import com.azure.resourcemanager.AzureResourceManager;
+import com.azure.resourcemanager.appservice.fluent.models.ResourceNameAvailabilityInner;
+import com.azure.resourcemanager.appservice.models.CheckNameResourceTypes;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -70,9 +73,9 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
         }
-        final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
-        final ResourceNameAvailabilityInner result = azure.appServices().inner()
-            .checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
+        final AzureResourceManager azureResourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
+        final ResourceNameAvailabilityInner result = azureResourceManager.webApps().manager().serviceClient()
+                .getResourceProviders().checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEB_SITES);
         if (!result.nameAvailable()) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
         }
@@ -91,12 +94,12 @@ public class ValidationUtils {
             cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.empty"));
         }
         try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
-            if (azure.resourceGroups().getByName(resourceGroup) != null) {
+            final ResourceGroup rg = Azure.az(AzureGroup.class).get(subscriptionId, resourceGroup);
+            if (rg != null) {
                 cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.exist"));
             }
-        } catch (RestException e) {
-            throw new IllegalArgumentException(e.getMessage());
+        } catch (ManagementException e) {
+            // swallow exception for get resources
         }
         resourceGroupValidationCache.put(subscriptionId, null);
     }

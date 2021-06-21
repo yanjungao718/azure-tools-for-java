@@ -5,10 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -77,25 +75,6 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                     }
                 } else if (event.object == null && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
                     load(true);
-                } else if (event.object != null && event.object.getClass().toString().equals(WebAppUtils
-                        .WebAppDetails.class.toString())) {
-                    WebAppUtils.WebAppDetails webAppDetails = (WebAppUtils.WebAppDetails) event.object;
-                    switch (event.opsType) {
-                        case ADD:
-                            final IWebApp newWebApp = AzureWebAppMvpModel.getInstance()
-                                    .getAzureAppServiceClient(webAppDetails.subscription.getId())
-                                    .webapp(webAppDetails.webApp.id());
-                            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                                addChildNode(new WebAppNode(WebAppModule.this,
-                                        ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                        newWebApp));
-                            });
-                            break;
-                        case UPDATE:
-                        case REMOVE:
-                        default:
-                            break;
-                    }
                 }
             }
         };
@@ -106,7 +85,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     public void renderChildren(@NotNull final List<IWebApp> resourceExes) {
         resourceExes.stream()
                 .filter(webApp -> StringUtils.isNotEmpty(webApp.id()))
-                .map(webApp -> new WebAppNode(this, Utils.getSubscriptionId(webApp.id()), webApp))
+                .map(webApp -> new WebAppNode(this, webApp))
                 .forEach(this::addChildNode);
     }
 }

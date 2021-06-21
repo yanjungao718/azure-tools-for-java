@@ -8,6 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 import com.azure.resourcemanager.AzureResourceManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -24,7 +25,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 
 import java.util.List;
 
-public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlotNodeView {
+public class DeploymentSlotNode extends WebAppBaseNode {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";
     private static final String LABEL = "Slot";
 
@@ -32,8 +33,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     private final IWebAppDeploymentSlot slot;
 
     public DeploymentSlotNode(final IWebAppDeploymentSlot deploymentSlot, final DeploymentSlotModule parent) {
-        super(deploymentSlot.id(), deploymentSlot.name(), LABEL, parent, parent.subscriptionId, deploymentSlot.hostName(),
-                deploymentSlot.getRuntime().getOperatingSystem().toString(), deploymentSlot.state());
+        super(parent, LABEL, deploymentSlot);
         this.webApp = deploymentSlot.webApp();
         this.slot = deploymentSlot;
         loadActions();
@@ -41,7 +41,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean isLinux = OS_LINUX.equalsIgnoreCase(os);
+        boolean isLinux = slot.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
         boolean running = WebAppBaseState.RUNNING.equals(state);
         boolean updating = WebAppBaseState.UPDATING.equals(state);
         if (isLinux) {
