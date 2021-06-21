@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
@@ -17,7 +16,6 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
@@ -25,11 +23,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.codehaus.plexus.util.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -78,8 +76,7 @@ public class FunctionDeployModel {
     }
 
     public Map<String, String> getTelemetryProperties() {
-        // todo: impl later
-        return Collections.EMPTY_MAP;
+        return Optional.ofNullable(functionAppConfig).map(FunctionAppConfig::getTelemetryProperties).orElse(Collections.emptyMap());
     }
 
     // for migrate old configuration to new resource config

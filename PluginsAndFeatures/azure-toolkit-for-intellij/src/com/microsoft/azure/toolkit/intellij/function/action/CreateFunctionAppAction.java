@@ -18,11 +18,15 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.actions.AzureSignInAction;
@@ -99,10 +103,17 @@ public class CreateFunctionAppAction extends NodeActionListener {
             }
         };
         final AzureTask<IFunctionApp> task = new AzureTask<>(null, title, false, () -> {
-            AzureMessager.getContext().setMessager(actionMessenger);
-            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-            indicator.setIndeterminate(true);
-            return functionAppService.createFunctionApp(config);
+            final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_APP);
+            operation.trackProperties(config.getTelemetryProperties());
+            try {
+                AzureMessager.getContext().setMessager(actionMessenger);
+                final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+                indicator.setIndeterminate(true);
+                return functionAppService.createFunctionApp(config);
+            } finally {
+                operation.trackProperties(AzureTelemetry.getContext().getActionProperties());
+                operation.complete();
+            }
         });
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
             AzureMessager.getMessager().success(message("function.create.success.message", app.name()), message("function.create.success.title"));

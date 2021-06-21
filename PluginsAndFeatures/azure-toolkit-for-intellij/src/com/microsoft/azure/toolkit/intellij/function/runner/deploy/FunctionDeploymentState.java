@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -168,7 +169,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
 
     @Override
     protected Map<String, String> getTelemetryMap() {
-        return functionDeployConfiguration.getModel().getTelemetryProperties();
+        final Map<String, String> properties = new HashMap<>(deployModel.getTelemetryProperties());
+        properties.putAll(AzureTelemetry.getContext().getActionProperties());
+        return properties;
     }
 
     // todo: create shared run state messenger for all run states

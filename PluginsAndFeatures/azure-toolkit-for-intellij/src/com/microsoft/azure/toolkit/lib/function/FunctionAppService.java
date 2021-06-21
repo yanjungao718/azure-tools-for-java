@@ -12,6 +12,9 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEn
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -79,7 +82,7 @@ public class FunctionAppService {
     }
 
     public IFunctionApp createFunctionApp(final FunctionAppConfig config) {
-        AzureTelemetry.getContext().setProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
+        AzureTelemetry.getContext().getActionProperties().put(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(config);
         final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
         AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP, config.getName()));
@@ -126,7 +129,7 @@ public class FunctionAppService {
             return Azure.az(AzureGroup.class).getByName(config.getResourceGroup().getName());
         } catch (final ManagementException e) {
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP, config.getResourceGroup().getName(), config.getRegion().getName()));
-            AzureTelemetry.getContext().setProperty(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
+            AzureTelemetry.getContext().getActionProperties().put(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
             final ResourceGroup result = Azure.az(AzureGroup.class).create(config.getResourceGroup().getName(), config.getRegion().getName());
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP_DONE, result.getName()));
             return result;
@@ -140,7 +143,7 @@ public class FunctionAppService {
                 .appServicePlan(servicePlanGroup, servicePlanName);
         if (!appServicePlan.exists()) {
             AzureMessager.getMessager().info(CREATE_APP_SERVICE_PLAN);
-            AzureTelemetry.getContext().setProperty(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
+            AzureTelemetry.getContext().getActionProperties().put(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
             appServicePlan.create()
                     .withName(servicePlanName)
                     .withResourceGroup(servicePlanGroup)
@@ -195,7 +198,7 @@ public class FunctionAppService {
 
     public void deployFunctionApp(final IFunctionApp functionApp, final File stagingFolder) throws IOException {
         AzureMessager.getMessager().info(DEPLOY_START);
-        functionApp.deploy(packageStagingDirectory(stagingFolder));
+        functionApp.deploy(packageStagingDirectory(stagingFolder), getDeployType(functionApp));
         if (!StringUtils.equalsIgnoreCase(functionApp.state(), RUNNING)) {
             functionApp.start();
         }
