@@ -97,7 +97,7 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.8.0-SNAPSHOT', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.9.0-SNAPSHOT', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -165,11 +165,11 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.12', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.8.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib:0.8.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.8.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-mysql-lib:0.8.0-SNAPSHOT', { force = true }
-    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.8.0-SNAPSHOT",  {
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.9.0-SNAPSHOT', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib:0.9.0-SNAPSHOT', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.9.0-SNAPSHOT', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-mysql-lib:0.9.0-SNAPSHOT', { force = true }
+    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.9.0-SNAPSHOT",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
