@@ -169,17 +169,17 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.54.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.55.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.54.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.55.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.54.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.55.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
