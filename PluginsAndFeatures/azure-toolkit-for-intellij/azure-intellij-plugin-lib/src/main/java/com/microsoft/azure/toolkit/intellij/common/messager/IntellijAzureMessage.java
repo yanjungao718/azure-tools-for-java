@@ -29,9 +29,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -157,13 +158,13 @@ public class IntellijAzureMessage implements IAzureMessage {
     private static Throwable getRecognizableCause(@Nonnull Throwable throwable) {
         final List<Throwable> throwables = ExceptionUtils.getThrowableList(throwable);
         for (int i = throwables.size() - 1; i >= 0; i--) {
-            final Throwable root = throwables.get(i);
-            if (root instanceof AzureOperationException) {
-                return null;
+            final Throwable t = throwables.get(i);
+            if (t instanceof AzureOperationException) {
+                continue;
             }
-            final String rootClassName = root.getClass().getName();
+            final String rootClassName = t.getClass().getName();
             if (rootClassName.startsWith("com.microsoft.azure") || rootClassName.startsWith("com.azure")) {
-                return root;
+                return t;
             }
         }
         return null;
@@ -185,7 +186,7 @@ public class IntellijAzureMessage implements IAzureMessage {
                 .filter(p -> p instanceof Throwable)
                 .map(p -> getExceptionOperations((Throwable) p))
                 .orElse(new ArrayList<>());
-        final LinkedHashMap<String, IAzureOperation> operations = new LinkedHashMap<>();
+        final Map<String, IAzureOperation> operations = new HashMap<>();
         Streams.concat(contextOperations.stream(), exceptionOperations.stream())
                 .filter(o -> !operations.containsKey(o.getName()))
                 .forEachOrdered(o -> operations.put(o.getName(), o));
