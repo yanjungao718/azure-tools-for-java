@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -96,19 +95,19 @@ public class FunctionAppNode extends WebAppBaseNode {
 
     @AzureOperation(name = "function.start", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
-        Azure.az(AzureAppService.class).functionApp(id).start();
+        functionApp.start();
         refreshStatus();
     }
 
     @AzureOperation(name = "function.stop", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
-        Azure.az(AzureAppService.class).functionApp(id).stop();
+        functionApp.stop();
         refreshStatus();
     }
 
     @AzureOperation(name = "function.restart", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
-        Azure.az(AzureAppService.class).functionApp(id).restart();
+        functionApp.restart();
         refreshStatus();
     }
 
