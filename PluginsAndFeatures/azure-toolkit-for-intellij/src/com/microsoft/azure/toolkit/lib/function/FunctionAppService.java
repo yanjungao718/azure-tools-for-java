@@ -41,6 +41,7 @@ public class FunctionAppService {
     private static final String CREATE_NEW_RESOURCE_GROUP = "createNewResourceGroup";
     private static final String CREATE_NEW_APP_SERVICE_PLAN = "createNewAppServicePlan";
     private static final String DEPLOYMENT_TYPE = "deploymentType";
+    private static final String DISABLE_APP_INSIGHTS = "disableAppInsights";
 
     private static final String CREATE_RESOURCE_GROUP = "Creating resource group %s in region %s...";
     private static final String CREATE_RESOURCE_GROUP_DONE = "Successfully created resource group %s.";
@@ -89,6 +90,7 @@ public class FunctionAppService {
         AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP, config.getName()));
         final Map<String, String> appSettings = getAppSettings(config);
         // get/create ai instances only if user didn't specify ai connection string in app settings
+        AzureTelemetry.getActionContext().setProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
         bindApplicationInsights(appSettings, config);
         final IFunctionApp result = Azure.az(AzureAppService.class).functionApp(resourceGroup.getName(), config.getName()).create()
                 .withName(config.getName())
@@ -162,7 +164,6 @@ public class FunctionAppService {
         if (appSettings.containsKey(APPINSIGHTS_INSTRUMENTATION_KEY) || config.getMonitorConfig().getApplicationInsightsConfig() == null) {
             return;
         }
-        AzureTelemetry.getActionContext().setProperty("disableAppInsights", String.valueOf(false));
         String instrumentationKey = config.getMonitorConfig().getApplicationInsightsConfig().getInstrumentationKey();
         if (StringUtils.isEmpty(instrumentationKey)) {
             final ApplicationInsightsEntity applicationInsightsComponent = getOrCreateApplicationInsights(config);
