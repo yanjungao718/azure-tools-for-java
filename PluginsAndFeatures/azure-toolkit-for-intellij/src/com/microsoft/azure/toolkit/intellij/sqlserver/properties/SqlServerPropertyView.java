@@ -267,7 +267,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
                 .filter(e -> FirewallRuleEntity.ACCESS_FROM_AZURE_SERVICES_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
             originalAllowAccessToLocal = firewallRules.stream()
-                .filter(e -> FirewallRuleEntity.ACCESS_FROM_LOCAL_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
+                .filter(e -> StringUtils.equalsIgnoreCase(FirewallRuleEntity.getAccessFromLocalFirewallRuleName(), e.getName())).count() > 0L;
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();
