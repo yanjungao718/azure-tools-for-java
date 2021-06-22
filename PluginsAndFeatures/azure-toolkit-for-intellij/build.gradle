@@ -168,6 +168,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.8.0-SNAPSHOT', { force = true }
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib:0.8.0-SNAPSHOT', { force = true }
     compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.8.0-SNAPSHOT', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-mysql-lib:0.8.0-SNAPSHOT', { force = true }
     aspect "com.microsoft.azure:azure-toolkit-common-lib:0.8.0-SNAPSHOT",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
