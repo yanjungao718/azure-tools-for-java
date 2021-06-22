@@ -83,7 +83,7 @@ public class FunctionAppService {
     }
 
     public IFunctionApp createFunctionApp(final FunctionAppConfig config) {
-        AzureTelemetry.getContext().getActionProperties().put(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
+        AzureTelemetry.getActionContext().setProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(config);
         final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
         AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP, config.getName()));
@@ -130,7 +130,7 @@ public class FunctionAppService {
             return Azure.az(AzureGroup.class).getByName(config.getResourceGroup().getName());
         } catch (final ManagementException e) {
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP, config.getResourceGroup().getName(), config.getRegion().getName()));
-            AzureTelemetry.getContext().getActionProperties().put(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
+            AzureTelemetry.getActionContext().setProperty(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
             final ResourceGroup result = Azure.az(AzureGroup.class).create(config.getResourceGroup().getName(), config.getRegion().getName());
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP_DONE, result.getName()));
             return result;
@@ -144,7 +144,7 @@ public class FunctionAppService {
                 .appServicePlan(servicePlanGroup, servicePlanName);
         if (!appServicePlan.exists()) {
             AzureMessager.getMessager().info(CREATE_APP_SERVICE_PLAN);
-            AzureTelemetry.getContext().getActionProperties().put(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
+            AzureTelemetry.getActionContext().setProperty(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
             appServicePlan.create()
                     .withName(servicePlanName)
                     .withResourceGroup(servicePlanGroup)
@@ -200,7 +200,7 @@ public class FunctionAppService {
     public void deployFunctionApp(final IFunctionApp functionApp, final File stagingFolder) throws IOException {
         AzureMessager.getMessager().info(DEPLOY_START);
         final FunctionDeployType deployType = getDeployType(functionApp);
-        AzureTelemetry.getContext().getActionProperties().put(DEPLOYMENT_TYPE, deployType.name());
+        AzureTelemetry.getActionContext().setProperty(DEPLOYMENT_TYPE, deployType.name());
         functionApp.deploy(packageStagingDirectory(stagingFolder), deployType);
         if (!StringUtils.equalsIgnoreCase(functionApp.state(), RUNNING)) {
             functionApp.start();

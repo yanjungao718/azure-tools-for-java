@@ -111,7 +111,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
                 indicator.setIndeterminate(true);
                 return functionAppService.createFunctionApp(config);
             } finally {
-                operation.trackProperties(AzureTelemetry.getContext().getActionProperties());
+                operation.trackProperties(AzureTelemetry.getActionContext().getProperties());
                 operation.complete();
             }
         });

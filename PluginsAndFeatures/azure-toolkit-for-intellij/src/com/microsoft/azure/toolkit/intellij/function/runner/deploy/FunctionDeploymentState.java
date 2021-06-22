@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -98,8 +97,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         FunctionAppService.getInstance().deployFunctionApp(functionApp, stagingFolder);
         // list triggers after deployment
         listHTTPTriggerUrls(functionApp);
-        operation.trackProperties(AzureTelemetry.getContext().getProperties());
-        operation.trackProperties(AzureTelemetry.getContext().getActionProperties());
+        operation.trackProperties(AzureTelemetry.getActionContext().getProperties());
         return functionApp;
     }
 
