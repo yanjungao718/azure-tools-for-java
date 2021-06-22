@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import javax.swing.*;
-import java.util.Arrays;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -54,7 +53,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project, FunctionAppConfig::getFunctionAppDefaultConfig) {
+        basicPanel = new AppServiceInfoBasicPanel<>(project, FunctionAppConfig::getFunctionAppDefaultConfig) {
             @Override
             public FunctionAppConfig getData() {
                 // Create AI instance with same name by default
