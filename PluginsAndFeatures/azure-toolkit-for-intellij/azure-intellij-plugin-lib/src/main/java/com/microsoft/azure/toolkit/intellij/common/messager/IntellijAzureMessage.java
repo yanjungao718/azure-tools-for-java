@@ -175,6 +175,7 @@ public class IntellijAzureMessage implements IAzureMessage {
         return ExceptionUtils.getThrowableList(throwable).stream()
                 .filter(t -> t instanceof AzureToolkitRuntimeException || t instanceof AzureToolkitException)
                 .map(t -> t instanceof AzureToolkitRuntimeException ? ((AzureToolkitRuntimeException) t).getAction() : ((AzureToolkitException) t).getAction())
+                .filter(StringUtils::isNotBlank)
                 .findFirst()
                 .orElse(null);
     }
