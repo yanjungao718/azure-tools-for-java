@@ -97,10 +97,6 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                                     String.format("Failed to %s", error.getMessage()) : error.getMessage();
         processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
-        final IntellijAzureMessage message = new IntellijAzureMessage(IAzureMessage.Type.ERROR, "failed to execute run configuration");
-        message.setProject(project);
-        message.setBackgrounded(true);
-        message.setPayload(error);
-        AzureMessager.getMessager().show(message);
+        AzureMessager.getMessager().error(error);
     }
 }

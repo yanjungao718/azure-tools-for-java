@@ -61,11 +61,7 @@ public abstract class AzureAnAction extends AnAction {
             actionReturnVal = onActionPerformed(anActionEvent, operation);
         } catch (final RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
-            final IntellijAzureMessage message = new IntellijAzureMessage(IAzureMessage.Type.ERROR, "failed to " + operationName);
-            message.setProject(getEventProject(anActionEvent));
-            message.setBackgrounded(false);
-            message.setPayload(ex);
-            AzureMessager.getMessager().show(message);
+            AzureMessager.getMessager().error(ex);
         } finally {
             if (actionReturnVal) {
                 operation.complete();
