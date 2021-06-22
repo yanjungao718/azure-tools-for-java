@@ -14,13 +14,13 @@ import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerDatabaseCo
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.database.DatabaseTemplateUtils;
+import com.microsoft.azure.toolkit.lib.common.database.FirewallRuleEntity;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
-import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlFirewallRuleEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
@@ -239,7 +239,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         SqlServerEntity entity = property.getServer().entity();
         if ("Ready".equals(entity.getState())) {
             // find firewalls
-            List<SqlFirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
+            List<FirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
             this.property.setFirewallRules(firewallRules);
         }
     }
@@ -262,12 +262,12 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         overview.getServerAdminLoginNameTextField().setCaretPosition(0);
         overview.getVersionTextField().setText(entity.getVersion());
         if ("Ready".equals(entity.getState())) {
-            List<SqlFirewallRuleEntity> firewallRules = property.getFirewallRules();
+            List<FirewallRuleEntity> firewallRules = property.getFirewallRules();
             originalAllowAccessToAzureServices = firewallRules.stream()
-                .filter(e -> SqlFirewallRuleEntity.ACCESS_FROM_AZURE_SERVICES_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
+                .filter(e -> FirewallRuleEntity.ACCESS_FROM_AZURE_SERVICES_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
             originalAllowAccessToLocal = firewallRules.stream()
-                .filter(e -> SqlFirewallRuleEntity.ACCESS_FROM_LOCAL_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
+                .filter(e -> FirewallRuleEntity.ACCESS_FROM_LOCAL_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();
