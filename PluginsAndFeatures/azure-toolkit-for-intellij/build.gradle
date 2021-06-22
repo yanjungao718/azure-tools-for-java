@@ -5,6 +5,7 @@ plugins {
     id "com.github.ben-manes.versions" version "0.39.0"
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
     id "com.github.spotbugs" version "4.7.1"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
 compileKotlin {
@@ -138,42 +139,36 @@ configurations {
         extendsFrom testRuntime
     }
 }
-
 apply plugin: 'java'
 
-dependencies {
-    compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
-    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
+dependencyManagement {
+    imports {
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.9.0-SNAPSHOT'
+    }
+}
 
+dependencies {
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
-    compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
-    compile "com.github.akarnokd:rxjava3-interop:3.0.2"
     compile project(':azure-intellij-resource-connector-lib')
     compile project(':azure-intellij-resource-connector-aad')
-    compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
-    compile 'commons-io:commons-io:2.9.0'
-    compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-    compile 'net.minidev:json-smart:2.4.7'
-    compile 'com.microsoft.azure:azure-client-runtime:1.7.12', {
-        force = true
+
+    compile 'com.microsoft.azure:azure-client-authentication'
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib'
+    compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
+    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib'
+    compile 'com.microsoft.azure:azure-toolkit-mysql-lib'
+    aspect "com.microsoft.azure:azure-toolkit-common-lib",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
-    compile 'com.microsoft.azure:azure-client-authentication:1.7.12', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.9.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib:0.9.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.9.0-SNAPSHOT', { force = true }
-    compile 'com.microsoft.azure:azure-toolkit-mysql-lib:0.9.0-SNAPSHOT', { force = true }
-    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.9.0-SNAPSHOT",  {
+    compile 'com.microsoft.azure:azure-client-runtime', {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
+
     compile 'com.microsoft.azuretools:azuretools-core:3.54.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
@@ -189,7 +184,19 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.3', {
+
+    compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
+    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
+    compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
+
+    compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
+    compile "com.github.akarnokd:rxjava3-interop:3.0.2"
+    compile 'commons-io:commons-io'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
+    compile group: 'org.apache.commons', name: 'commons-lang3'
+    compile 'net.minidev:json-smart:2.4.7'
+    compile group: 'org.dom4j', name: 'dom4j', {
         exclude group: "javax.xml.stream", module: "stax-api"
         exclude group: "xpp3", module: "xpp3"
         exclude group: "pull-parser", module: "pull-parser"
@@ -201,8 +208,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72")
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
-    compileOnly 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
     compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
