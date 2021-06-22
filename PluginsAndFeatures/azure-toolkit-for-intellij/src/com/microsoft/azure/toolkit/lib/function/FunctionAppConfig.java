@@ -6,15 +6,16 @@
 package com.microsoft.azure.toolkit.lib.function;
 
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -32,5 +33,13 @@ public class FunctionAppConfig extends AppServiceConfig {
                                 .runtime(FunctionAppConfig.DEFAULT_RUNTIME)
                                 .pricingTier(PricingTier.CONSUMPTION)
                                 .region(AppServiceConfig.DEFAULT_REGION).build();
+    }
+
+    @Override
+    public Map<String, String> getTelemetryProperties() {
+        final Map<String, String> result = super.getTelemetryProperties();
+        result.put("runtime", Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).map(OperatingSystem::getValue).orElse(StringUtils.EMPTY));
+        result.put("functionJavaVersion", Optional.ofNullable(runtime).map(Runtime::getJavaVersion).map(JavaVersion::getValue).orElse(StringUtils.EMPTY));
+        return result;
     }
 }

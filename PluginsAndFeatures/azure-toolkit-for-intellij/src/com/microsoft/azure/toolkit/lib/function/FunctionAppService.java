@@ -162,6 +162,7 @@ public class FunctionAppService {
         if (appSettings.containsKey(APPINSIGHTS_INSTRUMENTATION_KEY) || config.getMonitorConfig().getApplicationInsightsConfig() == null) {
             return;
         }
+        AzureTelemetry.getActionContext().setProperty("disableAppInsights", String.valueOf(false));
         String instrumentationKey = config.getMonitorConfig().getApplicationInsightsConfig().getInstrumentationKey();
         if (StringUtils.isEmpty(instrumentationKey)) {
             final ApplicationInsightsEntity applicationInsightsComponent = getOrCreateApplicationInsights(config);

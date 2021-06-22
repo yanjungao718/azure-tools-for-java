@@ -6,19 +6,12 @@
 package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,11 +44,10 @@ public class AppServiceConfig {
     protected Runtime runtime;
 
     public Map<String, String> getTelemetryProperties() {
-        final HashMap result = new HashMap();
-        result.put("runtime", Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).map(OperatingSystem::getValue).orElse(StringUtils.EMPTY));
+        final Map<String, String> result = new HashMap<>();
         result.put("subscriptionId", Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY));
         result.put("region", Optional.ofNullable(region).map(Region::getName).orElse(StringUtils.EMPTY));
-        result.put("functionJavaVersion", Optional.ofNullable(runtime).map(Runtime::getJavaVersion).map(JavaVersion::getValue).orElse(StringUtils.EMPTY));
+        result.put("pricingTier", Optional.ofNullable(pricingTier).map(PricingTier::getSize).orElse(StringUtils.EMPTY));
         return result;
     }
 }
