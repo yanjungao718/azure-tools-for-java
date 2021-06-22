@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
-import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
 import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
@@ -27,10 +26,8 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -62,12 +59,10 @@ public class CreateMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(e, isSuccess, project);
-        });
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
     }
 
-    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
+    private void doActionPerformed(boolean isLoggedIn, Project project) {
         try {
             if (!isLoggedIn ||
                 !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
@@ -87,11 +82,10 @@ public class CreateMySQLAction extends NodeActionListener {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             DefaultLoader.getIdeHelper().invokeLater(dialog::close);
-            final MySqlServer server = createMySQL(config);
+            createMySQL(config);
         };
         final String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), MySQLModule.MODULE_NAME, config.getServerName());
-        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
-        AzureTaskManager.getInstance().runInBackground(task);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, progressMessage, false, runnable));
     }
 
     @AzureOperation(
@@ -102,7 +96,7 @@ public class CreateMySQLAction extends NodeActionListener {
         },
         type = AzureOperation.Type.SERVICE
     )
-    public MySqlServer createMySQL(final AzureMySQLConfig config) {
+    public void createMySQL(final AzureMySQLConfig config) {
         final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();
@@ -133,7 +127,6 @@ public class CreateMySQLAction extends NodeActionListener {
             if (config.isAllowAccessFromLocalMachine()) {
                 server.firewallRules().enableLocalMachineAccessRule(server.getPublicIpForLocalMachine());
             }
-            return server;
         } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.systemError, e, null, null);
             throw e;

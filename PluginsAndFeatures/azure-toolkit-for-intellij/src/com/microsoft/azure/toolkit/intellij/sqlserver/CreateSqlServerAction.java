@@ -49,12 +49,10 @@ public class CreateSqlServerAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(e, isSuccess, project);
-        });
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
     }
 
-    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
+    private void doActionPerformed(boolean isLoggedIn, Project project) {
         try {
             if (!isLoggedIn ||
                 !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
@@ -65,11 +63,11 @@ public class CreateSqlServerAction extends NodeActionListener {
             DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
         final SqlServerCreationDialog dialog = new SqlServerCreationDialog(project);
-        dialog.setOkActionListener((data) -> this.createSqlServer(data, dialog));
+        dialog.setOkActionListener((data) -> this.createSqlServer(data, dialog, project));
         dialog.show();
     }
 
-    private void createSqlServer(final SqlServerConfig config, SqlServerCreationDialog dialog) {
+    private void createSqlServer(final SqlServerConfig config, final SqlServerCreationDialog dialog, final Project project) {
         final Runnable runnable = () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -78,8 +76,7 @@ public class CreateSqlServerAction extends NodeActionListener {
             refreshAzureExplorer(server);
         };
         String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), SqlServerModule.MODULE_NAME, config.getServerName());
-        final AzureTask task = new AzureTask(null, progressMessage, false, runnable);
-        AzureTaskManager.getInstance().runInBackground(task);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, progressMessage, false, runnable));
     }
 
     @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)

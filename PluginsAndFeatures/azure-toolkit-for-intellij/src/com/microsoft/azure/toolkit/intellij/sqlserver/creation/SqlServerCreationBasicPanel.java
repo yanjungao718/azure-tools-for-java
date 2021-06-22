@@ -37,7 +37,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private SqlServerConfig config;
+    private final SqlServerConfig config;
 
     SqlServerCreationBasicPanel(SqlServerConfig config) {
         super();

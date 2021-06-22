@@ -47,9 +47,7 @@ public class OpenSqlServerByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(e, isSuccess, project);
-        });
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
     }
 
     @Override
@@ -63,7 +61,7 @@ public class OpenSqlServerByToolsAction extends NodeActionListener {
     }
 
     @AzureOperation(name = "sqlserver.connect_server", params = {"this.node.getServer().entity().getName()"}, type = AzureOperation.Type.ACTION)
-    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
+    private void doActionPerformed(boolean isLoggedIn, Project project) {
         try {
             if (!isLoggedIn ||
                 !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {

@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector.database.component;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class PasswordSaveComboBox extends AzureComboBox<Password.SaveType> {
     }
 
     @Override
+    @Nonnull
     protected List<? extends Password.SaveType> loadItems() {
         return Arrays.asList(Password.SaveType.values());
     }

@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +48,7 @@ public class SqlServerDatabaseComboBox extends AzureComboBox<SqlDatabaseEntity> 
         params = {"this.server.name()", "this.subscription.subscriptionId()"},
         type = AzureOperation.Type.SERVICE
     )
+    @Nonnull
     protected List<? extends SqlDatabaseEntity> loadItems() throws Exception {
         if (Objects.isNull(server)) {
             return new ArrayList<>();

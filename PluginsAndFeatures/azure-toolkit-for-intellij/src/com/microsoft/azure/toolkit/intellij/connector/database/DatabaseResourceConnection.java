@@ -13,7 +13,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -54,7 +53,6 @@ import static com.microsoft.azure.toolkit.intellij.connector.database.DatabaseCo
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DatabaseResourceConnection implements Connection<DatabaseResource, ModuleResource> {
-    public static final Key<Map<String, String>> ENV_VARS = Key.create("ConnectAzureResourceEnvVars");
     private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     private static final String AZURE_WEBAPP_CONFIGURATION = "com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration";
     @Getter
@@ -125,11 +123,11 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         assert module != null : "loading password from unknown module";
         env.put(mysql.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
         env.put(mysql.getEnvPrefix() + "USERNAME", this.resource.getUsername());
-        env.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(module, mysql).or(() -> inputPassword(module, mysql)).orElse(""));
+        env.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(mysql).or(() -> inputPassword(module, mysql)).orElse(""));
         return env;
     }
 
-    private static Optional<String> loadPassword(@Nonnull final Module module, @Nonnull final DatabaseResource resource) {
+    private static Optional<String> loadPassword(@Nonnull final DatabaseResource resource) {
         if (Optional.ofNullable(resource.getPassword()).map(Password::saveType).get() == Password.SaveType.NEVER) {
             return Optional.empty();
         }
