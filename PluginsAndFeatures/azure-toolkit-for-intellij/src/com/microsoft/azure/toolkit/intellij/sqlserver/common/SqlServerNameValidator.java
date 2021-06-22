@@ -19,7 +19,7 @@ public class SqlServerNameValidator implements Function<ServerNameTextField, Azu
     public AzureValidationInfo apply(ServerNameTextField textField) {
         final String value = textField.getValue();
         // validate availability
-        CheckNameAvailabilityResultEntity resultEntity = null;
+        CheckNameAvailabilityResultEntity resultEntity;
         try {
             resultEntity = Azure.az(AzureSqlServer.class).checkNameAvailability(textField.getSubscriptionId(), value);
         } catch (ManagementException e) {

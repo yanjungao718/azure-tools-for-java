@@ -54,7 +54,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private AzureMySQLConfig config;
+    private final AzureMySQLConfig config;
 
     MySQLCreationAdvancedPanel(AzureMySQLConfig config) {
         super();
@@ -157,7 +157,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
             regionComboBox.setValue(config.getRegion());
         }
         if (config.getVersion() != null) {
-            versionComboBox.setValue(config.getVersion().toString());
+            versionComboBox.setValue(config.getVersion());
         }
         security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAllowAccessFromAzureServices());
         security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isAllowAccessFromLocalMachine());

@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.mysql.model.MySqlDatabaseEntity;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -63,6 +64,7 @@ public class DatabaseComboBox extends AzureComboBox<MySqlDatabaseEntity> {
         params = {"this.server.entity().getName()"},
         type = AzureOperation.Type.SERVICE
     )
+    @Nonnull
     protected List<? extends MySqlDatabaseEntity> loadItems() throws Exception {
         if (Objects.isNull(subscription) || Objects.isNull(server)
 

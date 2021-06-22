@@ -77,8 +77,8 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
 
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
-    private Project project;
-    private VirtualFile virtualFile;
+    private final Project project;
+    private final VirtualFile virtualFile;
 
     MySQLPropertyView(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         super();
@@ -167,7 +167,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
         if (itemEvent.getStateChange() == ItemEvent.SELECTED || itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-            final Boolean changed = MySQLPropertyView.this.changed();
+            final boolean changed = MySQLPropertyView.this.changed();
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             MySQLPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
         }
@@ -221,7 +221,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
-            final Boolean changed = MySQLPropertyView.this.changed();
+            final boolean changed = MySQLPropertyView.this.changed();
             MySQLPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             MySQLPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
             final Map<String, String> properties = new HashMap<>();
@@ -231,7 +231,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.SAVE).getServiceName(),
                                ActionConstants.parse(ActionConstants.MySQL.SAVE).getOperationName(), properties);
         };
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, String.format("%s...", actionName), false, runnable));
     }
 
     private void onDiscardButtonClicked(ActionEvent e) {
@@ -282,7 +282,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         };
         // show property in background
         final String taskTitle = Node.getProgressMessage(actionName, MySQLModule.MODULE_NAME, name);
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, taskTitle, false, runnable));
     }
 
     private void refreshProperty(String sid, String resourceGroup, String name) {
