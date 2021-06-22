@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -171,11 +172,7 @@ public class SignInWindow extends AzureDialogWrapper {
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
 
-            if (ApplicationManager.getApplication().isDispatchThread()) {
-                call(this::doServicePrincipalLogin, "sp");
-            } else {
-                AzureTaskManager.getInstance().runAndWait(() -> call(this::doServicePrincipalLogin, "sp"));
-            }
+            UIUtil.invokeAndWaitIfNeeded(() -> call(this::doServicePrincipalLogin, "sp"));
         } else if (deviceLoginRadioButton.isSelected()) {
             authMethodDetailsResult = call(this::doDeviceLogin, "dc");
         } else if (azureCliRadioButton.isSelected()) {
