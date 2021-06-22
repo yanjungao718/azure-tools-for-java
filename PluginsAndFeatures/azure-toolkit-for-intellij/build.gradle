@@ -98,7 +98,7 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.9.0', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.10.0-SNAPSHOT', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -143,7 +143,7 @@ apply plugin: 'java'
 
 dependencyManagement {
     imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.9.0'
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.10.0-SNAPSHOT'
     }
 }
 
