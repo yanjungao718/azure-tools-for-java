@@ -131,8 +131,8 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.model.getRoot();
         root.removeAllChildren();
         final Map<String, AzureSdkServiceEntity> serviceMap = services.stream().collect(Collectors.toMap(e -> getServiceKeyByName(e.getName()), e -> e));
-        final List<String> categories = categoryToServiceMap.keySet().stream().sorted((s1, s2) -> StringUtils.isAnyBlank(s1, s2) ||
-                StringUtils.contains(s1, "Others") ? 1 : StringUtils.contains(s2, "Others") ? -1 : s1.compareTo(s2)).collect(Collectors.toList());
+        final List<String> categories = categoryToServiceMap.keySet().stream().filter(StringUtils::isNotBlank).sorted(
+                (s1, s2) -> StringUtils.contains(s1, "Others") ? 1 : StringUtils.contains(s2, "Others") ? -1 : s1.compareTo(s2)).collect(Collectors.toList());
         for (final String category : categories) {
             // no feature found for current category
             if (CollectionUtils.isEmpty(categoryToServiceMap.get(category)) ||
