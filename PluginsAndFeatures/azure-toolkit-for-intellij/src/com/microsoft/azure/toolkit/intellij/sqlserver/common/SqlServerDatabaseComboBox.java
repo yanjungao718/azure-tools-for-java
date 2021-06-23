@@ -44,7 +44,7 @@ public class SqlServerDatabaseComboBox extends AzureComboBox<SqlDatabaseEntity> 
 
     @Override
     @AzureOperation(
-        name = "sqlserver|database.list.server|subscription",
+        name = "sqlserver|server.database_load|subscription",
         params = {"this.server.name()", "this.subscription.subscriptionId()"},
         type = AzureOperation.Type.SERVICE
     )
