@@ -18,8 +18,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.java.Log;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -35,12 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Setter
-@RequiredArgsConstructor
+@Log
 public class IntellijAzureMessage implements IAzureMessage {
     static final Pattern URL_PATTERN = Pattern.compile("\\s+(https?|ftp)://(www\\d?|[a-zA-Z0-9]+)?.[a-zA-Z0-9-]+(:|.)([a-zA-Z0-9.]+|(\\d+)?)([/?:].*)?");
     static final String DEFAULT_MESSAGE_TITLE = "Azure";
@@ -58,6 +59,13 @@ public class IntellijAzureMessage implements IAzureMessage {
     @Nonnull
     @Getter
     private final IAzureMessage original;
+
+    public IntellijAzureMessage(@Nonnull IAzureMessage original) {
+        this.original = original;
+        if (original.getPayload() instanceof Throwable) {
+            log.log(Level.WARNING, "caught error in IntellijAzureMessager", ((Throwable) original.getPayload()));
+        }
+    }
 
     public IntellijAzureMessage(@Nonnull Type type, @Nonnull String message) {
         this(new SimpleMessage(type, message));
@@ -143,7 +151,7 @@ public class IntellijAzureMessage implements IAzureMessage {
     private static String getCause(@Nonnull Throwable throwable) {
         final Throwable root = getRecognizableCause(throwable);
         if (Objects.isNull(root)) {
-            return null;
+            return ExceptionUtils.getRootCause(throwable).toString();
         }
         String cause = null;
         if (root instanceof ManagementException) {
@@ -163,7 +171,7 @@ public class IntellijAzureMessage implements IAzureMessage {
                 continue;
             }
             final String rootClassName = t.getClass().getName();
-            if (rootClassName.startsWith("com.microsoft.azure") || rootClassName.startsWith("com.azure")) {
+            if (rootClassName.startsWith("com.microsoft") || rootClassName.startsWith("com.azure")) {
                 return t;
             }
         }
