@@ -15,7 +15,6 @@ import com.microsoft.azuretools.utils.IProgressTaskImpl;
 public interface IUIFactory {
 //    ISelectAuthMethod getAuthMethodDialog();
     INotification getNotificationWindow();
-    IWebUi getWebUi();
     IDeviceLoginUI getDeviceLoginUI();
     IProgressTaskImpl getProgressTaskImpl();
 }

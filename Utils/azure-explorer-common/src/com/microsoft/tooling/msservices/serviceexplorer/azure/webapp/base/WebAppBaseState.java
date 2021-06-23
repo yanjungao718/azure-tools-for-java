@@ -8,7 +8,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 public enum WebAppBaseState {
     RUNNING,
     STOPPED,
-    UPDATING;
+    UPDATING,
+    UNKNOWN;
 
     private static WebAppBaseState[] copyOfValues = values();
 
@@ -18,6 +19,6 @@ public enum WebAppBaseState {
                 return value;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 }

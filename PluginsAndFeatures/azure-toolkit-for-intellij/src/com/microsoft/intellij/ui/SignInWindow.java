@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -171,22 +172,19 @@ public class SignInWindow extends AzureDialogWrapper {
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
 
-            if (ApplicationManager.getApplication().isDispatchThread()) {
-                doServicePrincipalLogin();
-            } else {
-                AzureTaskManager.getInstance().runAndWait(() -> doServicePrincipalLogin());
-            }
+            UIUtil.invokeAndWaitIfNeeded(() -> call(this::doServicePrincipalLogin, "sp"));
         } else if (deviceLoginRadioButton.isSelected()) {
-            authMethodDetailsResult = doDeviceLogin();
+            authMethodDetailsResult = call(this::doDeviceLogin, "dc");
         } else if (azureCliRadioButton.isSelected()) {
-            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), signInAZProp);
+            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), "az");
         } else if (oauthLoginRadioButton.isSelected()) {
-            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), signInAZProp);
+            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), "oauth");
         }
         return authMethodDetailsResult;
     }
 
-    private void doServicePrincipalLogin() {
+    private AuthMethodDetails doServicePrincipalLogin() {
+        authMethodDetailsResult = new AuthMethodDetails();
         final ServicePrincipalLoginDialog dialog = new ServicePrincipalLoginDialog(project);
         if (dialog.showAndGet()) {
             AuthConfiguration data = dialog.getData();
@@ -194,8 +192,8 @@ public class SignInWindow extends AzureDialogWrapper {
             if (StringUtils.isNotBlank(data.getKey())) {
                 secureStore.savePassword(StringUtils.joinWith("|", "account", data.getClient()), data.getKey());
             }
-
         }
+        return authMethodDetailsResult;
     }
 
     private static AuthMethodDetails checkCanceled(ProgressIndicator indicator, Mono<? extends AuthMethodDetails> mono) {
@@ -344,8 +342,10 @@ public class SignInWindow extends AzureDialogWrapper {
         return authMethodDetails;
     }
 
-    private <T> T call(Callable<T> loginCallable, Map<String, String> properties) {
-        Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
+    private <T> T call(Callable<T> loginCallable, String authMethod) {
+        final Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(SIGNIN_METHOD, authMethod);
         Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Signing in..."));
 
         try {

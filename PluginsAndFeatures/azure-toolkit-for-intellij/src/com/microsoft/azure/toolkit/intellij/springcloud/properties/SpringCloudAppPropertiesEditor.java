@@ -14,39 +14,17 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudDeploymentStatus;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import java.awt.*;
 import java.util.Objects;
 import java.util.Optional;
 
 public class SpringCloudAppPropertiesEditor extends BaseEditor {
-    private static final LineBorder HIGH_LIGHT_BORDER = new LineBorder(Color.decode("0x8a2da5"), 1);
-    private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: '%s'.\n" +
-        "Are you sure you want to continue?";
-    private static final String DELETE_APP_DIRTY_PROMPT_MESSAGE = "This operation will discard your changes and delete the Spring Cloud App: '%s'.\n" +
-        "Are you sure you want to continue?";
-    private static final String OPERATE_APP_PROMPT_MESSAGE = "This operation will discard your changes.\nAre you sure you want to continue?";
-
-    private static final String ENABLE_PUBLIC_URL_KEY = "enablePublicUrl";
-    private static final String ENABLE_PERSISTENT_STORAGE_KEY = "enablePersistentStorage";
-    private static final String ENV_TABLE_KEY = "envTable";
-    private static final String CPU = "cpu";
-    private static final String MEMORY_IN_GB_KEY = "memoryInGB";
-    private static final String JVM_OPTIONS_KEY = "jvmOptions";
-    private static final String JAVA_VERSION_KEY = "javaVersion";
-    private static final String ENABLE_TEXT = "Enable";
-    private static final String DISABLE_TEXT = "Disable";
-    private static final String DISABLED_TEXT = "Disabled";
-    private static final String EMPTY_TEXT = "Empty";
-    private static final String DELETING_ACTION = "Deleting";
-    private static final String SAVING_ACTION = "Saving";
-
     private JButton refreshButton;
     private JButton startButton;
     private JButton stopButton;
@@ -84,11 +62,16 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.reset.addActionListener(e -> this.appPanel.reset());
         this.refreshButton.addActionListener(e -> refresh());
         final String deleteTitle = String.format("Deleting app(%s)", this.app.name());
-        this.deleteButton.addActionListener(e -> AzureTaskManager.getInstance().runInModal(deleteTitle, () -> {
-            this.setEnabled(false);
-            this.app.remove();
-            this.closeEditor();
-        }));
+        this.deleteButton.addActionListener(e -> {
+            final String message = String.format("Are you sure to delete Spring Cloud App(%s)", this.app.name());
+            if (AzureMessager.getMessager().confirm(message, "Delete Spring Cloud App")) {
+                AzureTaskManager.getInstance().runInModal(deleteTitle, () -> {
+                    this.setEnabled(false);
+                    this.app.remove();
+                    this.closeEditor();
+                });
+            }
+        });
         final String startTitle = String.format("Starting app(%s)", this.app.name());
         this.startButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(startTitle, () -> {
             this.setEnabled(false);
@@ -149,32 +132,32 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
 
     private void resetToolbar() {
         final SpringCloudDeployment deployment = Optional.ofNullable(app.activeDeployment()).stream().findAny()
-            .or(() -> app.deployments().stream().findAny())
-            .orElse(null);
+                .or(() -> app.deployments().stream().findAny())
+                .orElse(null);
         if (Objects.isNull(deployment)) {
             AzureMessager.getMessager().alert(String.format("App(%s) has no deployment", this.app.name()));
             this.closeEditor();
             return;
         }
-        final String status = deployment.entity().getStatus();
+        final SpringCloudDeploymentStatus status = deployment.entity().getStatus();
         switch (status) {
-            case "Stopped":
+            case STOPPED:
                 this.setEnabled(true);
                 this.stopButton.setEnabled(false);
                 this.restartButton.setEnabled(false);
                 break;
-            case "Running":
+            case RUNNING:
                 this.setEnabled(true);
                 this.startButton.setEnabled(false);
                 break;
-            case "failed":
+            case FAILED:
                 this.setEnabled(false);
                 this.deleteButton.setEnabled(true);
                 break;
-            case "Allocating":
-            case "Upgrading":
-            case "Compiling":
-            case "Unknown":
+            case ALLOCATING:
+            case UPGRADING:
+            case COMPILING:
+            case UNKNOWN:
                 this.setEnabled(false);
                 break;
         }
@@ -199,7 +182,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private void closeEditor() {
         DefaultLoader.getUIHelper().closeSpringCloudAppPropertyView(project, this.app.entity().getId());
         PluginUtil.showInfoNotificationProject(project,
-            String.format("The editor for app %s is closed.", this.app.name()), "The app " + this.app.name() + " is deleted.");
+                String.format("The editor for app %s is closed.", this.app.name()), "The app " + this.app.name() + " is deleted.");
     }
 
     private void createUIComponents() {

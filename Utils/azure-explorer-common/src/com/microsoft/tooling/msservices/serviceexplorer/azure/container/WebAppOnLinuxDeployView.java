@@ -5,19 +5,18 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 import java.util.List;
 
 public interface WebAppOnLinuxDeployView extends MvpView {
-    void renderWebAppOnLinuxList(List<ResourceEx<WebApp>> webAppOnLinuxList);
+    void renderWebAppOnLinuxList(List<IWebApp> webAppOnLinuxList);
 
     void renderSubscriptionList(List<Subscription> subscriptions);
 
@@ -27,5 +26,5 @@ public interface WebAppOnLinuxDeployView extends MvpView {
 
     void renderPricingTierList(List<PricingTier> pricingTierList);
 
-    void renderAppServicePlanList(List<AppServicePlan> appServicePlans);
+    void renderAppServicePlanList(List<IAppServicePlan> appServicePlans);
 }

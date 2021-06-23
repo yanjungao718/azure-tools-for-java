@@ -5,14 +5,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -29,18 +26,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
+public class WebAppNode extends WebAppBaseNode {
     private static final String LABEL = "WebApp";
     public static final String SSH_INTO = "SSH into Web App (Preview)";
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
-    // todo: migrate file service to track2 SDK
-    private WebApp webapp; // Track one client, keep for file service
     private final IWebApp webappManager;
 
-    public WebAppNode(WebAppModule parent, String subscriptionId, IWebApp webAppManager) {
-        super(webAppManager.id(), webAppManager.name(), LABEL, parent, subscriptionId, webAppManager.hostName(),
-              webAppManager.getRuntime().getOperatingSystem().toString(), webAppManager.state());
+    public WebAppNode(WebAppModule parent, IWebApp webAppManager) {
+        super(parent, LABEL, webAppManager);
         this.webappManager = webAppManager;
         loadActions();
     }
@@ -68,7 +62,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         this.renderSubModules();
     }
 
-    @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webappManager));
@@ -108,11 +101,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return this.webappManager.name();
     }
 
-    @Deprecated
-    public String getFxVersion() {
-        return getWebapp().linuxFxVersion();
-    }
-
     public Runtime getWebAppRuntime() {
         return this.webappManager.getRuntime();
     }
@@ -125,43 +113,35 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return super.getNodeActions();
     }
 
-    @Deprecated
-    public WebApp getWebapp() {
-        if (webapp == null) {
-            webapp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webappManager.id());
-        }
-        return webapp;
-    }
-
-    @AzureOperation(name = ActionConstants.WebApp.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.start", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         this.webappManager.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.stop", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         this.webappManager.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.restart", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         this.webappManager.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.webappManager.hostName());
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.show_properties", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }
