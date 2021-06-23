@@ -60,7 +60,7 @@ public class OpenSqlServerByToolsAction extends NodeActionListener {
         return ActionConstants.parse(ActionConstants.SqlServer.CONNECT_TO_SERVER).getOperationName();
     }
 
-    @AzureOperation(name = "sqlserver.connect_server", params = {"this.node.getServer().entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver|server.open_by_database_tools", params = {"this.node.getServer().entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void doActionPerformed(boolean isLoggedIn, Project project) {
         try {
             if (!isLoggedIn ||

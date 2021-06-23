@@ -66,18 +66,18 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "sqlserver.delete", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver|server.delete", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.subscriptionId, this.getId(), SqlServerNode.this);
     }
 
-    @AzureOperation(name = "sqlserver.open_portal", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver|server.open_portal", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.subscriptionId, this.server.entity().getId());
     }
 
-    @AzureOperation(name = "sqlserver.show_properties", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver|server.show_properties", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openSqlServerPropertyView(SqlServerNode.this);
     }
