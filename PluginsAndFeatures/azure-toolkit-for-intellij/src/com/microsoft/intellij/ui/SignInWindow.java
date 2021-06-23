@@ -7,7 +7,6 @@ package com.microsoft.intellij.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -38,7 +37,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -197,27 +195,9 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private static AuthMethodDetails checkCanceled(ProgressIndicator indicator, Mono<? extends AuthMethodDetails> mono) {
-        CompletableFuture<? extends AuthMethodDetails> future = mono.toFuture();
-        Disposable disposable = Flux.interval(Duration.ofSeconds(1)).map(ts -> {
-            if (indicator != null) {
-                indicator.checkCanceled();
-            }
-            return 1;
-        }).onErrorResume(e -> {
-            if (e instanceof ProcessCanceledException) {
-                future.cancel(true);
-            }
-            return Mono.empty();
-        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
-        try {
-            return future.get();
-        } catch (CancellationException e) {
-            return null;
-        } catch (Throwable e) {
-            throw new AzureToolkitRuntimeException("Cannot login due to error: " + e.getMessage(), e);
-        } finally {
-            disposable.dispose();
-        }
+        final Mono<AuthMethodDetails> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
+            .any(cancel -> cancel).map(ignore -> new AuthMethodDetails()).subscribeOn(Schedulers.boundedElastic());
+        return Mono.firstWithSignal(cancelMono, mono.subscribeOn(Schedulers.boundedElastic())).block();
     }
 
     @Override
@@ -328,7 +308,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
             }
         }
-        return null;
+        return new AuthMethodDetails();
     }
 
     private static AuthMethodDetails fromAccountEntity(AccountEntity entity) {
