@@ -44,7 +44,7 @@ public class FunctionModule extends AzureRefreshableNode {
     @Override
     @AzureOperation(name = "function.reload_all", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        Azure.az(AzureAppService.class).functionApps()
+        Azure.az(AzureAppService.class).functionApps(true)
                 .stream().map(functionApp -> new FunctionAppNode(FunctionModule.this, functionApp))
                 .forEach(this::addChildNode);
     }
