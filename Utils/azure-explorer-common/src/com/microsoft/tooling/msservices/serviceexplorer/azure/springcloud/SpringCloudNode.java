@@ -42,7 +42,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
 
     public void onAppCreatedOrRemoved(SpringCloudApp app) {
         if (this.cluster.name().equals(app.getCluster().name())) {
-            refreshItems();
+            this.load(true);
         }
     }
 
