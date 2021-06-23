@@ -37,7 +37,7 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private AzureMySQLConfig config;
+    private final AzureMySQLConfig config;
 
     MySQLCreationBasicPanel(AzureMySQLConfig config) {
         super();

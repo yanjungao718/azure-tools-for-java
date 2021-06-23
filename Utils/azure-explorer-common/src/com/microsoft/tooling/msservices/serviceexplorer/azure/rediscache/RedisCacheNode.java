@@ -108,12 +108,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
-    @AzureOperation(name = ActionConstants.RedisCache.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.delete", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
-    @AzureOperation(name = ActionConstants.RedisCache.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.open_portal", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = "";
         try {
@@ -124,10 +124,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, this.resourceId));
     }
 
+    @AzureOperation(name = "redis.show_properties", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openRedisPropertyView(this);
     }
 
+    @AzureOperation(name = "redis.open_explorer", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openExplorer() {
         DefaultLoader.getUIHelper().openRedisExplorer(this);
     }

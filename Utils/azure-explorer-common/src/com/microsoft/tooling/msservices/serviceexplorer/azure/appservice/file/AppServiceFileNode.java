@@ -5,9 +5,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -19,7 +19,11 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
@@ -107,7 +111,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
 
     @Override
     public String getServiceName() {
-        return file.getApp() instanceof FunctionApp ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
+        return file.getApp() instanceof IFunctionAppBase ? TelemetryConstants.FUNCTION : TelemetryConstants.WEBAPP;
     }
 
     @Override

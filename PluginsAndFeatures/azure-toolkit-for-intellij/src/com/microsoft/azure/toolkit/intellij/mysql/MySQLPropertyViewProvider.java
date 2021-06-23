@@ -25,8 +25,7 @@ public class MySQLPropertyViewProvider implements FileEditorProvider, DumbAware 
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        MySQLPropertyView propertyView = new MySQLPropertyView(virtualFile);
-        return propertyView;
+        return new MySQLPropertyView(project, virtualFile);
     }
 
     @NotNull

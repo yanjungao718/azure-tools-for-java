@@ -5,10 +5,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 import java.util.Map;
@@ -19,20 +21,17 @@ public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewP
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
                                      final Set toRemove) {
-        AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings(sid, webAppId, name, toUpdate, toRemove);
+        final IWebAppDeploymentSlot slot = getWebAppBase(sid, webAppId, name);
+        final IWebAppDeploymentSlot.Updater updater = slot.update();
+        updater.withAppSettings(toUpdate);
+        toRemove.forEach(key -> updater.withoutAppSettings((String) key));
+        updater.commit();
     }
 
     @Override
-    protected boolean getPublishingProfile(@NotNull final String subscriptionId, @NotNull final String webAppId,
-                                           @Nullable final String name,
-                                           @NotNull final String filePath) {
-        return AzureWebAppMvpModel.getInstance()
-            .getSlotPublishingProfileXmlWithSecrets(subscriptionId, webAppId, name, filePath);
-    }
-
-    @Override
-    protected WebAppBase getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
-                                       @Nullable final String name) {
-        return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId).deploymentSlots().getByName(name);
+    protected IWebAppDeploymentSlot getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
+                                                  @Nullable final String name) {
+        final IWebApp webApp = Azure.az(AzureAppService.class).webapp(webAppId);
+        return webApp.deploymentSlot(name);
     }
 }

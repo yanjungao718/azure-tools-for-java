@@ -27,7 +27,9 @@ import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -99,8 +101,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     @Override
     public void runActivity(@NotNull Project project) {
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        String hasMac = GetHashMac.getHashMac();
-        this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
+        String hasMac = InstallationIdUtils.getHashMac();
+        this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : InstallationIdUtils.hash(PermanentInstallationID.get());
         final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION,
                 TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID")));
         Azure.az().config().setLogLevel(LogLevel.NONE.name());
@@ -120,7 +122,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings(project);
-                runWorkspaceTaggingActivity(project);
+                afterInitialization(project);
             } catch (ProcessCanceledException e) {
                 throw e;
             } catch (Exception e) {
@@ -141,12 +143,13 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             });
     }
 
-    private void runWorkspaceTaggingActivity(Project myProject) {
+    private void afterInitialization(Project myProject) {
         Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.newThread())
                 .take(1)
                 .subscribe(next -> {
                     WorkspaceTaggingActivity.runActivity(myProject);
+                    AzureSdkEnforcer.enforce(myProject);
                 });
     }
 
@@ -170,7 +173,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                     String instID = DataOperations.getProperty(dataFile, message("instID"));
                     if (prefValue == null || prefValue.isEmpty()) {
                         setValues(dataFile);
-                    } else if (StringUtils.isEmpty(instID) || !GetHashMac.isValidHashMac(instID)) {
+                    } else if (StringUtils.isEmpty(instID) || !InstallationIdUtils.isValidHashMac(instID)) {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 

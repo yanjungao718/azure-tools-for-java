@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
@@ -15,16 +15,14 @@ import com.microsoft.azure.toolkit.intellij.appservice.insights.ApplicationInsig
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import org.apache.commons.collections.ListUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,9 +83,8 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
     private void createUIComponents() {
         // TODO: place custom component creation code here
         appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel<>(project, () -> FunctionAppConfig.builder().build());
-        appServiceConfigPanelAdvanced.setValidPlatform(Arrays.asList(Platform.AzureFunction.values()));
-        final List<PricingTier> validPricing = AzureFunctionMvpModel.getInstance().listFunctionPricingTier();
-        appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER);
+        appServiceConfigPanelAdvanced.setValidRuntime(Runtime.FUNCTION_APP_RUNTIME);
+        appServiceConfigPanelAdvanced.setValidPricingTier(PricingTier.FUNCTION_PRICING, PricingTier.CONSUMPTION);
         // Function does not support file deployment
         appServiceConfigPanelAdvanced.setDeploymentVisible(false);
         insightsConfig = ApplicationInsightsConfig.builder().newCreate(true)
@@ -101,9 +98,9 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
         appServiceConfigPanelAdvanced.getSelectorSubscription().addActionListener(event ->
                 appServiceMonitorPanel.getApplicationInsightsComboBox().setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue()));
 
-        appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
-            final OperatingSystem operatingSystem = Optional.ofNullable(appServiceConfigPanelAdvanced.getSelectorPlatform().getValue())
-                    .map(Platform::getOs).orElse(null);
+        appServiceConfigPanelAdvanced.getSelectorRuntime().addActionListener(event -> {
+            final OperatingSystem operatingSystem = Optional.ofNullable(appServiceConfigPanelAdvanced.getSelectorRuntime().getValue())
+                    .map(Runtime::getOperatingSystem).orElse(null);
             appServiceMonitorPanel.setApplicationLogVisible(operatingSystem == OperatingSystem.WINDOWS);
         });
     }

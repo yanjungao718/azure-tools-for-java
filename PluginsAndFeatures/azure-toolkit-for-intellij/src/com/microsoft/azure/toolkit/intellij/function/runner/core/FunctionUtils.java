@@ -27,19 +27,18 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
-import com.microsoft.azure.toolkit.lib.legacy.function.bindings.Binding;
-import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
-import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.legacy.function.bindings.Binding;
+import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -103,13 +102,11 @@ public class FunctionUtils {
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 
-    public static String getFunctionJavaVersion(FunctionApp functionApp) {
-        if (!WebAppUtils.isJavaWebApp(functionApp)) {
+    public static String getFunctionJavaVersion(IFunctionApp functionApp) {
+        if (functionApp.getRuntime().getJavaVersion() == JavaVersion.OFF) {
             return null;
         }
-        return functionApp.operatingSystem() == OperatingSystem.WINDOWS ?
-               functionApp.javaVersion().toString() :
-               functionApp.linuxFxVersion().split("|")[1];
+        return functionApp.getRuntime().getJavaVersion().getValue();
     }
 
     public static File getTempStagingFolder() {
@@ -164,7 +161,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "common|function.validate_project",
+        name = "function.validate_project",
         params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )

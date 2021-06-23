@@ -5,12 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.azure.core.util.ExpandableStringEnum;
+import com.azure.resourcemanager.mysql.models.ServerVersion;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class VersionComboBox extends AzureComboBox<String> {
 
@@ -21,6 +25,6 @@ public class VersionComboBox extends AzureComboBox<String> {
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends String> loadItems() {
-        return MySQLMvpModel.listSupportedVersions();
+        return Azure.az(AzureMySql.class).listSupportedVersions();
     }
 }

@@ -49,28 +49,21 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
 
     private final SpringCloudApp app;
     private final Project project;
-    private final String appId;
 
     public SpringCloudStreamingLogAction(SpringCloudAppNode springCloudAppNode) {
         super();
         this.project = (Project) springCloudAppNode.getProject();
-        this.appId = springCloudAppNode.getId();
-        final ResourceId appId = ResourceId.fromString(this.appId);
-        final String subscriptionId = appId.subscriptionId();
-        final String clusterName = appId.parent().name();
-        final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).subscription(subscriptionId).cluster(clusterName);
-        this.app = Objects.requireNonNull(cluster, String.format("cluster(%s) not exist", clusterName)).app(appId.name());
+        this.app = springCloudAppNode.getApp();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
-            final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(appId));
+            final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(this.app.id()));
             AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
                 try {
-                    final String deploymentName = this.app.getActiveDeploymentName();
-                    final SpringCloudDeployment deployment = Optional.ofNullable(deploymentName).map(this.app::deployment).orElse(null);
-                    if (deploymentName == null || !deployment.exists()) {
+                    final SpringCloudDeployment deployment = this.app.activeDeployment();
+                    if (deployment == null || !deployment.exists()) {
                         DefaultLoader.getIdeHelper().invokeLater(() ->
                             PluginUtil.displayWarningDialog(FAILED_TO_START_LOG_STREAMING, NO_ACTIVE_DEPLOYMENT));
                         return;
@@ -96,7 +89,7 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
             final SpringCloudStreamingLogDialog dialog = new SpringCloudStreamingLogDialog(project, instances);
             if (dialog.showAndGet()) {
                 final SpringCloudDeploymentInstanceEntity target = dialog.getInstance();
-                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, target.getName());
+                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, app, target.getName());
             }
         });
     }
