@@ -48,7 +48,7 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.server = server;
         this.serverState = server.entity().getState();
         loadActions();
-        AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql|server.start", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
         AzureEventBus.before("mysql|server.start", this::onMySqlServerStatusChanging);
