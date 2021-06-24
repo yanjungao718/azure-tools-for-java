@@ -20,7 +20,7 @@ public class MySQLRegionValidator implements Function<RegionComboBox, AzureValid
     public AzureValidationInfo apply(RegionComboBox comboBox) {
 
         try {
-            if (Azure.az(AzureMySql.class).checkRegionAvailability(comboBox.getValue())) {
+            if (Azure.az(AzureMySql.class).subscription(comboBox.getSubscription().getId()).checkRegionAvailability(comboBox.getValue())) {
                 return AzureValidationInfo.OK;
             }
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
