@@ -229,7 +229,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         AzureMessager.getMessager().info(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION);
         return Mono.fromCallable(() -> {
             functionApp.syncTriggers();
-            return functionApp.listFunctions();
+            return functionApp.listFunctions(true);
         }).retryWhen(Retry.withThrowable(flux ->
                 flux.zipWith(Flux.range(1, LIST_TRIGGERS_MAX_RETRY + 1), (throwable, count) -> {
                     if (count < LIST_TRIGGERS_MAX_RETRY) {
