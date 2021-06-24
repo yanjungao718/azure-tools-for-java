@@ -7,7 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;\
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;

@@ -55,6 +55,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
             this.clear();
             return;
         }
+        // force refresh service plan when switch subscription
+        Azure.az(AzureAppService.class).subscription(subscription.getId()).appServicePlans(true);
         this.refreshItems();
     }
 
@@ -112,7 +114,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
                     .collect(Collectors.toList()));
             }
             final List<AppServicePlanEntity> remotePlans = Azure.az(AzureAppService.class)
-                .subscription(subscription.getId()).appServicePlans().stream().map(IAppServicePlan::entity)
+                .subscription(subscription.getId()).appServicePlans(true).stream().map(IAppServicePlan::entity)
                 .collect(Collectors.toList());
             plans.addAll(remotePlans);
             Stream<AppServicePlanEntity> stream = plans.stream();
