@@ -5,8 +5,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -29,7 +27,7 @@ public class FunctionAppNode extends WebAppBaseNode {
 
     private static final String FUNCTION_LABEL = "Function";
 
-    private IFunctionApp functionApp;
+    private final IFunctionApp functionApp;
 
     public FunctionAppNode(@Nonnull AzureRefreshableNode parent, @Nonnull IFunctionApp functionApp) {
         super(parent, FUNCTION_LABEL, functionApp);
