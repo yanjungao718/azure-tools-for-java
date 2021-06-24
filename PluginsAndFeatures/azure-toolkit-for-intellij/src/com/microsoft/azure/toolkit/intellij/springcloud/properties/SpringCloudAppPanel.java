@@ -155,6 +155,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
 
     public void refresh() {
         Objects.requireNonNull(this.app).refresh();
+        Optional.ofNullable(this.app.activeDeployment()).ifPresent(d -> d.refresh());
         AzureTaskManager.getInstance().runLater(this::updateForm);
     }
 
