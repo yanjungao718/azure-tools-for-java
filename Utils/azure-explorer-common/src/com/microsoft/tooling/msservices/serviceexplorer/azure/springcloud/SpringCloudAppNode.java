@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudDeploymentStatus;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -78,6 +77,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
 
     private String refreshStatus() {
         return Optional.ofNullable(this.app.refresh().activeDeployment())
+                .map(d -> d.refresh())
                 .map(d -> d.entity().getStatus())
                 .orElse(SpringCloudDeploymentStatus.UNKNOWN).getLabel();
     }
