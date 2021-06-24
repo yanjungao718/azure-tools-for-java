@@ -115,7 +115,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     @AzureOperation(name = "webapp.complete_starting.state", type = AzureOperation.Type.ACTION)
     protected void onSuccess(IAppService result, @NotNull RunProcessHandler processHandler) {
         if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, result));
         }
         updateConfigurationDataModel(result);
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
