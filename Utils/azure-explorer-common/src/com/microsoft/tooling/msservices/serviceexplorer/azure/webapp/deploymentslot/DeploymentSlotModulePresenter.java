@@ -12,7 +12,7 @@ public class DeploymentSlotModulePresenter<V extends DeploymentSlotModuleView> e
     public void onRefreshDeploymentSlotModule(final String subscriptionId, final String webAppId) {
         final DeploymentSlotModuleView view = getMvpView();
         if (view != null) {
-            view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(subscriptionId).webapp(webAppId).deploymentSlots());
+            view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getAzureAppServiceClient(subscriptionId).webapp(webAppId).deploymentSlots(true));
         }
     }
 

@@ -29,7 +29,7 @@ public class FunctionsNode extends RefreshableNode {
     @Override
     @AzureOperation(name = "function.refresh", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        functionApp.listFunctions().stream()
+        functionApp.listFunctions(true).stream()
                 .map(envelope -> new FunctionNode(envelope, functionApp, this))
                 .forEach(this::addChildNode);
         setName(CollectionUtils.isEmpty(childNodes) ? NAME + EMPTY_POSTFIX : NAME);
