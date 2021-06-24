@@ -49,6 +49,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -65,6 +66,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
             "because they are non-anonymous. To access the non-anonymous triggers, please refer https://aka.ms/azure-functions-key.";
     private static final String FAILED_TO_LIST_TRIGGERS = "Deployment succeeded, but failed to list http trigger urls.";
     private static final String SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION = "Syncing triggers and fetching function information...";
+    private static final String NO_TRIGGERS_FOUNDED = "No triggers found in deployed function app";
 
     private final FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
@@ -125,7 +127,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     }
 
     private void updateApplicationSettings(IFunctionApp deployTarget) {
-        final Map<String, String> applicationSettings = functionDeployConfiguration.getAppSettings();
+        final Map<String, String> applicationSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionDeployConfiguration.getAppSettingsKey());
         if (MapUtils.isEmpty(applicationSettings)) {
             return;
         }
@@ -241,7 +243,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         AzureMessager.getMessager().info(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION);
         return Mono.fromCallable(() -> {
             functionApp.syncTriggers();
-            return functionApp.listFunctions(true);
+            final List<FunctionEntity> entities = functionApp.listFunctions(true);
+            return Optional.ofNullable(functionApp.listFunctions(true))
+                    .filter(CollectionUtils::isNotEmpty)
+                    .orElseThrow(() -> new AzureToolkitRuntimeException(NO_TRIGGERS_FOUNDED));
         }).retryWhen(Retry.withThrowable(flux ->
                 flux.zipWith(Flux.range(1, LIST_TRIGGERS_MAX_RETRY + 1), (throwable, count) -> {
                     if (count < LIST_TRIGGERS_MAX_RETRY) {
