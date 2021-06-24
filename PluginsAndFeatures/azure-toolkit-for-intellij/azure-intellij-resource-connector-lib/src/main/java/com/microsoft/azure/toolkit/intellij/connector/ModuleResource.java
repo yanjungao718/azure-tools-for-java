@@ -5,10 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import lombok.EqualsAndHashCode;
@@ -18,8 +15,6 @@ import lombok.extern.java.Log;
 import org.jdom.Element;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor
@@ -29,21 +24,10 @@ public final class ModuleResource implements Resource {
     private final String type = Definition.IJ_MODULE.type;
     @EqualsAndHashCode.Include
     private final String moduleName;
-    private Module module;
 
     @Override
     public String getId() {
         return moduleName;
-    }
-
-    public Module getModule() {
-        if (this.module == null) {
-            final Project project = ProjectManager.getInstance().getOpenProjects()[0];
-            this.module = Arrays.stream(ModuleManager.getInstance(project).getModules())
-                    .filter(m -> Objects.equals(m.getName(), moduleName)).findAny()
-                    .orElse(null);
-        }
-        return this.module;
     }
 
     public String toString() {
