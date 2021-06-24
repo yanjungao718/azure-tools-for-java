@@ -33,6 +33,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.RunProcessHandler;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -90,6 +91,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         } else {
             functionApp = Azure.az(AzureAppService.class).subscription(functionDeployConfiguration.getSubscriptionId())
                     .functionApp(functionDeployConfiguration.getFunctionId());
+            updateApplicationSettings(functionApp);
         }
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler, operation);
@@ -120,6 +122,16 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, functionApp));
         processHandler.setText(message("function.create.hint.created", functionDeployConfiguration.getAppName()));
         return functionApp;
+    }
+
+    private void updateApplicationSettings(IFunctionApp deployTarget) {
+        final Map<String, String> applicationSettings = functionDeployConfiguration.getAppSettings();
+        if (MapUtils.isEmpty(applicationSettings)) {
+            return;
+        }
+        AzureMessager.getMessager().info("Updating application settings...");
+        deployTarget.update().withAppSettings(applicationSettings).commit();
+        AzureMessager.getMessager().info("Update application settings successfully.");
     }
 
     @AzureOperation(
