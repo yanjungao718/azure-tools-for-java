@@ -40,6 +40,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         this.appService = appService;
         this.subscriptionId = ResourceId.fromString(appService.id()).subscriptionId();
 
+        renderNode(WebAppBaseState.UPDATING);
         DefaultLoader.getIdeHelper().executeOnPooledThread(() -> refreshItems());
     }
 
