@@ -114,7 +114,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
                     .collect(Collectors.toList()));
             }
             final List<AppServicePlanEntity> remotePlans = Azure.az(AzureAppService.class)
-                .subscription(subscription.getId()).appServicePlans(true).stream().map(IAppServicePlan::entity)
+                .subscription(subscription.getId()).appServicePlans().stream().map(IAppServicePlan::entity)
                 .collect(Collectors.toList());
             plans.addAll(remotePlans);
             Stream<AppServicePlanEntity> stream = plans.stream();
