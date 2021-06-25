@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -44,7 +43,7 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
     )
     protected List<FunctionAppComboBoxModel> loadAppServiceModels() {
         return Azure.az(AzureAppService.class).functionApps().parallelStream()
-                .filter(functionApp -> functionApp.getRuntime().getJavaVersion() != JavaVersion.OFF)
+                .filter(this::isJavaAppService)
                 .map(FunctionAppComboBoxModel::new)
                 .sorted((app1, app2) -> app1.getAppName().compareToIgnoreCase(app2.getAppName()))
                 .collect(Collectors.toList());

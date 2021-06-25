@@ -44,6 +44,7 @@ public class FunctionAppNode extends WebAppBaseNode {
 
     @Override
     protected void refreshItems() {
+        super.refreshItems();
         this.renderSubModules();
     }
 

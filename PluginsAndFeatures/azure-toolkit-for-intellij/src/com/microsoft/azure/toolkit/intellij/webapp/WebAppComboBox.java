@@ -49,10 +49,10 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
     )
     protected List<WebAppComboBoxModel> loadAppServiceModels() {
         final List<IWebApp> webApps = Azure.az(AzureAppService.class).webapps(false);
-        return webApps.stream()
-                      .filter(webApp -> webApp.getRuntime().getJavaVersion() != null && webApp.getRuntime().getJavaVersion() != JavaVersion.OFF)
-                      .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
-                      .map(WebAppComboBoxModel::new)
-                      .collect(Collectors.toList());
+        return webApps.stream().parallel()
+                .filter(this::isJavaAppService)
+                .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+                .map(WebAppComboBoxModel::new)
+                .collect(Collectors.toList());
     }
 }

@@ -10,6 +10,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -19,6 +22,7 @@ import rx.Subscription;
 import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> extends AzureComboBox<T> {
 
@@ -68,6 +72,17 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
                 String.format("(New) %s", selectedItem.getAppName()) : selectedItem.getAppName();
         } else {
             return Objects.toString(item, StringUtils.EMPTY);
+        }
+    }
+
+    protected boolean isJavaAppService(IAppService appService) {
+        try {
+            return Optional.ofNullable(appService.getRuntime()).map(Runtime::getJavaVersion)
+                    .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF))
+                    .orElse(false);
+        } catch (final RuntimeException e) {
+            // app service may have been removed while parsing, return false in this case
+            return false;
         }
     }
 
