@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.54.0](#3540)
   - [3.53.0](#3530)
   - [3.52.0](#3520)
   - [3.51.0](#3510)
@@ -67,6 +68,15 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.54.0
+### Added
+- User would be reminded if deprecated Azure SDK libs are used in project.
+- Development workflow for SQL Server on Azure: user can now connect SQL Server to local project from Azure Explorer, project, module or application.properties file.
+
+### Changed
+- Services are grouped by category in Azure SDK reference book so that user can quickly locate the libs they want.
+- Error messages are unified.
 
 ## 3.53.0
 ### Added
