@@ -45,7 +45,7 @@ public class FunctionModule extends AzureRefreshableNode {
     @AzureOperation(name = "function.reload_all", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         Azure.az(AzureAppService.class).functionApps(true)
-                .stream().parallel().map(functionApp -> new FunctionAppNode(FunctionModule.this, functionApp))
+                .stream().map(functionApp -> new FunctionAppNode(FunctionModule.this, functionApp))
                 .forEach(this::addChildNode);
     }
 
