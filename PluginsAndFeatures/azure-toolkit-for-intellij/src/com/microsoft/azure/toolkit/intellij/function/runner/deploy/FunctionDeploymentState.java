@@ -243,7 +243,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         AzureMessager.getMessager().info(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION);
         return Mono.fromCallable(() -> {
             functionApp.syncTriggers();
-            final List<FunctionEntity> entities = functionApp.listFunctions(true);
             return Optional.ofNullable(functionApp.listFunctions(true))
                     .filter(CollectionUtils::isNotEmpty)
                     .orElseThrow(() -> new AzureToolkitRuntimeException(NO_TRIGGERS_FOUNDED));
