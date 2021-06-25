@@ -81,6 +81,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     @Override
     public void renderChildren(@NotNull final List<IWebApp> resourceExes) {
         resourceExes.stream()
+                .parallel()
                 .filter(webApp -> StringUtils.isNotEmpty(webApp.id()))
                 .map(webApp -> new WebAppNode(this, webApp))
                 .forEach(this::addChildNode);

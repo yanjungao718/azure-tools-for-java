@@ -95,6 +95,7 @@ public class DeploymentSlotNode extends WebAppBaseNode {
     @Override
     @AzureOperation(name = "webapp|deployment.refresh", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
+        super.refreshItems();
         if (slot.exists()) {
             this.renderNode(WebAppBaseState.fromString(slot.state()));
         } else {
