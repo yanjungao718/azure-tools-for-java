@@ -7,12 +7,13 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.List;
@@ -47,11 +48,11 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
         type = AzureOperation.Type.SERVICE
     )
     protected List<WebAppComboBoxModel> loadAppServiceModels() {
-        final List<IWebApp> webApps = AzureWebAppMvpModel.getInstance().listAzureWebApps(false);
-        return webApps.stream()
-                      .filter(webApp -> webApp.getRuntime().getJavaVersion() != null && webApp.getRuntime().getJavaVersion() != JavaVersion.OFF)
-                      .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
-                      .map(WebAppComboBoxModel::new)
-                      .collect(Collectors.toList());
+        final List<IWebApp> webApps = Azure.az(AzureAppService.class).webapps(false);
+        return webApps.stream().parallel()
+                .filter(this::isJavaAppService)
+                .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+                .map(WebAppComboBoxModel::new)
+                .collect(Collectors.toList());
     }
 }

@@ -85,7 +85,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
     @Override
     @AzureOperation(name = "connector|mysql.prepare_before_run", type = AzureOperation.Type.ACTION)
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
-        this.env = this.initEnv();
+        this.env = this.initEnv(configuration.getProject());
         if (configuration instanceof WebAppConfiguration) { // set envs for remote deploy
             final WebAppConfiguration webAppConfiguration = (WebAppConfiguration) configuration;
             webAppConfiguration.setApplicationSettings(this.env);
@@ -116,19 +116,17 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         return null;
     }
 
-    private Map<String, String> initEnv() {
+    private Map<String, String> initEnv(@Nonnull final Project project) {
         final Map<String, String> env = new HashMap<>();
-        final Module module = this.consumer.getModule();
         final DatabaseResource mysql = this.resource;
-        assert module != null : "loading password from unknown module";
         env.put(mysql.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
         env.put(mysql.getEnvPrefix() + "USERNAME", this.resource.getUsername());
-        env.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(mysql).or(() -> inputPassword(module, mysql)).orElse(""));
+        env.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(mysql).or(() -> inputPassword(project, mysql)).orElse(""));
         return env;
     }
 
     private static Optional<String> loadPassword(@Nonnull final DatabaseResource resource) {
-        if (Optional.ofNullable(resource.getPassword()).map(Password::saveType).get() == Password.SaveType.NEVER) {
+        if (Objects.nonNull(resource.getPassword()) && resource.getPassword().saveType() == Password.SaveType.NEVER) {
             return Optional.empty();
         }
         final String saved = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.getPassword().saveType());
@@ -143,11 +141,11 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
     }
 
     @Nonnull
-    private static Optional<String> inputPassword(@Nonnull final Module module, @Nonnull final DatabaseResource resource) {
+    private static Optional<String> inputPassword(@Nonnull final Project project, @Nonnull final DatabaseResource resource) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
         final IAzureOperationTitle title = AzureOperationBundle.title("mysql.update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
-            final PasswordDialog dialog = new PasswordDialog(module.getProject(), resource);
+            final PasswordDialog dialog = new PasswordDialog(project, resource);
             if (dialog.showAndGet()) {
                 final Password password = dialog.getData();
                 resource.getPassword().saveType(password.saveType());

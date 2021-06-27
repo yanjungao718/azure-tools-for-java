@@ -50,7 +50,9 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
 
     @Override
     protected void refreshItems() {
-        this.renderChildren(Azure.az(AzureMySql.class).list());
+        final List<MySqlServer> server = Azure.az(AzureMySql.class).list();
+        this.removeAllChildNodes();
+        this.renderChildren(server);
     }
 
     @Override

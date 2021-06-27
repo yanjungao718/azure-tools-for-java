@@ -25,26 +25,18 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.53.0</h3>
+        <h3>3.54.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>Management workflow for Azure SQL Server</li>
-        
-            <li>New login ui for service principal authentication</li>
+            <li>User would be reminded if deprecated Azure SDK libs are used in project.</li>
+            <li>Development workflow for SQL Server on Azure: user can now connect SQL Server to local project from Azure Explorer, project, module or application.properties file.</li>
         </ul>
-        <h4>Changed</h4>
+        <h4>Updated</h4>
         <ul>
-            <li>Deprecated file based service principal authentication</li>
+            <li>Services are grouped by category in Azure SDK reference book so that user can quickly locate the libs they want.</li>
+            <li>Error messages are unified.</li>
         </ul>
-        <h4>Fixed</h4>
-        <ul>
-            <li>
-                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5228">PR #5228</a>
-                Fix OAuth/Device login could not be cancelled
-            </li>
-        </ul>
-    <p>You may get the full change log <a
-            href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
+        <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
   </change-notes>

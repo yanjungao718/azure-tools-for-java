@@ -1,6 +1,15 @@
 <!-- Version: 3.51.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.54.0
+### Added
+- User would be reminded if deprecated Azure SDK libs are used in project.
+- Development workflow for SQL Server on Azure: user can now connect SQL Server to local project from Azure Explorer, project, module or application.properties file.
+
+### Changed
+- Services are grouped by category in Azure SDK reference book so that user can quickly locate the libs they want.
+- Error messages are unified.
+
 ## 3.53.0
 ### Added
 - Management workflow for Azure SQL Server

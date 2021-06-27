@@ -59,6 +59,7 @@ public class WebAppNode extends WebAppBaseNode {
     @Override
     @AzureOperation(name = "webapp.refresh", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
+        super.refreshItems();
         this.renderSubModules();
     }
 

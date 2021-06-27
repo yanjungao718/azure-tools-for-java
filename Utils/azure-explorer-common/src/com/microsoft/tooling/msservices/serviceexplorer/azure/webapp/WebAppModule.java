@@ -9,12 +9,9 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -68,12 +65,12 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                 if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN || event.opsType == AzureUIRefreshEvent
                         .EventType.SIGNOUT) {
                     removeAllChildNodes();
-                } else if (event.object == null && (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event
+                } else if (event.object instanceof IWebApp && (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event
                         .opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
                     if (hasChildNodes()) {
                         load(true);
                     }
-                } else if (event.object == null && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
+                } else if (event.object instanceof IWebApp && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
                     load(true);
                 }
             }
@@ -88,4 +85,5 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                 .map(webApp -> new WebAppNode(this, webApp))
                 .forEach(this::addChildNode);
     }
+
 }

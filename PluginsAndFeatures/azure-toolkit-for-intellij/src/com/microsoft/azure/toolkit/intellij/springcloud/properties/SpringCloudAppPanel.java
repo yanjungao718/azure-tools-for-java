@@ -155,6 +155,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
 
     public void refresh() {
         Objects.requireNonNull(this.app).refresh();
+        Optional.ofNullable(this.app.activeDeployment()).ifPresent(d -> d.refresh());
         AzureTaskManager.getInstance().runLater(this::updateForm);
     }
 
@@ -173,7 +174,9 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
     private void updateForm() {
         assert Objects.nonNull(app): "app is not specified";
         final String testUrl = app.entity().getTestUrl();
-        this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
+        if (testUrl != null) {
+            this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
+        }
         this.txtTestEndpoint.setHyperlinkTarget(testUrl);
 
         final SpringCloudSku sku = app.getCluster().entity().getSku();

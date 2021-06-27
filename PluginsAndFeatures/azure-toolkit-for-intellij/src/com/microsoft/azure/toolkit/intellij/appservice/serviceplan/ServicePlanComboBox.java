@@ -55,6 +55,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
             this.clear();
             return;
         }
+        // force refresh service plan when switch subscription
+        Azure.az(AzureAppService.class).subscription(subscription.getId()).appServicePlans(true);
         this.refreshItems();
     }
 

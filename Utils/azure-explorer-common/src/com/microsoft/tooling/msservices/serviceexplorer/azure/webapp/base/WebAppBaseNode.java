@@ -10,6 +10,8 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -38,13 +40,21 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         this.appService = appService;
         this.subscriptionId = ResourceId.fromString(appService.id()).subscriptionId();
 
-        renderNode(WebAppBaseState.fromString(appService.state()));
+        renderNode(WebAppBaseState.UPDATING);
+        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> refreshItems());
     }
 
     protected String getAppServiceIconPath(final WebAppBaseState state) {
         final String os = appService.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS ? "windows" : "linux";
         return StringUtils.capitalize(os.toLowerCase())
                 + label + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
+    }
+
+    @Override
+    protected void refreshItems() {
+        renderNode(WebAppBaseState.UPDATING);
+        appService.refresh();
+        renderNode(WebAppBaseState.fromString(appService.state()));
     }
 
     @Override
@@ -58,11 +68,14 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     }
 
     public void renderNode(@Nonnull WebAppBaseState state) {
+        this.state = state;
         switch (state) {
             case RUNNING:
             case STOPPED:
-                this.state = state;
                 this.setIconPath(getAppServiceIconPath(state));
+                break;
+            case UPDATING:
+                this.setIconPath(AzureIconSymbol.Common.REFRESH.getPath());
                 break;
             default:
                 break;

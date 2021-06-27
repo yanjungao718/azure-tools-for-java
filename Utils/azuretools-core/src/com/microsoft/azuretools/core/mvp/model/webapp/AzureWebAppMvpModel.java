@@ -19,8 +19,6 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -30,11 +28,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 // todo: Refactor to tasks in app service library
 @Deprecated
@@ -126,31 +120,6 @@ public class AzureWebAppMvpModel {
         // status-free restart.
         app.restart();
         return app;
-    }
-
-    /**
-     * List all the Web Apps in selected subscriptions.
-     * todo: move to app service library
-     */
-    @AzureOperation(
-            name = "webapp.list.subscription|selected",
-            type = AzureOperation.Type.SERVICE
-    )
-    public List<IWebApp> listAzureWebApps(final boolean force) {
-        return az(AzureAccount.class).account().getSelectedSubscriptions().stream()
-                .flatMap(sub -> listAzureWebAppsBySubscription(sub.getId(), force).stream())
-                .collect(Collectors.toList());
-    }
-
-    @NotNull
-    @AzureOperation(
-            name = "webapp.list.subscription",
-            params = {"subscriptionId"},
-            type = AzureOperation.Type.SERVICE
-    )
-    @Cacheable(cacheName = "subscription-webapps-track2", key = "$subscriptionId", condition = "!(force&&force[0])")
-    public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean... force) {
-        return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId).webapps();
     }
 
     /**
