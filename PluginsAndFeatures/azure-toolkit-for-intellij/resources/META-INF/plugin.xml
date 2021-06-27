@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.53.0</version>
+  <version>3.54.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,33 +25,24 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.53.0</h3>
+        <h3>3.54.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>Management workflow for Azure SQL Server</li>
-        
-            <li>New login ui for service principal authentication</li>
+            <li>User would be reminded if deprecated Azure SDK libs are used in project.</li>
+            <li>Development workflow for SQL Server on Azure: user can now connect SQL Server to local project from Azure Explorer, project, module or application.properties file.</li>
         </ul>
-        <h4>Changed</h4>
+        <h4>Updated</h4>
         <ul>
-            <li>Deprecated file based service principal authentication</li>
+            <li>Services are grouped by category in Azure SDK reference book so that user can quickly locate the libs they want.</li>
+            <li>Error messages are unified.</li>
         </ul>
-        <h4>Fixed</h4>
-        <ul>
-            <li>
-                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5228">PR #5228</a>
-                Fix OAuth/Device login could not be cancelled
-            </li>
-        </ul>
-    <p>You may get the full change log <a
-            href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
+        <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
   </change-notes>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
   <idea-version since-build="202.6397.94" until-build="202.*"/>
-  <resource-bundle>com.microsoft.azure.toolkit.operation.titles</resource-bundle>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true" config-file="">org.intellij.scala</depends>
@@ -61,6 +52,7 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
+  <xi:include href="/META-INF/operation-titles.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-resource-connector-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
@@ -165,8 +157,10 @@
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
     <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResourceConnectionStartupActivity"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceCompletionContributor"/>
-    <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceLineMarkerProvider"/>
+    <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.sql.SQLDatabaseResourceConnectionStartupActivity"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLSpringDatasourceCompletionContributor"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.sql.SQLSpringDatasourceCompletionContributor"/>
+    <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceLineMarkerProvider"/>
   </extensions>
 
   <applicationListeners>
@@ -332,7 +326,7 @@
            class="com.intellij.openapi.actionSystem.DefaultActionGroup"
            text="Azure"
            description="Contains Azure tools plugin actions"
-           icon="/icons/azure.png"
+           icon="/icons/Common/Azure.svg"
            popup="true">
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <reference ref="AzureToolkit.SelectSubscriptions"/>

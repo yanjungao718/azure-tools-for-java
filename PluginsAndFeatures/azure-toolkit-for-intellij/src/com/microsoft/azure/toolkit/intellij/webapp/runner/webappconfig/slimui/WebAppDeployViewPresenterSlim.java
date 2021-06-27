@@ -25,7 +25,7 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
             return;
         }
         unsubscribeSubscription(loadSlotsSubscription);
-        loadSlotsSubscription = Observable.fromCallable(() -> Azure.az(AzureAppService.class).webapp(selectedWebApp.getResourceId()).deploymentSlots())
+        loadSlotsSubscription = Observable.fromCallable(() -> Azure.az(AzureAppService.class).webapp(selectedWebApp.getResourceId()).deploymentSlots(true))
                   .subscribeOn(getSchedulerProvider().io())
                   .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                       if (slots == null || isViewDetached()) {

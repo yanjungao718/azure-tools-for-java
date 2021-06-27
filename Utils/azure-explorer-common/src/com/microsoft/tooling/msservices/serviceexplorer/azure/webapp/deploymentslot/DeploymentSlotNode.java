@@ -8,6 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 import com.azure.resourcemanager.AzureResourceManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -24,7 +25,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 
 import java.util.List;
 
-public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlotNodeView {
+public class DeploymentSlotNode extends WebAppBaseNode {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";
     private static final String LABEL = "Slot";
 
@@ -32,8 +33,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     private final IWebAppDeploymentSlot slot;
 
     public DeploymentSlotNode(final IWebAppDeploymentSlot deploymentSlot, final DeploymentSlotModule parent) {
-        super(deploymentSlot.id(), deploymentSlot.name(), LABEL, parent, parent.subscriptionId, deploymentSlot.hostName(),
-                deploymentSlot.getRuntime().getOperatingSystem().toString(), deploymentSlot.state());
+        super(parent, LABEL, deploymentSlot);
         this.webApp = deploymentSlot.webApp();
         this.slot = deploymentSlot;
         loadActions();
@@ -41,7 +41,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean isLinux = OS_LINUX.equalsIgnoreCase(os);
+        boolean isLinux = slot.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
         boolean running = WebAppBaseState.RUNNING.equals(state);
         boolean updating = WebAppBaseState.UPDATING.equals(state);
         if (isLinux) {
@@ -93,8 +93,9 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     @Override
-    @AzureOperation(name = "webapp|deployment.refresh", params = {"this.slotName", "this.webAppName"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.refresh", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
+        super.refreshItems();
         if (slot.exists()) {
             this.renderNode(WebAppBaseState.fromString(slot.state()));
         } else {
@@ -102,42 +103,42 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         }
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.start", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         slot.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.stop", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         slot.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.restart", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         slot.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.delete", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getName(), DeploymentSlotNode.this);
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.swap", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void swap() {
         // todo: add swap method to app service library
         final AzureResourceManager resourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
         resourceManager.webApps().getById(webApp.id()).swap(slot.name());
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.open_browser", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + slot.hostName());
     }
 
-    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.show_properties", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
     }

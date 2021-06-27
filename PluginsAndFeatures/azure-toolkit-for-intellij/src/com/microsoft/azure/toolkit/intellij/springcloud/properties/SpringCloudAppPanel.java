@@ -11,6 +11,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -42,7 +43,6 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
 import java.util.Arrays;
@@ -123,9 +123,9 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         tableInstances.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableInstances.getEmptyText().setText("Loading instances");
 
-        this.txtStorage.setBorder(new EmptyBorder(0, 2, 0, 2));
-        this.useJava8.addChangeListener((e) -> debouncer.debounce());
-        this.useJava11.addChangeListener((e) -> debouncer.debounce());
+        this.txtStorage.setBorder(JBUI.Borders.empty(0, 2));
+        this.useJava8.addActionListener((e) -> debouncer.debounce());
+        this.useJava11.addActionListener((e) -> debouncer.debounce());
         this.txtJvmOptions.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(DocumentEvent documentEvent) {
@@ -155,6 +155,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
 
     public void refresh() {
         Objects.requireNonNull(this.app).refresh();
+        Optional.ofNullable(this.app.activeDeployment()).ifPresent(d -> d.refresh());
         AzureTaskManager.getInstance().runLater(this::updateForm);
     }
 
@@ -173,7 +174,9 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
     private void updateForm() {
         assert Objects.nonNull(app): "app is not specified";
         final String testUrl = app.entity().getTestUrl();
-        this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
+        if (testUrl != null) {
+            this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
+        }
         this.txtTestEndpoint.setHyperlinkTarget(testUrl);
 
         final SpringCloudSku sku = app.getCluster().entity().getSku();
@@ -188,6 +191,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
         this.numInstance.setMinimum(0);
+        this.numInstance.updateLabels();
         final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment()).stream().findAny()
             .or(() -> app.deployments().stream().findAny())
             .map(SpringCloudDeployment::entity)

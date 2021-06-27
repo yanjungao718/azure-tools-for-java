@@ -10,6 +10,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +22,7 @@ import rx.Subscription;
 import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> extends AzureComboBox<T> {
 
@@ -29,7 +34,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
     public AppServiceComboBox(final Project project) {
         super(false);
         this.project = project;
-        this.setRenderer(new AppCombineBoxRender(this));
+        this.setRenderer(new AppComboBoxRender());
     }
 
     public void setConfigModel(T configModel) {
@@ -70,14 +75,20 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         }
     }
 
+    protected boolean isJavaAppService(IAppService appService) {
+        try {
+            return Optional.ofNullable(appService.getRuntime()).map(Runtime::getJavaVersion)
+                    .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF))
+                    .orElse(false);
+        } catch (final RuntimeException e) {
+            // app service may have been removed while parsing, return false in this case
+            return false;
+        }
+    }
+
     protected abstract void createResource();
 
-    public class AppCombineBoxRender extends SimpleListCellRenderer {
-        private final JComboBox comboBox;
-
-        public AppCombineBoxRender(JComboBox comboBox) {
-            this.comboBox = comboBox;
-        }
+    public static class AppComboBoxRender extends SimpleListCellRenderer {
 
         @Override
         public void customize(JList list, Object value, int index, boolean b, boolean b1) {
@@ -94,7 +105,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         private String getAppServiceLabel(AppServiceComboBoxModel appServiceModel) {
             final String appServiceName = appServiceModel.isNewCreateResource() ?
                 String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
-            final String runtime = appServiceModel.getRuntime();
+            final String runtime = WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
             final String resourceGroup = appServiceModel.getResourceGroup();
 
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",

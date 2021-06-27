@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.53.0</version>
+        <version>3.54.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -266,10 +266,6 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
-            <artifactId>azure-mgmt-appplatform</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>

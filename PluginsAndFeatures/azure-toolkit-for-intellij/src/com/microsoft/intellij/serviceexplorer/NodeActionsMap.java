@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.intellij.connector.sql.ConnectToSQLAction;
 import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
@@ -127,7 +128,7 @@ public class NodeActionsMap {
                 .add(OpenMySQLByToolsAction.class).add(ConnectToMySQLAction.class).build());
 
         node2Actions.put(SqlServerNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(OpenSqlServerByToolsAction.class).build());
+                .add(OpenSqlServerByToolsAction.class).add(ConnectToSQLAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)

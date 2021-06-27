@@ -20,6 +20,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -48,6 +50,10 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     private final String dialogTitle = "Azure Resource Connector";
     private C consumer;
     private R resource;
+    @Setter
+    private String resourceType;
+    @Setter
+    private String consumerType;
 
     public ConnectorDialog(Project project) {
         super(project);
@@ -55,19 +61,16 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
         this.init();
     }
 
+    @Override
     protected void init() {
         super.init();
         this.setOkActionListener(this::saveConnection);
         this.consumerTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         this.resourceTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         final var consumerDefinitions = ResourceManager.getDefinitions(ResourceDefinition.CONSUMER);
-        final var resourceDefinitions = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE);
         if (consumerDefinitions.size() == 1) {
             this.fixConsumerType(consumerDefinitions.get(0));
         }
-        // if (resourceDefinitions.size() == 1) {
-        //     this.setResourceType(resourceDefinitions.get(0));
-        // }
     }
 
     protected void onResourceOrConsumerTypeChanged(ItemEvent e) {
@@ -83,21 +86,10 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
                     return;
                 }
             }
-            final GridConstraints constraints = new GridConstraints();
-            constraints.setFill(GridConstraints.FILL_HORIZONTAL);
-            constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
-            constraints.setUseParentLayout(true);
-            final ResourceDefinition<? extends Resource> definition = (ResourceDefinition<? extends Resource>) e.getItem();
             if (Objects.equals(e.getSource(), this.consumerTypeSelector)) {
-                this.consumerPanel = (AzureFormJPanel<C>) consumerDefinition.getResourcesPanel(consumerDefinition.getType(), this.project);
-                Optional.ofNullable(this.consumer).ifPresent(c -> this.consumerPanel.setData(c));
-                this.consumerPanelContainer.removeAll();
-                this.consumerPanelContainer.add(this.consumerPanel.getContentPanel(), constraints);
+                this.consumerPanel = this.updatePanel(this.consumerTypeSelector.getValue(), this.consumerPanelContainer, this.consumer);
             } else {
-                this.resourcePanel = (AzureFormJPanel<R>) resourceDefinition.getResourcesPanel(resourceDefinition.getType(), this.project);
-                Optional.ofNullable(this.resource).ifPresent(c -> this.resourcePanel.setData(c));
-                this.resourcePanelContainer.removeAll();
-                this.resourcePanelContainer.add(this.resourcePanel.getContentPanel(), constraints);
+                this.resourcePanel = this.updatePanel(this.resourceTypeSelector.getValue(), this.resourcePanelContainer, this.resource);
             }
         }
         this.contentPane.revalidate();
@@ -160,6 +152,23 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
         return inputs;
     }
 
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public void show() {
+        // initialize resource panel
+        final String resourceTypeTemp = ObjectUtils.firstNonNull(Optional.ofNullable(this.resource).map(Resource::getType).orElse(null), this.resourceType,
+                ResourceManager.getDefinitions(ResourceDefinition.RESOURCE).stream().map(ResourceDefinition::getType).findFirst().orElse(null));
+        Optional.ofNullable(ResourceManager.getDefinition(resourceTypeTemp))
+                .ifPresent(definition -> this.resourcePanel = this.updatePanel(definition, this.resourcePanelContainer, this.resource));
+        // initialize consumer panel
+        final String consumerTypeTemp = ObjectUtils.firstNonNull(Optional.ofNullable(this.consumer).map(Resource::getType).orElse(null), this.consumerType,
+                ResourceManager.getDefinitions(ResourceDefinition.CONSUMER).stream().map(ResourceDefinition::getType).findFirst().orElse(null));
+        Optional.ofNullable(ResourceManager.getDefinition(consumerTypeTemp))
+                .ifPresent(definition -> this.consumerPanel = this.updatePanel(definition, this.consumerPanelContainer, this.consumer));
+        // call original super method
+        super.show();
+    }
+
     public void setResource(final R resource) {
         this.resource = resource;
         this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
@@ -168,6 +177,18 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     public void setConsumer(final C consumer) {
         this.consumer = consumer;
         this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
+    }
+
+    private AzureFormJPanel updatePanel(ResourceDefinition<? extends Resource> definition, JPanel resourcePanelContainer, Resource resource) {
+        final GridConstraints constraints = new GridConstraints();
+        constraints.setFill(GridConstraints.FILL_BOTH);
+        constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
+        constraints.setUseParentLayout(true);
+        AzureFormJPanel resourcePanel = definition.getResourcesPanel(definition.getType(), this.project);
+        Optional.ofNullable(resource).ifPresent(resourcePanel::setData);
+        resourcePanelContainer.removeAll();
+        resourcePanelContainer.add(resourcePanel.getContentPanel(), constraints);
+        return resourcePanel;
     }
 
     private void fixResourceType(ResourceDefinition<? extends Resource> definition) {

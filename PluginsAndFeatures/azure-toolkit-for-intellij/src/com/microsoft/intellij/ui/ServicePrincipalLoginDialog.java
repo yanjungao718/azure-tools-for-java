@@ -25,6 +25,7 @@ import com.intellij.ui.EditorCustomization;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.EditorTextFieldProvider;
 import com.intellij.ui.SoftWrapsEditorCustomization;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
@@ -90,8 +91,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         init();
         super.setOKButtonText("Sign In");
 
-        pasteFromClipboard();
-        uiTextComponents2Json();
+        initJsonData();
 
         // initialize cert file select
         FileChooserDescriptor pem = FileChooserDescriptorFactory.createSingleFileDescriptor("pem");
@@ -221,13 +221,15 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         return Collections.emptyList();
     }
 
-    private void pasteFromClipboard() {
+    private void initJsonData() {
         String textFromClip = findTextInClipboard(str ->
-            StringUtils.contains(str, "appId") && StringUtils.contains(str, "tenant") && StringUtils.contains(str, "password")
+            StringUtils.contains(str, "appId") && StringUtils.contains(str, "tenant") &&
+                (StringUtils.contains(str, "password") || StringUtils.contains(str, "fileWithCertAndPrivateKey"))
         );
         if (StringUtils.isNotBlank(textFromClip)) {
             json2UIComponents(textFromClip);
         }
+        uiTextComponents2Json();
     }
 
     @javax.annotation.Nullable
@@ -279,7 +281,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         try {
             Map<String, String> map = JsonUtils.fromJson(json, HashMap.class);
             if (map != null) {
-                ApplicationManager.getApplication().invokeLater(() -> {
+                UIUtil.invokeLaterIfNeeded(() -> {
                     intermediateState = true;
                     try {
                         if (map.containsKey("appId")) {

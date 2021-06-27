@@ -5,6 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 
@@ -15,7 +17,7 @@ public class WebAppModulePresenter<V extends WebAppModuleView> extends MvpPresen
     public void onModuleRefresh() {
         final WebAppModuleView view = getMvpView();
         if (view != null) {
-            view.renderChildren(AzureWebAppMvpModel.getInstance().listAzureWebApps(true));
+            view.renderChildren(Azure.az(AzureAppService.class).webapps(true));
         }
     }
 

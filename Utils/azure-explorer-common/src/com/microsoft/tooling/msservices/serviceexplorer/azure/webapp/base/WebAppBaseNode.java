@@ -5,49 +5,56 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class WebAppBaseNode extends RefreshableNode implements TelemetryProperties, WebAppBaseNodeView {
+public abstract class WebAppBaseNode extends RefreshableNode implements TelemetryProperties {
     protected static final String ACTION_START = "Start";
     protected static final String ACTION_STOP = "Stop";
-    protected static final String ACTION_DELETE = "Delete";
     protected static final String ACTION_RESTART = "Restart";
-    protected static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
-    protected static final String ACTION_SHOW_PROPERTY = "Show Properties";
     protected static final String ICON_RUNNING_POSTFIX = "Running_16.png";
     protected static final String ICON_STOPPED_POSTFIX = "Stopped_16.png";
-    protected static final String OS_LINUX = "Linux";
 
-    protected final String subscriptionId;
-    protected final String hostName;
-    protected final String os;
     protected final String label;
+    protected final String subscriptionId;
+    protected final IAppService appService;
     protected WebAppBaseState state;
 
-    // todo: refactor constructor after function track2 migration
-    public WebAppBaseNode(final String id, final String name, final String label, final AzureRefreshableNode parent,
-                          final String subscriptionId, final String hostName, final String os, final String state) {
-        super(id, name, parent, getIcon(os, label, WebAppBaseState.fromString(state)), true);
-        this.state = WebAppBaseState.fromString(state);
+    public WebAppBaseNode(final AzureRefreshableNode parent, final String label, final IAppService appService) {
+        super(appService.id(), appService.name(), parent, true);
         this.label = label;
-        this.subscriptionId = subscriptionId;
-        this.os = StringUtils.capitalize(os.toLowerCase());
-        this.hostName = hostName;
+        this.appService = appService;
+        this.subscriptionId = ResourceId.fromString(appService.id()).subscriptionId();
+
+        renderNode(WebAppBaseState.UPDATING);
+        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> refreshItems());
     }
 
-    protected static String getIcon(final String os, final String label, final WebAppBaseState state) {
+    protected String getAppServiceIconPath(final WebAppBaseState state) {
+        final String os = appService.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS ? "windows" : "linux";
         return StringUtils.capitalize(os.toLowerCase())
-            + label + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
+                + label + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
+    }
+
+    @Override
+    protected void refreshItems() {
+        renderNode(WebAppBaseState.UPDATING);
+        appService.refresh();
+        renderNode(WebAppBaseState.fromString(appService.state()));
     }
 
     @Override
@@ -60,16 +67,15 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         return super.getNodeActions();
     }
 
-    @Override
-    public void renderNode(@NotNull WebAppBaseState state) {
+    public void renderNode(@Nonnull WebAppBaseState state) {
+        this.state = state;
         switch (state) {
             case RUNNING:
-                this.state = state;
-                this.setIconPath(getIcon(this.os, this.label, WebAppBaseState.RUNNING));
-                break;
             case STOPPED:
-                this.state = state;
-                this.setIconPath(getIcon(this.os, this.label, WebAppBaseState.STOPPED));
+                this.setIconPath(getAppServiceIconPath(state));
+                break;
+            case UPDATING:
+                this.setIconPath(AzureIconSymbol.Common.REFRESH.getPath());
                 break;
             default:
                 break;
@@ -86,9 +92,5 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
 
     public String getSubscriptionId() {
         return this.subscriptionId;
-    }
-
-    public String getOs() {
-        return this.os;
     }
 }

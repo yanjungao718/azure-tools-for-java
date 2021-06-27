@@ -10,11 +10,11 @@ import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.*;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import javax.swing.*;
-import java.util.Arrays;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -53,7 +53,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project, FunctionAppConfig::getFunctionAppDefaultConfig) {
+        basicPanel = new AppServiceInfoBasicPanel<>(project, FunctionAppConfig::getFunctionAppDefaultConfig) {
             @Override
             public FunctionAppConfig getData() {
                 // Create AI instance with same name by default
@@ -64,7 +64,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
                 return config;
             }
         };
-        basicPanel.getSelectorPlatform().setPlatformList(Arrays.asList(Platform.AzureFunction.values()));
+        basicPanel.getSelectorRuntime().setPlatformList(Runtime.FUNCTION_APP_RUNTIME);
         advancePanel = new FunctionAppConfigFormPanelAdvance(project);
     }
 }

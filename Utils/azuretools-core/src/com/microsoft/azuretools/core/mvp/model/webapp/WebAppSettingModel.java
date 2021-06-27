@@ -5,10 +5,10 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.LogLevel;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.azure.resourcemanager.appservice.models.JavaVersion;
+import com.azure.resourcemanager.appservice.models.LogLevel;
+import com.azure.resourcemanager.appservice.models.OperatingSystem;
+import com.azure.resourcemanager.appservice.models.RuntimeStack;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;

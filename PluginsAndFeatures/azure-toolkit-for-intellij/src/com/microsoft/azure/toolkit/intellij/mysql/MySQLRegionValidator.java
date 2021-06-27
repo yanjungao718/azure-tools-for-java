@@ -5,16 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
-import com.azure.core.management.exception.ManagementException;
-import com.microsoft.azure.CloudException;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import org.apache.commons.collections4.CollectionUtils;
+import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 
-import java.util.List;
 import java.util.function.Function;
 
 public class MySQLRegionValidator implements Function<RegionComboBox, AzureValidationInfo> {
@@ -23,16 +18,15 @@ public class MySQLRegionValidator implements Function<RegionComboBox, AzureValid
 
     @Override
     public AzureValidationInfo apply(RegionComboBox comboBox) {
-        MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(comboBox.getSubscription().getId());
+
         try {
-            List<PerformanceTierPropertiesInner> tiers = manager.locationBasedPerformanceTiers().inner().list(comboBox.getValue().getName());
-            if (tiers.stream().anyMatch(e -> CollectionUtils.isNotEmpty(e.serviceLevelObjectives()))) {
+            if (Azure.az(AzureMySql.class).subscription(comboBox.getSubscription().getId()).checkRegionAvailability(comboBox.getValue())) {
                 return AzureValidationInfo.OK;
             }
-        } catch (CloudException e) {
+            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+        } catch (RuntimeException e) {
             return AzureValidationInfo.builder().input(comboBox).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
-        final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-        return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
     }
 }

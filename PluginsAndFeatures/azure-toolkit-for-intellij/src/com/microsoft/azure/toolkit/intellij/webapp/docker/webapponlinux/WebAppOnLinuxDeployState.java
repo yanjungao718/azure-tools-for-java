@@ -123,12 +123,9 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> 
         type = AzureOperation.Type.TASK
     )
     protected void onSuccess(IAppService result, @NotNull RunProcessHandler processHandler) {
-        processHandler.setText("Updating cache ... ");
-        AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
-        processHandler.setText("Job done");
         processHandler.notifyComplete();
         if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, result));
         }
     }
 

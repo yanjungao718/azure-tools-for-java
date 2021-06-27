@@ -35,15 +35,13 @@ import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
 import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
 import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider;
-import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView;
+import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
@@ -103,7 +101,6 @@ import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 
 
 public class UIHelperImpl implements UIHelper {
@@ -429,7 +426,7 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         final String id = node.getApp().entity().getId();
-        final String subscription = getSubscriptionId(id);
+        final String subscription = node.getApp().entity().getSubscriptionId();
         final String appName = node.getApp().name();
         final LightVirtualFile existing = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
         final LightVirtualFile itemVirtualFile = Objects.isNull(existing) ? createVirtualFile(appName, subscription, id) : existing;
@@ -585,7 +582,7 @@ public class UIHelperImpl implements UIHelper {
     public void openMySQLPropertyView(@NotNull MySQLNode node) {
         EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
             String name = node.getName();
-            String subscriptionId = node.getSubscriptionId();
+            String subscriptionId = node.getServer().entity().getSubscriptionId();
             String nodeId = node.getId();
             final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
             if (fileEditorManager == null) {
@@ -599,7 +596,7 @@ public class UIHelperImpl implements UIHelper {
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
                 if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
-                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().resourceGroupName(), node.getServer().name());
+                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().entity().getResourceGroup(), node.getServer().name());
                 }
             }
         });

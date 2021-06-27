@@ -14,13 +14,13 @@ import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerDatabaseCo
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.database.DatabaseTemplateUtils;
+import com.microsoft.azure.toolkit.lib.common.database.FirewallRuleEntity;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
-import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlFirewallRuleEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
@@ -65,7 +65,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private SqlServerDatabaseComboBox databaseComboBox;
     private JLabel databaseLabel;
 
-    private SqlServerProperty property = new SqlServerProperty();
+    private final SqlServerProperty property = new SqlServerProperty();
 
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
@@ -91,7 +91,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         String realHostname = StringUtils.isNotBlank(hostname) ? hostname : "${your_hostname}";
         String realDatabase = StringUtils.isNotBlank(database) ? database : "${your_database}";
         String realUsername = StringUtils.isNotBlank(username) ? username : "${your_username}";
-        return JdbcUrl.sqlserver(realHostname, realDatabase).setUsername(username).setPassword("${your_password}");
+        return JdbcUrl.sqlserver(realHostname, realDatabase).setUsername(realUsername).setPassword("${your_password}");
     }
 
     private void init() {
@@ -115,7 +115,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
         if (itemEvent.getStateChange() == ItemEvent.SELECTED || itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-            Boolean changed = SqlServerPropertyView.this.changed();
+            boolean changed = SqlServerPropertyView.this.changed();
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             SqlServerPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
         }
@@ -161,7 +161,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
-            Boolean changed = SqlServerPropertyView.this.changed();
+            boolean changed = SqlServerPropertyView.this.changed();
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             SqlServerPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
             final Map<String, String> properties = new HashMap<>();
@@ -171,7 +171,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
             EventUtil.logEvent(EventType.info, ActionConstants.parse(ActionConstants.MySQL.SAVE).getServiceName(),
                                ActionConstants.parse(ActionConstants.MySQL.SAVE).getOperationName(), properties);
         };
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, String.format("%s...", actionName), false, runnable));
     }
 
     private void onDiscardButtonClicked(ActionEvent e) {
@@ -223,7 +223,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         };
         // show property in background
         String taskTitle = Node.getProgressMessage(actionName, MySQLModule.MODULE_NAME, name);
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, taskTitle, false, runnable));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, taskTitle, false, runnable));
     }
 
     private void refreshProperty(String sid, String resourceGroup, String name) {
@@ -239,7 +239,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         SqlServerEntity entity = property.getServer().entity();
         if ("Ready".equals(entity.getState())) {
             // find firewalls
-            List<SqlFirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
+            List<FirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
             this.property.setFirewallRules(firewallRules);
         }
     }
@@ -262,12 +262,12 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         overview.getServerAdminLoginNameTextField().setCaretPosition(0);
         overview.getVersionTextField().setText(entity.getVersion());
         if ("Ready".equals(entity.getState())) {
-            List<SqlFirewallRuleEntity> firewallRules = property.getFirewallRules();
+            List<FirewallRuleEntity> firewallRules = property.getFirewallRules();
             originalAllowAccessToAzureServices = firewallRules.stream()
-                .filter(e -> SqlFirewallRuleEntity.ACCESS_FROM_AZURE_SERVICES_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
+                    .anyMatch(e -> FirewallRuleEntity.ACCESS_FROM_AZURE_SERVICES_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName()));
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
             originalAllowAccessToLocal = firewallRules.stream()
-                .filter(e -> SqlFirewallRuleEntity.ACCESS_FROM_LOCAL_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName())).count() > 0L;
+                    .anyMatch(e -> StringUtils.equalsIgnoreCase(FirewallRuleEntity.getAccessFromLocalFirewallRuleName(), e.getName()));
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();

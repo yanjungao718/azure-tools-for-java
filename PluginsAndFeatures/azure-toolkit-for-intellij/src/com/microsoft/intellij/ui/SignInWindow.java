@@ -7,12 +7,12 @@ package com.microsoft.intellij.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -37,7 +37,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -171,22 +170,19 @@ public class SignInWindow extends AzureDialogWrapper {
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
 
-            if (ApplicationManager.getApplication().isDispatchThread()) {
-                doServicePrincipalLogin();
-            } else {
-                AzureTaskManager.getInstance().runAndWait(() -> doServicePrincipalLogin());
-            }
+            UIUtil.invokeAndWaitIfNeeded(() -> call(this::doServicePrincipalLogin, "sp"));
         } else if (deviceLoginRadioButton.isSelected()) {
-            authMethodDetailsResult = doDeviceLogin();
+            authMethodDetailsResult = call(this::doDeviceLogin, "dc");
         } else if (azureCliRadioButton.isSelected()) {
-            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), signInAZProp);
+            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), "az");
         } else if (oauthLoginRadioButton.isSelected()) {
-            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), signInAZProp);
+            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), "oauth");
         }
         return authMethodDetailsResult;
     }
 
-    private void doServicePrincipalLogin() {
+    private AuthMethodDetails doServicePrincipalLogin() {
+        authMethodDetailsResult = new AuthMethodDetails();
         final ServicePrincipalLoginDialog dialog = new ServicePrincipalLoginDialog(project);
         if (dialog.showAndGet()) {
             AuthConfiguration data = dialog.getData();
@@ -194,32 +190,14 @@ public class SignInWindow extends AzureDialogWrapper {
             if (StringUtils.isNotBlank(data.getKey())) {
                 secureStore.savePassword(StringUtils.joinWith("|", "account", data.getClient()), data.getKey());
             }
-
         }
+        return authMethodDetailsResult;
     }
 
     private static AuthMethodDetails checkCanceled(ProgressIndicator indicator, Mono<? extends AuthMethodDetails> mono) {
-        CompletableFuture<? extends AuthMethodDetails> future = mono.toFuture();
-        Disposable disposable = Flux.interval(Duration.ofSeconds(1)).map(ts -> {
-            if (indicator != null) {
-                indicator.checkCanceled();
-            }
-            return 1;
-        }).onErrorResume(e -> {
-            if (e instanceof ProcessCanceledException) {
-                future.cancel(true);
-            }
-            return Mono.empty();
-        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
-        try {
-            return future.get();
-        } catch (CancellationException e) {
-            return null;
-        } catch (Throwable e) {
-            throw new AzureToolkitRuntimeException("Cannot login due to error: " + e.getMessage(), e);
-        } finally {
-            disposable.dispose();
-        }
+        final Mono<AuthMethodDetails> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
+            .any(cancel -> cancel).map(ignore -> new AuthMethodDetails()).subscribeOn(Schedulers.boundedElastic());
+        return Mono.firstWithSignal(cancelMono, mono.subscribeOn(Schedulers.boundedElastic())).block();
     }
 
     @Override
@@ -330,7 +308,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
             }
         }
-        return null;
+        return new AuthMethodDetails();
     }
 
     private static AuthMethodDetails fromAccountEntity(AccountEntity entity) {
@@ -344,8 +322,10 @@ public class SignInWindow extends AzureDialogWrapper {
         return authMethodDetails;
     }
 
-    private <T> T call(Callable<T> loginCallable, Map<String, String> properties) {
-        Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
+    private <T> T call(Callable<T> loginCallable, String authMethod) {
+        final Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(SIGNIN_METHOD, authMethod);
         Optional.ofNullable(ProgressManager.getInstance().getProgressIndicator()).ifPresent(indicator -> indicator.setText2("Signing in..."));
 
         try {

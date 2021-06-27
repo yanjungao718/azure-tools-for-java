@@ -6,65 +6,60 @@
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.MessageDialogBuilder;
-import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
+import java.util.Map;
+import java.util.Objects;
 
 public class IntellijAzureMessager implements IAzureMessager {
-    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
-    private static final String DEFAULT_MESSAGE_TITLE = "Azure";
+    static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+    private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
+            Map.entry(IAzureMessage.Type.INFO, NotificationType.INFORMATION),
+            Map.entry(IAzureMessage.Type.SUCCESS, NotificationType.INFORMATION),
+            Map.entry(IAzureMessage.Type.WARNING, NotificationType.WARNING),
+            Map.entry(IAzureMessage.Type.ERROR, NotificationType.ERROR)
+    );
 
-    private void showNotification(@Nonnull String title, @Nonnull String message, NotificationType type) {
-        Notifications.Bus.notify(new Notification(NOTIFICATION_GROUP_ID, title, message, type));
+    private Notification createNotification(@Nonnull String title, @Nonnull String content, NotificationType type) {
+        return new Notification(NOTIFICATION_GROUP_ID, title, content, type, new NotificationListener.UrlOpeningListener(true));
     }
 
-    private String getTitle(String... title) {
-        if (ArrayUtils.isEmpty(title)) {
-            return DEFAULT_MESSAGE_TITLE;
+    @Override
+    public boolean show(IAzureMessage raw) {
+        final IntellijAzureMessage message = IntellijAzureMessage.from(raw);
+        switch (raw.getType()) {
+            case ALERT:
+            case CONFIRM:
+                return MessageDialogBuilder.yesNo(message.getTitle(), message.getMessage()).guessWindowAndAsk();
         }
-        return title[0];
+        if (Objects.equals(message.getBackgrounded(), Boolean.FALSE) && message.getType() == IAzureMessage.Type.ERROR) {
+            UIUtil.invokeLaterIfNeeded(() -> {
+                final IntellijErrorDialog errorDialog = new IntellijErrorDialog(message);
+                final Window window = errorDialog.getWindow();
+                final Component modalityStateComponent = window.getParent() == null ? window : window.getParent();
+                ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
+            });
+        } else {
+            this.showNotification(message);
+        }
+        return true;
     }
 
-    public boolean confirm(@Nonnull String message, String title) {
-        return MessageDialogBuilder.yesNo(getTitle(title), message).guessWindowAndAsk();
-    }
-
-    public void alert(@Nonnull String message, String title) {
-        MessageDialogBuilder.okCancel(getTitle(title), message).guessWindowAndAsk();
-    }
-
-    public void success(@Nonnull String message, String title) {
-        this.showNotification(getTitle(title), message, NotificationType.INFORMATION);
-    }
-
-    public void info(@Nonnull String message, String title) {
-        this.showNotification(getTitle(title), message, NotificationType.INFORMATION);
-    }
-
-    public void warning(@Nonnull String message, String title) {
-        this.showNotification(getTitle(title), message, NotificationType.WARNING);
-    }
-
-    public void error(@Nonnull String message, String title) {
-        this.showNotification(getTitle(title), message, NotificationType.ERROR);
-    }
-
-    public void error(@Nonnull Throwable throwable, String title) {
-        IntelliJAzureExceptionHandler.getInstance().handleException(throwable);
-    }
-
-    public void error(@Nonnull Throwable throwable, @Nonnull String message, String title) {
-        final AzureToolkitRuntimeException wrapped = new AzureToolkitRuntimeException(message, throwable);
-        IntelliJAzureExceptionHandler.getInstance().handleException(wrapped);
-    }
-
-    public String value(String val) {
-        return val;
+    private void showNotification(@Nonnull IntellijAzureMessage message) {
+        final NotificationType type = types.get(message.getType());
+        final String content = message.getContent(true);
+        final Notification notification = this.createNotification(message.getTitle(), content, type);
+        notification.addActions(message.getAnActions());
+        Notifications.Bus.notify(notification, message.getProject());
     }
 }

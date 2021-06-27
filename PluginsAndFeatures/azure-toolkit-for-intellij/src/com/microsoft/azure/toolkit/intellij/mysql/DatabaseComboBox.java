@@ -5,22 +5,22 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
-import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
+import com.microsoft.azure.toolkit.lib.mysql.model.MySqlDatabaseEntity;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
+public class DatabaseComboBox extends AzureComboBox<MySqlDatabaseEntity> {
 
     private Subscription subscription;
-    private Server server;
+    private MySqlServer server;
 
     public DatabaseComboBox() {
         super(false);
@@ -38,12 +38,12 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
         this.refreshItems();
     }
 
-    public void setServer(Server server) {
+    public void setServer(MySqlServer server) {
         if (Objects.equals(server, this.server)) {
             return;
         }
         this.server = server;
-        if (server == null) {
+        if (server == null || !server.exists()) {
             this.clear();
             return;
         }
@@ -52,23 +52,26 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
     @Override
     protected String getItemText(Object item) {
-        if (item instanceof DatabaseInner) {
-            return ((DatabaseInner) item).name();
+        if (item instanceof MySqlDatabaseEntity) {
+            return ((MySqlDatabaseEntity) item).getName();
         }
         return super.getItemText(item);
     }
 
     @Override
     @AzureOperation(
-        name = "mysql|database.list.server|subscription",
-        params = {"this.server.name()", "this.subscription.getId()"},
+        name = "mysql|database.list.server",
+        params = {"this.server.entity().getName()"},
         type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends DatabaseInner> loadItems() throws Exception {
-        if (Objects.isNull(subscription) || Objects.isNull(server) || !ServerState.READY.equals(server.userVisibleState())) {
+    @Nonnull
+    protected List<? extends MySqlDatabaseEntity> loadItems() throws Exception {
+        if (Objects.isNull(subscription) || Objects.isNull(server)
+
+            || !StringUtils.equalsIgnoreCase("READY", server.entity().getState())) {
             return new ArrayList<>();
         }
-        return MySQLMvpModel.DatabaseMvpModel.listDatabases(subscription.getId(), server);
+        return server.databases();
     }
 
     @Override
