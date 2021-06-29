@@ -10,7 +10,6 @@ import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
@@ -58,7 +57,6 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
-    protected Map<String, MySQLManager> sidToMySQLManagerMap = new ConcurrentHashMap<>();
     protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
     protected static final Settings settings = new Settings();
@@ -151,17 +149,6 @@ public abstract class AzureManagerBase implements AzureManager {
         return azure;
     }
 
-    @Override
-    public MySQLManager getMySQLManager(String sid) {
-        if (!isSignedIn()) {
-            return null;
-        }
-        return sidToMySQLManagerMap.computeIfAbsent(sid, s -> {
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
-            return authMySQL(sid, tid);
-        });
-    }
-
     public @Nullable InsightsManager getInsightsManager(String sid) {
         if (!isSignedIn()) {
             return null;
@@ -250,14 +237,6 @@ public abstract class AzureManagerBase implements AzureManager {
                 .withInterceptor(new RestExceptionHandlerInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
                 .authenticate(credentials);
-    }
-
-    protected MySQLManager authMySQL(String subscriptionId, String tenantId) {
-        final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(MySQLManager.configure())
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .authenticate(credentials, subscriptionId);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
