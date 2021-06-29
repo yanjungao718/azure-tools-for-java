@@ -24,6 +24,9 @@ import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -34,10 +37,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class AzureSdkLibraryService {
     private static final ObjectMapper YML_MAPPER = new YAMLMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final ObjectMapper CSV_MAPPER = new CsvMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final String SDK_ALLOW_LIST_CSV = "/sdk-allow-list.csv";
+    private static final String SDK_JAVA_PACKAGES_BACKUP = "/java-packages.csv";
+    private static final String SDK_SPRING_SERVICES_BACKUP = "/spring-reference.yml";
     private static final String SPRING_SDK_METADATA_URL = "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/master/sdk/spring/spring-reference.yml";
     private static final String CLIENT_MGMT_SDK_METADATA_URL = "https://raw.githubusercontent.com/Azure/azure-sdk/master/_data/releases/latest/java-packages.csv";
 
@@ -161,34 +167,50 @@ public class AzureSdkLibraryService {
                 .collect(Collectors.toList());
     }
 
+    @SneakyThrows
     @Cacheable("sdk/packages/spring")
     @AzureOperation(name = "sdk.load_meta_data.spring", type = AzureOperation.Type.TASK)
     private static List<AzureSdkServiceEntity> loadSpringSDKEntities() {
+        final List<AzureSdkServiceEntity> remote = loadSpringSDKEntities(new URL(SPRING_SDK_METADATA_URL));
+        if (CollectionUtils.isEmpty(remote)) {
+            return loadSpringSDKEntities(AzureSdkLibraryService.class.getResource(SDK_SPRING_SERVICES_BACKUP));
+        }
+        return remote;
+    }
+
+    @SneakyThrows
+    @Cacheable("sdk/packages")
+    @AzureOperation(name = "sdk.load_meta_data.java", type = AzureOperation.Type.TASK)
+    public static List<AzureJavaSdkEntity> loadAzureSDKEntities() {
+        final List<AzureJavaSdkEntity> remote = loadAzureSDKEntities(new URL(CLIENT_MGMT_SDK_METADATA_URL));
+        if (CollectionUtils.isEmpty(remote)) {
+            return loadAzureSDKEntities(AzureSdkLibraryService.class.getResource(SDK_JAVA_PACKAGES_BACKUP));
+        }
+        return remote;
+    }
+
+    public static List<AzureSdkServiceEntity> loadSpringSDKEntities(final URL destination) {
         try {
-            final URL destination = new URL(SPRING_SDK_METADATA_URL);
             final ObjectReader reader = YML_MAPPER.readerFor(AzureSdkServiceEntity.class);
             final MappingIterator<AzureSdkServiceEntity> data = reader.readValues(destination);
             return data.readAll();
         } catch (final IOException e) {
-            final String message = String.format("failed to load Azure SDK list from \"%s\"", SPRING_SDK_METADATA_URL);
-            throw new AzureToolkitRuntimeException(message, e);
+            log.warn(String.format("failed to load Azure SDK list from \"%s\"", destination.toString()), e);
         }
+        return Collections.emptyList();
     }
 
-    @Cacheable("sdk/packages")
-    @AzureOperation(name = "sdk.load_meta_data.java", type = AzureOperation.Type.TASK)
-    public static List<AzureJavaSdkEntity> loadAzureSDKEntities() {
+    public static List<AzureJavaSdkEntity> loadAzureSDKEntities(final URL destination) {
         try {
-            final URL destination = new URL(CLIENT_MGMT_SDK_METADATA_URL);
             final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkEntity.class).with(CsvSchema.emptySchema().withHeader());
             final MappingIterator<AzureJavaSdkEntity> data = reader.readValues(destination);
             return data.readAll().stream()
                     .filter(e -> StringUtils.isNoneBlank(e.getArtifactId(), e.getGroupId()))
                     .collect(Collectors.toList());
         } catch (final IOException e) {
-            final String message = String.format("failed to load Azure SDK list from \"%s\"", CLIENT_MGMT_SDK_METADATA_URL);
-            throw new AzureToolkitRuntimeException(message, e);
+            log.warn(String.format("failed to load Azure SDK list from \"%s\"", destination.toString()), e);
         }
+        return Collections.emptyList();
     }
 
     @Cacheable("sdk/packages/whitelist")
