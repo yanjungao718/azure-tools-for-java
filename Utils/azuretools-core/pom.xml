@@ -268,11 +268,6 @@
             <artifactId>rxjava</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure.mysql.v2020_01_01</groupId>
-            <artifactId>azure-mgmt-mysql</artifactId>
-            <version>1.0.0-beta</version>
-        </dependency>
-        <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-common-lib</artifactId>
         </dependency>

@@ -8,7 +8,6 @@ package com.microsoft.azuretools.authmanage;
 import com.azure.core.implementation.http.HttpClientProviders;
 import com.microsoft.aad.msal4j.PublicClientApplication;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
@@ -126,21 +125,6 @@ public class AuthMethodManager {
         final String action = "Confirm you have already signed in with subscription: " + sid;
         final String errorCode = "001";
         throw new AzureToolkitRuntimeException(error, null, action, errorCode);
-    }
-
-    @AzureOperation(
-        name = "common|rest_client.create_mysql",
-        params = {"sid"},
-        type = AzureOperation.Type.TASK
-    )
-    public MySQLManager getMySQLManager(String sid) {
-        final AzureManager manager = getAzureManager();
-        if (manager != null) {
-            return manager.getMySQLManager(sid);
-        }
-        final String error = "Failed to get manager of Azure Database for MySQL with current account";
-        final String action = "Confirm you have already signed in with subscription: " + sid;
-        throw new AzureToolkitRuntimeException(error, action);
     }
 
     public void addSignInEventListener(Runnable l) {
