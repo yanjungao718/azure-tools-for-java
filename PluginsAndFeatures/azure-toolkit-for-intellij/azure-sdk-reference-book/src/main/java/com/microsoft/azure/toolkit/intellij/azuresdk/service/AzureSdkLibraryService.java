@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -167,7 +168,7 @@ public class AzureSdkLibraryService {
                 .collect(Collectors.toList());
     }
 
-    @SneakyThrows
+    @SneakyThrows(MalformedURLException.class)
     @Cacheable("sdk/packages/spring")
     @AzureOperation(name = "sdk.load_meta_data.spring", type = AzureOperation.Type.TASK)
     private static List<AzureSdkServiceEntity> loadSpringSDKEntities() {
@@ -178,7 +179,7 @@ public class AzureSdkLibraryService {
         return remote;
     }
 
-    @SneakyThrows
+    @SneakyThrows(MalformedURLException.class)
     @Cacheable("sdk/packages")
     @AzureOperation(name = "sdk.load_meta_data.java", type = AzureOperation.Type.TASK)
     public static List<AzureJavaSdkEntity> loadAzureSDKEntities() {
@@ -225,9 +226,9 @@ public class AzureSdkLibraryService {
                     .map(AzureSdkAllowListEntity::getPackageName)
                     .collect(Collectors.toSet());
         } catch (final IOException e) {
-            final String message = String.format("failed to load Azure SDK allow list from \"%s\"", SDK_ALLOW_LIST_CSV);
-            throw new AzureToolkitRuntimeException(message, e);
+            log.warn(String.format("failed to load Azure SDK allow list from \"%s\"", SDK_ALLOW_LIST_CSV), e);
         }
+        return Collections.emptySet();
     }
 
     public static void refresh() {
@@ -237,7 +238,7 @@ public class AzureSdkLibraryService {
             CacheManager.evictCache("sdk/packages/spring", CacheEvict.ALL);
             CacheManager.evictCache("sdk/packages/whitelist", CacheEvict.ALL);
         } catch (final ExecutionException e) {
-            throw new AzureToolkitRuntimeException("failed to evict cache", e);
+            log.warn("failed to evict cache", e);
         }
     }
 }
