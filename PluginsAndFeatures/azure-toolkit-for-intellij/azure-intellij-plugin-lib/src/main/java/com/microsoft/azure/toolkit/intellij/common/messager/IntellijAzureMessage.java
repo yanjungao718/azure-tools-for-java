@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @Setter
 @Log
 public class IntellijAzureMessage implements IAzureMessage {
-    static final Pattern URL_PATTERN = Pattern.compile("\\s+(https?|ftp)://(www\\d?|[a-zA-Z0-9]+)?.[a-zA-Z0-9-]+(:|.)([a-zA-Z0-9.]+|(\\d+)?)([/?:].*)?");
+    static final Pattern URL_PATTERN = Pattern.compile("\\s+https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)");
     static final String DEFAULT_MESSAGE_TITLE = "Azure";
     @Nullable
     private String title;
@@ -244,7 +244,7 @@ public class IntellijAzureMessage implements IAzureMessage {
         final StringBuilder sb = new StringBuilder();
         while (m.find()) {
             final String found = m.group(0);
-            m.appendReplacement(sb, "<a href='" + found + "'>" + found + "</a>");
+            m.appendReplacement(sb, " <a href='" + found.trim() + "'>" + found.trim() + "</a>");
         }
         m.appendTail(sb);
         return sb.toString();
