@@ -9,7 +9,6 @@ import com.azure.core.util.Configuration;
 import com.intellij.util.net.HttpConfigurable;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.utils.TextUtils;
 
 import java.net.InetSocketAddress;
 
@@ -18,9 +17,9 @@ public class ProxyUtils {
         final HttpConfigurable instance = HttpConfigurable.getInstance();
         if (instance != null && instance.USE_HTTP_PROXY) {
             String source = "intellij";
-            AzureMessager.getMessager().info(String.format("Use %s proxy: %s:%s", source, TextUtils.cyan(
+            AzureMessager.getMessager().info(String.format("Use %s proxy: %s:%s", source, AzureMessager.getMessager().value(
                 instance.PROXY_HOST),
-                TextUtils.cyan(Integer.toString(instance.PROXY_PORT))));
+                AzureMessager.getMessager().value(Integer.toString(instance.PROXY_PORT))));
 
             // set proxy for azure-identity according to https://docs.microsoft.com/en-us/azure/developer/java/sdk/proxying
             Azure.az().config().setHttpProxy(new InetSocketAddress(instance.PROXY_HOST, instance.PROXY_PORT));
