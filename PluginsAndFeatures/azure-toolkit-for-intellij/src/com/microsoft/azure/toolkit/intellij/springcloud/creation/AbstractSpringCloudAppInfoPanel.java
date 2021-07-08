@@ -79,8 +79,8 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
 
     private void onClusterChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final SpringCloudCluster cluster = (SpringCloudCluster) e.getItem();
-            this.onAppChanged(cluster.app(StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName)));
+            final SpringCloudCluster c = (SpringCloudCluster) e.getItem();
+            this.onAppChanged(c.app(StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName)));
         }
     }
 
@@ -117,7 +117,6 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         this.getContentPanel().setVisible(visible);
         super.setVisible(visible);
     }
-
 
     protected abstract SubscriptionComboBox getSelectorSubscription();
 

@@ -52,8 +52,6 @@ public class CreateSpringCloudAppAction extends NodeActionListener {
         AzureTaskManager.getInstance().runInBackground(AzureOperationBundle.title("springcloud|app.create", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
-            final SpringCloudApp app = deployment.app();
-            final SpringCloudCluster cluster = app.getCluster();
             if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
                 AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
             }

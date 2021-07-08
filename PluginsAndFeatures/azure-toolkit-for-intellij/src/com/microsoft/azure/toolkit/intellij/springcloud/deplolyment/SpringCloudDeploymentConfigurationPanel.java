@@ -110,25 +110,25 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
         Optional.ofNullable(deploymentConfig.getArtifact()).map(a -> ((WrappedAzureArtifact) a))
-            .ifPresent((a -> this.selectorArtifact.setValue(new ItemReference<>(
-                manager.getArtifactIdentifier(a.getArtifact()),
-                manager::getArtifactIdentifier
-            ))));
+                .ifPresent((a -> this.selectorArtifact.setValue(new ItemReference<>(
+                        manager.getArtifactIdentifier(a.getArtifact()),
+                        manager::getArtifactIdentifier
+                ))));
         Optional.ofNullable(appConfig.getSubscriptionId())
-            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
+                .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
         Optional.ofNullable(appConfig.getClusterName())
-            .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
+                .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
         Optional.ofNullable(appConfig.getAppName())
-            .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
+                .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
     }
 
     @Nullable
     public SpringCloudAppConfig getData() {
         SpringCloudAppConfig appConfig = this.selectorApp.getValue().entity().getConfig();
-        if(Objects.isNull(appConfig)){
+        if (Objects.isNull(appConfig)) {
             appConfig = SpringCloudAppConfig.builder()
-                .deployment(SpringCloudDeploymentConfig.builder().build())
-                .build();
+                    .deployment(SpringCloudDeploymentConfig.builder().build())
+                    .build();
         }
         this.getData(appConfig);
         return appConfig;
@@ -147,10 +147,10 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            this.selectorArtifact,
-            this.selectorSubscription,
-            this.selectorCluster,
-            this.selectorApp
+                this.selectorArtifact,
+                this.selectorSubscription,
+                this.selectorCluster,
+                this.selectorApp
         };
         return Arrays.asList(inputs);
     }
