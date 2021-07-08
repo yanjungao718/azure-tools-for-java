@@ -102,13 +102,6 @@ public class FunctionUtils {
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 
-    public static String getFunctionJavaVersion(IFunctionApp functionApp) {
-        if (functionApp.getRuntime().getJavaVersion() == JavaVersion.OFF) {
-            return null;
-        }
-        return functionApp.getRuntime().getJavaVersion().getValue();
-    }
-
     public static File getTempStagingFolder() {
         try {
             final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
