@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
 import com.azure.core.exception.HttpResponseException;
@@ -40,10 +45,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.util.regex.Pattern.compile;
+
 @Setter
 @Log
 public class IntellijAzureMessage implements IAzureMessage {
-    static final Pattern URL_PATTERN = Pattern.compile("\\s+(https?|ftp)://(www\\d?|[a-zA-Z0-9]+)?.[a-zA-Z0-9-]+(:|.)([a-zA-Z0-9.]+|(\\d+)?)([/?:].*)?");
+    static final Pattern URL_PATTERN = compile("\\s+https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)");
     static final String DEFAULT_MESSAGE_TITLE = "Azure";
     @Nullable
     private String title;
