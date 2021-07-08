@@ -37,7 +37,8 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
             return EMPTY_ITEM;
         }
         final PricingTier pricingTier = (PricingTier) item;
-        return Objects.equals(pricingTier, PricingTier.CONSUMPTION) ? message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
+        return Objects.equals(pricingTier, PricingTier.CONSUMPTION) ?
+                message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
     }
 
     @NotNull

@@ -80,7 +80,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         super.readExternal(element);
         Optional.ofNullable(element.getChild(JAVA_VERSION))
                 .map(javaVersionElement -> javaVersionElement.getAttributeValue(JAVA_VERSION))
-                .ifPresent(javaVersion -> webAppSettingModel.setWebAppJavaVersion(javaVersion));
+                .ifPresent(webAppSettingModel::setWebAppJavaVersion);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             throw new ConfigurationException(message("webapp.deploy.validate.invalidTomcatArtifact"));
         } else if (StringUtils.containsIgnoreCase(webContainer, JBOSS) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
             throw new ConfigurationException(message("webapp.deploy.validate.invalidJbossArtifact"));
-        } else if (Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE)  && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
+        } else if (Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
             throw new ConfigurationException(message("webapp.deploy.validate.invalidJavaSeArtifact"));
         }
         if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
