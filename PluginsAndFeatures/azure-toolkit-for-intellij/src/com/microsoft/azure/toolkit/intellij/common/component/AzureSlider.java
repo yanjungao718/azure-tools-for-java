@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.springcloud.properties;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.ui.JBIntSpinner;
 import lombok.Getter;
@@ -54,9 +54,9 @@ public class AzureSlider {
     }
 
     public void setValue(int value) {
-        value = Math.max(this.realMin, value);
-        this.numSlider.setValue(value);
-        this.numValue.setValue(value);
+        final int val = Math.max(this.realMin, value);
+        this.numSlider.setValue(val);
+        this.numValue.setValue(val);
     }
 
     public int getValue() {
