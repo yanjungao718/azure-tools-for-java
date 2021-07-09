@@ -147,10 +147,10 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-                this.selectorArtifact,
-                this.selectorSubscription,
-                this.selectorCluster,
-                this.selectorApp
+            this.selectorArtifact,
+            this.selectorSubscription,
+            this.selectorCluster,
+            this.selectorApp
         };
         return Arrays.asList(inputs);
     }
