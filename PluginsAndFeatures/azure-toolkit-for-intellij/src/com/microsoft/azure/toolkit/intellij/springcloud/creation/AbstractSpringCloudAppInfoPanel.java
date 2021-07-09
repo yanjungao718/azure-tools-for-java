@@ -14,7 +14,9 @@ import com.microsoft.azure.toolkit.lib.common.entity.IAzureEntityManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
@@ -80,7 +82,9 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     private void onClusterChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final SpringCloudCluster c = (SpringCloudCluster) e.getItem();
-            this.onAppChanged(c.app(StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName)));
+            final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
+            final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
+            AzureTaskManager.getInstance().runOnPooledThread(() -> this.onAppChanged(app));
         }
     }
 
@@ -92,8 +96,8 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     }
 
     protected SpringCloudAppConfig getData(SpringCloudAppConfig config) {
-        config.setSubscriptionId(this.getSelectorSubscription().getValue().getId());
-        config.setClusterName(this.getSelectorCluster().getValue().name());
+        config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
+        config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureEntityManager::name).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;
     }
@@ -105,11 +109,17 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     }
 
     @Override
-    public void setData(final SpringCloudAppConfig config) {
+    public synchronized void setData(final SpringCloudAppConfig config) {
+        final Integer count = config.getDeployment().getInstanceCount();
+        config.getDeployment().setInstanceCount(count == 0 ? 1 : count);
         this.originalConfig = config;
         this.getTextName().setValue(config.getAppName());
-        this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), IAzureEntityManager::name));
-        this.getSelectorSubscription().setValue(new ItemReference<>(config.getSubscriptionId(), Subscription::getId));
+        if (Objects.nonNull(config.getClusterName())) {
+            this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), IAzureEntityManager::name));
+        }
+        if (Objects.nonNull(config.getSubscriptionId())) {
+            this.getSelectorSubscription().setValue(new ItemReference<>(config.getSubscriptionId(), Subscription::getId));
+        }
     }
 
     @Override
