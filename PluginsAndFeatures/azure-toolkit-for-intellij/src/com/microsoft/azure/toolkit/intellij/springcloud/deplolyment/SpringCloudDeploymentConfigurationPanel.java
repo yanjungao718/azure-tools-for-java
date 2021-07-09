@@ -102,7 +102,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         }
     }
 
-    public void setData(SpringCloudAppConfig appConfig) {
+    public synchronized void setData(SpringCloudAppConfig appConfig) {
         final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
         if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
             this.selectorApp.addLocalItem(cluster.app(appConfig));

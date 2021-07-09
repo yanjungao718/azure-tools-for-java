@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
@@ -110,7 +109,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         }
     }
 
-    public void updateForm(@Nonnull SpringCloudApp app) {
+    public synchronized void updateForm(@Nonnull SpringCloudApp app) {
         final String testUrl = app.entity().getTestUrl();
         if (testUrl != null) {
             this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
@@ -132,18 +131,16 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         }
         final SpringCloudSku sku = app.getCluster().entity().getSku();
         final boolean basic = sku.getTier().toLowerCase().startsWith("b");
-        final DefaultComboBoxModel<Integer> numCpuModel = (DefaultComboBoxModel<Integer>) this.numCpu.getModel();
-        final DefaultComboBoxModel<Integer> numMemoryModel = (DefaultComboBoxModel<Integer>) this.numMemory.getModel();
         final Integer cpu = this.numCpu.getItem();
         final Integer mem = this.numMemory.getItem();
         final int maxCpu = basic ? 1 : 4;
         final int maxMem = basic ? 2 : 8;
-        numCpuModel.removeAllElements();
-        numCpuModel.addAll(IntStream.range(1, 1 + maxCpu).boxed().collect(Collectors.toList()));
+        final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxCpu).boxed().toArray(Integer[]::new));
+        final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxMem).boxed().toArray(Integer[]::new));
         numCpuModel.setSelectedItem(Objects.nonNull(cpu) && cpu > maxCpu ? null : cpu);
-        numMemoryModel.removeAllElements();
-        numMemoryModel.addAll(IntStream.range(1, 1 + maxMem).boxed().collect(Collectors.toList()));
         numMemoryModel.setSelectedItem(Objects.nonNull(mem) && mem > maxMem ? null : mem);
+        this.numCpu.setModel(numCpuModel);
+        this.numMemory.setModel(numMemoryModel);
         this.numInstance.setMaximum(basic ? 25 : 500);
         this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
@@ -172,7 +169,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     @Override
-    public void setData(SpringCloudAppConfig config) {
+    public synchronized void setData(SpringCloudAppConfig config) {
         this.originalConfig = config;
         final SpringCloudDeploymentConfig deployment = config.getDeployment();
         this.toggleStorage(deployment.getEnablePersistentStorage());

@@ -32,6 +32,7 @@ public class DeploySpringCloudAppAction extends NodeActionListener {
     @AzureOperation(name = "springcloud.deploy", type = AzureOperation.Type.ACTION)
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         Azure.az(AzureAccount.class).account();
-        AzureTaskManager.getInstance().runLater(() -> DeployAppAction.deployConfiguration(project, this.app));
+        final String title = "open spring cloud app deployment dialog";
+        AzureTaskManager.getInstance().runInModal(title, () -> DeployAppAction.deployConfiguration(project, this.app));
     }
 }
