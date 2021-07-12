@@ -84,14 +84,16 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
             final SpringCloudCluster c = (SpringCloudCluster) e.getItem();
             final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
             final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
-            AzureTaskManager.getInstance().runOnPooledThread(() -> this.onAppChanged(app));
+            this.onAppChanged(app);
         }
     }
 
     protected void onAppChanged(SpringCloudApp app) {
         if (Objects.isNull(this.originalConfig)) {
-            this.originalConfig = SpringCloudAppConfig.fromApp(app);
-            this.setData(this.originalConfig);
+            AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                this.originalConfig = SpringCloudAppConfig.fromApp(app);
+                AzureTaskManager.getInstance().runLater(() -> this.setData(this.originalConfig));
+            });
         }
     }
 
@@ -111,7 +113,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     @Override
     public synchronized void setData(final SpringCloudAppConfig config) {
         final Integer count = config.getDeployment().getInstanceCount();
-        config.getDeployment().setInstanceCount(count == 0 ? 1 : count);
+        config.getDeployment().setInstanceCount(Objects.isNull(count) || count == 0 ? 1 : count);
         this.originalConfig = config;
         this.getTextName().setValue(config.getAppName());
         if (Objects.nonNull(config.getClusterName())) {

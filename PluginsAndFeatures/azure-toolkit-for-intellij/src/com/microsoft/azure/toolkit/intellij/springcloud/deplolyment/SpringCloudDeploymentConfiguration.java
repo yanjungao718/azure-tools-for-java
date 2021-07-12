@@ -135,7 +135,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
 
         @Override
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
-            AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            AzureTaskManager.getInstance().runLater(() -> {
                 this.panel.setConfiguration(config);
                 this.panel.setData(config.appConfig);
             });
