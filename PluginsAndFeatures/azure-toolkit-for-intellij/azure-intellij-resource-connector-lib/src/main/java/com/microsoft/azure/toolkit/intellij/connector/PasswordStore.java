@@ -34,4 +34,8 @@ public class PasswordStore {
         }
         return null;
     }
+
+    public void forgetPassword(String resourceId, String username) {
+        passwordSafe.setPassword(new CredentialAttributes(resourceId, username), null);
+    }
 }

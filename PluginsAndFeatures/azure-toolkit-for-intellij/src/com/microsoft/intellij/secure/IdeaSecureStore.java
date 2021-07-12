@@ -43,4 +43,13 @@ public class IdeaSecureStore implements SecureStore {
     public String loadPassword(@NotNull String key) {
         return passwordSafe.getPassword(new CredentialAttributes(key));
     }
+
+    public void forgetPassword(@NotNull String serviceName, @NotNull String userName) {
+        passwordSafe.setPassword(new CredentialAttributes(serviceName, userName), null);
+    }
+
+    public void forgetPassword(@NotNull String key) {
+        passwordSafe.setPassword(new CredentialAttributes(key), null);
+    }
+
 }
