@@ -56,7 +56,7 @@ public class DeployAppAction extends AzureAnAction {
     public static void deployConfiguration(@Nonnull Project project, @Nullable SpringCloudApp app) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
-        final String configurationName = String.format("%s:%s", factory.getName(), Objects.isNull(app) ? project.getName() : app.name());
+        final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
         final RunnerAndConfigurationSettings existed = manager.findConfigurationByName(configurationName);
         final RunnerAndConfigurationSettings settings = Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
         final SpringCloudDeploymentConfiguration configuration = ((SpringCloudDeploymentConfiguration) settings.getConfiguration());

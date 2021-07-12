@@ -17,6 +17,7 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
@@ -138,7 +139,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             AzureTaskManager.getInstance().runLater(() -> {
                 this.panel.setConfiguration(config);
                 this.panel.setData(config.appConfig);
-            });
+            }, AzureTask.Modality.ANY);
         }
 
         @Override
