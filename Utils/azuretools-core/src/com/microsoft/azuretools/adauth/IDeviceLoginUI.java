@@ -6,11 +6,6 @@
 package com.microsoft.azuretools.adauth;
 
 import com.azure.identity.DeviceCodeInfo;
-import com.microsoft.aad.adal4j.AuthenticationCallback;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.DeviceCode;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.util.concurrent.Future;
 
