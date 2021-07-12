@@ -165,8 +165,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                 .or(() -> app.deployments().stream().findAny())
                 .orElse(null);
         if (Objects.isNull(deployment)) {
-            AzureMessager.getMessager().alert(String.format("App(%s) has no deployment", this.app.name()));
-            this.closeEditor();
+            AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.name()), null);
+            this.setEnabled(false);
             return;
         }
         final SpringCloudDeploymentStatus status = deployment.entity().getStatus();
