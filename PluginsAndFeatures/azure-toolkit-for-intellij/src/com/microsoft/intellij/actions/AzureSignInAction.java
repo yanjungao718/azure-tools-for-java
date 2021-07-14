@@ -89,7 +89,7 @@ public class AzureSignInAction extends AzureAnAction {
         if (authMethodDetails == null || authMethodDetails.getAuthType() == null) {
             return String.format("Do you really want to sign out?");
         }
-        final AuthType authType = authMethodManager.getAuthMethodDetails().getAuthType();
+        final AuthType authType = authMethodDetails.getAuthType();
         final String warningMessage;
         switch (authType) {
             case SERVICE_PRINCIPAL:
