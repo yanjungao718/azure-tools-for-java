@@ -14,8 +14,6 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,7 +69,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.init();
         this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
         if (refresh) {
-            AzureTaskManager.getInstance().runLater(this::refreshItems, AzureTask.Modality.ANY);
+            this.refreshItems();
         }
     }
 
@@ -130,7 +128,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     public void setValue(final T val, final Boolean fixed) {
         Optional.ofNullable(fixed).ifPresent(f -> {
-            this.setEnabled(!fixed);;
+            this.setEnabled(!fixed);
             this.setEditable(!f);
         });
         this.valueNotSet = false;
@@ -144,7 +142,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     public void setValue(final ItemReference<T> val, final Boolean fixed) {
         Optional.ofNullable(fixed).ifPresent(f -> {
-            this.setEnabled(!fixed);;
+            this.setEnabled(!fixed);
             this.setEditable(!f);
         });
         this.valueNotSet = false;
@@ -158,6 +156,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 super.setSelectedIndex(0);
             }
         } else {
+            final Object selected = this.getSelectedItem();
+            if (Objects.equals(selected, this.value) || (this.value instanceof ItemReference && ((ItemReference<?>) this.value).is(selected))) {
+                return;
+            }
             final List<T> items = this.getItems();
             if (this.value instanceof AzureComboBox.ItemReference) {
                 items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
@@ -192,7 +194,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             this.setLoading(true);
             final List<? extends T> items = this.loadItemsInner();
             this.setLoading(false);
-            AzureTaskManager.getInstance().runLater(() -> this.setItems(items), AzureTask.Modality.ANY);
+            this.setItems(items);
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
@@ -211,11 +213,13 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         return result;
     }
 
-    protected void setItems(final List<? extends T> items) {
-        final DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) this.getModel();
-        model.removeAllElements();
-        model.addAll(items);
-        this.refreshValue();
+    protected synchronized void setItems(final List<? extends T> items) {
+        SwingUtilities.invokeLater(() -> {
+            final DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) this.getModel();
+            model.removeAllElements();
+            model.addAll(items);
+            this.refreshValue();
+        });
     }
 
     public void clear() {
@@ -225,7 +229,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void setLoading(final boolean loading) {
-        AzureTaskManager.getInstance().runLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             if (loading) {
                 super.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
@@ -233,7 +237,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 super.setEnabled(this.enabled);
                 this.setEditor(this.inputEditor);
             }
-        }, AzureTask.Modality.ANY);
+            this.repaint();
+        });
     }
 
     @Override
@@ -405,7 +410,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
         @Override
         protected void textChanged(@Nonnull final DocumentEvent documentEvent) {
-            AzureTaskManager.getInstance().runLater(() -> {
+            SwingUtilities.invokeLater(() -> {
                 try {
                     final String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
                     list.stream().filter(item -> filter.test(item, text) && !getItems().contains(item)).forEach(AzureComboBox.this::addItem);
@@ -413,7 +418,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 } catch (BadLocationException e) {
                     // swallow exception and show all items
                 }
-            }, AzureTask.Modality.ANY);
+            });
         }
     }
 

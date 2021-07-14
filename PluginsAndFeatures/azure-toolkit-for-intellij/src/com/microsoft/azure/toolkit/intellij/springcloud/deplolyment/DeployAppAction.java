@@ -47,7 +47,7 @@ public class DeployAppAction extends AzureAnAction {
         }
         AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
             if (isLoggedIn) {
-                AzureTaskManager.getInstance().runLater(() -> deployConfiguration(project, null));
+                AzureTaskManager.getInstance().runOnPooledThread(() -> deployConfiguration(project, null));
             }
         });
         return false;
@@ -56,21 +56,21 @@ public class DeployAppAction extends AzureAnAction {
     public static void deployConfiguration(@Nonnull Project project, @Nullable SpringCloudApp app) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
-        final String configurationName = String.format("%s:%s", factory.getName(), Objects.isNull(app) ? project.getName() : app.name());
-        RunnerAndConfigurationSettings settings = manager.findConfigurationByName(configurationName);
-        if (settings == null) {
-            settings = manager.createConfiguration(configurationName, factory);
-        }
+        final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
+        final RunnerAndConfigurationSettings existed = manager.findConfigurationByName(configurationName);
+        final RunnerAndConfigurationSettings settings = Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
         final SpringCloudDeploymentConfiguration configuration = ((SpringCloudDeploymentConfiguration) settings.getConfiguration());
         if (Objects.nonNull(app)) {
             configuration.setAppConfig(SpringCloudAppConfig.fromApp(app));
         }
-        if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-            settings.storeInLocalWorkspace();
-            manager.addConfiguration(settings);
-            manager.setBeforeRunTasks(configuration, new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration())));
-            manager.setSelectedConfiguration(settings);
-            ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
-        }
+        AzureTaskManager.getInstance().runLater(() -> {
+            if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+                settings.storeInLocalWorkspace();
+                manager.addConfiguration(settings);
+                manager.setBeforeRunTasks(configuration, new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration())));
+                manager.setSelectedConfiguration(settings);
+                ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
+            }
+        });
     }
 }
