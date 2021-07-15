@@ -132,8 +132,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             definition.write(connectionEle, connection);
             connectionEle.setAttribute(FIELD_TYPE, connectionType);
         }
-
-
+        
         private void readConnection(Element connectionEle, String connectionType) {
             final ConnectionDefinition<?, ?> definition = definitions.get(connectionType);
             assert Objects.nonNull(definition) : String.format("Not found connection definition for %s", connectionType);
