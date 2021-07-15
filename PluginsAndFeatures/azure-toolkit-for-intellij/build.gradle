@@ -75,6 +75,7 @@ gradle.taskGraph.whenReady { graph ->
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'io.freefair.aspectj.post-compile-weaving'
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -100,6 +101,12 @@ subprojects {
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
         compile 'com.microsoft.azure:azure-toolkit-common-lib:0.10.0-SNAPSHOT', {
+            exclude group: "com.squareup.okhttp3", module: "okhttp"
+            exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+            exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+        }
+
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.10.0-SNAPSHOT', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
