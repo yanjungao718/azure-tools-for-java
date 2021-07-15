@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.Project;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -79,7 +77,6 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         private static final String FIELD_TYPE = "type";
         private final Set<Connection<? extends Resource, ? extends Resource>> connections = new LinkedHashSet<>();
         private static final Map<String, ConnectionDefinition<? extends Resource, ? extends Resource>> definitions = new LinkedHashMap<>();
-        private static final Map<String, Element> delayed = new HashMap<>();
 
         static {
             definitions.put("default", new DefaultConnection.Definition<>());
@@ -135,7 +132,6 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             definition.write(connectionEle, connection);
             connectionEle.setAttribute(FIELD_TYPE, connectionType);
         }
-
 
         private void readConnection(Element connectionEle, String connectionType) {
             final ConnectionDefinition<?, ?> definition = definitions.get(connectionType);
