@@ -17,4 +17,8 @@ public interface MvpUIHelper {
     default String loadPasswordFromSecureStore(@NotNull String key) {
         return null;
     }
+
+    @Deprecated
+    default void forgetPasswordFromSecureStore(@NotNull String key) {
+    }
 }
