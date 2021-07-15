@@ -9,28 +9,29 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class AzureNode<T> extends DefaultMutableTreeNode {
-         private DefaultActionGroup actionGroup = new DefaultActionGroup();
+         private final DefaultActionGroup actionGroup = new DefaultActionGroup();
 
-        private T data;
+        private final T data;
 
-        public AzureNode(T t) {
-                this(t, e -> e.toString(), null);
+        public AzureNode(T data) {
+                this(data, Objects::toString, null);
         }
 
-        public AzureNode(T t, Function<T, String> textGetter) {
-                this(t, textGetter, null);
+        public AzureNode(T data, Function<T, String> textGetter) {
+                this(data, textGetter, null);
         }
 
-        public AzureNode(T t, Icon icon) {
-                this(t, e -> e.toString(), icon);
+        public AzureNode(T data, Icon icon) {
+                this(data, Objects::toString, icon);
         }
 
-        public AzureNode(T t, Function<T, String> textGetter, Icon icon) {
-                this.data = t;
-                com.intellij.ide.util.treeView.NodeDescriptor nodeDescriptor = new AzureNodeDescriptor<>(t, textGetter, icon);
+        public AzureNode(T data, Function<T, String> textGetter, Icon icon) {
+                this.data = data;
+                AzureNodeDescriptor<T> nodeDescriptor = new AzureNodeDescriptor<>(data, textGetter, icon);
                 setUserObject(nodeDescriptor);
         }
 
@@ -38,8 +39,8 @@ public class AzureNode<T> extends DefaultMutableTreeNode {
                 return this.data;
         }
 
-        public AzureNodeDescriptor getNodeDescriptor() {
-                return (AzureNodeDescriptor) getUserObject();
+        public AzureNodeDescriptor<?> getNodeDescriptor() {
+                return (AzureNodeDescriptor<?>) getUserObject();
         }
 
         public DefaultActionGroup getActionGroup() {

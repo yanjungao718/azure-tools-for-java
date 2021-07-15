@@ -18,7 +18,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
-import java.awt.event.MouseListener;
 
 public abstract class AzureTree extends SimpleTree {
 
@@ -32,10 +31,10 @@ public abstract class AzureTree extends SimpleTree {
         TreeUtil.installActions(this);
         RelativeFont.BOLD.install(this);
         // right click to show popup actions.
-        addMouseListener((MouseListener)new PopupHandler() {
+        addMouseListener(new PopupHandler() {
             @Override
             public void invokePopup(Component comp, int x, int y) {
-                AzureNode[] arrayOfAbstractNode = (AzureNode[]) AzureTree.this.getSelectedNodes(AzureNode.class, null);
+                AzureNode<?>[] arrayOfAbstractNode = AzureTree.this.getSelectedNodes(AzureNode.class, null);
                 if (arrayOfAbstractNode.length == 0) {
                     return;
                 }

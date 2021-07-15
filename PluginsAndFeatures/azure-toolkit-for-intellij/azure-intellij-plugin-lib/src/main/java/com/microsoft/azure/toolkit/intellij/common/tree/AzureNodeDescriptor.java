@@ -5,21 +5,23 @@
 
 package com.microsoft.azure.toolkit.intellij.common.tree;
 
+import com.intellij.ide.util.treeView.NodeDescriptor;
+
 import javax.swing.*;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class AzureNodeDescriptor<T> extends com.intellij.ide.util.treeView.NodeDescriptor {
+public class AzureNodeDescriptor<T> extends NodeDescriptor<T> {
     private final T entity;
 
     private final Function<T, String> textGetter;
 
     public AzureNodeDescriptor(T entity) {
-        this(entity, e -> e.toString(), null);
+        this(entity, Objects::toString, null);
     }
 
     public AzureNodeDescriptor(T entity, Icon icon) {
-        this(entity, e -> e.toString(), icon);
+        this(entity, Objects::toString, icon);
     }
 
     public AzureNodeDescriptor(T entity, Function<T, String> textGetter) {

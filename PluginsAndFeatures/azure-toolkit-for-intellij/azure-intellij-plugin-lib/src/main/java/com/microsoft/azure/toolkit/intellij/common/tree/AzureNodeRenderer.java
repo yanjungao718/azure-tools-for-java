@@ -20,7 +20,7 @@ public class AzureNodeRenderer extends NodeRenderer {
             return;
         }
         if (value instanceof AzureNode) {
-            AzureNodeDescriptor descriptor = ((AzureNode<?>) value).getNodeDescriptor();
+            AzureNodeDescriptor<?> descriptor = ((AzureNode<?>) value).getNodeDescriptor();
             if (Objects.nonNull(descriptor) && Objects.nonNull(descriptor.getIcon())) {
                 setIcon(descriptor.getIcon());
             }
