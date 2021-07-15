@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceConnection;
 import org.jetbrains.annotations.NotNull;
 
-public class MySQLDatabaseResourceConnectionPreloadingActivity extends PreloadingActivity {
+public class MySQLConnectionDefinitionPreloadingActivity extends PreloadingActivity {
 
     @Override
     public void preload(@NotNull ProgressIndicator progressIndicator) {

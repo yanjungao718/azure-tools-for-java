@@ -9,13 +9,13 @@ import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceConnection;
 import org.jetbrains.annotations.NotNull;
 
-public class SqlServerDatabaseResourceConnectionPreloadingActivity extends PreloadingActivity {
+public class SqlServerConnectionDefinitionPreloadingActivity extends PreloadingActivity {
 
     @Override
     public void preload(@NotNull ProgressIndicator progressIndicator) {
         final String resourceType = DatabaseResource.Definition.SQL_SERVER.getType();
         final String consumerType = ModuleResource.TYPE;
         ResourceManager.registerDefinition(DatabaseResource.Definition.SQL_SERVER);
-        ConnectionManager.registerDefinition(resourceType, consumerType, DatabaseResourceConnection.Definition.MODULE_SQL, project);
+        ConnectionManager.registerDefinition(resourceType, consumerType, DatabaseResourceConnection.Definition.MODULE_SQL);
     }
 }
