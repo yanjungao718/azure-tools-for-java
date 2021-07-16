@@ -48,7 +48,7 @@ public class ResourceConnectorTree extends AzureTree {
     private void initModuleNodeLoadListener() {
         project.getMessageBus().connect().subscribe(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC, connection -> {
             Resource consumer = connection.getConsumer();
-            if (!(consumer instanceof ModuleNode)) {
+            if (!(consumer instanceof ModuleResource)) {
                 return;
             }
             Enumeration<TreeNode> e = ResourceConnectorTree.this.getRootNode().children();
