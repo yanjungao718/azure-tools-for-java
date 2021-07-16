@@ -13,38 +13,38 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class AzureNode<T> extends DefaultMutableTreeNode {
-         private final DefaultActionGroup actionGroup = new DefaultActionGroup();
+    private final DefaultActionGroup actionGroup = new DefaultActionGroup();
 
-        private final T data;
+    private final T data;
 
-        public AzureNode(T data) {
-                this(data, Objects::toString, null);
-        }
+    public AzureNode(T data) {
+        this(data, Objects::toString, null);
+    }
 
-        public AzureNode(T data, Function<T, String> textGetter) {
-                this(data, textGetter, null);
-        }
+    public AzureNode(T data, Function<T, String> textGetter) {
+        this(data, textGetter, null);
+    }
 
-        public AzureNode(T data, Icon icon) {
-                this(data, Objects::toString, icon);
-        }
+    public AzureNode(T data, Icon icon) {
+        this(data, Objects::toString, icon);
+    }
 
-        public AzureNode(T data, Function<T, String> textGetter, Icon icon) {
-                this.data = data;
-                AzureNodeDescriptor<T> nodeDescriptor = new AzureNodeDescriptor<>(data, textGetter, icon);
-                setUserObject(nodeDescriptor);
-        }
+    public AzureNode(T data, Function<T, String> textGetter, Icon icon) {
+        this.data = data;
+        AzureNodeDescriptor<T> nodeDescriptor = new AzureNodeDescriptor<>(data, textGetter, icon);
+        setUserObject(nodeDescriptor);
+    }
 
-        public T getData() {
-                return this.data;
-        }
+    public T getData() {
+        return this.data;
+    }
 
-        public AzureNodeDescriptor<?> getNodeDescriptor() {
-                return (AzureNodeDescriptor<?>) getUserObject();
-        }
+    public AzureNodeDescriptor<?> getNodeDescriptor() {
+        return (AzureNodeDescriptor<?>) getUserObject();
+    }
 
-        public DefaultActionGroup getActionGroup() {
-                return this.actionGroup;
-        }
+    public DefaultActionGroup getActionGroup() {
+        return this.actionGroup;
+    }
 
 }
