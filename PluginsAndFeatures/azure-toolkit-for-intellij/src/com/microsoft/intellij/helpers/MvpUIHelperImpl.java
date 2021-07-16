@@ -29,4 +29,9 @@ public class MvpUIHelperImpl implements MvpUIHelper {
     public String loadPasswordFromSecureStore(@NotNull String key) {
         return IdeaSecureStore.getInstance().loadPassword(key);
     }
+
+    @Deprecated
+    public void forgetPasswordFromSecureStore(@NotNull String key) {
+        IdeaSecureStore.getInstance().forgetPassword(key);
+    }
 }

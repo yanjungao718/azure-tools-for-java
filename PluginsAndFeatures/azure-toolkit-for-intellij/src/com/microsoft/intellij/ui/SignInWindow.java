@@ -161,6 +161,8 @@ public class SignInWindow extends AzureDialogWrapper {
             final ServicePrincipalLoginDialog dialog = new ServicePrincipalLoginDialog(project);
             if (dialog.showAndGet()) {
                 auth = dialog.getData();
+            } else {
+                return Single.just(new AuthMethodDetails());
             }
         } else if (deviceLoginRadioButton.isSelected()) {
             auth.setType(AuthType.DEVICE_CODE);

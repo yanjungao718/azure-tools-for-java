@@ -64,9 +64,11 @@ public class IdentityAzureManager extends AzureManagerBase {
     public List<Subscription> getSubscriptions() {
         return Azure.az(AzureAccount.class).account().getSubscriptions();
     }
+
     public void selectSubscriptionByIds(List<String> subscriptionIds) {
         Azure.az(AzureAccount.class).account().selectSubscription(subscriptionIds);
     }
+
     @Override
     public Subscription getSubscriptionById(String sid) {
         return Azure.az(AzureAccount.class).account().getSubscription(sid);
@@ -82,6 +84,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         }
         return null;
     }
+
     @Override
     public List<Subscription> getSelectedSubscriptions() {
         if (!isSignedIn()) {
@@ -150,6 +153,10 @@ public class IdentityAzureManager extends AzureManagerBase {
             }
 
         } catch (Throwable e) {
+            if (StringUtils.isNotBlank(authMethodDetails.getClientId()) && authMethodDetails.getAuthType() == AuthType.SERVICE_PRINCIPAL) {
+                MvpUIHelperFactory.getInstance().getMvpUIHelper().forgetPasswordFromSecureStore(
+                    StringUtils.joinWith("|", "account", authMethodDetails.getClientId()));
+            }
             return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
         }
     }
@@ -195,7 +202,13 @@ public class IdentityAzureManager extends AzureManagerBase {
         if (!isSignedIn()) {
             return;
         }
-        Azure.az(AzureAccount.class).logout();
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        final AccountEntity account = az.account().getEntity();
+        if (StringUtils.isNotBlank(account.getClientId()) && account.getType() == AuthType.SERVICE_PRINCIPAL) {
+            MvpUIHelperFactory.getInstance().getMvpUIHelper().forgetPasswordFromSecureStore(
+                StringUtils.joinWith("|", "account", account.getClientId()));
+        }
+        az.logout();
         super.drop();
     }
 
