@@ -27,6 +27,7 @@ import com.microsoft.azuretools.utils.Pair;
 import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -233,10 +234,11 @@ public abstract class AzureManagerBase implements AzureManager {
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(credentials);
+            .withInterceptor(new TelemetryInterceptor())
+            .withInterceptor(new RestExceptionHandlerInterceptor())
+            .withUserAgent(CommonSettings.USER_AGENT)
+            .withProxy(new Proxy(Proxy.Type.HTTP, com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy()))
+            .authenticate(credentials);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
@@ -244,6 +246,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return buildAzureManager(InsightsManager.configure())
                 .withInterceptor(new TelemetryInterceptor())
                 .withInterceptor(new RestExceptionHandlerInterceptor())
+                .withProxy(new Proxy(Proxy.Type.HTTP, com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy()))
                 .authenticate(credentials, subscriptionId);
     }
 }
