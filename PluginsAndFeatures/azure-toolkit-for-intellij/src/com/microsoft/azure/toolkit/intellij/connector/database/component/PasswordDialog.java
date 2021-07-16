@@ -52,7 +52,8 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         super(project);
         this.resource = resource;
         setTitle(String.format(TITLE, resource.getTitle()));
-        headerTextPane.setText(String.format(HEADER_PATTERN, resource.getUsername(), resource.getJdbcUrl().getDatabase(), resource.getJdbcUrl().getServerHost()));
+        headerTextPane.setText(String.format(HEADER_PATTERN, resource.getUsername(), resource.getJdbcUrl().getDatabase(),
+                resource.getJdbcUrl().getServerHost()));
         testConnectionButton.setEnabled(false);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);

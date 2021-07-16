@@ -18,7 +18,6 @@ public interface ResourceView {
         return null;
     }
 
-
     /**
      * show properties in file editor.
      */
