@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
@@ -14,8 +15,9 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
+import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
@@ -54,8 +56,8 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         final Project project = module.getProject();
         return project.getService(ConnectionManager.class)
             .getConnectionsByConsumerId(module.getName()).stream()
-            .filter(c -> DatabaseResource.Definition.AZURE_MYSQL.getType().equals(c.getResource().getType())
-                    || DatabaseResource.Definition.SQL_SERVER.getType().equals(c.getResource().getType()))
+            .filter(c -> MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(c.getResource().getType())
+                    || SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(c.getResource().getType()))
             .map(c -> ((DatabaseResourceConnection) c))
             .filter(c -> StringUtils.equals(envPrefix, c.getResource().getEnvPrefix()))
             .findAny()
@@ -63,7 +65,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
             .map(r -> new LineMarkerInfo<>(
                 element, element.getTextRange(),
                 AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
-                element2 -> String.format("Connect to %s (%s)", DatabaseResource.Definition.getTitleByType(r.getType()), r.getJdbcUrl().getServerHost()),
+                element2 -> String.format("Connect to %s (%s)", r.getTitle(), r.getJdbcUrl().getServerHost()),
                 new SpringDatasourceNavigationHandler(r),
                 GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
     }
@@ -87,13 +89,12 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
                 final String resourceName = database.getDatabaseName();
-                final String message = String.format("Failed to connect %s (%s) , please sign in Azure first.",
-                        DatabaseResource.Definition.getTitleByType(database.getType()), resourceName);
-                DefaultLoader.getUIHelper().showError(message, "Connect to " + DatabaseResource.Definition.getTitleByType(database.getType()));
+                final String message = String.format("Failed to connect %s (%s) , please sign in Azure first.", database.getTitle(), resourceName);
+                DefaultLoader.getUIHelper().showError(message, "Connect to " + database.getTitle());
                 return;
             }
             final ResourceId serverId = database.getServerId();
-            if (DatabaseResource.Definition.AZURE_MYSQL.getType().equals(database.getType())) {
+            if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(database.getType())) {
                 final MySqlServer server = Azure.az(AzureMySql.class).subscription(serverId.subscriptionId()).get(serverId.id());
                 if (Objects.nonNull(server)) {
                     final MySQLNode node = new MySQLNode(null, server) {
@@ -104,7 +105,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                     };
                     DefaultLoader.getUIHelper().openMySQLPropertyView(node);
                 }
-            } else if (DatabaseResource.Definition.SQL_SERVER.getType().equals(database.getType())) {
+            } else if (SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(database.getType())) {
                 ISqlServer server = Azure.az(AzureSqlServer.class).sqlServer(serverId.subscriptionId(), serverId.resourceGroupName(), serverId.name());
                 if (Objects.nonNull(server)) {
                     final SqlServerNode node = new SqlServerNode(null, serverId.subscriptionId(), server) {

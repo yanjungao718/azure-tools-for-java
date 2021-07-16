@@ -209,7 +209,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
                 if (urlModified || usernameModified || passwordSaveTypeModified) { // modified
                     // TODO: @qianjin what if only password is changed.
                     final String template = "%s database \"%s/%s\" with different configuration is found on your PC. \nDo you want to override it?";
-                    final String msg = String.format(template, DatabaseResource.Definition.getTitleByType(databaseResource.getType()),
+                    final String msg = String.format(template, databaseResource.getTitle(),
                             databaseResource.getServerId().name(), databaseResource.getDatabaseName());
                     boolean validated = DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
                     if (!validated) {
@@ -232,10 +232,10 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
                     final String msg = String.format(template,
                             module.getModuleName(),
                             databaseResource.getEnvPrefix(),
-                            DatabaseResource.Definition.getTitleByType(connectedDatabaseResource.getType()),
+                            connectedDatabaseResource.getTitle(),
                             connectedDatabaseResource.getServerId().name(),
                             connectedDatabaseResource.getDatabaseName(),
-                            DatabaseResource.Definition.getTitleByType(databaseResource.getType()),
+                            databaseResource.getTitle(),
                             databaseResource.getServerId().name(),
                             databaseResource.getDatabaseName());
                     return DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
