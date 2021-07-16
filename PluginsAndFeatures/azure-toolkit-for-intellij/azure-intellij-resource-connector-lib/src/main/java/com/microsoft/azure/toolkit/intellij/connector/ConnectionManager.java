@@ -63,6 +63,8 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
 
     void addConnection(Connection<? extends Resource, ? extends Resource> connection);
 
+    void removeConnection(String resourceId, String consumerId);
+
     List<Connection<? extends Resource, ? extends Resource>> getConnections();
 
     List<Connection<? extends Resource, ? extends Resource>> getConnectionsByResourceId(String id);
@@ -84,8 +86,13 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
 
         @Override
         public synchronized void addConnection(Connection<? extends Resource, ? extends Resource> connection) {
-            connections.remove(connection); // always replace the old with the new one.
+            connections.removeIf(c -> Objects.equals(c, connection)); // always replace the old with the new one.
             connections.add(connection);
+        }
+
+        @Override
+        public synchronized void removeConnection(String resourceId, String consumerId) {
+            connections.removeIf(c -> StringUtils.equals(resourceId, c.getResource().getId()) && StringUtils.equals(consumerId, c.getConsumer().getId()));
         }
 
         @Override
