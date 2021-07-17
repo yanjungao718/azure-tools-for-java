@@ -75,6 +75,7 @@ public class WebAppNode extends WebAppBaseNode {
         addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
         addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_BROWSER).withBackgroudable(true).build());
         addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         super.loadActions();
@@ -135,6 +136,11 @@ public class WebAppNode extends WebAppBaseNode {
     private void restart() {
         this.webappManager.restart();
         this.renderNode(WebAppBaseState.RUNNING);
+    }
+
+    @AzureOperation(name = "webapp.open_portal", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        this.openResourcesInPortal(this.webappManager.subscriptionId(), this.webappManager.id());
     }
 
     @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
