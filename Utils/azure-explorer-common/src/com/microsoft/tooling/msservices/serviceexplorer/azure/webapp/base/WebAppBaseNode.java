@@ -5,7 +5,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -35,13 +34,16 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected WebAppBaseState state;
 
     public WebAppBaseNode(final AzureRefreshableNode parent, final String label, final IAppService appService) {
-        super(appService.id(), appService.name(), parent, true);
+        super(String.join("/", appService.subscriptionId(), appService.resourceGroup(), appService.name()), appService.name(), parent, true);
         this.label = label;
         this.appService = appService;
-        this.subscriptionId = ResourceId.fromString(appService.id()).subscriptionId();
+        this.subscriptionId = appService.subscriptionId();
 
         renderNode(WebAppBaseState.UPDATING);
-        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> refreshItems());
+        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
+            loadActions();
+            renderNode(WebAppBaseState.fromString(((IAppService) appService.refresh()).state()));
+        });
     }
 
     protected String getAppServiceIconPath(final WebAppBaseState state) {
@@ -60,7 +62,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(ACTION_START).setEnabled(!running);
+        boolean refreshing = this.state == WebAppBaseState.UPDATING;
+        getNodeActionByName(ACTION_START).setEnabled(!running && !refreshing);
         getNodeActionByName(ACTION_STOP).setEnabled(running);
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
 

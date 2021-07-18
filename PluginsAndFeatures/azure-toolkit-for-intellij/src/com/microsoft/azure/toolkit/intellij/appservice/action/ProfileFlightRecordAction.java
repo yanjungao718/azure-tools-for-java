@@ -40,28 +40,27 @@ import java.util.logging.Logger;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-// todo: Migrate profile client implementation to track2 sdk
 @Name("Profile Flight Recorder")
 public class ProfileFlightRecordAction extends NodeActionListener {
     private static final Logger logger = Logger.getLogger(ProfileFlightRecordAction.class.getName());
     private static final int ONE_SECOND = 1000;
     private static final int TWO_SECONDS = 2000;
     private final Project project;
-    private final String webAppId;
+    private final String subscriptionId;
 
     private IAppService appService;
 
     public ProfileFlightRecordAction(WebAppNode webAppNode) {
         super();
         this.project = (Project) webAppNode.getProject();
-        this.webAppId = webAppNode.getWebAppId();
-        this.appService = webAppNode.getWebappManager();
+        this.appService = webAppNode.getWebApp();
+        this.subscriptionId = webAppNode.getWebApp().subscriptionId();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         EventUtil.executeWithLog(TelemetryConstants.WEBAPP, "start-flight-recorder", op -> {
-            op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, Utils.getSubscriptionId(webAppId));
+            op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
             final AzureString title = AzureOperationBundle.title("appservice|flight_recorder.profile");
             final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
             AzureTaskManager.getInstance().runInBackground(task);
@@ -70,8 +69,6 @@ public class ProfileFlightRecordAction extends NodeActionListener {
 
     private void doProfileFlightRecorderAll() {
         try {
-            // prerequisite check
-            final String subscriptionId = AzureMvpModel.getSegment(webAppId, "subscriptions");
             // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
             if (appService.getRuntime().getOperatingSystem() == OperatingSystem.DOCKER) {
                 final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());

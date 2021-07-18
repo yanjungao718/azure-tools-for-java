@@ -529,9 +529,9 @@ public class UIHelperImpl implements UIHelper {
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(node.getWebAppName(), sid, webAppId);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.WebApp.MODULE)));
-
         }
-        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+        final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
+        AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));
     }
 
     @Override
