@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,20 +51,25 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         super();
         this.project = project;
         this.app = app;
-        AzureTaskManager.getInstance().runLater(this::init);
+        this.init();
     }
 
     private void init() {
-        this.resetToolbar();
-        this.reset.setVisible(false);
-        this.saveButton.setEnabled(false);
-        this.lblSubscription.setText(this.app.subscription().getName());
-        this.lblCluster.setText(this.app.getCluster().name());
-        this.lblApp.setText(this.app.name());
-        this.formConfig.updateForm(this.app);
-        this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app));
-        this.panelInstances.setApp(this.app);
-        initListeners();
+        AzureTaskManager.getInstance().runOnPooledThread((() -> {
+            final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).orElse(null);
+            AzureTaskManager.getInstance().runLater(() -> {
+                this.resetToolbar(deployment);
+                this.reset.setVisible(false);
+                this.saveButton.setEnabled(false);
+                this.lblSubscription.setText(this.app.subscription().getName());
+                this.lblCluster.setText(this.app.getCluster().name());
+                this.lblApp.setText(this.app.name());
+                AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
+                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app)));
+                this.panelInstances.setApp(this.app);
+                initListeners();
+            });
+        }));
     }
 
     private void initListeners() {
@@ -139,13 +145,13 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
             AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
                 this.app.refresh();
-                Optional.ofNullable(this.app.activeDeployment()).ifPresent(d -> d.refresh());
+                final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).map(d -> d.refresh()).orElse(null);
                 AzureTaskManager.getInstance().runLater(() -> {
                     this.formConfig.updateForm(this.app);
                     this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app));
                     this.panelInstances.setApp(this.app);
+                    this.resetToolbar(deployment);
                 });
-                this.resetToolbar();
             });
         });
     }
@@ -160,13 +166,10 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.panelInstances.setEnabled(enabled);
     }
 
-    private void resetToolbar() {
-        final SpringCloudDeployment deployment = Optional.ofNullable(app.activeDeployment()).stream().findAny()
-                .or(() -> app.deployments().stream().findAny())
-                .orElse(null);
+    private void resetToolbar(@Nullable SpringCloudDeployment deployment) {
         if (Objects.isNull(deployment)) {
-            AzureMessager.getMessager().alert(String.format("App(%s) has no deployment", this.app.name()));
-            this.closeEditor();
+            AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.name()), null);
+            this.setEnabled(false);
             return;
         }
         final SpringCloudDeploymentStatus status = deployment.entity().getStatus();

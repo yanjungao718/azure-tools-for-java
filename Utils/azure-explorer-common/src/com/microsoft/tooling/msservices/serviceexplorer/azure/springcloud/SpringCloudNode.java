@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -66,6 +67,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     }
 
     @Override
+    @AzureOperation(name = "springcloud|app.list.cluster", params = "this.cluster.name()", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         final List<SpringCloudApp> apps = cluster.refresh().apps();
         this.setName(CollectionUtils.isEmpty(apps) ? this.cluster.name() + EMPTY_POSTFIX : this.cluster.name());

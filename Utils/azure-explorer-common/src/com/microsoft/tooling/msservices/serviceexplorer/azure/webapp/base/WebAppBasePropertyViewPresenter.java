@@ -22,6 +22,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import rx.Observable;
 
 import javax.annotation.Nonnull;
@@ -81,7 +82,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
         final JavaVersion javaVersion = runtime.getJavaVersion();
-        if (javaVersion != JavaVersion.OFF) {
+        if (ObjectUtils.notEqual(javaVersion, JavaVersion.OFF)) {
             propertyMap.put(KEY_JAVA_VERSION, javaVersion.getValue());
             propertyMap.put(KEY_JAVA_CONTAINER, runtime.getWebContainer().getValue());
         }

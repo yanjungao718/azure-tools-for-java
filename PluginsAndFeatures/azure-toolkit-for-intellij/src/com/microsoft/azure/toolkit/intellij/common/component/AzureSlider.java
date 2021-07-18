@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.ui.JBIntSpinner;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -19,7 +18,6 @@ public class AzureSlider {
 
     private JSlider numSlider;
     private JBIntSpinner numValue;
-    @Setter
     private int realMin = Integer.MIN_VALUE;
 
     public AzureSlider() {
@@ -61,6 +59,11 @@ public class AzureSlider {
 
     public int getValue() {
         return (int) this.numValue.getValue();
+    }
+
+    public void setRealMin(int realMin) {
+        this.realMin = realMin;
+        this.setValue(this.getValue());
     }
 
     public void updateLabels() {
