@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
-    private static final String ICON_PATH = "AzureExplorer_16.png";
     private static final String BASE_MODULE_NAME = "Azure";
     private static final String MODULE_NAME_NO_SUBSCRIPTION = "No subscription";
     private static final String ERROR_GETTING_SUBSCRIPTIONS_TITLE = "MS Services - Error Getting Subscriptions";
@@ -78,7 +77,7 @@ public class AzureModule extends AzureRefreshableNode {
      * @param project project
      */
     public AzureModule(@Nullable Object project) {
-        super(AZURE_SERVICE_MODULE_ID, composeName(), null, ICON_PATH);
+        super(AZURE_SERVICE_MODULE_ID, composeName(), null, null);
         this.project = project;
         storageModule = new StorageModule(this);
         webAppModule = new WebAppModule(this);
