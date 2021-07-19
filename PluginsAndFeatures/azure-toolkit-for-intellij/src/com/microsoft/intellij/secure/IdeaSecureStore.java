@@ -16,11 +16,8 @@ import javax.annotation.Nullable;
 import static com.intellij.credentialStore.CredentialAttributesKt.generateServiceName;
 
 public class IdeaSecureStore implements SecureStore {
-    private IdeaSecureStore() {
-    }
-
-    // Leverage IntelliJ PasswordSafe component
     private PasswordSafe passwordSafe = PasswordSafe.getInstance();
+    private final CredentialAttributes keysEntry = makeKey("SecureStore", "keys", null);
 
     private static class LazyHolder {
         static final IdeaSecureStore INSTANCE = new IdeaSecureStore();
@@ -32,6 +29,13 @@ public class IdeaSecureStore implements SecureStore {
 
     @Override
     public void savePassword(@Nonnull String serviceName, @Nullable String key, @Nullable String userName, @Nonnull String password) {
+        final String compositeKey = StringUtils.joinWith("|", serviceName, StringUtils.defaultString(key), StringUtils.defaultString(userName));
+        String savedKeys = passwordSafe.getPassword(keysEntry);
+        if (StringUtils.contains(savedKeys, compositeKey) && StringUtils.isNotBlank(password)) {
+            savedKeys = StringUtils.defaultString(savedKeys) + "\n" + compositeKey;
+            passwordSafe.setPassword(keysEntry, savedKeys);
+        }
+
         passwordSafe.setPassword(makeKey(serviceName, key, userName), password);
     }
 
@@ -58,11 +62,11 @@ public class IdeaSecureStore implements SecureStore {
         if (StringUtils.isBlank(passwordSafe.getPassword(newKey))) {
             passwordSafe.setPassword(newKey, passwordSafe.getPassword(oldKey));
         }
-        passwordSafe.set(oldKey, null);
+        passwordSafe.setPassword(oldKey, null);
     }
 
     @Nonnull
-    private CredentialAttributes makeKey(String serviceName, @Nullable String key, @Nullable String userName) {
+    private static CredentialAttributes makeKey(String serviceName, @Nullable String key, @Nullable String userName) {
         String serverNameWithPrefix = serviceName;
         if (!StringUtils.contains(serviceName, "Azure IntelliJ Plugin")) {
             serverNameWithPrefix = StringUtils.join("Azure IntelliJ Plugin | " + serviceName);
