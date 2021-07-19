@@ -186,8 +186,6 @@ public class IdentityAzureManager extends AzureManagerBase {
         return StringUtils.joinWith("|", "account", clientId);
     }
 
-
-
     public Mono<AuthMethodDetails> signInServicePrincipal(AuthConfiguration auth) {
         return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
             if (secureStore != null && StringUtils.isNotBlank(auth.getKey())) {
