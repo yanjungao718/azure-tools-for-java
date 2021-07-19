@@ -128,7 +128,7 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {
-        if (authMethodDetails == null || authMethodDetails.getAuthMethod() == null) {
+        if (authMethodDetails == null || authMethodDetails.getAuthMethod() == null || authMethodDetails.getAuthType() == null) {
             return Mono.just(new AuthMethodDetails());
         }
         AuthType authType = authMethodDetails.getAuthType();
@@ -181,7 +181,7 @@ public class IdentityAzureManager extends AzureManagerBase {
 
     public Mono<AuthMethodDetails> signInServicePrincipal(AuthConfiguration auth) {
         return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
-            if (secureStore != null) {
+            if (secureStore != null && StringUtils.isNotBlank(auth.getKey())) {
                 secureStore.savePassword("account", getSecureStoreKey(auth.getClient()), auth.getKey());
             }
             AuthMethodDetails authMethodDetails = fromAccountEntity(account.getEntity());
