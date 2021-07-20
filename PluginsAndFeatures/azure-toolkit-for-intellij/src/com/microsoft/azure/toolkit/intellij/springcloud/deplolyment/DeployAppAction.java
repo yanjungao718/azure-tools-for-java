@@ -61,7 +61,7 @@ public class DeployAppAction extends AzureAnAction {
         final RunnerAndConfigurationSettings settings = Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
         final SpringCloudDeploymentConfiguration configuration = ((SpringCloudDeploymentConfiguration) settings.getConfiguration());
         if (Objects.nonNull(app)) {
-            configuration.setAppConfig(SpringCloudAppConfig.fromApp(app));
+            AzureTaskManager.getInstance().runOnPooledThread(() -> configuration.setAppConfig(SpringCloudAppConfig.fromApp(app)));
         }
         AzureTaskManager.getInstance().runLater(() -> {
             if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
