@@ -49,7 +49,8 @@ public class AzureSdkEnforcer {
     private static void warnDeprecatedLibs(@AzureTelemetry.Property List<? extends AzureJavaSdkEntity> deprecatedLibs) {
         final String message = buildMessage(deprecatedLibs);
         final IAzureMessage.Action referenceBook = new IntellijActionMessageAction(OpenReferenceBookAction.ID);
-        final IAzureMessage.Action sdkReleases = new IntellijOpenInBrowserMessageAction("Azure SDK Releases", "https://azure.github.io/azure-sdk/releases/latest/java.html");
+        final IAzureMessage.Action sdkReleases = new IntellijOpenInBrowserMessageAction(
+                "Azure SDK Releases", "https://azure.github.io/azure-sdk/releases/latest/java.html");
         AzureMessager.getMessager().warning(message, "Deprecated Azure SDK libraries Detected", referenceBook, sdkReleases);
     }
 
