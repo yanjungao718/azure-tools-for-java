@@ -34,7 +34,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected WebAppBaseState state;
 
     public WebAppBaseNode(final AzureRefreshableNode parent, final String label, final IAppService appService) {
-        super(String.join("/", appService.subscriptionId(), appService.resourceGroup(), appService.name()), appService.name(), parent, true);
+        super(appService.id(), appService.name(), parent, true);
         this.label = label;
         this.appService = appService;
         this.subscriptionId = appService.subscriptionId();
