@@ -140,7 +140,7 @@ public class WebAppNode extends WebAppBaseNode {
 
     @AzureOperation(name = "webapp.open_portal", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
-        this.openResourcesInPortal(this.webappManager.subscriptionId(), this.webappManager.id());
+        this.openResourcesInPortal(this.webApp.subscriptionId(), this.webApp.id());
     }
 
     @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
