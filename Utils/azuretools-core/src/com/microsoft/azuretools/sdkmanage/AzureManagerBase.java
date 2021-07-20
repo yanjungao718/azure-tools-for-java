@@ -252,6 +252,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     private static Proxy createProxyFromConfig() {
-        return Optional.ofNullable(com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy()).map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
+        return Optional.ofNullable(com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy())
+            .map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
     }
 }
