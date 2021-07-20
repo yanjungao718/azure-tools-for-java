@@ -13,7 +13,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -22,7 +21,6 @@ import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +52,9 @@ public class IntellijAzureMessager implements IAzureMessager {
                 final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
                 return MessageDialogBuilder.yesNo(title, raw.getContent()).guessWindowAndAsk();
         }
-        if (Objects.equals(getBackgrounded(raw), Boolean.FALSE) && raw.getType() == IAzureMessage.Type.ERROR) {
+        final AzureTask<?> task = AzureTaskContext.current().getTask();
+        final Boolean backgrounded = Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);
+        if (Objects.equals(backgrounded, Boolean.FALSE) && raw.getType() == IAzureMessage.Type.ERROR) {
             this.showErrorDialog(raw);
         } else {
             this.showNotification(raw);
@@ -79,14 +79,5 @@ public class IntellijAzureMessager implements IAzureMessager {
         final Notification notification = this.createNotification(message.getTitle(), content, type);
         notification.addActions(message.getAnActions());
         Notifications.Bus.notify(notification, message.getProject());
-    }
-
-    @Nullable
-    private Boolean getBackgrounded(IAzureMessage message) {
-        if (!(message instanceof AzureMessage) || Objects.isNull(((AzureMessage) message).getBackgrounded())) {
-            final AzureTask<?> task = AzureTaskContext.current().getTask();
-            return Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);
-        }
-        return ((AzureMessage) message).getBackgrounded();
     }
 }

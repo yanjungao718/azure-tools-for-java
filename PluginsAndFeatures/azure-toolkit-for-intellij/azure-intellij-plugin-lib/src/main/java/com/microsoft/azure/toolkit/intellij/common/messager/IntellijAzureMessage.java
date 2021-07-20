@@ -49,7 +49,6 @@ public class IntellijAzureMessage extends AzureMessage {
         super(raw.getType(), raw.getMessage());
         this.original = raw;
         if (raw instanceof AzureMessage) {
-            this.setBackgrounded(((AzureMessage) raw).getBackgrounded());
             this.setValueDecorator(((AzureMessage) raw).getValueDecorator());
         }
         this.setTitle(raw.getTitle());
