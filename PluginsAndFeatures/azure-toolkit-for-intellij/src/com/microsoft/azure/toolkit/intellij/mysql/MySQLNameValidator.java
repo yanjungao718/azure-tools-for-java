@@ -19,7 +19,7 @@ public class MySQLNameValidator implements Function<ServerNameTextField, AzureVa
         final String value = textField.getValue();
         // validate availability
         try {
-            if (Azure.az(AzureMySql.class).subscription(textField.getSubscriptionId()).checkNameAvailability(value)) {
+            if (!Azure.az(AzureMySql.class).subscription(textField.getSubscriptionId()).checkNameAvailability(value)) {
                 return AzureValidationInfo.builder().input(textField).message(value + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
             }
         } catch (CloudException e) {
