@@ -46,16 +46,20 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private final Project project;
     @Nonnull
     private final SpringCloudApp app;
+    @Nonnull
+    private SpringCloudAppConfig originalConfig;
 
     public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudApp app) {
         super();
         this.project = project;
         this.app = app;
-        this.init();
+        this.rerender();
+        this.initListeners();
     }
 
-    private void init() {
+    private void rerender() {
         AzureTaskManager.getInstance().runOnPooledThread((() -> {
+            this.originalConfig = SpringCloudAppConfig.fromApp(this.app);
             final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).orElse(null);
             AzureTaskManager.getInstance().runLater(() -> {
                 this.resetToolbar(deployment);
@@ -65,9 +69,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                 this.lblCluster.setText(this.app.getCluster().name());
                 this.lblApp.setText(this.app.name());
                 AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
-                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app)));
+                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setData(this.originalConfig));
                 this.panelInstances.setApp(this.app);
-                initListeners();
             });
         }));
     }
@@ -112,7 +115,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.refresh();
         }));
         this.formConfig.setDataChangedListener((data) -> {
-            final boolean changedFromOrigin = !Objects.equals(this.getConfig(), SpringCloudAppConfig.fromApp(this.app));
+            final boolean changedFromOrigin = !Objects.equals(this.getConfig(), this.originalConfig);
             this.reset.setVisible(changedFromOrigin);
             this.saveButton.setEnabled(changedFromOrigin);
         });
@@ -146,12 +149,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
                 this.app.refresh();
                 final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).map(d -> d.refresh()).orElse(null);
-                AzureTaskManager.getInstance().runLater(() -> {
-                    this.formConfig.updateForm(this.app);
-                    this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app));
-                    this.panelInstances.setApp(this.app);
-                    this.resetToolbar(deployment);
-                });
+                AzureTaskManager.getInstance().runLater(this::rerender);
             });
         });
     }
