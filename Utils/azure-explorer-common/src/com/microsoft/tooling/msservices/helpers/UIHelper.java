@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.helpers;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -99,11 +100,11 @@ public interface UIHelper {
 
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
 
-    default void openMySQLPropertyView(@NotNull MySQLNode node) {
+    default void openMySQLPropertyView(@NotNull String id, @NotNull Object project) {
 
     }
 
-    default void openSqlServerPropertyView(@NotNull SqlServerNode node) {
+    default void openSqlServerPropertyView(@NotNull String id, @NotNull Object project) {
 
     }
 

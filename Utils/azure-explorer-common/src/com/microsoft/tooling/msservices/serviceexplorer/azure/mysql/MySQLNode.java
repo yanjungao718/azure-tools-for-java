@@ -144,7 +144,7 @@ public class MySQLNode extends Node implements TelemetryProperties {
 
     @AzureOperation(name = "mysql.show_properties", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
-        DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
+        DefaultLoader.getUIHelper().openMySQLPropertyView(this.getId(), this.getProject());
     }
 
     @Override

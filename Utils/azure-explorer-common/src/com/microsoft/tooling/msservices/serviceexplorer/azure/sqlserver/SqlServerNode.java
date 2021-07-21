@@ -79,7 +79,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
 
     @AzureOperation(name = "sqlserver|server.show_properties", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
-        DefaultLoader.getUIHelper().openSqlServerPropertyView(SqlServerNode.this);
+        DefaultLoader.getUIHelper().openSqlServerPropertyView(this.getId(), this.getProject());
     }
 
     @Override
