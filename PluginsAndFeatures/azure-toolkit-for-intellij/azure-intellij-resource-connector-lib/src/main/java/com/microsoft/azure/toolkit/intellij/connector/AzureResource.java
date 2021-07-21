@@ -10,7 +10,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 /**
  * Base Azure resource interface.
  */
-public interface AzureResource extends Resource, ResourceView {
+public interface AzureResource extends Resource {
 
     /**
      * Azure related resource Id.

@@ -49,7 +49,8 @@ public class AzureSdkEnforcer {
     private static void warnDeprecatedLibs(@AzureTelemetry.Property List<? extends AzureJavaSdkEntity> deprecatedLibs) {
         final String message = buildMessage(deprecatedLibs);
         final IAzureMessage.Action referenceBook = new IntellijActionMessageAction(OpenReferenceBookAction.ID);
-        final IAzureMessage.Action sdkReleases = new IntellijOpenInBrowserMessageAction("Azure SDK Releases", "https://azure.github.io/azure-sdk/releases/latest/java.html");
+        final IAzureMessage.Action sdkReleases = new IntellijOpenInBrowserMessageAction(
+                "Azure SDK Releases", "https://azure.github.io/azure-sdk/releases/latest/java.html");
         AzureMessager.getMessager().warning(message, "Deprecated Azure SDK libraries Detected", referenceBook, sdkReleases);
     }
 
@@ -67,7 +68,7 @@ public class AzureSdkEnforcer {
         }).collect(Collectors.joining(""));
         return "<html>" +
                 "Deprecated Azure SDK libraries are detected in your project, " +
-                "refer <a href='https://azure.github.io/azure-sdk/releases/latest/java.html'>Azure SDK Releases</a> for the latest releases." +
+                "refer to <a href='https://azure.github.io/azure-sdk/releases/latest/java.html'>Azure SDK Releases</a> for the latest releases." +
                 "<ul style='margin-top:2px'>" + liPackages + "</ul>" +
                 "</html>";
     }

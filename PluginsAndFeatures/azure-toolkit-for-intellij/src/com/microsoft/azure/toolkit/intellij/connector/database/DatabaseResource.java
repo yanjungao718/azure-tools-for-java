@@ -6,13 +6,15 @@
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureResource;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +30,6 @@ import javax.annotation.Nullable;
 
 @Setter
 @Getter
-@Builder
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DatabaseResource implements AzureResource {
@@ -54,11 +55,6 @@ public class DatabaseResource implements AzureResource {
         this.databaseName = dbId.name();
     }
 
-    /*@Override
-    public ResourceId getServerId() {
-        return this.serverId;
-    }*/
-
     @Override
     public String getId() {
         return DigestUtils.md5Hex(this.getDatabaseId());
@@ -79,24 +75,35 @@ public class DatabaseResource implements AzureResource {
         return "Azure Database";
     }
 
-    protected static void write(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
-        resourceEle.setAttribute(new Attribute(Resource.FIELD_ID, resource.getId()));
-        resourceEle.addContent(new Element("azureResourceId").addContent(resource.getDatabaseId()));
-        resourceEle.addContent(new Element("url").setText(resource.jdbcUrl.toString()));
-        resourceEle.addContent(new Element("username").setText(resource.username));
-        resourceEle.addContent(new Element("passwordSave").setText(resource.password.saveType().name()));
-        if (ArrayUtils.isNotEmpty(resource.password.password())) {
-            PasswordStore.savePassword(resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
-        }
-    }
+    protected interface DatabaseDefinition extends ResourceDefinition<DatabaseResource> {
 
-    protected static void read(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
-        resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
-        resource.setUsername(resourceEle.getChildTextTrim("username"));
-        resource.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
-        final String password = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.password.saveType());
-        if (StringUtils.isNotBlank(password)) {
-            resource.password.password(password.toCharArray());
+        @Override
+        default AzureFormJPanel<DatabaseResource> getResourcesPanel(@Nonnull String type, final Project project) {
+            return new DatabaseResourcePanel(this);
         }
+
+        @Override
+        default boolean write(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
+            resourceEle.setAttribute(new Attribute(Resource.FIELD_ID, resource.getId()));
+            resourceEle.addContent(new Element("azureResourceId").addContent(resource.getDatabaseId()));
+            resourceEle.addContent(new Element("url").setText(resource.jdbcUrl.toString()));
+            resourceEle.addContent(new Element("username").setText(resource.username));
+            resourceEle.addContent(new Element("passwordSave").setText(resource.password.saveType().name()));
+            if (ArrayUtils.isNotEmpty(resource.password.password())) {
+                PasswordStore.savePassword(resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
+            }
+            return true;
+        }
+
+        default void read(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
+            resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
+            resource.setUsername(resourceEle.getChildTextTrim("username"));
+            resource.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
+            final String password = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.password.saveType());
+            if (StringUtils.isNotBlank(password)) {
+                resource.password.password(password.toCharArray());
+            }
+        }
+
     }
 }

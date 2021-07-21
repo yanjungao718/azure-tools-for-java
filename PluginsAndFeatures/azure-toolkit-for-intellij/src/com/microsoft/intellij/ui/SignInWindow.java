@@ -20,9 +20,9 @@ import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
@@ -35,10 +35,8 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
@@ -72,7 +70,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHO
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
     private static final String SIGN_IN_ERROR = "Sign In Error";
-    private static final IdeaSecureStore secureStore = IdeaSecureStore.getInstance();
     private JPanel contentPane;
 
     private JRadioButton deviceLoginRadioButton;
@@ -175,7 +172,7 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private Single<AuthMethodDetails> loginAsync(AuthConfiguration auth) {
-        final IAzureOperationTitle title = AzureOperationBundle.title("account.sign_in");
+        final AzureString title = AzureOperationBundle.title("account.sign_in");
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -192,9 +189,6 @@ public class SignInWindow extends AzureDialogWrapper {
         switch (auth.getType()) {
             case SERVICE_PRINCIPAL:
                 authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInServicePrincipal(auth)), "sp");
-                if (StringUtils.isNotBlank(auth.getKey())) {
-                    secureStore.savePassword(StringUtils.joinWith("|", "account", auth.getClient()), auth.getKey());
-                }
                 break;
             case DEVICE_CODE:
                 authMethodDetailsResult = call(this::doDeviceLogin, "dc");
