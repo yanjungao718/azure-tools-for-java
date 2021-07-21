@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
@@ -18,17 +17,10 @@ import com.intellij.psi.PsiElement;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -93,29 +85,10 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 DefaultLoader.getUIHelper().showError(message, "Connect to " + database.getTitle());
                 return;
             }
-            final ResourceId serverId = database.getServerId();
             if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(database.getType())) {
-                final MySqlServer server = Azure.az(AzureMySql.class).subscription(serverId.subscriptionId()).get(serverId.id());
-                if (Objects.nonNull(server)) {
-                    final MySQLNode node = new MySQLNode(null, server) {
-                        @Override
-                        public Object getProject() {
-                            return psiElement.getProject();
-                        }
-                    };
-                    DefaultLoader.getUIHelper().openMySQLPropertyView(node);
-                }
+                DefaultLoader.getUIHelper().openMySQLPropertyView(database.getServerId().id(), psiElement.getProject());
             } else if (SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(database.getType())) {
-                ISqlServer server = Azure.az(AzureSqlServer.class).sqlServer(serverId.subscriptionId(), serverId.resourceGroupName(), serverId.name());
-                if (Objects.nonNull(server)) {
-                    final SqlServerNode node = new SqlServerNode(null, serverId.subscriptionId(), server) {
-                        @Override
-                        public Object getProject() {
-                            return psiElement.getProject();
-                        }
-                    };
-                    DefaultLoader.getUIHelper().openSqlServerPropertyView(node);
-                }
+                DefaultLoader.getUIHelper().openSqlServerPropertyView(database.getServerId().id(), psiElement.getProject());
             }
         }
     }
