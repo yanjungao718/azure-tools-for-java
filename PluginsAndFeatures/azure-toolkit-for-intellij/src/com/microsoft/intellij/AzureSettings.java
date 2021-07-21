@@ -18,6 +18,9 @@ import java.util.*;
 import static com.microsoft.intellij.AzurePlugin.log;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
+/**
+ * TODO: Move these settings into @see com.microsoft.azure.toolkit.intellij.common.settings.ProjectAzureSettings
+ */
 @State(
         name = "AzureSettings",
         storages = {@Storage("azure/azureSettings.xml")}
