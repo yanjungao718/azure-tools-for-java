@@ -131,7 +131,7 @@ public class CreateWebAppAction extends NodeActionListener {
     private void refreshAzureExplorer(IWebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
             }
         });
     }

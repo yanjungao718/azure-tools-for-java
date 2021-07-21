@@ -289,6 +289,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         if (os != null && os instanceof OperatingSystem) {
             switch ((OperatingSystem) os) {
                 case WINDOWS:
+                case LINUX:
                     txtJavaVersion.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null
                             ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
                     txtContainer.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null
@@ -298,7 +299,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                     lblJavaVersion.setVisible(true);
                     lblContainer.setVisible(true);
                     break;
-                case LINUX:
+                case DOCKER:
                     txtJavaVersion.setVisible(false);
                     txtContainer.setVisible(false);
                     lblJavaVersion.setVisible(false);
