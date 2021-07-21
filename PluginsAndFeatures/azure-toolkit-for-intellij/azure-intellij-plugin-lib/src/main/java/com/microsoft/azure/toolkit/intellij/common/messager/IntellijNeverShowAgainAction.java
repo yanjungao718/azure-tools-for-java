@@ -21,7 +21,7 @@ import java.util.Optional;
 public class IntellijNeverShowAgainAction extends NotificationAction {
 
     public IntellijNeverShowAgainAction() {
-        super("Never show again");
+        super("Never Show Again");
     }
 
     @Override
