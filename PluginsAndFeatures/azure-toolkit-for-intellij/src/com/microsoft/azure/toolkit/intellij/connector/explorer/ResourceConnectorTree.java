@@ -20,7 +20,10 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
+import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
 import com.microsoft.intellij.helpers.AzureIconLoader;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -32,12 +35,20 @@ import javax.swing.tree.TreeNode;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ResourceConnectorTree extends AzureTree {
 
     private final Project project;
+    private static final Map<Class<? extends Resource>, Icon> RESOURCE_ICON_MAP = new HashMap<>();
+
+    static {
+        RESOURCE_ICON_MAP.put(MySQLDatabaseResource.class, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE));
+        RESOURCE_ICON_MAP.put(SqlServerDatabaseResource.class, AzureIconLoader.loadIcon(AzureIconSymbol.SqlServer.MODULE));
+    }
 
     public ResourceConnectorTree(Project project) {
         this.project = project;
@@ -92,7 +103,8 @@ public class ResourceConnectorTree extends AzureTree {
                 .getService(ConnectionManager.class).getConnectionsByConsumerId(getData().getModuleName());
             for (Connection<? extends Resource, ? extends Resource> connection : moduleConnections) {
                 Optional.ofNullable(connection.getResource()).filter(resource -> resource instanceof AzureResource).ifPresent(resource ->
-                    getModel().insertNodeInto(new ResourceNode((AzureResource) resource, ((AzureResource) resource).getIcon()), this, this.getChildCount()));
+                    getModel().insertNodeInto(new ResourceNode((AzureResource) resource, RESOURCE_ICON_MAP.get(resource.getClass())),
+                            this, this.getChildCount()));
             }
         }
 
@@ -142,7 +154,13 @@ public class ResourceConnectorTree extends AzureTree {
 
             @Override
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-                Optional.ofNullable(ResourceNode.this.getData()).ifPresent(resource -> resource.showProperties(project));
+                Optional.ofNullable(ResourceNode.this.getData()).ifPresent(resource -> {
+                    if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(resource.getType())) {
+                        DefaultLoader.getUIHelper().openMySQLPropertyView(resource.getServerId().id(), anActionEvent.getProject());
+                    } else if (SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(resource.getType())) {
+                        DefaultLoader.getUIHelper().openSqlServerPropertyView(resource.getServerId().id(), anActionEvent.getProject());
+                    }
+                });
             }
         }
     }
