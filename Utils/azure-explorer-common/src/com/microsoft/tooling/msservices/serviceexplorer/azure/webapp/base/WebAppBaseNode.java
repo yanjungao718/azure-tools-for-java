@@ -7,6 +7,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -40,7 +42,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         this.subscriptionId = appService.subscriptionId();
 
         renderNode(WebAppBaseState.UPDATING);
-        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
             loadActions();
             renderNode(WebAppBaseState.fromString(((IAppService) appService.refresh()).state()));
         });
