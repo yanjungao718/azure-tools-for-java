@@ -16,6 +16,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.EventListener;
 import java.util.HashMap;
@@ -89,7 +90,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             AzureMessager.getMessager().error(ex);
             return Futures.immediateFailedFuture(ex);
         } finally {
-            telemetryMono.subscribe(properties -> {
+            telemetryMono.subscribeOn(Schedulers.boundedElastic()).subscribe(properties -> {
                 operation.trackProperties(properties);
                 operation.complete();
             });
