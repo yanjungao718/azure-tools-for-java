@@ -7,7 +7,7 @@ package com.microsoft.intellij;
 
 import com.intellij.openapi.application.ApplicationInfo;
 import com.microsoft.azuretools.telemetry.AppInsightsConfiguration;
-import com.microsoft.intellij.configuration.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;

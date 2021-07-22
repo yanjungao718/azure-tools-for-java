@@ -19,7 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.configuration.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.ui.WarningMessageForm;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;

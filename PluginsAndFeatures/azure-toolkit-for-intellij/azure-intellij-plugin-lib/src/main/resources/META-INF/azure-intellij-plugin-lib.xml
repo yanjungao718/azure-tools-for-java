@@ -3,7 +3,7 @@
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.ProjectAzureSettings"/>
+        <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.common.preload.AzurePreloadingActivity"/>
     </extensions>
     <actions>

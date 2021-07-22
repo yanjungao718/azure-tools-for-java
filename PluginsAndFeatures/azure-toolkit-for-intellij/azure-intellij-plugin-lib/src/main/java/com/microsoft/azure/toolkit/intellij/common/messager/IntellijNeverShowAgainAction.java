@@ -9,7 +9,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azure.toolkit.intellij.common.settings.ProjectAzureSettings;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,7 @@ public class IntellijNeverShowAgainAction extends NotificationAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event, @NotNull Notification notification) {
         Optional.ofNullable(ActionManager.getInstance().getId(this)).ifPresent(id -> {
-            ProjectAzureSettings.getInstance(event.getProject()).getState().getSuppressedActions().put(id, Boolean.TRUE);
+            AzureConfigurations.getInstance().getState().getSuppressedActions().put(id, Boolean.TRUE);
             notification.expire();
         });
     }

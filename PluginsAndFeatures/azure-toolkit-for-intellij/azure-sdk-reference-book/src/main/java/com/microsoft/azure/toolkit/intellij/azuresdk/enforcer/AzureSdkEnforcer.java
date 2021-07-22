@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryServ
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.ProjectLibraryService;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.ProjectLibraryService.ProjectLibEntity;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijActionMessageAction;
-import com.microsoft.azure.toolkit.intellij.common.settings.ProjectAzureSettings;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -40,7 +40,7 @@ public class AzureSdkEnforcer {
                 .map(ProjectLibEntity::getPackageName).collect(Collectors.toSet());
         final SetUtils.SetView<String> deprecatedProjectLibNames = SetUtils.intersection(projectLibPackageNames, allDeprecatedAzureLibNames);
         final String neverShowGainActionId = "AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain";
-        if (Boolean.TRUE.equals(ProjectAzureSettings.getInstance(project).getState().getSuppressedActions().get(neverShowGainActionId))) {
+        if (Boolean.TRUE.equals(AzureConfigurations.getInstance().getState().getSuppressedActions().get(neverShowGainActionId))) {
             return;
         }
         if (CollectionUtils.isNotEmpty(deprecatedProjectLibNames)) {
