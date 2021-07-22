@@ -19,7 +19,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
@@ -185,44 +184,6 @@ public class AzureModule extends AzureRefreshableNode {
 
         if (!isDirectChild(containerRegistryModule)) {
             addChildNode(containerRegistryModule);
-        }
-    }
-
-    @Override
-    protected void onNodeClick(NodeActionEvent e) {
-        super.onNodeClick(e);
-    }
-
-    @Override
-    protected void refreshFromAzure() throws AzureCmdException {
-        try {
-            if (AuthMethodManager.getInstance().isSignedIn() && hasSubscription()) {
-                vmArmServiceModule.load(true);
-                redisCacheModule.load(true);
-                storageModule.load(true);
-                webAppModule.load(true);
-                resourceManagementModule.load(true);
-                functionModule.load(true);
-                springCloudModule.load(true);
-                mysqlModule.load(true);
-                sqlServerModule.load(true);
-
-                if (hdInsightModule != null) {
-                    hdInsightModule.load(true);
-                }
-
-                if (sparkServerlessClusterRootModule != null) {
-                    sparkServerlessClusterRootModule.load(true);
-                }
-
-                if (arcadiaModule != null && arcadiaModule.isFeatureEnabled()) {
-                    arcadiaModule.load(true);
-                }
-
-                containerRegistryModule.load(true);
-            }
-        } catch (Exception e) {
-            throw new AzureCmdException("Error loading Azure Explorer modules", e);
         }
     }
 
