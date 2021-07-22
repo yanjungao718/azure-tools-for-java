@@ -35,7 +35,6 @@ public class DeploymentSlotNode extends WebAppBaseNode {
         super(parent, LABEL, deploymentSlot);
         this.webApp = deploymentSlot.webApp();
         this.slot = deploymentSlot;
-        loadActions();
     }
 
     @Override
@@ -74,7 +73,7 @@ public class DeploymentSlotNode extends WebAppBaseNode {
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_BROWSER).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).withBackgroudable(true).build());
         addAction(ACTION_SWAP_WITH_PRODUCTION, initActionBuilder(this::swap).withBackgroudable(true).build("Swapping"));
         super.loadActions();
     }
