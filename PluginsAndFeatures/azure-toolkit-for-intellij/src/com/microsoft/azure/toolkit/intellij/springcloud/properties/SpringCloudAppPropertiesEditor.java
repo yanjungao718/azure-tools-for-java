@@ -58,21 +58,23 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     }
 
     private void rerender() {
-        AzureTaskManager.getInstance().runOnPooledThread((() -> {
-            this.originalConfig = SpringCloudAppConfig.fromApp(this.app);
-            final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).orElse(null);
-            AzureTaskManager.getInstance().runLater(() -> {
-                this.resetToolbar(deployment);
-                this.reset.setVisible(false);
-                this.saveButton.setEnabled(false);
-                this.lblSubscription.setText(this.app.subscription().getName());
-                this.lblCluster.setText(this.app.getCluster().name());
-                this.lblApp.setText(this.app.name());
-                AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
+        AzureTaskManager.getInstance().runLater(() -> {
+            this.reset.setVisible(false);
+            this.saveButton.setEnabled(false);
+            this.lblSubscription.setText(this.app.subscription().getName());
+            this.lblCluster.setText(this.app.getCluster().name());
+            this.lblApp.setText(this.app.name());
+            AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
+            AzureTaskManager.getInstance().runOnPooledThread((() -> {
+                final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).orElse(null);
+                AzureTaskManager.getInstance().runLater(() -> this.resetToolbar(deployment));
+            }));
+            AzureTaskManager.getInstance().runOnPooledThread((() -> {
+                this.originalConfig = SpringCloudAppConfig.fromApp(this.app);
                 AzureTaskManager.getInstance().runLater(() -> this.formConfig.setData(this.originalConfig));
-                this.panelInstances.setApp(this.app);
-            });
-        }));
+            }));
+            this.panelInstances.setApp(this.app);
+        });
     }
 
     private void initListeners() {
