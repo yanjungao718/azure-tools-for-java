@@ -23,6 +23,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
+import javax.accessibility.AccessibleRelation;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -54,7 +55,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private boolean required;
     private Object value;
     private boolean valueNotSet = true;
-    private String label;
     protected boolean enabled = true;
     @Getter
     @Setter
@@ -186,7 +186,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @AzureOperation(
             name = "common|combobox.load_items",
-            params = {"this.label()"},
+            params = {"this.getLabel()"},
             type = AzureOperation.Type.ACTION
     )
     private void doRefreshItems() {
@@ -422,16 +422,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    public void setLabel(final String label) {
-        this.label = label;
-    }
-
     public String getLabel() {
-        return Optional.ofNullable(this.label).orElse("");
-    }
-
-    private String label() {
-        return Optional.ofNullable(this.label).orElse(this.getClass().getSimpleName());
+        final JLabel label = (JLabel) this.getClientProperty(AccessibleRelation.LABELED_BY);
+        return Optional.ofNullable(label).map(JLabel::getText)
+                .map(t -> t.endsWith(":") ? t.substring(0, t.length() - 1) : t)
+                .orElse(this.getClass().getSimpleName());
     }
 
     public static class ItemReference<T> {
