@@ -128,7 +128,11 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         if (Objects.nonNull(resource.getPassword()) && resource.getPassword().saveType() == Password.SaveType.NEVER) {
             return Optional.empty();
         }
-        final String saved = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.getPassword().saveType());
+        if (resource.getPassword().saveType() == Password.SaveType.FOREVER) {
+            PasswordStore.migratePassword(resource.getId(), resource.getUsername(),
+                resource.getType(), resource.getId(), resource.getUsername());
+        }
+        final String saved = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.getPassword().saveType());
         final DatabaseConnectionUtils.ConnectResult result = DatabaseConnectionUtils.connectWithPing(resource.getJdbcUrl(), resource.getUsername(), saved);
         if (StringUtils.isNotBlank(saved) && result.isConnected()) {
             return Optional.of(saved);
@@ -148,7 +152,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
             if (dialog.showAndGet()) {
                 final Password password = dialog.getData();
                 resource.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(resource.getId(), resource.getUsername(), password.password(), password.saveType());
+                PasswordStore.savePassword(resource.getType(), resource.getId(), resource.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
         });
@@ -172,6 +176,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         public boolean write(@Nonnull Element connectionEle, @Nonnull Connection<? extends DatabaseResource, ? extends ModuleResource> connection) {
             final DatabaseResource databaseResource = connection.getResource();
             final ModuleResource moduleConsumer = connection.getConsumer();
+
             if (StringUtils.isNotBlank(databaseResource.getEnvPrefix())) {
                 connectionEle.setAttribute("envPrefix", databaseResource.getEnvPrefix());
             }
