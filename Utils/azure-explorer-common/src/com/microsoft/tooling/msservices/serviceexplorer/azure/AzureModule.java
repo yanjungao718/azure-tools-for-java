@@ -19,7 +19,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
@@ -186,11 +185,6 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(containerRegistryModule)) {
             addChildNode(containerRegistryModule);
         }
-    }
-
-    @Override
-    protected void onNodeClick(NodeActionEvent e) {
-        super.onNodeClick(e);
     }
 
     @Override
