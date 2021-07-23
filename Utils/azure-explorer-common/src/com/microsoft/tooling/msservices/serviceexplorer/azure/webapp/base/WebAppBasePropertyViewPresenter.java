@@ -82,7 +82,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
         final JavaVersion javaVersion = runtime.getJavaVersion();
-        if (ObjectUtils.notEqual(javaVersion, JavaVersion.OFF)) {
+        if (javaVersion != null && ObjectUtils.notEqual(javaVersion, JavaVersion.OFF)) {
             propertyMap.put(KEY_JAVA_VERSION, javaVersion.getValue());
             propertyMap.put(KEY_JAVA_CONTAINER, runtime.getWebContainer().getValue());
         }

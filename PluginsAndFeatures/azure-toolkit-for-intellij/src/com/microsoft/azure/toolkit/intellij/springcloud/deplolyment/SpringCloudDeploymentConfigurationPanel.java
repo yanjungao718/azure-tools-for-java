@@ -68,10 +68,6 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.selectorCluster.setRequired(true);
         this.selectorApp.setRequired(true);
         this.selectorArtifact.setRequired(true);
-        this.selectorArtifact.setLabel("Artifact");
-        this.selectorSubscription.setLabel("Subscription");
-        this.selectorCluster.setLabel("Spring Cloud");
-        this.selectorApp.setLabel("App");
     }
 
     private void onArtifactChanged(final ItemEvent e) {

@@ -44,11 +44,11 @@ import java.util.Optional;
 public class ResourceConnectorTree extends AzureTree {
 
     private final Project project;
-    private static final Map<Class<? extends Resource>, Icon> RESOURCE_ICON_MAP = new HashMap<>();
+    private static final Map<Class<? extends Resource>, Icon> resourceIconMap = new HashMap<>();
 
     static {
-        RESOURCE_ICON_MAP.put(MySQLDatabaseResource.class, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE));
-        RESOURCE_ICON_MAP.put(SqlServerDatabaseResource.class, AzureIconLoader.loadIcon(AzureIconSymbol.SqlServer.MODULE));
+        resourceIconMap.put(MySQLDatabaseResource.class, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE));
+        resourceIconMap.put(SqlServerDatabaseResource.class, AzureIconLoader.loadIcon(AzureIconSymbol.SqlServer.MODULE));
     }
 
     public ResourceConnectorTree(Project project) {
@@ -104,7 +104,7 @@ public class ResourceConnectorTree extends AzureTree {
                 .getService(ConnectionManager.class).getConnectionsByConsumerId(getData().getModuleName());
             for (Connection<? extends Resource, ? extends Resource> connection : moduleConnections) {
                 Optional.ofNullable(connection.getResource()).filter(resource -> resource instanceof AzureResource).ifPresent(resource ->
-                    getModel().insertNodeInto(new ResourceNode((AzureResource) resource, RESOURCE_ICON_MAP.get(resource.getClass())),
+                    getModel().insertNodeInto(new ResourceNode((AzureResource) resource, resourceIconMap.get(resource.getClass())),
                             this, this.getChildCount()));
             }
         }
