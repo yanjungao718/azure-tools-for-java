@@ -24,20 +24,15 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.RunProcessHandler;
-import lombok.Lombok;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.Disposable;
-import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import rx.exceptions.Exceptions;
 
 import java.util.Map;
 
 public abstract class AzureRunProfileState<T> implements RunProfileState {
-    private static final org.apache.log4j.Logger LOGGER =
-        org.apache.log4j.Logger.getLogger(AzureRunProfileState.class);
     protected final Project project;
 
     public AzureRunProfileState(@NotNull Project project) {
@@ -52,13 +47,6 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
-
-        Hooks.onErrorDropped(ex -> {
-            if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
-                LOGGER.info(ex.getMessage());
-            }
-            throw Lombok.sneakyThrow(ex);
-        });
 
         final Operation operation = createOperation();
         final Disposable subscribe = Mono.fromCallable(() -> {

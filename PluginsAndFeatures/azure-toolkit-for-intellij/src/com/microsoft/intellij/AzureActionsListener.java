@@ -45,9 +45,13 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import lombok.Lombok;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Hooks;
+import rx.exceptions.Exceptions;
 import rx.internal.util.PlatformDependent;
 
 import java.io.BufferedReader;
@@ -61,6 +65,7 @@ import java.util.logging.SimpleFormatter;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
 
+@Slf4j
 public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsListener.class);
@@ -77,6 +82,14 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
             HttpClientProviders.createInstance();
             Azure.az(AzureAccount.class);
+
+            Hooks.onErrorDropped(ex -> {
+                if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
+                    log.info(ex.getMessage());
+                } else {
+                    throw Lombok.sneakyThrow(ex);
+                }
+            });
         } finally {
             Thread.currentThread().setContextClassLoader(current);
         }

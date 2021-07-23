@@ -23,14 +23,11 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import rx.exceptions.Exceptions;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -65,12 +62,6 @@ public class AuthMethodManager {
         Logger.getLogger("com.microsoft.aad.adal4j.AuthenticationContext").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
-        Hooks.onErrorDropped(ex -> {
-            if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
-                LOGGER.info(ex.getMessage());
-            }
-            throw Lombok.sneakyThrow(ex);
-        });
     }
 
     private static class LazyHolder {
