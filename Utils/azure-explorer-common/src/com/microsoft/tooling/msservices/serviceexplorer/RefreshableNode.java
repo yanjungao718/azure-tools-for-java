@@ -77,12 +77,15 @@ public abstract class RefreshableNode extends Node {
     // to refresh items asynchronously. The default implementation simply
     // delegates to "refreshItems" *synchronously* and completes the Future
     // with the result of calling getChildNodes.
-    protected synchronized void refreshItems(SettableFuture<List<Node>> future) {
+    protected synchronized void refreshItems(SettableFuture<List<Node>> future, boolean forceRefresh) {
         if (!loading) {
             setLoading(true);
             try {
                 removeAllChildNodes();
                 if (AuthMethodManager.getInstance().isSignedIn() || this instanceof AzureModule) {
+                    if (forceRefresh) {
+                        refreshFromAzure();
+                    }
                     refreshItems();
                 }
 
@@ -93,6 +96,9 @@ public abstract class RefreshableNode extends Node {
                 setLoading(false);
             }
         }
+    }
+
+    protected void refreshFromAzure() throws Exception {
     }
 
     // Add update node name support after refresh the node
@@ -139,7 +145,7 @@ public abstract class RefreshableNode extends Node {
                             });
                         }
                     }, MoreExecutors.directExecutor());
-                    node.refreshItems(future);
+                    node.refreshItems(future, forceRefresh);
                 }
             }
 

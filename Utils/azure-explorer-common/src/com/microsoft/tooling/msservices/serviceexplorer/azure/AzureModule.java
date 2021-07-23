@@ -187,6 +187,39 @@ public class AzureModule extends AzureRefreshableNode {
         }
     }
 
+    @Override
+    protected void refreshFromAzure() throws AzureCmdException {
+        try {
+            if (AuthMethodManager.getInstance().isSignedIn() && hasSubscription()) {
+                vmArmServiceModule.load(true);
+                redisCacheModule.load(true);
+                storageModule.load(true);
+                webAppModule.load(true);
+                resourceManagementModule.load(true);
+                functionModule.load(true);
+                springCloudModule.load(true);
+                mysqlModule.load(true);
+                sqlServerModule.load(true);
+
+                if (hdInsightModule != null) {
+                    hdInsightModule.load(true);
+                }
+
+                if (sparkServerlessClusterRootModule != null) {
+                    sparkServerlessClusterRootModule.load(true);
+                }
+
+                if (arcadiaModule != null && arcadiaModule.isFeatureEnabled()) {
+                    arcadiaModule.load(true);
+                }
+
+                containerRegistryModule.load(true);
+            }
+        } catch (Exception e) {
+            throw new AzureCmdException("Error loading Azure Explorer modules", e);
+        }
+    }
+
     @Nullable
     @Override
     public Object getProject() {
