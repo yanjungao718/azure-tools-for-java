@@ -20,7 +20,6 @@ import com.microsoft.azure.toolkit.intellij.connector.database.component.TestCon
 import com.microsoft.azure.toolkit.intellij.connector.database.component.UsernameComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -37,7 +36,6 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.configuration.AzureConfigurations;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
