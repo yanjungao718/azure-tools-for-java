@@ -86,7 +86,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         }
 
         @Override
-        @AzureOperation(name = "connector|explorer.refresh_connector", type = AzureOperation.Type.ACTION)
+        @AzureOperation(name = "connector|explorer.refresh_connection", type = AzureOperation.Type.ACTION)
         public final void actionPerformed(@NotNull final AnActionEvent e) {
             this.loading = true;
             ((AzureTree) ConnectorToolWindow.this.tree).loadNodes();
@@ -109,7 +109,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         }
 
         @Override
-        @AzureOperation(name = "connector|explorer.add_connector", type = AzureOperation.Type.ACTION)
+        @AzureOperation(name = "connector|explorer.add_connection", type = AzureOperation.Type.ACTION)
         public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
             AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
             if (Objects.nonNull(selectedNode) && selectedNode instanceof ResourceConnectorTree.ModuleNode) {
@@ -134,7 +134,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         }
 
         @Override
-        @AzureOperation(name = "connector|explorer.remove_connector", type = AzureOperation.Type.ACTION)
+        @AzureOperation(name = "connector|explorer.remove_connection", type = AzureOperation.Type.ACTION)
         public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
             Optional.ofNullable(((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode()).ifPresent(selectedNode -> {
                 if (selectedNode instanceof ResourceConnectorTree.ResourceNode && selectedNode.getParent() instanceof ResourceConnectorTree.ModuleNode) {

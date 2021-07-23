@@ -116,7 +116,7 @@ public class ResourceConnectorTree extends AzureTree {
             }
 
             @Override
-            @AzureOperation(name = "connector|explorer.add_connector", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "connector|explorer.add_connection", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 final ConnectorDialog<? extends Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
                 dialog.setConsumer(ModuleNode.this.getData());
@@ -140,7 +140,7 @@ public class ResourceConnectorTree extends AzureTree {
             }
 
             @Override
-            @AzureOperation(name = "connector|explorer.edit_connector", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "connector|explorer.edit_connection", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 final ConnectorDialog<Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
                 dialog.setConsumer(new ModuleResource(((ModuleNode) ResourceNode.this.getParent()).getData().getModuleName()));
