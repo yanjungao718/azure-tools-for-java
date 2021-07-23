@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.configuration;
+package com.microsoft.azure.toolkit.intellij.common.settings;
 
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -11,9 +11,11 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,6 +72,10 @@ public class AzureConfigurations implements PersistentStateComponent<AzureConfig
     public static class AzureConfigurationData {
         @MapAnnotation
         private Map<String, String> properties;
+
+        @Getter
+        @MapAnnotation(surroundKeyWithTag = false, surroundValueWithTag = false, surroundWithTag = false, entryTagName = "action", keyAttributeName = "id")
+        private final Map<String, Boolean> suppressedActions = Collections.synchronizedMap(new HashMap<>());
 
         @Nonnull
         private Map<String, String> map() {

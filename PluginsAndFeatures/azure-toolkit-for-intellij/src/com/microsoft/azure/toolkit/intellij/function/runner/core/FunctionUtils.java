@@ -37,7 +37,7 @@ import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
-import com.microsoft.intellij.configuration.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
