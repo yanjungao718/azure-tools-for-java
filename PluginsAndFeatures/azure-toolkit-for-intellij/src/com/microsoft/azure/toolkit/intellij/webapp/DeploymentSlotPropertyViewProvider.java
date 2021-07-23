@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 
 public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewProvider {
-    public static final String TYPE ="DEPLOYMENT_SLOT_PROPERTY";
+    public static final String TYPE = "DEPLOYMENT_SLOT_PROPERTY";
 
     @NotNull
     @Override
@@ -21,7 +21,7 @@ public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewPr
         final String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
         final String webAppId = virtualFile.getUserData(UIHelperImpl.WEBAPP_ID);
         final String name = virtualFile.getUserData(UIHelperImpl.SLOT_NAME);
-        return DeploymentSlotPropertyView.create(project, sid, webAppId, name);
+        return DeploymentSlotPropertyView.create(project, sid, webAppId, name, virtualFile);
     }
 
     @Override
