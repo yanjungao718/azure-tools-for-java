@@ -5,11 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
-import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
+
+import javax.annotation.Nonnull;
 
 public class WebAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
@@ -17,16 +19,16 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String webAppId) {
-        WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId);
+    public static WebAppBasePropertyView create(@Nonnull final Project project, @Nonnull final String sid,
+                                                @Nonnull final String webAppId, @Nonnull VirtualFile virtualFile) {
+        WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
-    private WebAppPropertyView(@NotNull final Project project, @NotNull final String sid,
-                               @NotNull final String webAppId) {
-        super(project, sid, webAppId, null);
+    private WebAppPropertyView(@Nonnull final Project project, @Nonnull final String sid,
+                               @Nonnull final String webAppId, @Nonnull VirtualFile virtualFile) {
+        super(project, sid, webAppId, null, virtualFile);
     }
 
     @Override
