@@ -79,7 +79,7 @@ class DelegateActionListener extends NodeActionListener {
             final Object project = e.getAction().getNode().getProject();
             // todo: Add titles properties for services in common library
             final String key = String.format("%s.%s", BackgroundActionListener.super.getServiceName(e), BackgroundActionListener.super.getOperationName(e));
-            AzureTask task = new AzureTask(project, new AzureString(null, key, new Object[0]){
+            AzureTask task = new AzureTask(project, new AzureString(null, key, new Object[0]) {
                 @Override
                 public String getString(Object... params) {
                     return progressMessage;
