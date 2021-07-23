@@ -15,6 +15,8 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -30,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -41,7 +45,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
-import java.io.IOException;
 import java.util.Objects;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
@@ -56,13 +59,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private JCheckBox allowTelemetryCheckBox;
     private JTextPane allowTelemetryComment;
     private JComboBox<AzureEnvironment> azureEnvironmentComboBox;
-    private JComboBox<String> savePasswordComboBox;
+    private PasswordSaveComboBox savePasswordComboBox;
     private TextFieldWithBrowseButton funcCoreToolsPath;
     private JLabel azureEnvDesc;
 
     public AzurePanel() {
     }
 
+    @Override
     public void init() {
         if (AzurePlugin.IS_ANDROID_STUDIO) {
             return;
@@ -86,9 +90,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         });
 
         displayDescriptionForAzureEnv();
-
-        savePasswordComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"Until restart", "Forever", "Never"}));
-
         funcCoreToolsPath.addBrowseFolderListener(null, "Path to Azure Functions Core Tools", null, FileChooserDescriptorFactory.createSingleFileDescriptor(),
             TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
 
@@ -109,9 +110,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             , AzureEnvironment.AZURE
         ));
 
-        if (StringUtils.isNotBlank(state.passwordSaveType())) {
-            savePasswordComboBox.setSelectedItem(state.passwordSaveType());
-        }
+        savePasswordComboBox.setValue(Arrays.stream(Password.SaveType.values())
+            .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+            .orElse(Password.SaveType.UNTIL_RESTART));
     }
 
     private void displayDescriptionForAzureEnv() {
@@ -148,10 +149,12 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         return StringUtils.removeEnd(name, "Cloud");
     }
 
+    @Override
     public JComponent getPanel() {
         return contentPane;
     }
 
+    @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
     }
@@ -162,7 +165,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         config.allowTelemetry(allowTelemetryCheckBox.isSelected());
         config.functionCoreToolsPath(this.funcCoreToolsPath.getText());
         config.environment(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
-        config.passwordSaveType((String) savePasswordComboBox.getSelectedItem());
+        config.passwordSaveType(savePasswordComboBox.getValue().name());
         AzureConfigurations.getInstance().loadState(config);
 
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
@@ -190,6 +193,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         return null;
     }
 
+    @Override
     public ValidationInfo doValidate() {
         return null;
     }

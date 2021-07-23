@@ -33,8 +33,10 @@ import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.impl.SqlServer;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.intellij.configuration.AzureConfigurations;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -244,8 +246,14 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         }));
         Optional.ofNullable(resource.getPassword()).ifPresent(config -> {
             Optional.ofNullable(config.password()).ifPresent(password -> this.inputPasswordField.setText(String.valueOf(password)));
-            Optional.ofNullable(config.saveType()).ifPresent(saveType -> this.passwordSaveComboBox.setValue(saveType));
         });
+        if (Objects.nonNull(resource.getPassword()) && Objects.nonNull(resource.getPassword().saveType())) {
+            this.passwordSaveComboBox.setValue(resource.getPassword().saveType());
+        } else {
+            this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
+                .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+                .orElse(Password.SaveType.UNTIL_RESTART));
+        }
         Optional.ofNullable(resource.getDatabaseName()).ifPresent(dbName -> {
             if (definition instanceof SqlServerDatabaseResource.Definition) {
                 this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, SqlDatabaseEntity::getName), true);
