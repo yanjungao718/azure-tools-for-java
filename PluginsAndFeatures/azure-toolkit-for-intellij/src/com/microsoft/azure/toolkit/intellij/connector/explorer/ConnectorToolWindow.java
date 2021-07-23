@@ -17,11 +17,14 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.toolkit.intellij.common.tree.AzureNode;
 import com.microsoft.azure.toolkit.intellij.common.tree.AzureTree;
+import com.microsoft.azure.toolkit.intellij.connector.AzureResourceConnectorBusNotifier;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
@@ -47,6 +50,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         actionToolbar.setForceMinimumSize(true);
         this.setContent(this.tree);
         this.setToolbar(actionToolbar);
+        this.initShowToolWindowListener(project);
     }
 
     private ActionToolbarImpl initToolbar() {
@@ -61,6 +65,15 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         group.add(manager.createExpandAllAction(expander, this.tree));
         group.add(manager.createCollapseAllAction(expander, this.tree));
         return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, true);
+    }
+
+    private void initShowToolWindowListener(@NotNull final Project project) {
+        project.getMessageBus().connect().subscribe(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC, connection -> {
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
+            if (!toolWindow.isVisible()) {
+                toolWindow.show();
+            }
+        });
     }
 
     private class RefreshAction extends com.intellij.ide.actions.RefreshAction {
@@ -123,11 +136,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         public void update(@NotNull AnActionEvent event) {
             final Presentation presentation = event.getPresentation();
             AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
-            if (Objects.nonNull(selectedNode) && selectedNode instanceof ResourceConnectorTree.ResourceNode) {
-                presentation.setEnabled(true);
-            } else {
-                presentation.setEnabled(false);
-            }
+            presentation.setEnabled(Objects.nonNull(selectedNode) && selectedNode instanceof ResourceConnectorTree.ResourceNode);
         }
 
     }

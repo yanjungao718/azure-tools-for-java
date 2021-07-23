@@ -7,8 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -116,12 +114,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
                 final String message = String.format("The connection between %s and %s has been successfully created.",
                         connectionResource.toString(), connectionConsumer.toString());
                 AzureMessager.getMessager().success(message);
-                // send connect success event.
-                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
-                if (!toolWindow.isVisible()) {
-                    toolWindow.show();
-                }
-                // notify explorer to reload current connector.
+                // send connect successful event.
                 project.getMessageBus().syncPublisher(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC).afterAction(connection);
             }
         });
