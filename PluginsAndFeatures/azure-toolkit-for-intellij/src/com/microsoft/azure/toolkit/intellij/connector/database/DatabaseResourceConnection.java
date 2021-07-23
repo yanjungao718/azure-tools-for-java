@@ -118,10 +118,9 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
 
     private Map<String, String> initEnv(@Nonnull final Project project) {
         final Map<String, String> envMap = new HashMap<>();
-        final DatabaseResource mysql = this.resource;
-        envMap.put(mysql.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
-        envMap.put(mysql.getEnvPrefix() + "USERNAME", this.resource.getUsername());
-        envMap.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(mysql).or(() -> inputPassword(project, mysql)).orElse(""));
+        envMap.put(this.resource.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
+        envMap.put(this.resource.getEnvPrefix() + "USERNAME", this.resource.getUsername());
+        envMap.put(this.resource.getEnvPrefix() + "PASSWORD", loadPassword(this.resource).or(() -> inputPassword(project, this.resource)).orElse(""));
         return envMap;
     }
 
@@ -176,12 +175,13 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         @Override
         public boolean write(@Nonnull Element connectionEle, @Nonnull Connection<? extends DatabaseResource, ? extends ModuleResource> connection) {
             final DatabaseResource databaseResource = connection.getResource();
-            final ModuleResource consumerForConnection = connection.getConsumer();
+            final ModuleResource moduleConsumer = connection.getConsumer();
+
             if (StringUtils.isNotBlank(databaseResource.getEnvPrefix())) {
                 connectionEle.setAttribute("envPrefix", databaseResource.getEnvPrefix());
             }
             connectionEle.addContent(new Element("resource").setAttribute("type", databaseResource.getType()).setText(databaseResource.getId()));
-            connectionEle.addContent(new Element("consumer").setAttribute("type", consumerForConnection.getType()).setText(consumerForConnection.getId()));
+            connectionEle.addContent(new Element("consumer").setAttribute("type", moduleConsumer.getType()).setText(moduleConsumer.getId()));
             return true;
         }
 
@@ -190,11 +190,11 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         public DatabaseResourceConnection read(@Nonnull Element connectionEle) {
             final ResourceManager manager = ServiceManager.getService(ResourceManager.class);
             // TODO: check if module exists
-            final ModuleResource consumerFromConnection = new ModuleResource(connectionEle.getChildTextTrim("consumer"));
-            final DatabaseResource currentResource = (DatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
-            if (Objects.nonNull(currentResource)) {
-                currentResource.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
-                return new DatabaseResourceConnection(currentResource, consumerFromConnection);
+            final ModuleResource moduleConsumer = new ModuleResource(connectionEle.getChildTextTrim("consumer"));
+            final DatabaseResource databaseResource = (DatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
+            if (Objects.nonNull(databaseResource)) {
+                databaseResource.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
+                return new DatabaseResourceConnection(databaseResource, moduleConsumer);
             } else {
                 // TODO: alert user to create new resource
                 return null;
@@ -213,7 +213,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
                 if (urlModified || usernameModified || passwordSaveTypeModified) { // modified
                     // TODO: @qianjin what if only password is changed.
                     final String template = "%s database \"%s/%s\" with different configuration is found on your PC. \nDo you want to override it?";
-                    final String msg = String.format(template, DatabaseResource.Definition.getTitleByType(databaseResource.getType()),
+                    final String msg = String.format(template, databaseResource.getTitle(),
                             databaseResource.getServerId().name(), databaseResource.getDatabaseName());
                     boolean validated = DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
                     if (!validated) {
@@ -236,10 +236,10 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
                     final String msg = String.format(template,
                             module.getModuleName(),
                             databaseResource.getEnvPrefix(),
-                            DatabaseResource.Definition.getTitleByType(connectedDatabaseResource.getType()),
+                            connectedDatabaseResource.getTitle(),
                             connectedDatabaseResource.getServerId().name(),
                             connectedDatabaseResource.getDatabaseName(),
-                            DatabaseResource.Definition.getTitleByType(databaseResource.getType()),
+                            databaseResource.getTitle(),
                             databaseResource.getServerId().name(),
                             databaseResource.getDatabaseName());
                     return DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);

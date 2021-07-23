@@ -67,10 +67,7 @@ public class IntellijAzureMessage extends AzureMessage {
     protected String getCause(@Nonnull Throwable throwable) {
         final String color = Integer.toHexString(JBColor.RED.getRGB()).substring(2);
         return Optional.ofNullable(super.getCause(throwable))
-                .map(cause -> {
-                    final String font = "'Lucida Console', monospace";
-                    return String.format("<span style=\"font-family:%s;color: #%s;\">%s</span>", font, color, cause);
-                })
+                .map(cause -> String.format("<span style=\"color: #%s;\">%s</span>", color, cause))
                 .orElse(null);
     }
 
