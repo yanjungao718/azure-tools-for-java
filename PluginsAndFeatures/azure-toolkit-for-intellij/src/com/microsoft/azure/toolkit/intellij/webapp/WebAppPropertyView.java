@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
@@ -29,6 +30,10 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
     private WebAppPropertyView(@Nonnull final Project project, @Nonnull final String sid,
                                @Nonnull final String webAppId, @Nonnull VirtualFile virtualFile) {
         super(project, sid, webAppId, null, virtualFile);
+        AzureEventBus.after("webapp.start", this::onAppServiceStatusChanged);
+        AzureEventBus.after("webapp.stop", this::onAppServiceStatusChanged);
+        AzureEventBus.after("webapp.restart", this::onAppServiceStatusChanged);
+        AzureEventBus.after("webapp.delete", this::onAppServiceStatusChanged);
     }
 
     @Override

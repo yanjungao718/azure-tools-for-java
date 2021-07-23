@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
@@ -167,19 +166,9 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
         lnkUrl.setHyperlinkText("<Loading...>");
         setTextFieldStyle();
-
-        AzureEventBus.after("webapp.start", this::onWebAppStatusChanged);
-        AzureEventBus.after("webapp.stop", this::onWebAppStatusChanged);
-        AzureEventBus.after("webapp.restart", this::onWebAppStatusChanged);
-        AzureEventBus.after("webapp.delete", this::onWebAppStatusChanged);
-
-        AzureEventBus.after("function.start", this::onWebAppStatusChanged);
-        AzureEventBus.after("function.stop", this::onWebAppStatusChanged);
-        AzureEventBus.after("function.restart", this::onWebAppStatusChanged);
-        AzureEventBus.after("function.delete", this::onWebAppStatusChanged);
     }
 
-    private void onWebAppStatusChanged(IAppService app) {
+    protected void onAppServiceStatusChanged(IAppService app) {
         if (StringUtils.equalsIgnoreCase(this.resourceId, app.id())) {
             if (!app.exists()) {
                 closeEditor(app);

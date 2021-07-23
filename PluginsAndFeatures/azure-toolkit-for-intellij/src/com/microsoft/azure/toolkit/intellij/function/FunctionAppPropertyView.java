@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 import javax.annotation.Nonnull;
@@ -31,6 +32,10 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
 
     protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull VirtualFile virtualFile) {
         super(project, sid, resId, null, virtualFile);
+        AzureEventBus.after("function.start", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.stop", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.restart", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.delete", this::onAppServiceStatusChanged);
     }
 
     @Override
