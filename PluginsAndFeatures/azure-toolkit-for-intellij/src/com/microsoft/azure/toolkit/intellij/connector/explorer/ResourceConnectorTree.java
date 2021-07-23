@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -115,6 +116,7 @@ public class ResourceConnectorTree extends AzureTree {
             }
 
             @Override
+            @AzureOperation(name = "connector|explorer.add_connection", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 final ConnectorDialog<? extends Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
                 dialog.setConsumer(ModuleNode.this.getData());
@@ -138,6 +140,7 @@ public class ResourceConnectorTree extends AzureTree {
             }
 
             @Override
+            @AzureOperation(name = "connector|explorer.edit_connection", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 final ConnectorDialog<Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
                 dialog.setConsumer(new ModuleResource(((ModuleNode) ResourceNode.this.getParent()).getData().getModuleName()));
@@ -153,6 +156,7 @@ public class ResourceConnectorTree extends AzureTree {
             }
 
             @Override
+            @AzureOperation(name = "connector|explorer.show_resource_properties", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 Optional.ofNullable(ResourceNode.this.getData()).ifPresent(resource -> {
                     if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(resource.getType())) {
