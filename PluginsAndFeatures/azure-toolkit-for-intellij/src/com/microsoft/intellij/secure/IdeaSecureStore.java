@@ -58,11 +58,11 @@ public class IdeaSecureStore implements SecureStore {
         if (StringUtils.isBlank(passwordSafe.getPassword(newKey))) {
             passwordSafe.setPassword(newKey, passwordSafe.getPassword(oldKey));
         }
-        passwordSafe.set(oldKey, null);
+        passwordSafe.setPassword(oldKey, null);
     }
 
     @Nonnull
-    private CredentialAttributes makeKey(String serviceName, @Nullable String key, @Nullable String userName) {
+    private static CredentialAttributes makeKey(String serviceName, @Nullable String key, @Nullable String userName) {
         String serverNameWithPrefix = serviceName;
         if (!StringUtils.contains(serviceName, "Azure IntelliJ Plugin")) {
             serverNameWithPrefix = StringUtils.join("Azure IntelliJ Plugin | " + serviceName);
