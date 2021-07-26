@@ -133,6 +133,23 @@ public class SignInWindow extends AzureDialogWrapper {
         return null;
     }
 
+    public AuthType getData() {
+        if (spRadioButton.isSelected()) {
+            return AuthType.SERVICE_PRINCIPAL;
+        }
+        if (deviceLoginRadioButton.isSelected()) {
+            return AuthType.DEVICE_CODE;
+        }
+
+        if (oauthLoginRadioButton.isSelected()) {
+            return AuthType.OAUTH2;
+        }
+        if (azureCliRadioButton.isSelected()) {
+            return AuthType.AZURE_CLI;
+        }
+        throw new AzureToolkitRuntimeException("No auth type is selected");
+    }
+
     @Override
     public void doHelpAction() {
         final JXHyperlink helpLink = new JXHyperlink();
