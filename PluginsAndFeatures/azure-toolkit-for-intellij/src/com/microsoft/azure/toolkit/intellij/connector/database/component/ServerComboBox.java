@@ -60,7 +60,7 @@ public class ServerComboBox<T> extends AzureComboBox<T> {
          */
         if ((value instanceof MySqlServer && !StringUtils.equals("Ready", ((MySqlServer) value).entity().getState())) ||
                 (value instanceof SqlServer && !StringUtils.equals("Ready", ((SqlServer) value).entity().getState()))) {
-            return AzureValidationInfo.builder().input(this).message("This server is not ready. please start it firstly.")
+            return AzureValidationInfo.builder().input(this).message("This server is not ready. please start it first.")
                     .type(AzureValidationInfo.Type.ERROR).build();
 
         }
