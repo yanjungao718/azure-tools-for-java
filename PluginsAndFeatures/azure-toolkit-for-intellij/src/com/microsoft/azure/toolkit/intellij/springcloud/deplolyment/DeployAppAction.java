@@ -49,7 +49,7 @@ public class DeployAppAction extends AzureAnAction {
         }
         AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
             if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                AzureTaskManager.getInstance().runLater(() -> deployConfiguration(project, null));
+                deployConfiguration(project, null);
             }
         });
         return false;
@@ -65,12 +65,14 @@ public class DeployAppAction extends AzureAnAction {
         if (Objects.nonNull(app)) {
             AzureTaskManager.getInstance().runOnPooledThread(() -> configuration.setAppConfig(SpringCloudAppConfig.fromApp(app)));
         }
-        if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-            settings.storeInLocalWorkspace();
-            manager.addConfiguration(settings);
-            manager.setBeforeRunTasks(configuration, new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration())));
-            manager.setSelectedConfiguration(settings);
-            ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
-        }
+        AzureTaskManager.getInstance().runLater(() -> {
+            if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+                settings.storeInLocalWorkspace();
+                manager.addConfiguration(settings);
+                manager.setBeforeRunTasks(configuration, new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration())));
+                manager.setSelectedConfiguration(settings);
+                ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
+            }
+        });
     }
 }
