@@ -5,10 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.database.component;
 
+import com.intellij.openapi.ui.ComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -42,4 +47,22 @@ public class ServerComboBox<T> extends AzureComboBox<T> {
         return true;
     }
 
+    @Override
+    public AzureValidationInfo doValidate() {
+        final AzureValidationInfo info = super.doValidate();
+        if (!AzureValidationInfo.OK.equals(info)) {
+            return info;
+        }
+        final Object value = this.getValue();
+        /**
+         * TODO (Qianjin) : refactor the if condition
+         */
+        if ((value instanceof MySqlServer && !StringUtils.equals("Ready", ((MySqlServer) value).entity().getState())) ||
+                (value instanceof MySqlServer && !StringUtils.equals("Ready", ((MySqlServer) value).entity().getState()))) {
+            return AzureValidationInfo.builder().input(this).message("This server is not ready. please start it firstly.")
+                    .type(AzureValidationInfo.Type.ERROR).build();
+
+        }
+        return info;
+    }
 }
