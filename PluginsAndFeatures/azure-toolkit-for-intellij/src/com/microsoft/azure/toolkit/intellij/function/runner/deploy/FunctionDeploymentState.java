@@ -16,9 +16,12 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
@@ -37,9 +40,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import reactor.core.Exceptions;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 import javax.annotation.Nonnull;
@@ -50,13 +52,14 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> {
 
-    private static final int LIST_TRIGGERS_MAX_RETRY = 3;
+    private static final int LIST_TRIGGERS_MAX_RETRY = 4;
     private static final int LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS = 10;
     private static final String AUTH_LEVEL = "authLevel";
     private static final String HTTP_TRIGGER = "httpTrigger";
@@ -65,7 +68,8 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     private static final String UNABLE_TO_LIST_NONE_ANONYMOUS_HTTP_TRIGGERS = "Some http trigger urls cannot be displayed " +
             "because they are non-anonymous. To access the non-anonymous triggers, please refer https://aka.ms/azure-functions-key.";
     private static final String FAILED_TO_LIST_TRIGGERS = "Deployment succeeded, but failed to list http trigger urls.";
-    private static final String SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION = "Syncing triggers and fetching function information...";
+    private static final String SYNCING_TRIGGERS = "Syncing triggers and fetching function information";
+    private static final String SYNCING_TRIGGERS_WITH_RETRY = "Syncing triggers and fetching function information (Attempt {0}/{1})...";
     private static final String NO_TRIGGERS_FOUNDED = "No triggers found in deployed function app";
 
     private final FunctionDeployConfiguration functionDeployConfiguration;
@@ -196,6 +200,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         }
 
         @Override
+        public void info(@Nonnull AzureString message, String title, IAzureMessage.Action... actions) {
+            info(message.toString());
+        }
+
+        @Override
         public void success(@Nonnull String message, String title) {
             processHandler.println(message, ProcessOutputTypes.SYSTEM);
             super.success(message, title);
@@ -239,20 +248,18 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         }
     }
 
+    // todo: Move to toolkit lib as shared task
     private List<FunctionEntity> listFunctions(final IFunctionApp functionApp) {
-        AzureMessager.getMessager().info(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION);
+        final AtomicInteger count = new AtomicInteger(0);
+        final IAzureMessager azureMessager = AzureMessager.getMessager();
         return Mono.fromCallable(() -> {
-            functionApp.syncTriggers();
+            final AzureString message = count.getAndAdd(1) == 0 ?
+                    AzureString.fromString(SYNCING_TRIGGERS) : AzureString.format(SYNCING_TRIGGERS_WITH_RETRY, count.get(), LIST_TRIGGERS_MAX_RETRY);
+            azureMessager.info(message);
             return Optional.ofNullable(functionApp.listFunctions(true))
                     .filter(CollectionUtils::isNotEmpty)
                     .orElseThrow(() -> new AzureToolkitRuntimeException(NO_TRIGGERS_FOUNDED));
-        }).retryWhen(Retry.withThrowable(flux ->
-                flux.zipWith(Flux.range(1, LIST_TRIGGERS_MAX_RETRY + 1), (throwable, count) -> {
-                    if (count < LIST_TRIGGERS_MAX_RETRY) {
-                        return count;
-                    } else {
-                        return Exceptions.propagate(throwable);
-                    }
-                }).flatMap(i -> Mono.delay(Duration.ofSeconds((long) i * 10))))).block();
+        }).subscribeOn(Schedulers.boundedElastic())
+                .retryWhen(Retry.backoff(LIST_TRIGGERS_MAX_RETRY - 1, Duration.ofSeconds(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS))).block();
     }
 }
