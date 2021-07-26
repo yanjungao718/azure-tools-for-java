@@ -115,7 +115,7 @@ public class AzureSignInAction extends AzureAnAction {
     private static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
         final AuthMethodDetails authMethodDetails = authMethodManager.getAuthMethodDetails();
         if (authMethodDetails == null || authMethodDetails.getAuthType() == null) {
-            return String.format("Do you really want to sign out?");
+            return "Do you really want to sign out?";
         }
         final AuthType authType = authMethodDetails.getAuthType();
         final String warningMessage;
@@ -154,12 +154,11 @@ public class AzureSignInAction extends AzureAnAction {
             signInIfNotSignedIn(project).subscribe(isLoggedIn -> {
                 if (isLoggedIn) {
                     AzureAccount az = Azure.az(AzureAccount.class);
-                    AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                    AzureTaskManager.getInstance().runOnPooledThread(() ->
                         authMethodManager.getAzureManager().getSelectedSubscriptions().stream().limit(5).forEach(s -> {
                             // pre-load regions;
                             az.listRegions(s.getId());
-                        });
-                    });
+                        }));
                 }
 
             });
@@ -168,13 +167,16 @@ public class AzureSignInAction extends AzureAnAction {
 
     @AzureOperation(name = "account.sign_in", type = AzureOperation.Type.SERVICE)
     public static Mono<Boolean> signInIfNotSignedIn(Project project) {
-        return signInIfNotSignedInInternal(project).doOnSuccess(isLoggedIn -> {
+        return signInIfNotSignedInInternal(project).flatMap(isLoggedIn -> {
             if (isLoggedIn) {
                 persistAuthMethodDetails();
+                // from rxjava1 single to mono
+                return Mono.create(sink -> SelectSubscriptionsAction.selectSubscriptions(project)
+                    .subscribeOn(rx.schedulers.Schedulers.io())
+                    .doAfterTerminate(() -> sink.success(isLoggedIn)).doOnUnsubscribe(() -> sink.success(isLoggedIn)).subscribe());
             }
-        }).doOnError(e -> {
-            AzureMessager.getMessager().error(e);
-        });
+            return Mono.just(false);
+        }).doOnError(e -> AzureMessager.getMessager().error(e));
     }
 
     private static void persistAuthMethodDetails() {
@@ -187,70 +189,61 @@ public class AzureSignInAction extends AzureAnAction {
         if (authMethodManager.isSignedIn()) {
             return Mono.just(true);
         }
-        return Mono.create(sink -> {
+        return Mono.create(sink -> AzureTaskManager.getInstance().runLater(() -> {
+            final IDeviceLoginUI deviceLoginUI = new DeviceLoginUI();
+            final SignInWindow dialog = new SignInWindow(new AuthMethodDetails(), project);
+
+            if (!dialog.showAndGet()) {
+                sink.error(new InterruptedException("user cancel"));
+                return;
+            }
+
             AzureTaskManager.getInstance().runLater(() -> {
-                final IDeviceLoginUI deviceLoginUI = new DeviceLoginUI();
-                final SignInWindow dialog = new SignInWindow(new AuthMethodDetails(), project);
-
-                if (!dialog.showAndGet()) {
-                    sink.error(new InterruptedException("user cancel"));
-                    return;
-                }
-
-                AzureTaskManager.getInstance().runLater(() -> {
-                    AuthConfiguration auth = new AuthConfiguration();
-                    AuthType type = dialog.getData();
-                    auth.setType(type);
-                    if (type == AuthType.SERVICE_PRINCIPAL) {
-                        final ServicePrincipalLoginDialog spDialog = new ServicePrincipalLoginDialog(project);
-                        if (!spDialog.showAndGet()) {
-                            sink.error(new InterruptedException("user cancel"));
-                            return;
-                        }
-                        auth = spDialog.getData();
+                AuthConfiguration auth = new AuthConfiguration();
+                AuthType type = dialog.getData();
+                auth.setType(type);
+                if (type == AuthType.SERVICE_PRINCIPAL) {
+                    final ServicePrincipalLoginDialog spDialog = new ServicePrincipalLoginDialog(project);
+                    if (!spDialog.showAndGet()) {
+                        sink.error(new InterruptedException("user cancel"));
+                        return;
                     }
-                    final AuthConfiguration finalAuth = auth;
-                    if (type != AuthType.DEVICE_CODE) {
-                        Mono.fromCallable(() -> loginInternal(finalAuth)).subscribeOn(Schedulers.boundedElastic()).subscribe(r -> {
-                            if (authMethodManager.isSignedIn()) {
-                                authMethodManager.setAuthMethodDetails(r);
-                            }
-                            sink.success(authMethodManager.isSignedIn());
-                        }, sink::error);
-                    } else {
-                        final AzureString title = AzureOperationBundle.title("account.sign_in");
-                        final AzureTask<DeviceCodeInfo> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
-                            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-                            indicator.setIndeterminate(true);
+                    auth = spDialog.getData();
+                }
+                final AuthConfiguration finalAuth = auth;
+                if (type != AuthType.DEVICE_CODE) {
+                    Mono.fromCallable(() -> loginInternal(finalAuth)).subscribeOn(Schedulers.boundedElastic()).subscribe(r -> {
+                        if (authMethodManager.isSignedIn()) {
+                            authMethodManager.setAuthMethodDetails(r);
+                        }
+                        sink.success(authMethodManager.isSignedIn());
+                    }, sink::error);
+                } else {
+                    final AzureString title = AzureOperationBundle.title("account.sign_in");
+                    final AzureTask<DeviceCodeInfo> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
+                        final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+                        indicator.setIndeterminate(true);
 
-                            final AzureAccount az = Azure.az(AzureAccount.class);
-                            DeviceCodeAccount account = (DeviceCodeAccount) az.loginAsync(AuthType.DEVICE_CODE, true).block();
-                            final DeviceCodeInfo deviceCode = account.getDeviceCode();
+                        final AzureAccount az = Azure.az(AzureAccount.class);
+                        DeviceCodeAccount account = (DeviceCodeAccount) az.loginAsync(AuthType.DEVICE_CODE, true).block();
+                        final DeviceCodeInfo deviceCode = account.getDeviceCode();
 
-                            account.continueLogin().map(ac -> fromAccountEntity(ac.getEntity())).doFinally(signal -> {
-                                deviceLoginUI.closePrompt();
-                            }).subscribeOn(Schedulers.boundedElastic()).subscribe(r -> {
+                        account.continueLogin().map(ac -> fromAccountEntity(ac.getEntity())).doFinally(signal ->
+                            deviceLoginUI.closePrompt()).subscribeOn(Schedulers.boundedElastic()).subscribe(res -> {
                                 if (authMethodManager.isSignedIn()) {
-                                    authMethodManager.setAuthMethodDetails(r);
+                                    authMethodManager.setAuthMethodDetails(res);
                                 }
                                 sink.success(authMethodManager.isSignedIn());
-
                             }, sink::error);
-                            return deviceCode;
-                        });
-                        AzureTaskManager.getInstance().runInBackgroundAsObservable(deviceCodeTask).toSingle().subscribe(code -> {
-                            AzureTaskManager.getInstance().runLater(() -> {
-                                AzureTaskManager.getInstance().runLater(() -> {
-                                    deviceLoginUI.promptDeviceCode(code);
-                                });
-                            });
-                        });
-                    }
-
-                });
+                        return deviceCode;
+                    });
+                    AzureTaskManager.getInstance().runInBackgroundAsObservable(deviceCodeTask).toSingle()
+                        .subscribe(code -> AzureTaskManager.getInstance().runLater(() -> deviceLoginUI.promptDeviceCode(code)));
+                }
 
             });
-        });
+
+        }));
 
     }
 
@@ -265,7 +258,7 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     private static AuthMethodDetails fromAccountEntity(AccountEntity entity) {
-        AuthMethodDetails authMethodDetails = new AuthMethodDetails();
+        final AuthMethodDetails authMethodDetails = new AuthMethodDetails();
         authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
         authMethodDetails.setAuthType(entity.getType());
         authMethodDetails.setClientId(entity.getClientId());
