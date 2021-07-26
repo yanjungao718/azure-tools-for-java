@@ -195,9 +195,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             final List<? extends T> items = this.loadItemsInner();
             this.setLoading(false);
             this.setItems(items);
-            if (CollectionUtils.isNotEmpty(items) && Objects.isNull(getValue())) {
-                setValue(items.get(0));
-            }
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
@@ -226,6 +223,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     public void clear() {
+        this.value = null;
+        this.valueNotSet = true;
         final DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) this.getModel();
         model.removeAllElements();
         this.refreshValue();
