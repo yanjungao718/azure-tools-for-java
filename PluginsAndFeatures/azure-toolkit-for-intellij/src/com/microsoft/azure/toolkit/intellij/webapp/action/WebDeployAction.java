@@ -17,12 +17,12 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.WebAppConfigurationType;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,8 +41,8 @@ public class WebDeployAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isLoggedIn) -> {
-            if (isLoggedIn) {
+        AzureSignInAction.signInIfNotSignedIn(module.getProject()).subscribe((isLoggedIn) -> {
+            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
                 AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
             }
         });

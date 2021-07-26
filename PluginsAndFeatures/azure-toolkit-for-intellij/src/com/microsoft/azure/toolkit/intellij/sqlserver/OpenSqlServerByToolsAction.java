@@ -9,9 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azuretools.ActionConstants;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.util.AzureLoginHelper;
@@ -47,7 +47,11 @@ public class OpenSqlServerByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
+        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
+            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+                AzureTaskManager.getInstance().runLater(() -> this.doActionPerformed(isLoggedIn, project));
+            }
+        });
     }
 
     @Override

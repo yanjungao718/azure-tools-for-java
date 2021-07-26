@@ -9,13 +9,18 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name(ConnectToMySQLAction.ACTION_NAME)
 public class ConnectToMySQLAction extends NodeActionListener {
@@ -38,10 +43,17 @@ public class ConnectToMySQLAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
-        final MySqlServer server = this.node.getServer();
-        dialog.setResource(new DatabaseResource(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), server.id(), null));
-        dialog.show();
+        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
+            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+                AzureTaskManager.getInstance().runLater(() -> {
+                    final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
+                    final MySqlServer server = this.node.getServer();
+                    dialog.setResource(new DatabaseResource(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), server.id(), null));
+                    dialog.show();
+                });
+            }
+        });
+
     }
 
     @Override
