@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
@@ -223,6 +223,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     public void clear() {
+        this.value = null;
+        this.valueNotSet = true;
         final DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) this.getModel();
         model.removeAllElements();
         this.refreshValue();
