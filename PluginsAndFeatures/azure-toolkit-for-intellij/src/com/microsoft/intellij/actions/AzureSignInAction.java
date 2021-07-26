@@ -170,6 +170,9 @@ public class AzureSignInAction extends AzureAnAction {
 
     @AzureOperation(name = "account.sign_in", type = AzureOperation.Type.SERVICE)
     public static Mono<Boolean> signInIfNotSignedIn(Project project) {
+        if (AuthMethodManager.getInstance().isSignedIn()) {
+            return Mono.just(true);
+        }
         return signInIfNotSignedInInternal(project).flatMap(isLoggedIn -> {
             if (isLoggedIn) {
                 persistAuthMethodDetails();
@@ -204,9 +207,6 @@ public class AzureSignInAction extends AzureAnAction {
 
     private static Mono<Boolean> signInIfNotSignedInInternal(Project project) {
         final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-        if (authMethodManager.isSignedIn()) {
-            return Mono.just(true);
-        }
         return Mono.create(sink -> AzureTaskManager.getInstance().runLater(() -> {
             final IDeviceLoginUI deviceLoginUI = new DeviceLoginUI();
             final SignInWindow dialog = new SignInWindow(new AuthMethodDetails(), project);
