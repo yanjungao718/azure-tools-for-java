@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -65,10 +64,13 @@ public class CreateWebAppAction extends NodeActionListener {
     @AzureOperation(name = "webapp.create", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                this.openDialog(project, null);
-            }
+        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
+            AzureTaskManager.getInstance().runLater(() -> {
+                if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+                    this.openDialog(project, null);
+                }
+            });
+
         });
     }
 

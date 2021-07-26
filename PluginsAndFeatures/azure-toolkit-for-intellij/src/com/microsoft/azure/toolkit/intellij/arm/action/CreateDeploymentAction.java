@@ -10,7 +10,7 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.intellij.arm.CreateDeploymentForm;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.util.UIUtils;
@@ -22,6 +22,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name("Create")
 public class CreateDeploymentAction extends NodeActionListener {
@@ -48,8 +50,10 @@ public class CreateDeploymentAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
-            this.doActionPerformed(nodeActionEvent, isLoggedIn, project);
+        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
+            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+                AzureTaskManager.getInstance().runLater(() -> this.doActionPerformed(nodeActionEvent, isLoggedIn, project));
+            }
         });
     }
 

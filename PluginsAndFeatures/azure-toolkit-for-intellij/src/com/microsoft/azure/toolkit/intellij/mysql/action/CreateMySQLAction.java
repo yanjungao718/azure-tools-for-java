@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.ActionConstants;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -59,7 +58,11 @@ public class CreateMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
+        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
+            AzureTaskManager.getInstance().runLater(() -> {
+                this.doActionPerformed(isLoggedIn, project);
+            });
+        });
     }
 
     private void doActionPerformed(boolean isLoggedIn, Project project) {
