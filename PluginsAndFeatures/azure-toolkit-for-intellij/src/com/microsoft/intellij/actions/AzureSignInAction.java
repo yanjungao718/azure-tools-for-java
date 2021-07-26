@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.aad.msal4j.MsalClientException;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
@@ -48,11 +49,13 @@ import com.microsoft.intellij.ui.SignInWindow;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import rx.exceptions.Exceptions;
 
 import javax.swing.JFrame;
 import java.time.Duration;
@@ -176,7 +179,22 @@ public class AzureSignInAction extends AzureAnAction {
                     .doAfterTerminate(() -> sink.success(isLoggedIn)).doOnUnsubscribe(() -> sink.success(isLoggedIn)).subscribe());
             }
             return Mono.just(false);
-        }).doOnError(e -> AzureMessager.getMessager().error(e));
+        }).doOnError(e -> {
+            Throwable cause = Exceptions.getFinalCause(e);
+            if (shouldNoticeErrorToUser(cause)) {
+                AzureMessager.getMessager().error(e);
+            }
+        });
+    }
+
+    private static boolean shouldNoticeErrorToUser(Throwable cause) {
+        if (cause instanceof InterruptedException) {
+            return false;
+        }
+        if (cause instanceof MsalClientException && StringUtils.equals(cause.getMessage(), "No Authorization code was returned from the server")) {
+            return false;
+        }
+        return true;
     }
 
     private static void persistAuthMethodDetails() {
