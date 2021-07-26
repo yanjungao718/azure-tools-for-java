@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import com.microsoft.azure.toolkit.lib.sqlserver.service.impl.SqlServer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +59,7 @@ public class ServerComboBox<T> extends AzureComboBox<T> {
          * TODO (Qianjin) : refactor the if condition
          */
         if ((value instanceof MySqlServer && !StringUtils.equals("Ready", ((MySqlServer) value).entity().getState())) ||
-                (value instanceof MySqlServer && !StringUtils.equals("Ready", ((MySqlServer) value).entity().getState()))) {
+                (value instanceof SqlServer && !StringUtils.equals("Ready", ((SqlServer) value).entity().getState()))) {
             return AzureValidationInfo.builder().input(this).message("This server is not ready. please start it firstly.")
                     .type(AzureValidationInfo.Type.ERROR).build();
 
