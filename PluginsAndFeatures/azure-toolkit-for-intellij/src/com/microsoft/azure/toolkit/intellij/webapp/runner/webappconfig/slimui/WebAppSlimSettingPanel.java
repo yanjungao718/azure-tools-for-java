@@ -200,7 +200,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (configuration.getAzureArtifactType() != null) {
             final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(this.project);
             final AzureArtifact lastArtifact = artifactManager.getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
-            if (lastArtifact.getType() == AzureArtifactType.File) {
+            if (lastArtifact != null && lastArtifact.getType() == AzureArtifactType.File) {
                 comboBoxArtifact.setCachedArtifact(lastArtifact);
             }
             comboBoxArtifact.setValue(new AzureComboBox.ItemReference<>(artifact -> artifactManager.equalsAzureArtifact(lastArtifact, artifact)));
