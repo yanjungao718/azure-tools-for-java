@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
@@ -34,7 +33,6 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     private final boolean fileArtifactOnly;
     private Condition<? super VirtualFile> fileFilter;
     private Subscription subscription;
-    @Setter
     private AzureArtifact cachedArtifact;
 
     public AzureArtifactComboBox(Project project) {
@@ -51,6 +49,12 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         this.fileFilter = filter;
     }
 
+    public void setArtifact(@Nullable final AzureArtifact azureArtifact) {
+        final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(this.project);
+        this.cachedArtifact = azureArtifact;
+        this.setValue(new AzureComboBox.ItemReference<>(artifact -> artifactManager.equalsAzureArtifact(cachedArtifact, artifact)));
+    }
+
     @NotNull
     @Override
     @AzureOperation(
@@ -63,7 +67,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
                 .stream()
                 .filter(azureArtifact -> !fileArtifactOnly || azureArtifact.getType() == AzureArtifactType.File)
                 .collect(Collectors.toList());
-        Optional.ofNullable(cachedArtifact).ifPresent(artifact -> collect.add(artifact));
+        Optional.ofNullable(cachedArtifact).filter(artifact -> artifact.getType() == AzureArtifactType.File).ifPresent(collect::add);
         return collect;
     }
 

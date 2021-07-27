@@ -106,10 +106,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
         Optional.ofNullable(deploymentConfig.getArtifact()).map(a -> ((WrappedAzureArtifact) a))
-                .ifPresent((a -> this.selectorArtifact.setValue(new ItemReference<>(
-                        manager.getArtifactIdentifier(a.getArtifact()),
-                        manager::getArtifactIdentifier
-                ))));
+                .ifPresent((a -> this.selectorArtifact.setArtifact(a.getArtifact())));
         Optional.ofNullable(appConfig.getSubscriptionId())
                 .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
         Optional.ofNullable(appConfig.getClusterName())

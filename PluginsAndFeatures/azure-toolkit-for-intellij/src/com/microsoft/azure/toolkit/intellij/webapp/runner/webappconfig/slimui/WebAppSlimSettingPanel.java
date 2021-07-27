@@ -15,8 +15,6 @@ import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBox;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
@@ -198,12 +196,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             comboBoxWebApp.setConfigModel(configModel);
         }
         if (configuration.getAzureArtifactType() != null) {
-            final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(this.project);
-            final AzureArtifact lastArtifact = artifactManager.getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
-            if (lastArtifact != null && lastArtifact.getType() == AzureArtifactType.File) {
-                comboBoxArtifact.setCachedArtifact(lastArtifact);
-            }
-            comboBoxArtifact.setValue(new AzureComboBox.ItemReference<>(artifact -> artifactManager.equalsAzureArtifact(lastArtifact, artifact)));
+            final AzureArtifact artifact = AzureArtifactManager.getInstance(this.project)
+                    .getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
+            comboBoxArtifact.setArtifact(artifact);
         }
         if (configuration.getWebAppId() != null && configuration.isDeployToSlot()) {
             toggleSlotPanel(true);
