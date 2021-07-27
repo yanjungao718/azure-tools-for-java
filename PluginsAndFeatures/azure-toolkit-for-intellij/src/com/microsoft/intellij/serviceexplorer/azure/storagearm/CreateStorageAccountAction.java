@@ -6,9 +6,8 @@
 package com.microsoft.intellij.serviceexplorer.azure.storagearm;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -17,8 +16,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name("Create")
 public class CreateStorageAccountAction extends NodeActionListener {
@@ -38,11 +35,7 @@ public class CreateStorageAccountAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) storageModule.getProject();
-        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                AzureTaskManager.getInstance().runLater(() -> this.doActionPerformed(e, isLoggedIn, project));
-            }
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.doActionPerformed(e, true, project));
     }
 
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {

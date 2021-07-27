@@ -21,15 +21,12 @@ import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class DeployAppAction extends AzureAnAction {
     private static final String DEPLOY_SPRING_CLOUD_APP_TITLE = "Deploy Azure Spring Cloud App";
@@ -47,11 +44,8 @@ public class DeployAppAction extends AzureAnAction {
         if (project == null) {
             return true;
         }
-        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                deployConfiguration(project, null);
-            }
-        });
+
+        AzureSignInAction.requireSignedIn(project, () -> this.deployConfiguration(project, null));
         return false;
     }
 

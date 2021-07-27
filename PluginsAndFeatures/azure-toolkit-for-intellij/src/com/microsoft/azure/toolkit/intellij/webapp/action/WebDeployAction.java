@@ -12,17 +12,16 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azure.toolkit.intellij.webapp.runner.WebAppConfigurationType;
-import com.microsoft.intellij.util.AzureLoginHelper;
+import com.microsoft.intellij.AzureAnAction;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,11 +40,7 @@ public class WebDeployAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        AzureSignInAction.signInIfNotSignedIn(module.getProject()).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
-            }
-        });
+        AzureSignInAction.requireSignedIn(module.getProject(), () -> runConfiguration(module));
         return false;
     }
 

@@ -30,7 +30,6 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -64,14 +63,7 @@ public class CreateWebAppAction extends NodeActionListener {
     @AzureOperation(name = "webapp.create", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
-        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
-            AzureTaskManager.getInstance().runLater(() -> {
-                if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                    this.openDialog(project, null);
-                }
-            });
-
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.openDialog(project, null));
     }
 
     @AzureOperation(name = "webapp.open_creation_dialog", type = AzureOperation.Type.ACTION)

@@ -29,7 +29,6 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -65,11 +64,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     @AzureOperation(name = "function.create", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
-        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                AzureTaskManager.getInstance().runLater(() -> openDialog(project, null));
-            }
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.openDialog(project, null));
     }
 
     @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)
