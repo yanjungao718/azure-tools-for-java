@@ -29,7 +29,9 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
@@ -44,7 +46,6 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
@@ -72,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -81,6 +83,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTA
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -218,7 +221,11 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
-
+        if (Azure.az().config().getHttpProxy() != null) {
+            final Map<String, String> map = Optional.ofNullable(AzureTelemeter.getCommonProperties()).map(HashMap::new).orElse(new HashMap<>());
+            map.put(PROXY, "true");
+            AzureTelemeter.setCommonProperties(map);
+        }
         if (pluginStateListener == null) {
             pluginStateListener = new PluginStateListener() {
                 @Override
