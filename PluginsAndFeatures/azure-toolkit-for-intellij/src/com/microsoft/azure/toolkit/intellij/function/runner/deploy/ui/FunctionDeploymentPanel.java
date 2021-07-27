@@ -136,7 +136,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             appSettingsFunctionApp = configModel;
             functionAppComboBox.setConfigModel(configModel);
         }
-        functionAppComboBox.refreshItems();
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
             for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
@@ -168,6 +167,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
         functionAppComboBox = new FunctionAppComboBox(project);
         functionAppComboBox.addActionListener(event -> onSelectFunctionApp());
+        functionAppComboBox.refreshItems();
     }
 
     private void onSelectFunctionApp() {
