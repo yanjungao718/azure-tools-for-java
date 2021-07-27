@@ -113,20 +113,24 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
 
     private void onMySqlServerStatusChanged(MySqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
-            this.property.getServer().refresh();
+            AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                this.property.getServer().refresh();
+                AzureTaskManager.getInstance().runLater(() -> {
+                    showProperty(property);
+                });
+            });
         }
-        showProperty(property);
     }
 
     private void onMySqlServerStatusChanging(MySqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
-            overview.getStatusTextField().setText("Updating...");
+            AzureTaskManager.getInstance().runLater(() -> overview.getStatusTextField().setText("Updating..."));
         }
     }
 
     private void onMySqlServerStatusDeleting(MySqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
-            overview.getStatusTextField().setText("Deleting...");
+            AzureTaskManager.getInstance().runLater(() -> overview.getStatusTextField().setText("Deleting..."));
         }
     }
 
