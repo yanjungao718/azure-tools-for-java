@@ -295,7 +295,7 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
             // database
             this.databaseComboBox = new DatabaseComboBox<SqlServer, SqlDatabaseEntity>();
             this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ||
-                    !StringUtils.equals("Ready", ((MySqlServer) this.databaseComboBox.getServer()).entity().getState()) ?
+                    !StringUtils.equals("Ready", ((SqlServer) this.databaseComboBox.getServer()).entity().getState()) ?
                     Collections.emptyList() : ((SqlServer) this.databaseComboBox.getServer()).databases());
             this.databaseComboBox.setItemTextFunc((Function<SqlDatabaseEntity, String>) databaseEntity -> databaseEntity.getName());
             // username
