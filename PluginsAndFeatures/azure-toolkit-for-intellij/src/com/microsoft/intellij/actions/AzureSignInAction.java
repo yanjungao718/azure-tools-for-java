@@ -46,6 +46,7 @@ import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.intellij.ui.DeviceLoginUI;
 import com.microsoft.intellij.ui.ServicePrincipalLoginDialog;
 import com.microsoft.intellij.ui.SignInWindow;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.collections4.CollectionUtils;
@@ -69,6 +70,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRO
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AzureSignInAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
@@ -169,7 +171,7 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     @AzureOperation(name = "account.sign_in", type = AzureOperation.Type.SERVICE)
-    public static Mono<Boolean> signInIfNotSignedIn(Project project) {
+    private static Mono<Boolean> signInIfNotSignedIn(Project project) {
         if (AuthMethodManager.getInstance().isSignedIn()) {
             return Mono.just(true);
         }
@@ -327,5 +329,13 @@ public class AzureSignInAction extends AzureAnAction {
         final Mono<AuthMethodDetails> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
             .any(cancel -> cancel).map(ignore -> new AuthMethodDetails()).subscribeOn(Schedulers.boundedElastic());
         return Mono.firstWithSignal(cancelMono, mono.subscribeOn(Schedulers.boundedElastic())).block();
+    }
+
+    public static void requireSignedIn(Project project, Runnable runnable) {
+        signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
+            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+                AzureTaskManager.getInstance().runLater(runnable);
+            }
+        });
     }
 }

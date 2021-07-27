@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
@@ -46,11 +45,7 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                AzureTaskManager.getInstance().runLater(() -> this.doActionPerformed(isLoggedIn, project));
-            }
-        });
+        AzureSignInAction.requireSignedIn(project, () -> doActionPerformed(true, project));
     }
 
     @Override

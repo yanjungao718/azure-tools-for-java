@@ -17,6 +17,8 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -24,20 +26,14 @@ import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpMod
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfiguration;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
+import rx.Observable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import rx.Observable;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name("Push Image")
 public class PushToContainerRegistryAction extends NodeActionListener {
@@ -57,11 +53,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         if (project == null) {
             return;
         }
-        AzureSignInAction.signInIfNotSignedIn(project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                AzureTaskManager.getInstance().runLater(() -> runConfiguration(project));
-            }
-        });
+        AzureSignInAction.requireSignedIn(project, () -> runConfiguration(project));
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
