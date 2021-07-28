@@ -21,10 +21,10 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -52,21 +52,20 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     public void setArtifact(@Nullable final AzureArtifact azureArtifact) {
         final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(this.project);
         this.cachedArtifact = azureArtifact;
+        Optional.ofNullable(cachedArtifact).filter(artifact -> artifact.getType() == AzureArtifactType.File).ifPresent(this::addItem);
         this.setValue(new AzureComboBox.ItemReference<>(artifact -> artifactManager.equalsAzureArtifact(cachedArtifact, artifact)));
     }
 
     @NotNull
     @Override
     @AzureOperation(
-        name = "common|artifact.list.project",
-        params = {"this.project.getName()"},
-        type = AzureOperation.Type.SERVICE
+            name = "common|artifact.list.project",
+            params = {"this.project.getName()"},
+            type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AzureArtifact> loadItems() throws Exception {
-        final List<AzureArtifact> collect = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts()
-                .stream()
-                .filter(azureArtifact -> !fileArtifactOnly || azureArtifact.getType() == AzureArtifactType.File)
-                .collect(Collectors.toList());
+        final List<AzureArtifact> collect = fileArtifactOnly ?
+                new ArrayList<>() : AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
         Optional.ofNullable(cachedArtifact).filter(artifact -> artifact.getType() == AzureArtifactType.File).ifPresent(collect::add);
         return collect;
     }
