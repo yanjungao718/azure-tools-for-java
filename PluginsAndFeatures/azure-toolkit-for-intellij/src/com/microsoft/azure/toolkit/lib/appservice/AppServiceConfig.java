@@ -5,12 +5,12 @@
 
 package com.microsoft.azure.toolkit.lib.appservice;
 
+import com.azure.core.management.AzureEnvironment;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -59,14 +59,13 @@ public class AppServiceConfig {
     }
 
     public static Region getDefaultRegion() {
-        final String environment = AzureEnvironmentUtils.azureEnvironmentToString(Azure.az(AzureAccount.class).account().getEnvironment());
-        switch (environment) {
-            case "azure":
-                return Region.US_WEST;
-            case "azure_china":
-                return Region.CHINA_NORTH2;
-            default:
-                return Azure.az(AzureAccount.class).listRegions().stream().findFirst().orElse(null);
+        final AzureEnvironment environment = Azure.az(AzureAccount.class).account().getEnvironment();
+        if (environment == AzureEnvironment.AZURE) {
+            return Region.US_WEST;
+        } else if (environment == AzureEnvironment.AZURE_CHINA) {
+            return Region.CHINA_NORTH2;
+        } else {
+            return Azure.az(AzureAccount.class).listRegions().stream().findFirst().orElse(null);
         }
     }
 }
