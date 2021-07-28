@@ -1,6 +1,27 @@
 <!-- Version: 3.51.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.55.0
+### Added
+- New azure resource connector explorer for connection management
+- Add support for IntelliJ proxy
+- Add unified `Open In Portal` support for Web App/VM/Resource Group
+
+### Changed
+- Enhance toolkit setting panel with more configuration
+- Enhance resource loading performance in Azure explorer
+- Support turn off Azure SDK deprecation notification
+- Support create Azure Spring Cloud app in Azure explorer
+- Update Azure icons to new style
+
+### Fixed
+- [#5439](https://github.com/microsoft/azure-tools-for-java/issues/5439) Fix project already disposed excpetion while loading azure sdk reference book meta data
+- [PR#5437](https://github.com/microsoft/azure-tools-for-java/pull/5437) Fix exception while edit json in service principal dialog
+- [PR#5476](https://github.com/microsoft/azure-tools-for-java/pull/5476) Fix url render issue for toolkit notification
+- [PR#5535](https://github.com/microsoft/azure-tools-for-java/pull/5535) Fix evaluate effective pom will break app service/spring cloud deployment
+- [PR#5563](https://github.com/microsoft/azure-tools-for-java/pull/5563) Fix exception: type HTTP is not compatible with address null 
+- [PR#5579](https://github.com/microsoft/azure-tools-for-java/pull/5579) Fix reporting error in azure explorer before sign in
+
 ## 3.54.0
 ### Added
 - User would be reminded if deprecated Azure SDK libs are used in project.

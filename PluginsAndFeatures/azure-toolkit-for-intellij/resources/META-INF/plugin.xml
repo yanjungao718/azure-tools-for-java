@@ -25,16 +25,51 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.54.0</h3>
+        <h3>3.55.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>User would be reminded if deprecated Azure SDK libs are used in project.</li>
-            <li>Development workflow for SQL Server on Azure: user can now connect SQL Server to local project from Azure Explorer, project, module or application.properties file.</li>
+            <li>New azure resource connector explorer for connection management</li>
+            <li>Add support for IntelliJ proxy</li>
+            <li>
+                Add unified
+                <code>Open In Portal</code>
+                support for Web App/VM/Resource Group
+            </li>
         </ul>
-        <h4>Updated</h4>
+        <h4>Changed</h4>
         <ul>
-            <li>Services are grouped by category in Azure SDK reference book so that user can quickly locate the libs they want.</li>
-            <li>Error messages are unified.</li>
+            <li>Enhance toolkit setting panel with more configuration</li>
+            <li>Enhance resource loading performance in Azure explorer</li>
+            <li>Support turn off Azure SDK deprecation notification</li>
+            <li>Support create Azure Spring Cloud app in Azure explorer</li>
+            <li>Update Azure icons to new style</li>
+        </ul>
+        <h4>Fixed</h4>
+        <ul>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/issues/5439">#5439</a>
+                Fix project already disposed excpetion while loading azure sdk reference book meta data
+            </li>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5437">PR#5437</a>
+                Fix exception while edit json in service principal dialog
+            </li>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5476">PR#5476</a>
+                Fix url render issue for toolkit notification
+            </li>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5535">PR#5535</a>
+                Fix evaluate effective pom will break app service/spring cloud deployment
+            </li>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5563">PR#5563</a>
+                Fix exception: type HTTP is not compatible with address null
+            </li>
+            <li>
+                <a href="https://github.com/microsoft/azure-tools-for-java/pull/5579">PR#5579</a>
+                Fix reporting error in azure explorer before sign in
+            </li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
