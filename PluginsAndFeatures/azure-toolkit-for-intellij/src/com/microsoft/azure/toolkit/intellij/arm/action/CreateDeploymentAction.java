@@ -10,9 +10,8 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.intellij.arm.CreateDeploymentForm;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -48,9 +47,7 @@ public class CreateDeploymentAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
-            this.doActionPerformed(nodeActionEvent, isLoggedIn, project);
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.doActionPerformed(nodeActionEvent, true, project));
     }
 
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {

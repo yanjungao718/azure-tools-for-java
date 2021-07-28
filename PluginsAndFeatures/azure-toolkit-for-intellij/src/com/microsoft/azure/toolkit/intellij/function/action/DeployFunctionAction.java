@@ -16,16 +16,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.AzureAnAction;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeploymentConfigurationFactory;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.intellij.AzureAnAction;
+import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.intellij.actions.RunConfigurationUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,11 +42,8 @@ public class DeployFunctionAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isSuccess) -> {
-            if (isSuccess) {
-                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
-            }
-        });
+        final Project project = anActionEvent.getProject();
+        AzureSignInAction.requireSignedIn(project, () -> runConfiguration(module));
         return false;
     }
 

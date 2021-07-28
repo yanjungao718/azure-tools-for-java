@@ -16,14 +16,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType;
+import com.microsoft.intellij.AzureAnAction;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,11 +45,7 @@ public class WebAppOnLinuxAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isLoggedIn) -> {
-            if (isLoggedIn) {
-                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
-            }
-        });
+        AzureSignInAction.requireSignedIn(module.getProject(), () -> runConfiguration(module));
         return false;
     }
 

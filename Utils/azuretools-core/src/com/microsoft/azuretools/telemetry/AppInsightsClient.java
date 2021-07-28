@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.telemetry;
 
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;

@@ -81,7 +81,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     private AuthConfiguration auth = new AuthConfiguration();
     private AtomicBoolean intermediateState = new AtomicBoolean(false);
 
-    protected ServicePrincipalLoginDialog(@Nonnull Project project) {
+    public ServicePrincipalLoginDialog(@Nonnull Project project) {
         super(project);
         this.project = project;
 

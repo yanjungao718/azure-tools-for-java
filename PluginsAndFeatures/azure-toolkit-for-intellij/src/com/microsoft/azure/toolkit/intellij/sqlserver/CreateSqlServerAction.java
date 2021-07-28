@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.intellij.sqlserver.task.CreateSqlServerTask;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
@@ -49,7 +48,7 @@ public class CreateSqlServerAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
+        AzureSignInAction.requireSignedIn(project, () -> this.doActionPerformed(true, project));
     }
 
     private void doActionPerformed(boolean isLoggedIn, Project project) {
