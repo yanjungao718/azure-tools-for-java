@@ -15,6 +15,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.aad.msal4j.MsalClientException;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
@@ -30,7 +31,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -318,7 +318,7 @@ public class AzureSignInAction extends AzureAnAction {
         try {
             operation.start();
             operation.trackProperties(properties);
-            operation.trackProperty(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
+            operation.trackProperty(AZURE_ENVIRONMENT, Azure.az(AzureCloud.class).getName());
             return loginCallable.call();
         } catch (Exception e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
