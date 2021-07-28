@@ -17,24 +17,23 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     private final Project project;
     private final boolean fileArtifactOnly;
     private Condition<? super VirtualFile> fileFilter;
     private Subscription subscription;
+    private AzureArtifact cachedArtifact;
 
     public AzureArtifactComboBox(Project project) {
         this(project, false);
@@ -50,29 +49,25 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         this.fileFilter = filter;
     }
 
-    public synchronized void refreshItems(AzureArtifact defaultArtifact) {
-        unsubscribeSubscription(subscription);
-        this.setLoading(true);
-        subscription = this.loadItemsAsync()
-            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                this.setItems(items);
-                this.setLoading(false);
-                this.resetDefaultValue(defaultArtifact);
-            }), this::handleLoadingError);
+    public void setArtifact(@Nullable final AzureArtifact azureArtifact) {
+        final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(this.project);
+        this.cachedArtifact = azureArtifact;
+        Optional.ofNullable(cachedArtifact).filter(artifact -> artifact.getType() == AzureArtifactType.File).ifPresent(this::addItem);
+        this.setValue(new AzureComboBox.ItemReference<>(artifact -> artifactManager.equalsAzureArtifact(cachedArtifact, artifact)));
     }
 
     @NotNull
     @Override
     @AzureOperation(
-        name = "common|artifact.list.project",
-        params = {"this.project.getName()"},
-        type = AzureOperation.Type.SERVICE
+            name = "common|artifact.list.project",
+            params = {"this.project.getName()"},
+            type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AzureArtifact> loadItems() throws Exception {
-        return AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts()
-            .stream()
-            .filter(azureArtifact -> !fileArtifactOnly || azureArtifact.getType() == AzureArtifactType.File)
-            .collect(Collectors.toList());
+        final List<AzureArtifact> collect = fileArtifactOnly ?
+                new ArrayList<>() : AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+        Optional.ofNullable(cachedArtifact).filter(artifact -> artifact.getType() == AzureArtifactType.File).ifPresent(collect::add);
+        return collect;
     }
 
     @Nullable
@@ -132,24 +127,6 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
             this.setSelectedItem(selectArtifact);
         } else {
             this.setSelectedItem(existingArtifact);
-        }
-    }
-
-    private void resetDefaultValue(final AzureArtifact defaultArtifact) {
-        if (defaultArtifact == null) {
-            return;
-        }
-        final List<AzureArtifact> artifacts = this.getItems();
-        final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
-        final Predicate<AzureArtifact> predicate = artifact -> manager.equalsAzureArtifact(defaultArtifact, artifact);
-        final AzureArtifact toSelect = artifacts.stream().filter(predicate).findFirst().orElse(null);
-        if (toSelect != null) {
-            this.setSelectedItem(toSelect);
-        } else if (defaultArtifact.getType() == AzureArtifactType.File) {
-            this.addItem(defaultArtifact);
-            this.setSelectedItem(defaultArtifact);
-        } else {
-            this.setSelectedItem(null);
         }
     }
 }
