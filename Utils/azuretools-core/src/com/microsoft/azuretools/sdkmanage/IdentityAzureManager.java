@@ -10,6 +10,7 @@ import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
@@ -19,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethod;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.securestore.SecureStore;
@@ -132,6 +132,9 @@ public class IdentityAzureManager extends AzureManagerBase {
         if (authMethodDetails == null || authMethodDetails.getAuthMethod() == null || authMethodDetails.getAuthType() == null) {
             return Mono.just(new AuthMethodDetails());
         }
+        if (StringUtils.isNotBlank(authMethodDetails.getAzureEnv())) {
+            Azure.az(AzureCloud.class).setByName(authMethodDetails.getAzureEnv());
+        }
         AuthType authType = authMethodDetails.getAuthType();
         try {
             if (authType == AuthType.SERVICE_PRINCIPAL) {
@@ -139,6 +142,7 @@ public class IdentityAzureManager extends AzureManagerBase {
                 auth.setType(AuthType.SERVICE_PRINCIPAL);
                 auth.setClient(authMethodDetails.getClientId());
                 auth.setTenant(authMethodDetails.getTenantId());
+                auth.setEnvironment(Azure.az(AzureCloud.class).get());
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
                 } else {
@@ -158,10 +162,10 @@ public class IdentityAzureManager extends AzureManagerBase {
                 }
                 return signInServicePrincipal(auth).map(ac -> authMethodDetails);
             } else {
-                if (StringUtils.isNoneBlank(authMethodDetails.getClientId())) {
+                if (StringUtils.isNotBlank(authMethodDetails.getClientId())) {
                     AccountEntity entity = new AccountEntity();
-                    entity.setEnvironment(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
                     entity.setType(authType);
+                    entity.setEnvironment(Azure.az(AzureCloud.class).get());
                     entity.setEmail(authMethodDetails.getAccountEmail());
                     entity.setClientId(authMethodDetails.getClientId());
                     entity.setTenantIds(StringUtils.isNotBlank(authMethodDetails.getTenantId()) ?

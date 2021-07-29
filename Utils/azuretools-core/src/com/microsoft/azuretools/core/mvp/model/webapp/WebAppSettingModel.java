@@ -138,6 +138,7 @@ public class WebAppSettingModel {
             result.put(TelemetryConstants.CREATE_NEWRG, String.valueOf(isCreatingResGrp()));
             result.put(TelemetryConstants.FILETYPE, WebAppUtils.getFileType(getTargetName()));
             result.put(TelemetryConstants.PRICING_TIER, pricing);
+            result.put(TelemetryConstants.REGION, region);
         } catch (final Exception ignore) {
         }
         return result;

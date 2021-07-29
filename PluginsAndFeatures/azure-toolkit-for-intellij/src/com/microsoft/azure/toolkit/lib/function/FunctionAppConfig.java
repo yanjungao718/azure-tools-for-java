@@ -32,7 +32,7 @@ public class FunctionAppConfig extends AppServiceConfig {
         return FunctionAppConfig.builder()
                                 .runtime(FunctionAppConfig.DEFAULT_RUNTIME)
                                 .pricingTier(PricingTier.CONSUMPTION)
-                                .region(AppServiceConfig.DEFAULT_REGION).build();
+                                .region(AppServiceConfig.getDefaultRegion()).build();
     }
 
     @Override
