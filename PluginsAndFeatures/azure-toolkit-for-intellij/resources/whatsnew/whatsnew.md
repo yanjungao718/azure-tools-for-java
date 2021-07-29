@@ -3,10 +3,10 @@
 
 ## 3.55.0
 ### Added
-- New azure resource connector explorer for connection management
+- New Azure Resource Connector explorer for connection management
 
   <img src="https://user-images.githubusercontent.com/12445236/127419346-4e143483-425a-432b-9a74-6d1afac66d47.png" />
-- Add proxy support
+- Support native proxy settings in IntelliJ
 
   <img src="https://user-images.githubusercontent.com/12445236/127419581-c3f8b3f6-891e-46e2-bf34-3f69676bd03b.png" />
 - Add unified `Open In Portal` support for Web App/VM/Resource Group in Azure explorer

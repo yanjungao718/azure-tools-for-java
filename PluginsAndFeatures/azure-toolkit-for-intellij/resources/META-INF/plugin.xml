@@ -28,8 +28,8 @@
         <h3>3.55.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>New azure resource connector explorer for connection management</li>
-            <li>Add support for IntelliJ proxy</li>
+            <li>New Azure Resource Connector explorer for connection management</li>
+            <li>Support native proxy settings in IntelliJ</li>
             <li>
                 Add unified
                 <code>Open In Portal</code>

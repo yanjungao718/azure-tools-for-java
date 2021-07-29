@@ -72,8 +72,8 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## 3.55.0
 ### Added
-- New azure resource connector explorer for connection management
-- Add support for IntelliJ proxy
+- New Azure Resource Connector explorer for connection management
+- Support native proxy settings in IntelliJ
 - Add unified `Open In Portal` support for Web App/VM/Resource Group
 
 ### Changed
