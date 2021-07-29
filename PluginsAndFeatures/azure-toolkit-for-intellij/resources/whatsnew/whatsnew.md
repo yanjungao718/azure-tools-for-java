@@ -1,14 +1,22 @@
-<!-- Version: 3.51.0 -->
+<!-- Version: 3.55.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 ## 3.55.0
 ### Added
 - New azure resource connector explorer for connection management
-- Add support for IntelliJ proxy
-- Add unified `Open In Portal` support for Web App/VM/Resource Group
+
+  <img src="https://user-images.githubusercontent.com/12445236/127419346-4e143483-425a-432b-9a74-6d1afac66d47.png" />
+- Add proxy support
+
+  <img src="https://user-images.githubusercontent.com/12445236/127419581-c3f8b3f6-891e-46e2-bf34-3f69676bd03b.png" />
+- Add unified `Open In Portal` support for Web App/VM/Resource Group in Azure explorer
+
+  <img src="https://user-images.githubusercontent.com/12445236/127419961-5e918811-96c6-41f7-b438-af97bc959abe.png" />
 
 ### Changed
 - Enhance toolkit setting panel with more configuration
+
+  <img src="https://user-images.githubusercontent.com/12445236/127420059-46bcc63e-525c-413b-9bba-b7e3de93502d.png" />
 - Enhance resource loading performance in Azure explorer
 - Support turn off Azure SDK deprecation notification
 - Support create Azure Spring Cloud app in Azure explorer
