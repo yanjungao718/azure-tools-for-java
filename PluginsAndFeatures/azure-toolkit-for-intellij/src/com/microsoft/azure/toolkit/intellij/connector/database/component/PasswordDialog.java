@@ -32,7 +32,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 public class PasswordDialog extends AzureDialog<Password> implements AzureForm<Password> {
 
@@ -64,13 +64,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         this.passwordSaveComboBox.setPreferredSize(lastColumnSize);
         this.passwordSaveComboBox.setMaximumSize(lastColumnSize);
         this.passwordSaveComboBox.setSize(lastColumnSize);
-        if (Objects.nonNull(resource.getPassword()) && Objects.nonNull(resource.getPassword().saveType())) {
-            this.passwordSaveComboBox.setValue(resource.getPassword().saveType());
-        } else {
-            this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
-                    .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
-                    .orElse(Password.SaveType.UNTIL_RESTART));
-        }
+        this.setData(resource.getPassword());
         this.init();
         this.initListener();
     }
@@ -159,7 +153,9 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
 
     @Override
     public void setData(Password data) {
-        passwordSaveComboBox.setValue(data.saveType());
+        this.passwordSaveComboBox.setValue(Optional.ofNullable(data).map(e -> e.saveType()).orElse(Arrays.stream(Password.SaveType.values())
+                .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+                .orElse(Password.SaveType.UNTIL_RESTART)));
     }
 
     @Override
