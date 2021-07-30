@@ -32,6 +32,6 @@ public class WebAppConfig extends AppServiceConfig {
         return WebAppConfig.builder()
                            .runtime(WebAppConfig.DEFAULT_RUNTIME)
                            .pricingTier(WebAppConfig.DEFAULT_PRICING_TIER)
-                           .region(AppServiceConfig.DEFAULT_REGION).build();
+                           .region(AppServiceConfig.getDefaultRegion()).build();
     }
 }

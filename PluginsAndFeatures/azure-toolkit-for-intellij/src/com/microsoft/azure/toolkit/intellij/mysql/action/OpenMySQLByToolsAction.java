@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.intellij.common.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.util.AzureLoginHelper;
@@ -46,7 +45,7 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> this.doActionPerformed(isSuccess, project));
+        AzureSignInAction.requireSignedIn(project, () -> doActionPerformed(true, project));
     }
 
     @Override

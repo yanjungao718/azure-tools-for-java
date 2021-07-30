@@ -84,13 +84,14 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
     }
 
     private void init() {
-        final Dimension lastColumnSize = new Dimension(106, 30);
-        passwordSaveComboBox.setPreferredSize(lastColumnSize);
-        passwordSaveComboBox.setMaximumSize(lastColumnSize);
-        passwordSaveComboBox.setSize(lastColumnSize);
-        envPrefixTextField.setPreferredSize(lastColumnSize);
-        envPrefixTextField.setMaximumSize(lastColumnSize);
-        envPrefixTextField.setSize(lastColumnSize);
+        final Dimension passwordSaveComboBoxSize = new Dimension(106, passwordSaveComboBox.getPreferredSize().height);
+        passwordSaveComboBox.setPreferredSize(passwordSaveComboBoxSize);
+        passwordSaveComboBox.setMaximumSize(passwordSaveComboBoxSize);
+        passwordSaveComboBox.setSize(passwordSaveComboBoxSize);
+        final Dimension envPrefixTextFieldSize = new Dimension(106, envPrefixTextField.getPreferredSize().height);
+        envPrefixTextField.setPreferredSize(envPrefixTextFieldSize);
+        envPrefixTextField.setMaximumSize(envPrefixTextFieldSize);
+        envPrefixTextField.setSize(envPrefixTextFieldSize);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
@@ -145,16 +146,21 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             final Subscription subscription = (Subscription) e.getItem();
             this.serverComboBox.setSubscription(subscription);
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.serverComboBox.setSubscription(null);
         }
     }
 
     private void onServerChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             this.databaseComboBox.setServer(e.getItem());
             this.usernameComboBox.setServer(e.getItem());
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.databaseComboBox.setServer(null);
+            this.usernameComboBox.setServer(null);
         }
     }
 
@@ -288,7 +294,8 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
             this.serverComboBox.setItemTextFunc((Function<SqlServer, String>) server -> server.entity().getName());
             // database
             this.databaseComboBox = new DatabaseComboBox<SqlServer, SqlDatabaseEntity>();
-            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ?
+            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ||
+                    !StringUtils.equals("Ready", ((SqlServer) this.databaseComboBox.getServer()).entity().getState()) ?
                     Collections.emptyList() : ((SqlServer) this.databaseComboBox.getServer()).databases());
             this.databaseComboBox.setItemTextFunc((Function<SqlDatabaseEntity, String>) databaseEntity -> databaseEntity.getName());
             // username
@@ -304,7 +311,8 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
             this.serverComboBox.setItemTextFunc((Function<MySqlServer, String>) server -> server.entity().getName());
             // database
             this.databaseComboBox = new DatabaseComboBox<MySqlServer, MySqlDatabaseEntity>();
-            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ?
+            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ||
+                    !StringUtils.equals("Ready", ((MySqlServer) this.databaseComboBox.getServer()).entity().getState()) ?
                     Collections.emptyList() : ((MySqlServer) this.databaseComboBox.getServer()).databases());
             this.databaseComboBox.setItemTextFunc((Function<MySqlDatabaseEntity, String>) databaseEntity -> databaseEntity.getName());
             // username

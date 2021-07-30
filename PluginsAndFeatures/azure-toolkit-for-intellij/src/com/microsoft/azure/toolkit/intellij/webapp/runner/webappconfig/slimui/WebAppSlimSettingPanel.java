@@ -196,14 +196,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             final WebAppComboBoxModel configModel = new WebAppComboBoxModel(configuration.getModel());
             comboBoxWebApp.setConfigModel(configModel);
         }
-        comboBoxWebApp.refreshItems();
         if (configuration.getAzureArtifactType() != null) {
-            lastSelectedAzureArtifact = AzureArtifactManager
-                    .getInstance(project)
+            final AzureArtifact artifact = AzureArtifactManager.getInstance(this.project)
                     .getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
-            comboBoxArtifact.refreshItems(lastSelectedAzureArtifact);
-        } else {
-            comboBoxArtifact.refreshItems();
+            comboBoxArtifact.setArtifact(artifact);
         }
         if (configuration.getWebAppId() != null && configuration.isDeployToSlot()) {
             toggleSlotPanel(true);
@@ -305,13 +301,14 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         comboBoxWebApp = new WebAppComboBox(project);
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
+        comboBoxWebApp.refreshItems();
 
         comboBoxArtifact = new AzureArtifactComboBox(this.project);
         comboBoxArtifact.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
-
+        comboBoxArtifact.refreshItems();
     }
 
     private void loadDeploymentSlot(WebAppComboBoxModel selectedWebApp) {

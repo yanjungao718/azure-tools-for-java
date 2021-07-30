@@ -6,9 +6,8 @@
 package com.microsoft.intellij.serviceexplorer.azure.storagearm;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -36,9 +35,7 @@ public class CreateStorageAccountAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) storageModule.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(e, isSuccess, project);
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.doActionPerformed(e, true, project));
     }
 
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {

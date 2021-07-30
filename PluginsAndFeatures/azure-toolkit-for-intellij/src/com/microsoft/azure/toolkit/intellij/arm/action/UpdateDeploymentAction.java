@@ -10,9 +10,8 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.intellij.arm.UpdateDeploymentForm;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -33,9 +32,7 @@ public class UpdateDeploymentAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         Project project = (Project) deploymentNode.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(nodeActionEvent, isSuccess, project);
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.doActionPerformed(nodeActionEvent, true, project));
     }
 
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {

@@ -452,9 +452,11 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         }
 
         final PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-        final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
-        secureStore.migratePassword(acrInfo.getServerUrl(), acrInfo.getUsername(), PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername());
-        acrInfo.setPassword(secureStore.loadPassword(PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername()));
+        if (StringUtils.isNotEmpty(acrInfo.getServerUrl())) {
+            final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+            secureStore.migratePassword(acrInfo.getServerUrl(), acrInfo.getUsername(), PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername());
+            acrInfo.setPassword(secureStore.loadPassword(PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername()));
+        }
         containerSettingPanel.setTxtFields(acrInfo);
 
         // cache for table/combo selection
