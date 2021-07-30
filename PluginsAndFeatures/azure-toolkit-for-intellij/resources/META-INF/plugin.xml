@@ -29,6 +29,12 @@
         <h4>Added</h4>
         <ul>
             <li>New Azure Resource Connector explorer for connection management</li>
+            <ul>
+                <li>List all resource connections connected to project</li>
+                <li>Create new connections between Azure resources and module in project</li>
+                <li>Edit/Delete existing connections</li>
+                <li>Navigate to resource properties view of an existing connection</li>
+            </ul>
             <li>Support native proxy settings in IntelliJ</li>
             <li>
                 Add unified

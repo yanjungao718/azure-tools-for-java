@@ -4,8 +4,12 @@
 ## 3.55.0
 ### Added
 - New Azure Resource Connector explorer for connection management
+  - List all resource connections connected to project
+  - Create new connections between Azure resources and module in project
+  - Edit/Delete existing connections
+  - Navigate to resource properties view of an existing connection
 
-  <img src="https://user-images.githubusercontent.com/12445236/127419346-4e143483-425a-432b-9a74-6d1afac66d47.png" />
+  <img src="https://user-images.githubusercontent.com/19339116/127592005-f7c9dd33-40de-4031-bba0-2a96e8e2fbd2.gif" />
 - Support native proxy settings in IntelliJ
 
   <img src="https://user-images.githubusercontent.com/12445236/127419581-c3f8b3f6-891e-46e2-bf34-3f69676bd03b.png" />
