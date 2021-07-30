@@ -78,7 +78,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - Edit/Delete existing connections
   - Navigate to resource properties view of an existing connection
 - Support native proxy settings in IntelliJ
-- Add unified `Open In Portal` support for Web App/VM/Resource Group
+- Add unified `Open In Portal` support for Web App/VM/Resource Group in Azure explorer
 
 ### Changed
 - Enhance toolkit setting panel with more configuration
