@@ -11,17 +11,16 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.SimpleMessageAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -30,7 +29,6 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -66,11 +64,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     @AzureOperation(name = "function.create", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                openDialog(project, null);
-            }
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.openDialog(project, null));
     }
 
     @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)
@@ -95,7 +89,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
 
     @AzureOperation(name = "function.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<IFunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final IAzureOperationTitle title = title("function.create_detail", config.getName());
+        final AzureString title = title("function.create_detail", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public void info(@NotNull String message, String title) {

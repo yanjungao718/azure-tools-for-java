@@ -6,11 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.vm;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.CreateVMWizard;
+import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -30,9 +29,7 @@ public class CreateVMAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) vmModule.getProject();
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
-            this.doActionPerformed(e, isSuccess, project);
-        });
+        AzureSignInAction.requireSignedIn(project, () -> this.doActionPerformed(e, true, project));
     }
 
     @Override

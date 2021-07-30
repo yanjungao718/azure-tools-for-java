@@ -74,6 +74,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JButton btnSlotHover;
     private AzureArtifactComboBox comboBoxArtifact;
     private WebAppComboBox comboBoxWebApp;
+    private JLabel lblArtifact;
+    private JLabel lblWebApp;
     private final HideableDecorator slotDecorator;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
@@ -114,6 +116,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         labelForNewSlotName.setLabelFor(txtNewSlotName);
         final JLabel labelForExistingSlotName = new JLabel("Slot Name");
         labelForExistingSlotName.setLabelFor(cbxSlotName);
+
+        lblArtifact.setLabelFor(comboBoxArtifact);
+        lblWebApp.setLabelFor(comboBoxWebApp);
 
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);
@@ -190,14 +195,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             final WebAppComboBoxModel configModel = new WebAppComboBoxModel(configuration.getModel());
             comboBoxWebApp.setConfigModel(configModel);
         }
-        comboBoxWebApp.refreshItems();
         if (configuration.getAzureArtifactType() != null) {
-            lastSelectedAzureArtifact = AzureArtifactManager
-                    .getInstance(project)
+            final AzureArtifact artifact = AzureArtifactManager.getInstance(this.project)
                     .getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
-            comboBoxArtifact.refreshItems(lastSelectedAzureArtifact);
-        } else {
-            comboBoxArtifact.refreshItems();
+            comboBoxArtifact.setArtifact(artifact);
         }
         if (configuration.getWebAppId() != null && configuration.isDeployToSlot()) {
             toggleSlotPanel(true);
@@ -292,13 +293,14 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         comboBoxWebApp = new WebAppComboBox(project);
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
+        comboBoxWebApp.refreshItems();
 
         comboBoxArtifact = new AzureArtifactComboBox(this.project);
         comboBoxArtifact.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
-
+        comboBoxArtifact.refreshItems();
     }
 
     private void loadDeploymentSlot(WebAppComboBoxModel selectedWebApp) {
