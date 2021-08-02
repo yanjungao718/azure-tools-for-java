@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditorWithPreview;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -75,7 +76,7 @@ public enum WhatsNewManager {
             for (FileEditor fileEditor : fileEditors) {
                 if (fileEditor instanceof MarkdownSplitEditor) {
                     // Switch to markdown preview panel
-                    ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND, true);
+                    ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(TextEditorWithPreview.Layout.SHOW_PREVIEW, true);
                 }
             }
         });
