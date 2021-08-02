@@ -87,7 +87,10 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         // refer https://jetbrains.org/intellij/sdk/docs/basics/disposers.html
         final Disposable disposable = Disposer.newDisposable();
         // refer https://github.com/JetBrains/intellij-community/commit/077c5558993b97cfb6f68ccc3cbe13065ba3cba8
-        Registry.get("ide.background.tasks").setValue(false, disposable);
+        // refer https://github.com/JetBrains/intellij-community/commit/d7ac4e133fec7e4c1e63f4c1d7dda65e25258b81 myBackgrounded is default to true since 2021.2
+        Registry.getAll().stream()
+                .filter(registryValue -> StringUtils.equalsIgnoreCase(registryValue.getKey(), "ide.background.tasks"))
+                .findFirst().ifPresent(registryValue -> registryValue.setValue(false, disposable));
         final String title = StringUtils.capitalize(task.getTitle().toString());
         final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), title, task.isCancellable(), foreground) {
             @Override
