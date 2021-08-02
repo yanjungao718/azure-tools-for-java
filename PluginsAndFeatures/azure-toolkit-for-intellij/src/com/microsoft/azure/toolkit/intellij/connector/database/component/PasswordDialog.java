@@ -9,6 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
@@ -31,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class PasswordDialog extends AzureDialog<Password> implements AzureForm<Password> {
 
@@ -58,10 +60,11 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testResultTextPane.setText(StringUtils.EMPTY);
-        final Dimension lastColumnSize = new Dimension(106, 30);
-        passwordSaveComboBox.setPreferredSize(lastColumnSize);
-        passwordSaveComboBox.setMaximumSize(lastColumnSize);
-        passwordSaveComboBox.setSize(lastColumnSize);
+        final Dimension lastColumnSize = new Dimension(106, this.passwordSaveComboBox.getPreferredSize().height);
+        this.passwordSaveComboBox.setPreferredSize(lastColumnSize);
+        this.passwordSaveComboBox.setMaximumSize(lastColumnSize);
+        this.passwordSaveComboBox.setSize(lastColumnSize);
+        this.setData(resource.getPassword());
         this.init();
         this.initListener();
     }
@@ -150,7 +153,9 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
 
     @Override
     public void setData(Password data) {
-        passwordSaveComboBox.setValue(data.saveType());
+        this.passwordSaveComboBox.setValue(Optional.ofNullable(data).map(e -> e.saveType()).orElse(Arrays.stream(Password.SaveType.values())
+                .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+                .orElse(Password.SaveType.UNTIL_RESTART)));
     }
 
     @Override
