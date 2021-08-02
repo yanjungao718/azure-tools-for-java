@@ -5,9 +5,6 @@
 
 package com.microsoft.azuretools.telemetry;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class TelemetryConstants {
 
     // production name
@@ -203,14 +200,7 @@ public class TelemetryConstants {
     public static final String AZURE_ENVIRONMENT = "azureEnvironment";
     public static final String PRICING_TIER = "pricingTier";
     public static final String TRIGGER_TYPE = "triggerType";
+    public static final String REGION = "region";
 
-    public static final Map<String, String> signInSPProp = new HashMap<>();
-    public static final Map<String, String> signInDCProp = new HashMap<>();
-    public static final Map<String, String> signInAZProp = new HashMap<>();
-
-    static {
-        signInSPProp.put(SIGNIN_METHOD, SIGNIN_SP);
-        signInDCProp.put(SIGNIN_METHOD, SIGNIN_DC);
-        signInAZProp.put(SIGNIN_METHOD, SIGNIN_AZ);
-    }
+    public static final String PROXY = "proxy";
 }

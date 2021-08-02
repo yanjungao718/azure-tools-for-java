@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -38,10 +39,12 @@ public class ConnectToMySQLAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
-        final MySqlServer server = this.node.getServer();
-        dialog.setResource(new DatabaseResource(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), server.id(), null));
-        dialog.show();
+        AzureSignInAction.requireSignedIn(project, () -> {
+            final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
+            final MySqlServer server = this.node.getServer();
+            dialog.setResource(new DatabaseResource(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), server.id(), null));
+            dialog.show();
+        });
     }
 
     @Override

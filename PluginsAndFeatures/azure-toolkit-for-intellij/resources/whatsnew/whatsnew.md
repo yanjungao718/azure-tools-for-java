@@ -1,5 +1,38 @@
-<!-- Version: 3.51.0 -->
+<!-- Version: 3.55.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.55.0
+### Added
+- New Azure Resource Connector explorer for connection management
+  - List all resource connections connected to project
+  - Create new connections between Azure resources and module in project
+  - Edit/Delete existing connections
+  - Navigate to resource properties view of an existing connection
+
+  <img src="https://user-images.githubusercontent.com/19339116/127592005-f7c9dd33-40de-4031-bba0-2a96e8e2fbd2.gif" />
+- Support native proxy settings in IntelliJ
+
+  <img src="https://user-images.githubusercontent.com/12445236/127419581-c3f8b3f6-891e-46e2-bf34-3f69676bd03b.png" />
+- Add unified `Open In Portal` support for Web App/VM/Resource Group in Azure explorer
+
+  <img src="https://user-images.githubusercontent.com/12445236/127419961-5e918811-96c6-41f7-b438-af97bc959abe.png" />
+
+### Changed
+- Enhance toolkit setting panel with more configuration
+
+  <img src="https://user-images.githubusercontent.com/12445236/127420059-46bcc63e-525c-413b-9bba-b7e3de93502d.png" />
+- Enhance resource loading performance in Azure explorer
+- Support turn off Azure SDK deprecation notification
+- Support create Azure Spring Cloud app in Azure explorer
+- Update Azure icons to new style
+
+### Fixed
+- [#5439](https://github.com/microsoft/azure-tools-for-java/issues/5439) Fix project already disposed excpetion while loading azure sdk reference book meta data
+- [PR#5437](https://github.com/microsoft/azure-tools-for-java/pull/5437) Fix exception while edit json in service principal dialog
+- [PR#5476](https://github.com/microsoft/azure-tools-for-java/pull/5476) Fix url render issue for toolkit notification
+- [PR#5535](https://github.com/microsoft/azure-tools-for-java/pull/5535) Fix evaluate effective pom will break app service/spring cloud deployment
+- [PR#5563](https://github.com/microsoft/azure-tools-for-java/pull/5563) Fix exception: type HTTP is not compatible with address null 
+- [PR#5579](https://github.com/microsoft/azure-tools-for-java/pull/5579) Fix reporting error in azure explorer before sign in
 
 ## 3.54.0
 ### Added

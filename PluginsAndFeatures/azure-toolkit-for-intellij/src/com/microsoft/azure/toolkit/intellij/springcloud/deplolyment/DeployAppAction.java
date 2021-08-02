@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.intellij.actions.AzureSignInAction;
@@ -45,11 +44,8 @@ public class DeployAppAction extends AzureAnAction {
         if (project == null) {
             return true;
         }
-        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
-            if (isLoggedIn) {
-                AzureTaskManager.getInstance().runOnPooledThread(() -> deployConfiguration(project, null));
-            }
-        });
+
+        AzureSignInAction.requireSignedIn(project, () -> this.deployConfiguration(project, null));
         return false;
     }
 
