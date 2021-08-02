@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.55.0](#3550)
   - [3.54.0](#3540)
   - [3.53.0](#3530)
   - [3.52.0](#3520)
@@ -68,6 +69,31 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.55.0
+### Added
+- New Azure Resource Connector explorer for connection management
+  - List all resource connections connected to project
+  - Create new connections between Azure resources and module in project
+  - Edit/Delete existing connections
+  - Navigate to resource properties view of an existing connection
+- Support native proxy settings in IntelliJ
+- Add unified `Open In Portal` support for Web App/VM/Resource Group in Azure explorer
+
+### Changed
+- Enhance toolkit setting panel with more configuration
+- Enhance resource loading performance in Azure explorer
+- Support turn off Azure SDK deprecation notification
+- Support create Azure Spring Cloud app in Azure explorer
+- Update Azure icons to new style
+
+### Fixed
+- [#5439](https://github.com/microsoft/azure-tools-for-java/issues/5439) Fix project already disposed excpetion while loading azure sdk reference book meta data
+- [PR#5437](https://github.com/microsoft/azure-tools-for-java/pull/5437) Fix exception while edit json in service principal dialog
+- [PR#5476](https://github.com/microsoft/azure-tools-for-java/pull/5476) Fix url render issue for toolkit notification
+- [PR#5535](https://github.com/microsoft/azure-tools-for-java/pull/5535) Fix evaluate effective pom will break app service/spring cloud deployment
+- [PR#5563](https://github.com/microsoft/azure-tools-for-java/pull/5563) Fix exception: type HTTP is not compatible with address null 
+- [PR#5579](https://github.com/microsoft/azure-tools-for-java/pull/5579) Fix reporting error in azure explorer before sign in
 
 ## 3.54.0
 ### Added
