@@ -30,12 +30,12 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.intellij.util.ReadStreamLineThread;
@@ -162,9 +162,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
         type = AzureOperation.Type.TASK
     )
     private ComparableVersion getFuncVersion() throws IOException {
-        final File func = new File(functionRunConfiguration.getFuncPath());
-        final String funcVersion = CommandUtils.executeCommandAndGetOutput(func.getAbsolutePath(),
-                                                                           new String[]{"-v"}, func.getParentFile());
+        final String funcVersion = CommandUtils.exec("func -v", Paths.get(functionRunConfiguration.getFuncPath()).getParent().toString());
         if (StringUtils.isEmpty(funcVersion)) {
             return null;
         }
@@ -177,13 +175,12 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
         name = "function.validate_jre",
         type = AzureOperation.Type.TASK
     )
-    private ComparableVersion getJavaVersion() throws IOException {
+    private static ComparableVersion getJavaVersion() throws IOException {
         final String javaHome = System.getenv("JAVA_HOME");
         final File javaFile = StringUtils.isEmpty(javaHome) ? null : Paths.get(javaHome, "bin", "java").toFile();
-        final File executeFolder = javaFile == null ? null : javaFile.getParentFile();
+        final String executeFolder = javaFile == null ? null : javaFile.getParentFile().getAbsolutePath();
         final String command = javaFile == null ? "java" : javaFile.getAbsolutePath();
-        final String javaVersion = CommandUtils.executeCommandAndGetOutput(command, new String[]{"-version"},
-                                                                           executeFolder, true);
+        final String javaVersion = CommandUtils.exec("java -version", executeFolder, true);
         if (StringUtils.isEmpty(javaVersion)) {
             return null;
         }
