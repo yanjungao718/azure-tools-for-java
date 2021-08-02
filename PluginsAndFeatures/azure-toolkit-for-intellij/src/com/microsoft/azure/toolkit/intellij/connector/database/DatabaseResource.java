@@ -89,7 +89,8 @@ public class DatabaseResource implements AzureResource {
             resourceEle.addContent(new Element("url").setText(resource.jdbcUrl.toString()));
             resourceEle.addContent(new Element("username").setText(resource.username));
             resourceEle.addContent(new Element("passwordSave").setText(resource.password.saveType().name()));
-            if (ArrayUtils.isNotEmpty(resource.password.password())) {
+            if (ArrayUtils.isNotEmpty(resource.password.password()) && !StringUtils.equals(String.valueOf(resource.password.password()),
+                    PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.password.saveType()))) {
                 PasswordStore.savePassword(resource.getType(), resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
             }
             return true;
