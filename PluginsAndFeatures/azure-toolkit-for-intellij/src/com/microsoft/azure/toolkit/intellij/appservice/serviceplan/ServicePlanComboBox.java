@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -28,6 +29,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +56,13 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
         if (subscription == null) {
             this.clear();
             return;
+        }
+        // Clean up app service plan cache when switch subscription
+        // todo: leverage event hub to update resource cache automatically
+        try {
+            CacheManager.evictCache("appservcie/{}/plans", subscription.getId());
+        } catch (ExecutionException e) {
+            // swallow exception while clean up cache
         }
         this.refreshItems();
     }
@@ -112,7 +121,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
                     .collect(Collectors.toList()));
             }
             final List<AppServicePlanEntity> remotePlans = Azure.az(AzureAppService.class)
-                .subscription(subscription.getId()).appServicePlans(true).stream().map(IAppServicePlan::entity)
+                .subscription(subscription.getId()).appServicePlans().stream().map(IAppServicePlan::entity)
                 .collect(Collectors.toList());
             plans.addAll(remotePlans);
             Stream<AppServicePlanEntity> stream = plans.stream();
