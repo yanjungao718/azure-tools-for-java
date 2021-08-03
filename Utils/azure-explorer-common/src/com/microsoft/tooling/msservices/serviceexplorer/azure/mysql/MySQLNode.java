@@ -21,7 +21,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import lombok.Getter;
-import org.eclipse.jgit.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
 
 import javax.annotation.Nonnull;
 import java.util.Collections;

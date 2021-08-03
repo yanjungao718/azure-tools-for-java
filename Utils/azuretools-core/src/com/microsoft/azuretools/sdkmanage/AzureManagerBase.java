@@ -237,23 +237,36 @@ public abstract class AzureManagerBase implements AzureManager {
     @AzureOperation(name = "account|tenant.auth", params = {"tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return Azure.configure()
+        final Azure.Configurable configurable = Azure.configure()
             .withInterceptor(new TelemetryInterceptor())
             .withInterceptor(new RestExceptionHandlerInterceptor())
-            .withUserAgent(CommonSettings.USER_AGENT)
-            .withProxy(createProxyFromConfig())
-            .withProxyAuthenticator(createProxyAuthenticatorFromConfig())
-            .authenticate(credentials);
+            .withUserAgent(CommonSettings.USER_AGENT);
+        Optional.ofNullable(createProxyFromConfig()).map(proxy -> {
+            configurable.withProxy(proxy);
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).map(authenticator -> {
+                configurable.withProxyAuthenticator(authenticator);
+                return authenticator;
+            });
+            return proxy;
+        });
+        return configurable.authenticate(credentials);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(InsightsManager.configure())
+        final InsightsManager.Configurable configurable = buildAzureManager(InsightsManager.configure())
             .withInterceptor(new TelemetryInterceptor())
-            .withInterceptor(new RestExceptionHandlerInterceptor())
-            .withProxy(createProxyFromConfig())
-            .withProxyAuthenticator(createProxyAuthenticatorFromConfig())
-            .authenticate(credentials, subscriptionId);
+            .withInterceptor(new RestExceptionHandlerInterceptor());
+        Optional.ofNullable(createProxyFromConfig()).map(proxy -> {
+            configurable.withProxy(proxy);
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).map(authenticator -> {
+                configurable.withProxyAuthenticator(authenticator);
+                return authenticator;
+            });
+            return proxy;
+        });
+
+        return configurable.authenticate(credentials, subscriptionId);
     }
 
     private static Proxy createProxyFromConfig() {
