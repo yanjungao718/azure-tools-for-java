@@ -11,6 +11,7 @@ import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -24,6 +25,8 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
 import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
@@ -97,7 +100,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
         return configurable.withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT);
+            .withUserAgent(CommonSettings.USER_AGENT);
     }
 
     @Override
@@ -226,9 +229,9 @@ public abstract class AzureManagerBase implements AzureManager {
     @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
     protected List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+            .toList()
+            .toBlocking()
+            .singleOrDefault(Collections.emptyList());
     }
 
     @AzureOperation(name = "account|tenant.auth", params = {"tenantId"}, type = AzureOperation.Type.TASK)
@@ -239,20 +242,35 @@ public abstract class AzureManagerBase implements AzureManager {
             .withInterceptor(new RestExceptionHandlerInterceptor())
             .withUserAgent(CommonSettings.USER_AGENT)
             .withProxy(createProxyFromConfig())
+            .withProxyAuthenticator(createProxyAuthenticatorFromConfig())
             .authenticate(credentials);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(InsightsManager.configure())
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .withProxy(createProxyFromConfig())
-                .authenticate(credentials, subscriptionId);
+            .withInterceptor(new TelemetryInterceptor())
+            .withInterceptor(new RestExceptionHandlerInterceptor())
+            .withProxy(createProxyFromConfig())
+            .withProxyAuthenticator(createProxyAuthenticatorFromConfig())
+            .authenticate(credentials, subscriptionId);
     }
 
     private static Proxy createProxyFromConfig() {
-        return Optional.ofNullable(com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy())
+        return Optional.ofNullable(az().config().getHttpProxy())
             .map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
+    }
+
+    private static Authenticator createProxyAuthenticatorFromConfig() {
+        final AzureConfiguration az = az().config();
+        if (az.getHttpProxy() != null && StringUtils.isNoneBlank(az.getProxyUsername(), az.getProxyPassword())) {
+            return (route, response) -> {
+                String credential = Credentials.basic(az.getProxyUsername(), az.getProxyPassword());
+                return response.request().newBuilder()
+                    .header("Proxy-Authorization", credential)
+                    .build();
+            };
+        }
+        return null;
     }
 }
