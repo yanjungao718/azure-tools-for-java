@@ -70,6 +70,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.55.1
+### Added
+- Add support for IntelliJ 2021.2
+
 ## 3.55.0
 ### Added
 - New Azure Resource Connector explorer for connection management
