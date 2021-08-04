@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.slimui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeTooltipManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
@@ -252,7 +253,14 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         }
         configuration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
-        syncBeforeRunTasks(comboBoxArtifact.getValue(), configuration);
+        // hot fix, to avoid similar cases, prefer to refactor this code with common factory
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            syncBeforeRunTasks(comboBoxArtifact.getValue(), configuration);
+        } else {
+            ApplicationManager.getApplication().invokeLater(() ->
+                syncBeforeRunTasks(comboBoxArtifact.getValue(), configuration)
+            );
+        }
     }
 
     private boolean isAbleToDeployToRoot(final AzureArtifact azureArtifact) {

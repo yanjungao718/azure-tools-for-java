@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.AnActionButton;
@@ -109,7 +110,8 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     /**
      * Constructor of ACR property view.
      */
-    public ContainerRegistryPropertyView(@NotNull Project project) {
+    public ContainerRegistryPropertyView(@NotNull Project project, @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.containerPropertyPresenter = new ContainerRegistryPropertyViewPresenter<>();
         this.containerPropertyPresenter.onAttachView(this);
         statusBar = WindowManager.getInstance().getStatusBar(project);

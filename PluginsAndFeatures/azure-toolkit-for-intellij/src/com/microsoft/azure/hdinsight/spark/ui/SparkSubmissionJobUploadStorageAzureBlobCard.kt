@@ -46,6 +46,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
 import com.microsoft.intellij.ui.util.findFirst
+import com.microsoft.intellij.util.PluginUtil
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
@@ -131,7 +132,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
 
         button.name = "blobCardStorageContainerComboBoxButton"
         button.toolTipText = "Refresh"
-        button.icon = StreamUtil.getImageResourceFile(refreshButtonIconPath)
+        button.icon = PluginUtil.getIcon(refreshButtonIconPath)
         button.addActionListener { doRefresh() }
     }
 

@@ -42,7 +42,7 @@ class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(proj
     }
 
     override fun getDefaultParameters(): Stream<Pair<String, out Any>> {
-        return listOf(
+        return listOf<Pair<String, out Any>>(
                 Pair(CreateSparkBatchJobParameters.DriverMemory, CreateSparkBatchJobParameters.DriverMemoryDefaultValue),
                 Pair(CreateSparkBatchJobParameters.DriverCores, CreateSparkBatchJobParameters.DriverCoresDefaultValue),
                 Pair(CreateSparkBatchJobParameters.ExecutorMemory, CreateSparkBatchJobParameters.ExecutorMemoryDefaultValue),

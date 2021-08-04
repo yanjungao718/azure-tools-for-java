@@ -5,8 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.redis;
 
-import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyViewPresenter;
@@ -39,7 +40,8 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
     private JButton btnSecondaryKey;
 
 
-    public RedisCachePropertyView() {
+    public RedisCachePropertyView(@NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<>();
         this.redisPropertyViewPresenter.onAttachView(this);
 

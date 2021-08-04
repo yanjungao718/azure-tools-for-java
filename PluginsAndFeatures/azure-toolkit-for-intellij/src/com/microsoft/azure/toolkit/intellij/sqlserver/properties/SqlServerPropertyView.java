@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.properties;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
@@ -36,6 +37,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServe
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -70,8 +72,8 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
 
-    public SqlServerPropertyView() {
-        super();
+    public SqlServerPropertyView(@Nonnull final VirtualFile virtualFile) {
+        super(virtualFile);
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
         connectionStringsSeparator.addContentComponent(databaseLabel);
