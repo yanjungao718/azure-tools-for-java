@@ -143,4 +143,9 @@ public class JobViewEditor implements FileEditor {
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
 
     }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable VirtualFile getFile() {
+        return myVirtualFile;
+    }
 }

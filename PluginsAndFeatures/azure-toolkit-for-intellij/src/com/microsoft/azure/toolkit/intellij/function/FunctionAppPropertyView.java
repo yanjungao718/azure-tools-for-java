@@ -23,14 +23,14 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyView";
 
     public static WebAppBasePropertyView create(@Nonnull final Project project, @Nonnull final String sid,
-                                                @Nonnull final String webAppId, @Nonnull VirtualFile virtualFile) {
+                                                @Nonnull final String webAppId, @Nonnull final VirtualFile virtualFile) {
         final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
 
-    protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull VirtualFile virtualFile) {
+    protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, resId, null, virtualFile);
         AzureEventBus.after("function.start", this::onAppServiceStatusChanged);
         AzureEventBus.after("function.stop", this::onAppServiceStatusChanged);

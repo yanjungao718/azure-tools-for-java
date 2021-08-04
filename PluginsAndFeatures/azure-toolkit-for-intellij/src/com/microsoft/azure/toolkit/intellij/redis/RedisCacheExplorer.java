@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.redis;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
@@ -76,7 +77,8 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
      * @param sid String, subscription id.
      * @param id String, resource id.
      */
-    public RedisCacheExplorer(String sid, String id) {
+    public RedisCacheExplorer(String sid, String id, @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         redisExplorerPresenter = new RedisExplorerPresenter<>();
         redisExplorerPresenter.onAttachView(this);
         redisExplorerPresenter.initializeResourceData(sid, id);

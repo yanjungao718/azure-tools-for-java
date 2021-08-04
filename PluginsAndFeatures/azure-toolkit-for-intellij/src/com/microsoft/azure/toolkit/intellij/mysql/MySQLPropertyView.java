@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
@@ -81,7 +81,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private final VirtualFile virtualFile;
 
     MySQLPropertyView(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        super();
+        super(virtualFile);
         this.project = project;
         this.virtualFile = virtualFile;
         overviewSeparator.addContentComponent(overview);

@@ -21,14 +21,14 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
      * Initialize the Web App Property View and return it.
      */
     public static WebAppBasePropertyView create(@Nonnull final Project project, @Nonnull final String sid,
-                                                @Nonnull final String webAppId, @Nonnull VirtualFile virtualFile) {
+                                                @Nonnull final String webAppId, @Nonnull final VirtualFile virtualFile) {
         WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
     private WebAppPropertyView(@Nonnull final Project project, @Nonnull final String sid,
-                               @Nonnull final String webAppId, @Nonnull VirtualFile virtualFile) {
+                               @Nonnull final String webAppId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, webAppId, null, virtualFile);
         AzureEventBus.after("webapp.start", this::onAppServiceStatusChanged);
         AzureEventBus.after("webapp.stop", this::onAppServiceStatusChanged);

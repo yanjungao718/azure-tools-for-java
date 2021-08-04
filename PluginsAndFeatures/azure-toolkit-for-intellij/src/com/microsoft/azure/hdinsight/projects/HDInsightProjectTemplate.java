@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.platform.ProjectTemplate;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,14 +59,12 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
     @Override
     public Icon getIcon() {
         switch (this.templateType) {
-            case Java:
-                return StreamUtil.getImageResourceFile(CommonConst.JavaProjectIconPath);
             case Scala:
             case ScalaClusterSample:
             case ScalaFailureTaskDebugSample:
-                return StreamUtil.getImageResourceFile(CommonConst.ScalaProjectIconPath);
+                return PluginUtil.getIcon(CommonConst.ScalaProjectIconPath);
             default:
-                return StreamUtil.getImageResourceFile(CommonConst.JavaProjectIconPath);
+                return PluginUtil.getIcon(CommonConst.JavaProjectIconPath);
         }
     }
 

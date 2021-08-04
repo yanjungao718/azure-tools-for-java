@@ -28,16 +28,16 @@ import com.intellij.execution.RunManagerEx
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor.EXECUTOR_ID
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.intellij.util.PluginUtil
 
 class SparkJobRunAction
     : SparkRunConfigurationAction(
         "SparkJobRun",
         "Submit Apache Spark Application to remote cluster",
-        StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobRunIcon_13x_Path)?: AllIcons.Actions.Upload) {
+        PluginUtil.getIcon(CommonConst.ToolWindowSparkJobRunIcon_13x_Path) ?: AllIcons.Actions.Upload) {
 
     override val runExecutor: Executor
         get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)

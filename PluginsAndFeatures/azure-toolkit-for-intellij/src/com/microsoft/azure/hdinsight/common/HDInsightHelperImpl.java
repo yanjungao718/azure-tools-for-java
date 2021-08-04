@@ -125,7 +125,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             @Nullable
             @Override
             public Icon getIcon() {
-                return StreamUtil.getImageResourceFile(CommonConst.SPARK_JOBVIEW_ICONPATH);
+                return PluginUtil.getIcon(CommonConst.SPARK_JOBVIEW_ICONPATH);
             }
 
             @Override

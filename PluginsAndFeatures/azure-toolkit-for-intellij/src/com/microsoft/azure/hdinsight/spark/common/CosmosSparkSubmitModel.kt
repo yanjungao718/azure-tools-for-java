@@ -44,7 +44,7 @@ open class CosmosSparkSubmitModel : SparkSubmitModel {
     constructor(project: Project, submissionParameter: SparkSubmissionParameter): super(project, submissionParameter)
 
     override fun getDefaultParameters(): Stream<Pair<String, out Any>> {
-        return listOf(
+        return listOf<Pair<String, out Any>>(
                 Pair(SparkSubmissionParameter.DriverMemory, SparkSubmissionParameter.DriverMemoryDefaultValue),
                 Pair(SparkSubmissionParameter.DriverCores, SparkSubmissionParameter.DriverCoresDefaultValue),
                 Pair(SparkSubmissionParameter.ExecutorMemory, SparkSubmissionParameter.ExecutorMemoryDefaultValue),
