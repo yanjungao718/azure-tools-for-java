@@ -88,7 +88,7 @@ class BundleBuildIDEAPlugin implements Plugin<Project> {
     private static void configInstallBundlePluginsTask(Project project, BundleBuildIDEAConfig bundleBuildConfig) {
         project.with {
             tasks.create(INSTALL_BUNDLE_PLUGINS_TASKK_NAME, Copy) {
-                from new File(intellij.sandboxDirectory, "plugins")
+                from new File(project.intellij.sandboxDir.get(), "plugins")
                 into new File(bundleBuildConfig.bundleBuildDir, "config/plugins")
                 dependsOn INSTALL_IDEA_TASK_NAME
             }
