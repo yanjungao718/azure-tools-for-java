@@ -116,9 +116,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     }
 
     private void displayDescriptionForAzureEnv() {
-        final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
         if (AuthMethodManager.getInstance().isSignedIn()) {
-
+            final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
             final AzureEnvironment currentEnv =
                 AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
             String currentEnvStr = azureEnvironmentToString(currentEnv);
