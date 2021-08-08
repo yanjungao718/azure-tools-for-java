@@ -25,7 +25,7 @@ public class SpringCloudAppPropertiesEditorProvider implements FileEditorProvide
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final SpringCloudApp app = virtualFile.getUserData(APP_KEY);
         assert app != null;
-        return new SpringCloudAppPropertiesEditor(project, app);
+        return new SpringCloudAppPropertiesEditor(project, app, virtualFile);
     }
 
     @NotNull

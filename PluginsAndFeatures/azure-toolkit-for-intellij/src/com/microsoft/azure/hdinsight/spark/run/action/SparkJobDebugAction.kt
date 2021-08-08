@@ -32,12 +32,13 @@ import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor.EXECUTOR_ID
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.intellij.util.PluginUtil
 
 class SparkJobDebugAction
     : SparkRunConfigurationAction(
         "SparkJobDebug",
         "Submit Apache Spark Application to remote cluster with debugging support",
-        StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobDebugIcon_13x_Path)?: AllIcons.Toolwindows.ToolWindowDebugger) {
+        PluginUtil.getIcon(CommonConst.ToolWindowSparkJobDebugIcon_13x_Path)?: AllIcons.Toolwindows.ToolWindowDebugger) {
     override val runExecutor: Executor
         get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
             ?: throw RuntimeException("Can't find executor $EXECUTOR_ID from executor registry")

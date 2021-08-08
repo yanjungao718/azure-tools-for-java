@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.properties;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
@@ -49,8 +50,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     @Nonnull
     private SpringCloudAppConfig originalConfig;
 
-    public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudApp app) {
-        super();
+    public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudApp app, @Nonnull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.project = project;
         this.app = app;
         this.rerender();

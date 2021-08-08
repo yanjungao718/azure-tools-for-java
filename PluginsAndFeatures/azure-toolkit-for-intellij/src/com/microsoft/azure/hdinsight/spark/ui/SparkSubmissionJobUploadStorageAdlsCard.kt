@@ -44,6 +44,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
 import com.microsoft.intellij.ui.util.findFirst
+import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
@@ -87,7 +88,7 @@ class SparkSubmissionJobUploadStorageAdlsCard
         comboBox.name = "adlsCardSubscriptionsComboBoxCombo"
         button.name = "adlsCardSubscriptionsComboBoxButton"
         button.toolTipText = "Refresh"
-        button.icon = StreamUtil.getImageResourceFile(refreshButtonIconPath)
+        button.icon = PluginUtil.getIcon(refreshButtonIconPath)
         button.addActionListener {
             //refresh subscriptions after refresh button is clicked
             if (button.isEnabled) {

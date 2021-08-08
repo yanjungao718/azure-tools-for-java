@@ -44,6 +44,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.findFirst
+import com.microsoft.intellij.util.PluginUtil
 import rx.Observable
 import rx.Observable.*
 import rx.subjects.BehaviorSubject
@@ -67,7 +68,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         comboBox.name = getComboBoxNamePrefix() + "Combo"
         button.name = getComboBoxNamePrefix() + "Button"
 
-        setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH))
+        setButtonIcon(PluginUtil.getIcon(REFRESH_BUTTON_PATH))
 
         comboBox.apply {
             setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {

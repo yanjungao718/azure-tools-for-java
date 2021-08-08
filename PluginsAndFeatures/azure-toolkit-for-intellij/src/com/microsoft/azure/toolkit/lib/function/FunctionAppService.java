@@ -92,7 +92,8 @@ public class FunctionAppService {
         // get/create ai instances only if user didn't specify ai connection string in app settings
         AzureTelemetry.getActionContext().setProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
         bindApplicationInsights(appSettings, config);
-        final IFunctionApp result = Azure.az(AzureAppService.class).functionApp(resourceGroup.getName(), config.getName()).create()
+        final IFunctionApp result = Azure.az(AzureAppService.class).subscription(config.getSubscription())
+                .functionApp(resourceGroup.getName(), config.getName()).create()
                 .withName(config.getName())
                 .withResourceGroup(resourceGroup.getName())
                 .withPlan(appServicePlan.id())
@@ -129,11 +130,12 @@ public class FunctionAppService {
 
     private ResourceGroup getOrCreateResourceGroup(final FunctionAppConfig config) {
         try {
-            return Azure.az(AzureGroup.class).getByName(config.getResourceGroup().getName());
+            return Azure.az(AzureGroup.class).subscription(config.getSubscription()).getByName(config.getResourceGroup().getName());
         } catch (final ManagementException e) {
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP, config.getResourceGroup().getName(), config.getRegion().getName()));
             AzureTelemetry.getActionContext().setProperty(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
-            final ResourceGroup result = Azure.az(AzureGroup.class).create(config.getResourceGroup().getName(), config.getRegion().getName());
+            final ResourceGroup result = Azure.az(AzureGroup.class).subscription(config.getSubscription())
+                    .create(config.getResourceGroup().getName(), config.getRegion().getName());
             AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP_DONE, result.getName()));
             return result;
         }

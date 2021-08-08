@@ -97,7 +97,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private VirtualFile virtualFile;
 
     protected WebAppBasePropertyView(@Nonnull Project project, @Nonnull String sid,
-                                     @Nonnull String resId, @Nullable String slotName, @Nonnull VirtualFile virtualFile) {
+                                     @Nonnull String resId, @Nullable String slotName, @Nonnull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.id = getId();
         this.resourceId = resId;
         this.virtualFile = virtualFile;

@@ -1,6 +1,10 @@
 <!-- Version: 3.55.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.55.1
+### Added
+- Add support for IntelliJ 2021.2
+
 ## 3.55.0
 ### Added
 - New Azure Resource Connector explorer for connection management

@@ -43,11 +43,13 @@ import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.intellij.ui.DeviceLoginUI;
+import com.microsoft.intellij.ui.ErrorWindow;
 import com.microsoft.intellij.ui.ServicePrincipalLoginDialog;
 import com.microsoft.intellij.ui.SignInWindow;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -64,6 +66,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
@@ -76,6 +81,7 @@ public class AzureSignInAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
     private static final String SIGN_IN = "Azure Sign In...";
     private static final String SIGN_OUT = "Azure Sign Out...";
+    private static final String SIGN_IN_ERROR = "Sign In Error";
 
     public AzureSignInAction() {
         super(AuthMethodManager.getInstance().isSignedIn() ? SIGN_OUT : SIGN_IN);
@@ -241,11 +247,22 @@ public class AzureSignInAction extends AzureAnAction {
             if (auth.getType() != AuthType.DEVICE_CODE) {
                 single = loginNonDeviceCodeSingle(auth);
             } else {
-
                 single = loginDeviceCodeSingle().map(account -> {
                     AzureTaskManager.getInstance().runLater(() -> deviceLoginUI.promptDeviceCode(account.getDeviceCode()));
-                    return account.continueLogin().map(ac -> fromAccountEntity(ac.getEntity())).doFinally(signal ->
-                        deviceLoginUI.closePrompt()).subscribeOn(Schedulers.boundedElastic()).block();
+
+                    CompletableFuture<AuthMethodDetails> future =
+                        account.continueLogin().map(ac -> fromAccountEntity(ac.getEntity())).doFinally(signal -> deviceLoginUI.closePrompt()).toFuture();
+                    deviceLoginUI.setFuture(future);
+
+                    try {
+                        return future.get();
+                    } catch (Throwable ex) {
+                        if (!(ex instanceof CancellationException)) {
+                            ex.printStackTrace();
+                            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+                        }
+                        return new AuthMethodDetails();
+                    }
                 });
             }
 
@@ -275,7 +292,9 @@ public class AzureSignInAction extends AzureAnAction {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             final AzureAccount az = Azure.az(AzureAccount.class);
-            return (DeviceCodeAccount) az.loginAsync(AuthType.DEVICE_CODE, true).block();
+            return (DeviceCodeAccount) checkCanceled(indicator, az.loginAsync(AuthType.DEVICE_CODE, true), () -> {
+                throw Lombok.sneakyThrow(new InterruptedException("user cancel"));
+            });
         });
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(deviceCodeTask).toSingle();
     }
@@ -295,13 +314,16 @@ public class AzureSignInAction extends AzureAnAction {
         AuthMethodDetails authMethodDetailsResult = new AuthMethodDetails();
         switch (auth.getType()) {
             case SERVICE_PRINCIPAL:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInServicePrincipal(auth)), "sp");
+                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInServicePrincipal(auth),
+                    AuthMethodDetails::new), "sp");
                 break;
             case AZURE_CLI:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), "az");
+                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli(),
+                    AuthMethodDetails::new), "az");
                 break;
             case OAUTH2:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), "oauth");
+                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth(),
+                    AuthMethodDetails::new), "oauth");
                 break;
             default:
                 break;
@@ -328,9 +350,9 @@ public class AzureSignInAction extends AzureAnAction {
         }
     }
 
-    private static AuthMethodDetails checkCanceled(ProgressIndicator indicator, Mono<? extends AuthMethodDetails> mono) {
-        final Mono<AuthMethodDetails> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
-            .any(cancel -> cancel).map(ignore -> new AuthMethodDetails()).subscribeOn(Schedulers.boundedElastic());
+    private static <T> T checkCanceled(ProgressIndicator indicator, Mono<? extends T> mono, Supplier<T> supplier) {
+        final Mono<T> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
+            .any(cancel -> cancel).map(ignore -> supplier.get()).subscribeOn(Schedulers.boundedElastic());
         return Mono.firstWithSignal(cancelMono, mono.subscribeOn(Schedulers.boundedElastic())).block();
     }
 
