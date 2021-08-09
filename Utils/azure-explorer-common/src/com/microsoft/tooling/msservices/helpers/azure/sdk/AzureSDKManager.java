@@ -23,13 +23,9 @@ import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
-import com.microsoft.azure.management.storage.AccessTier;
-import com.microsoft.azure.management.storage.Kind;
-import com.microsoft.azure.management.storage.SkuName;
-import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azure.management.storage.StorageAccountSkuType;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -52,43 +48,11 @@ public class AzureSDKManager {
 
     private static final String INSIGHTS_REGION_LIST_URL = "https://management.azure.com/providers/microsoft.insights?api-version=2015-05-01";
 
-    public static StorageAccount createStorageAccount(String subscriptionId, String name, String region, boolean newResourceGroup, String resourceGroup,
-                                                      Kind kind, AccessTier accessTier, boolean enableEncription, String skuName) throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        Azure azure = azureManager.getAzure(subscriptionId);
-        StorageAccount.DefinitionStages.WithGroup newStorageAccountBlank = azure.storageAccounts().define(name).withRegion(region);
-        StorageAccount.DefinitionStages.WithCreate newStorageAccountWithGroup;
-        if (newResourceGroup) {
-            newStorageAccountWithGroup = newStorageAccountBlank.withNewResourceGroup(resourceGroup);
-        } else {
-            newStorageAccountWithGroup = newStorageAccountBlank.withExistingResourceGroup(resourceGroup);
-        }
-
-        if (Kind.STORAGE.equals(kind)) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
-        } else if (Kind.STORAGE_V2.equals(kind)) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKindV2();
-        } else if (Kind.BLOB_STORAGE.equals(kind)) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
-        } else {
-            throw new Exception("Unknown Storage Account Kind:" + kind.toString());
-
-        }
-
-        if (enableEncription) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobEncryption();
-        }
-
-        return newStorageAccountWithGroup.withSku(StorageAccountSkuType.fromSkuName(SkuName.fromString(skuName))).create();
-    }
-
     public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name,
                                                       @NotNull String resourceGroup, boolean withNewResourceGroup,
                                                       @NotNull String size, @NotNull String region,
                                                       final VirtualMachineImage vmImage, Object knownImage,
                                                       boolean isKnownImage, final StorageAccount storageAccount,
-                                                      com.microsoft.tooling.msservices.model.storage.StorageAccount
-                                                              newStorageAccount, boolean withNewStorageAccount,
                                                       final Network network, VirtualNetwork newNetwork,
                                                       boolean withNewNetwork, @NotNull String subnet,
                                                       @Nullable PublicIPAddress pip, boolean withNewPip,
@@ -179,21 +143,8 @@ public class AzureSDKManager {
         }
         withCreate = withCreate.withSize(size);
         // ---- Storage Account --------
-        if (withNewStorageAccount) {
-            StorageAccount.DefinitionStages.WithCreate newAccount;
-            StorageAccount.DefinitionStages.WithGroup withGroupAccount = azure.storageAccounts()
-                    .define(newStorageAccount.getName()).withRegion(newStorageAccount.getLocation());
-            if (newStorageAccount.isNewResourceGroup()) {
-                newAccount = withGroupAccount.withNewResourceGroup(newStorageAccount.getResourceGroupName());
-            } else {
-                newAccount = withGroupAccount.withExistingResourceGroup(newStorageAccount.getResourceGroupName());
-            }
-            // only general purpose accounts used to create vm
-            newAccount.withGeneralPurposeAccountKind().withSku(SkuName.fromString(newStorageAccount.getType()));
-            withCreate = withCreate.withNewStorageAccount(newAccount);
-        } else {
-            withCreate = withCreate.withExistingStorageAccount(storageAccount);
-        }
+        com.microsoft.azure.management.storage.StorageAccount existedStorageAccount = azure.storageAccounts().getById(storageAccount.id());
+        withCreate = withCreate.withExistingStorageAccount(existedStorageAccount);
         if (withNewAvailabilitySet) {
             withCreate = withCreate.withNewAvailabilitySet(name + "as");
         } else if (availabilitySet != null) {

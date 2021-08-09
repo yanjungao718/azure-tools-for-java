@@ -14,9 +14,10 @@ import com.microsoft.azure.management.compute.VirtualMachineImage;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.MachineSettingsStep;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.SelectImageStep;
@@ -24,6 +25,8 @@ import com.microsoft.azure.toolkit.intellij.vm.createarmvm.SettingsStep;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.SubscriptionStep;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -42,7 +45,9 @@ public class VMWizardModel extends WizardModel implements TelemetryProperties {
     private VirtualNetwork newNetwork;
     private boolean withNewNetwork;
     private StorageAccount storageAccount;
-    private com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount;
+    @Getter
+    @Setter
+    private StorageAccountConfig storageAccountConfig;
     private boolean withNewStorageAccount;
     //    private String availabilitySet;
     private PublicIPAddress publicIpAddress;
@@ -218,22 +223,6 @@ public class VMWizardModel extends WizardModel implements TelemetryProperties {
 
     public void setStorageAccount(StorageAccount storageAccount) {
         this.storageAccount = storageAccount;
-    }
-
-    public com.microsoft.tooling.msservices.model.storage.StorageAccount getNewStorageAccount() {
-        return newStorageAccount;
-    }
-
-    public void setNewStorageAccount(com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount) {
-        this.newStorageAccount = newStorageAccount;
-    }
-
-    public boolean isWithNewStorageAccount() {
-        return withNewStorageAccount;
-    }
-
-    public void setWithNewStorageAccount(boolean withNewStorageAccount) {
-        this.withNewStorageAccount = withNewStorageAccount;
     }
 
     public PublicIPAddress getPublicIpAddress() {
