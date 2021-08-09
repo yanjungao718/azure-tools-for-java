@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.springcloud.creation.CreateSpringClo
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.sqlserver.CreateSqlServerAction;
 import com.microsoft.azure.toolkit.intellij.sqlserver.OpenSqlServerByToolsAction;
+import com.microsoft.azure.toolkit.intellij.storage.OpenStorageBrowserAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.azure.toolkit.intellij.appservice.action.ProfileFlightRecordAction;
@@ -58,6 +59,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -136,6 +138,9 @@ public class NodeActionsMap {
 
         node2Actions.put(SqlServerNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(OpenSqlServerByToolsAction.class).add(ConnectToSQLAction.class).build());
+
+        node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(OpenStorageBrowserAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)
