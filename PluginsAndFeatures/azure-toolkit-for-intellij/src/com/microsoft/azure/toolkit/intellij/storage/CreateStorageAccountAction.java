@@ -29,7 +29,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 @Name("Create")
 public class CreateStorageAccountAction extends NodeActionListener {
 
-    private StorageModule module;
+    private final StorageModule module;
 
     public CreateStorageAccountAction(StorageModule storageModule) {
         this.module = storageModule;
