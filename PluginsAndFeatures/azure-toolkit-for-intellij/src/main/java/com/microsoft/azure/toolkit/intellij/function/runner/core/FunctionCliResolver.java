@@ -5,73 +5,124 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.core;
 
-import com.microsoft.azure.toolkit.lib.common.logging.Log;
-import com.microsoft.azure.toolkit.lib.common.utils.TextUtils;
-import com.microsoft.azuretools.utils.CommandUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+public abstract class FunctionCliResolver {
+    private static final boolean isWindows = CommandUtils.isWindows();
 
-public class FunctionCliResolver {
-    public static String resolveFunc() throws IOException, InterruptedException {
-        final boolean isWindows = CommandUtils.isWindows();
-        final List<File> funCmdFiles = CommandUtils.resolvePathForCommand("func");
-        File result = null;
-        for (final File file : funCmdFiles) {
-            final File canonicalFile = file.getCanonicalFile();
-            if (!canonicalFile.exists()) {
-                continue;
-            }
-            // when `func core tools` is manually installed and func is available at PATH
-            // use canonical path to locate the real installation path
-            result = findFuncExecInFolder(canonicalFile.getParentFile(), isWindows);
-            if (result == null) {
-                if (isWindows) {
-                    result = resolveFuncForWindows(canonicalFile);
-                } else {
-                    // in linux/mac, when the way of `npm install azure-functions-core-tools`, the canonicalFile will point to `main.js`
-                    if (canonicalFile.getName().equals("main.js")) {
-                        result = findFuncExecInFolder(Paths.get(canonicalFile.getParent(), "..", "bin").normalize().toFile(),
-                                isWindows);
-                    }
+    public static String resolveFunc() {
+        return resolve().stream().findFirst().orElse(null);
+    }
+
+    public static List<String> resolve() {
+        return resolveInner();
+    }
+
+    private static List<String> resolveInner() {
+        // resolve command from $PATH
+        final List<String> whichFuncDirs = resolveCommandPath("func");
+        final Set<String> results = new HashSet<>();
+        final Set<String> processedDirectories = new HashSet<>();
+        for (final String dir : whichFuncDirs) {
+            try {
+                final File canonicalFile = new File(dir).getCanonicalFile();
+                if (!canonicalFile.exists()) {
+                    continue;
                 }
-            }
+                final String parentFolder = canonicalFile.getParentFile().getAbsolutePath();
+                if (!processedDirectories.add(parentFolder)) {
+                    // already processed
+                    continue;
+                }
+                // when `func core tools` is manually installed and func is available at PATH
+                // use canonical path to locate the real installation path
+                String result = findFuncInFolder(parentFolder);
+                if (result == null) {
+                    result = resolveAdditionalFunc(parentFolder);
+                }
+                if (result != null) {
+                    results.add(result);
+                }
 
-            if (result != null) {
-                return result.getAbsolutePath();
+            } catch (IOException ignored) {
+                // ignore
             }
         }
-        Log.warn(TextUtils.red(message("function.cli.error.notFound")));
-        return null;
+        Optional.ofNullable(findFuncInNpm()).ifPresent(results::add);
+        return new ArrayList<>(results);
     }
 
-    private static File resolveFuncForWindows(final File canonicalFile) {
-        if (canonicalFile.getName().equalsIgnoreCase("func.cmd")) {
-            return findFuncExecInFolder(
-                    Paths.get(canonicalFile.getParent(), "node_modules", "azure-functions-core-tools", "bin")
-                            .toFile(),
-                    true);
-        } else {
-            // check chocolate install
-            final File libFolder = Paths
-                    .get(canonicalFile.getParent(), "..", "lib", "azure-functions-core-tools", "tools")
-                    .normalize().toFile();
-            return findFuncExecInFolder(libFolder, true);
-        }
-    }
-
-    private static File findFuncExecInFolder(final File folder, final boolean windows) {
-        if (new File(folder, "func.dll").exists()) {
-            final File func = new File(folder, windows ? "func.exe" : "func");
+    @Nullable
+    private static String findFuncInFolder(final String parentFolder) {
+        if (new File(parentFolder, getFuncFileName()).exists()) {
+            final File func = new File(parentFolder, getFuncFileName());
             if (func.exists()) {
-                return func;
+                return Paths.get(func.getAbsolutePath()).normalize().toString();
             }
         }
         return null;
     }
 
+    @Nullable
+    private static String findFuncInNpm() {
+        try {
+            final String output = StringUtils.trim(CommandUtils.exec("npm root --global"));
+            final File path = new File(output, "azure-functions-core-tools/bin");
+            if (FileUtils.isDirectory(path)) {
+                return findFuncInFolder(path.getAbsolutePath());
+            }
+        } catch (IOException ignore) {
+            // ignore
+        }
+        return null;
+    }
+
+    private static List<String> resolveCommandPath(String command) {
+        final List<String> list = new ArrayList<>();
+        try {
+
+            final String output = CommandUtils.exec((isWindows ? "where " : "which ") + command);
+            if (StringUtils.isBlank(output)) {
+                return Collections.emptyList();
+            }
+
+            for (final String outputLine : output.split("[\\r\\n]")) {
+                final File file = new File(StringUtils.trim(outputLine));
+                if (!file.exists() || !file.isFile()) {
+                    continue;
+                }
+
+                list.add(file.getAbsolutePath());
+            }
+        } catch (IOException ignored) {
+            // ignore
+        }
+        return list;
+    }
+
+    private static String getFuncFileName() {
+        return isWindows ? "func.exe" : "func";
+    }
+
+    private static String resolveAdditionalFunc(String funcParentFolder) {
+        // from C:\ProgramData\chocolatey\bin\func.exe -> C:\ProgramData\chocolatey\lib\azure-functions-core-tools\tools\func.exe
+        return Optional.ofNullable(findFuncInFolder(Paths.get(funcParentFolder, "../lib/azure-functions-core-tools/tools").toString()))
+            // detect func installed by `brew install azure-functions-core-tools@3`
+            // readlink /usr/local/bin/func =>
+            //../Cellar/azure-functions-core-tools@3/3.0.3477/bin/func
+            .orElseGet(() -> findFuncInFolder(Paths.get(funcParentFolder, "../bin").toString()));
+    }
 }

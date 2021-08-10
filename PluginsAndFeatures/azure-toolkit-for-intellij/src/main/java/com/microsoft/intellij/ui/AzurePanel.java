@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -97,7 +96,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isBlank(state.functionCoreToolsPath())) {
             try {
                 funcCoreToolsPath.setText(FunctionCliResolver.resolveFunc());
-            } catch (final IOException | InterruptedException ex) {
+            } catch (final Throwable ex) {
                 //ignore
             }
         } else {
