@@ -42,13 +42,13 @@ public class DatabaseResource implements AzureResource {
     private Password password;
     private String envPrefix;
 
-    public DatabaseResource(@Nonnull String type, @Nonnull final String serverId, @Nullable final String databaseName) {
+    protected DatabaseResource(@Nonnull String type, @Nonnull final String serverId, @Nullable final String databaseName) {
         this.type = type;
         this.databaseName = databaseName;
         this.serverId = ResourceId.fromString(serverId);
     }
 
-    public DatabaseResource(@Nonnull String type, @Nonnull final String databaseId) {
+    protected DatabaseResource(@Nonnull String type, @Nonnull final String databaseId) {
         this.type = type;
         final ResourceId dbId = ResourceId.fromString(databaseId);
         this.serverId = dbId.parent();
