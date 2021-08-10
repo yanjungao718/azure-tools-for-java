@@ -23,7 +23,6 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccountConfig> implements AzureForm<StorageAccountConfig> {
