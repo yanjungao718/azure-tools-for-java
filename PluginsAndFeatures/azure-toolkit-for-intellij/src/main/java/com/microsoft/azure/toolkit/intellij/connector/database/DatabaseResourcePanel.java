@@ -97,6 +97,9 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
         envPrefixTextField.setText(definition instanceof SqlServerDatabaseResource.Definition ? "AZURE_SQL_" : "AZURE_MYSQL_");
+        this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
+                .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+                .orElse(Password.SaveType.UNTIL_RESTART));
     }
 
     protected void initListeners() {
