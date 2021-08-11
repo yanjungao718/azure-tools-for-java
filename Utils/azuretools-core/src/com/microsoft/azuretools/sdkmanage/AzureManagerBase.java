@@ -280,7 +280,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     private static Authenticator createProxyAuthenticatorFromConfig() {
         final AzureConfiguration az = az().config();
-        if (StringUtils.isNotBlank(az.getProxySource())  && StringUtils.isNoneBlank(az.getProxyUsername(), az.getProxyPassword())) {
+        if (StringUtils.isNotBlank(az.getProxySource()) && StringUtils.isNoneBlank(az.getProxyUsername(), az.getProxyPassword())) {
             return (route, response) -> {
                 String credential = Credentials.basic(az.getProxyUsername(), az.getProxyPassword());
                 return response.request().newBuilder()
