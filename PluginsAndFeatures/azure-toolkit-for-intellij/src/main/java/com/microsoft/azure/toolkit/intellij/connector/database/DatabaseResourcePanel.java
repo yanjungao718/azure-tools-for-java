@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.connector.database.component.Passwor
 import com.microsoft.azure.toolkit.intellij.connector.database.component.ServerComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.TestConnectionActionPanel;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.UsernameComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
@@ -96,6 +97,9 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
         envPrefixTextField.setText(definition instanceof SqlServerDatabaseResource.Definition ? "AZURE_SQL_" : "AZURE_MYSQL_");
+        this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
+                .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
+                .orElse(Password.SaveType.UNTIL_RESTART));
     }
 
     protected void initListeners() {
@@ -226,9 +230,9 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         password.password(inputPasswordField.getPassword());
         password.saveType(passwordSaveComboBox.getValue());
 
-        final DatabaseResource resource = new DatabaseResource(definition.getType(),
-                definition instanceof SqlServerDatabaseResource.Definition ?
-                ((SqlDatabaseEntity) databaseComboBox.getValue()).getId() : ((MySqlDatabaseEntity) databaseComboBox.getValue()).getId());
+        final DatabaseResource resource = definition instanceof SqlServerDatabaseResource.Definition ?
+                new SqlServerDatabaseResource(((SqlDatabaseEntity) databaseComboBox.getValue()).getId()) :
+                new MySQLDatabaseResource(((MySqlDatabaseEntity) databaseComboBox.getValue()).getId());
         resource.setPassword(password);
         resource.setUsername((String) usernameComboBox.getValue());
         resource.setJdbcUrl(this.jdbcUrl);
