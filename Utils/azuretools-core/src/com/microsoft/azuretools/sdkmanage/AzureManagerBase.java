@@ -30,6 +30,7 @@ import okhttp3.Credentials;
 import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -270,13 +271,16 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     private static Proxy createProxyFromConfig() {
-        return Optional.ofNullable(az().config().getHttpProxy())
-            .map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
+        final AzureConfiguration config = az().config();
+        if (StringUtils.isNotBlank(config.getProxySource())) {
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.getHttpProxyHost(), config.getHttpProxyPort()));
+        }
+        return null;
     }
 
     private static Authenticator createProxyAuthenticatorFromConfig() {
         final AzureConfiguration az = az().config();
-        if (az.getHttpProxy() != null && StringUtils.isNoneBlank(az.getProxyUsername(), az.getProxyPassword())) {
+        if (StringUtils.isNotBlank(az.getProxySource())  && StringUtils.isNoneBlank(az.getProxyUsername(), az.getProxyPassword())) {
             return (route, response) -> {
                 String credential = Credentials.basic(az.getProxyUsername(), az.getProxyPassword());
                 return response.request().newBuilder()
