@@ -25,7 +25,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNod
 @Name(OpenStorageBrowserAction.ACTION_NAME)
 public class OpenStorageBrowserAction extends NodeActionListener {
 
-    public static final String ACTION_NAME = "Open Storage Browser";
+    private static final String ACTION_NAME = "Open Storage Browser";
     private static final String ACTION_PROGRESS_PATTERN = "Opening storage browser of storage account({0}) in portal";
 
     private final StorageNode node;
