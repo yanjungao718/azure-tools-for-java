@@ -366,6 +366,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
+        fillJavaVersion();
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
@@ -383,7 +384,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillAppServicePlansDetails();
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
-        fillJavaVersion();
+
         return scrolledComposite;
     }
 
