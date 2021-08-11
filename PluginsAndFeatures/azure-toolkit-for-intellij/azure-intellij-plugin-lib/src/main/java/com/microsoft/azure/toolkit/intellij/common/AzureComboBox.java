@@ -5,6 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CustomShortcutSet;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.DocumentAdapter;
@@ -20,6 +24,7 @@ import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -31,7 +36,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -338,11 +345,24 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         @Nullable
         protected ExtendableTextComponent.Extension getExtension() {
             final ExtendableTextComponent.Extension extension = AzureComboBox.this.getExtension();
-            return extension == null ? null : ExtendableTextComponent.Extension.create(
-                    extension.getIcon(true), extension.getTooltip(), () -> {
-                        AzureComboBox.this.hidePopup();
-                        extension.getActionOnClick().run();
-                    });
+            if (extension == null) {
+                return null;
+            }
+            // Add shot cut for extension, refers https://github.com/JetBrains/intellij-community/blob/idea/212.4746.92/platform/platform-api/
+            // src/com/intellij/ui/components/fields/ExtendableTextField.java#L117
+            final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
+            final String tooltip = String.format("%s (%s)", extension.getTooltip(), KeymapUtil.getKeystrokeText(keyStroke));
+            final Runnable action = () -> {
+                AzureComboBox.this.hidePopup();
+                extension.getActionOnClick().run();
+            };
+            new DumbAwareAction() {
+                @Override
+                public void actionPerformed(@NotNull AnActionEvent e) {
+                    action.run();
+                }
+            }.registerCustomShortcutSet(new CustomShortcutSet(keyStroke), AzureComboBox.this);
+            return ExtendableTextComponent.Extension.create(extension.getIcon(true), tooltip, action);
         }
     }
 
