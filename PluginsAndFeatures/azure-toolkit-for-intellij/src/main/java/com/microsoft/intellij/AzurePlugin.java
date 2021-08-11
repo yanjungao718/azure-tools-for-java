@@ -119,10 +119,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        ProxyUtils.initProxy();
-
         this.azureSettings = AzureSettings.getSafeInstance(project);
-
         if (isDataFileValid()) {
             // read legacy settings from old data.xml
             try {
