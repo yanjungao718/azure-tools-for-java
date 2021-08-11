@@ -103,6 +103,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             }
         });
 
+        AzureEventBus.after("mysql|server.start", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
         AzureEventBus.before("mysql|server.start", this::onMySqlServerStatusChanging);
@@ -337,6 +338,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         overview.getPerformanceConfigurationsTextField().setText(performanceConfigurations);
         overview.getSslEnforceStatusTextField().setText(server.entity().getSslEnforceStatus());
         if (StringUtils.equalsIgnoreCase("READY", server.entity().getState())) {
+            connectionSecuritySeparator.expand();
+            connectionSecuritySeparator.setEnabled(true);
+            connectionStringsSeparator.expand();
+            connectionStringsSeparator.setEnabled(true);
             originalAllowAccessToAzureServices = server.firewallRules().isAzureAccessRuleEnabled();
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
             originalAllowAccessToLocal = server.firewallRules().isLocalMachineAccessRuleEnabled();
