@@ -68,10 +68,10 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private static final String APP_NAME_PREFIX = "webapp-linux";
     private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
     private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
-    private static final String TITLE_RESOURCE_GROUP = "Resource Group";
-    private static final String TITLE_APP_SERVICE_PLAN = "App Service Plan";
-    private static final String TITLE_ACR = "Azure Container Registry";
-    private static final String TITLE_WEB_APP = "Web App for Containers";
+    private static final String TITLE_RESOURCE_GROUP = "&Resource Group";
+    private static final String TITLE_APP_SERVICE_PLAN = "App Service &Plan";
+    private static final String TITLE_ACR = "Azure &Container Registry";
+    private static final String TITLE_WEB_APP = "&Web App for Containers";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private JTextField textAppName;

@@ -58,7 +58,7 @@ public class IntellijErrorDialog extends DialogWrapper {
         });
         final String details = message.getDetails();
         if (StringUtils.isNotBlank(details)) {
-            final HideableDecorator slotDecorator = new HideableDecorator(detailsContainer, "Call Stack", false);
+            final HideableDecorator slotDecorator = new HideableDecorator(detailsContainer, "&Call Stack", false);
             slotDecorator.setContentComponent(detailsScrollPane);
             slotDecorator.setOn(false);
             this.detailsPane.setText(details);
