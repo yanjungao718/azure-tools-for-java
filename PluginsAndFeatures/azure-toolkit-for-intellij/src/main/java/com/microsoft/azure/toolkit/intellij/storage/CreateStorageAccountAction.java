@@ -13,9 +13,7 @@ import com.microsoft.azure.toolkit.intellij.storage.task.CreateStorageAccountTas
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -23,8 +21,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name("Create")
 public class CreateStorageAccountAction extends NodeActionListener {
@@ -47,15 +43,6 @@ public class CreateStorageAccountAction extends NodeActionListener {
     }
 
     private void doActionPerformed(boolean isLoggedIn, Project project) {
-        try {
-            if (!isLoggedIn ||
-                    !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                return;
-            }
-        } catch (final Exception ex) {
-            AzurePlugin.log(message("common.error.signIn"), ex);
-            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
-        }
         final StorageAccountCreationDialog dialog = new StorageAccountCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createStorageAccount(data, project, dialog));
         dialog.show();
