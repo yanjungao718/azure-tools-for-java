@@ -44,11 +44,11 @@ public class WebAppNode extends WebAppBaseNode {
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        if (WebAppBaseState.UPDATING.equals(state)) {
+        if (WebAppBaseState.UPDATING == state) {
             return AzureIconSymbol.WebApp.UPDATING;
         }
         boolean isLinux = webApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
-        boolean running = WebAppBaseState.RUNNING.equals(state);
+        boolean running = WebAppBaseState.RUNNING == state;
         if (isLinux) {
             return running ? AzureIconSymbol.WebApp.RUNNING_ON_LINUX : AzureIconSymbol.WebApp.STOPPED_ON_LINUX;
         } else {
@@ -110,7 +110,7 @@ public class WebAppNode extends WebAppBaseNode {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(SSH_INTO).setEnabled(running);
+        getNodeActionByName(SSH_INTO).setEnabled(running && webApp.getRuntime().isLinux());
         getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
         return super.getNodeActions();
     }
