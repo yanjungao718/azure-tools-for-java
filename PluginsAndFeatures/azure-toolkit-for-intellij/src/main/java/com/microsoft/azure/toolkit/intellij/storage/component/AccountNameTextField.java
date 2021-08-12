@@ -10,12 +10,11 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.function.Function;
+import javax.annotation.Nonnull;
 import java.util.regex.Pattern;
 
 public class AccountNameTextField extends ValidationDebouncedTextInput {
@@ -27,8 +26,6 @@ public class AccountNameTextField extends ValidationDebouncedTextInput {
     private int maxLength = 24;
     @Getter
     private String subscriptionId;
-    @Setter
-    private Function<AccountNameTextField, AzureValidationInfo> validateFunction;
 
     public void setSubscriptionId(String subscriptionId) {
         if (!StringUtils.equals(subscriptionId, this.subscriptionId)) {
@@ -37,7 +34,7 @@ public class AccountNameTextField extends ValidationDebouncedTextInput {
     }
 
     @Override
-    @NotNull
+    @Nonnull
     public AzureValidationInfo doValidateValue() {
         if (StringUtils.isBlank(subscriptionId)) {
             return AzureValidationInfo.UNINITIALIZED;
