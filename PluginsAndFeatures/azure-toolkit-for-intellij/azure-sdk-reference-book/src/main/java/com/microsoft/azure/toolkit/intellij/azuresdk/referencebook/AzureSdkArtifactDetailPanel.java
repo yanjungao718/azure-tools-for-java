@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
 import com.google.common.collect.ImmutableMap;
@@ -49,11 +54,12 @@ public class AzureSdkArtifactDetailPanel {
 
     private void setLinks(@Nonnull final Map<String, String> links) {
         this.links.removeAll();
-        links.forEach((type, url) -> {
-            final HyperlinkLabel link = new HyperlinkLabel();
+        linkNames.forEach((type, name) -> {
+            final String url = links.get(type);
             if (StringUtils.isNotBlank(url)) {
+                final HyperlinkLabel link = new HyperlinkLabel();
                 this.links.add(new JToolBar.Separator());
-                link.setHyperlinkText(linkNames.get(type));
+                link.setHyperlinkText(name);
                 link.setHyperlinkTarget(url);
                 this.links.add(new JSeparator(SwingConstants.VERTICAL));
                 this.links.add(link);
@@ -69,14 +75,14 @@ public class AzureSdkArtifactDetailPanel {
         if (StringUtils.isNotBlank(artifact.getVersionPreview())) {
             versions.add(artifact.getVersionPreview());
         }
-        final DropDownLink<String> version = new DropDownLink<>(versions.get(0), versions, (String v) -> {
+        final DropDownLink<String> versionSelector = new DropDownLink<>(versions.get(0), versions, (String v) -> {
             if (this.artifactId.isSelected()) {
                 this.setLinks(this.artifact.getLinks(v));
                 this.onArtifactOrVersionSelected.accept(this.artifact, this.version.getSelectedItem());
             }
         }, true);
-        version.setForeground(JBColor.BLACK);
-        return version;
+        versionSelector.setForeground(JBColor.BLACK);
+        return versionSelector;
     }
 
     public void setSelected(boolean selected) {
