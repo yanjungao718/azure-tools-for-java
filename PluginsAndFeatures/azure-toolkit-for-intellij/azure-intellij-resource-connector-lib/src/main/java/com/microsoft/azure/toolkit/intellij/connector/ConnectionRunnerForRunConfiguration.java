@@ -79,7 +79,8 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     public static class MyRunConfigurationExtension extends RunConfigurationExtension {
 
         @Override
-        public <T extends RunConfigurationBase> void updateJavaParameters(@NotNull T configuration, @NotNull JavaParameters params, RunnerSettings settings) {
+        public <T extends RunConfigurationBase<?>> void updateJavaParameters(@NotNull T configuration, @NotNull JavaParameters params,
+                                                                             RunnerSettings settings) {
             final @NotNull List<?> beforeTasks = configuration.getBeforeRunTasks();
             beforeTasks.stream().filter(t -> t instanceof MyBeforeRunTask).map(t -> (MyBeforeRunTask) t)
                     .flatMap(t -> t.connections.stream())
