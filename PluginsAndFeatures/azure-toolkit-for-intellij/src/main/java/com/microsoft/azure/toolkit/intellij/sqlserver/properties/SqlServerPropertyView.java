@@ -101,11 +101,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     private void onMySqlServerStatusDeleted(SqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.property.getServer().entity().getId(), server.entity().getId())) {
-            try {
-                AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance(this.project).closeFile(this.virtualFile));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance(this.project).closeFile(this.virtualFile));
         }
     }
 
