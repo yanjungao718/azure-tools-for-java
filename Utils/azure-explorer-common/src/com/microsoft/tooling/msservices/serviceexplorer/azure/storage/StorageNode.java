@@ -40,7 +40,7 @@ public class StorageNode extends Node implements TelemetryProperties {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.entity().getSubscriptionId());
-        properties.put(AppInsightsConstants.Region, this.storageAccount.entity().regionName());
+        properties.put(AppInsightsConstants.Region, this.storageAccount.entity().getRegion().getName());
         return properties;
     }
 
