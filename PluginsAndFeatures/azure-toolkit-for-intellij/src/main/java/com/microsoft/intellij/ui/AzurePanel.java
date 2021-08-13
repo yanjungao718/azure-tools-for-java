@@ -10,15 +10,12 @@ import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
-import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -28,14 +25,12 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -103,7 +98,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     public void setData(AzureConfiguration config) {
         if (StringUtils.isNotBlank(config.getFunctionCoreToolsPath())) {
-                //ignore
+            //ignore
             funcCoreToolsPath.setValue(config.getFunctionCoreToolsPath());
         }
 
@@ -250,6 +245,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     public void reset() {
         setData(originalData);
     }
+
     private void createUIComponents() {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(project, false);
     }
