@@ -18,7 +18,8 @@ public class StorageAccountCreationDialog extends BaseStorageAccountCreationDial
     }
 
     @Override
-    protected void init() {
+    protected void initListeners() {
+        super.initListeners();
         this.performanceComboBox.addItemListener(this::onPerformanceChanged);
     }
 
