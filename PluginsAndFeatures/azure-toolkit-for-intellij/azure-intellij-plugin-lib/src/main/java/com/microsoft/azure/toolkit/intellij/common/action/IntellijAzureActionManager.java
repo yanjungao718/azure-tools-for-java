@@ -45,15 +45,15 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Override
-    public <T> void registerAction(String id, Action<T> action) {
-        ActionManager.getInstance().registerAction(id, new AnActionWrapper<>(action));
+    public <D> void registerAction(Action.Id<D> id, Action<D> action) {
+        ActionManager.getInstance().registerAction(id.getId(), new AnActionWrapper<>(action));
     }
 
     @Override
-    public <T> Action<T> getAction(String id) {
+    public <D> Action<D> getAction(Action.Id<D> id) {
         //noinspection unchecked
-        final AnActionWrapper<T> action = ((AnActionWrapper<T>) ActionManager.getInstance().getAction(id));
-        return new Action.Proxy<>(action.getAction(), id);
+        final AnActionWrapper<D> action = ((AnActionWrapper<D>) ActionManager.getInstance().getAction(id.getId()));
+        return new Action.Proxy<>(action.getAction(), id.getId());
     }
 
     @Override
@@ -125,7 +125,10 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
         private void addActions(List<Object> actions) {
             final ActionManager am = ActionManager.getInstance();
-            for (final Object raw : actions) {
+            for (Object raw : actions) {
+                if (raw instanceof Action.Id) {
+                    raw = ((Action.Id<?>) raw).getId();
+                }
                 if (raw instanceof String) {
                     final String actionId = (String) raw;
                     if (actionId.startsWith("-")) {
