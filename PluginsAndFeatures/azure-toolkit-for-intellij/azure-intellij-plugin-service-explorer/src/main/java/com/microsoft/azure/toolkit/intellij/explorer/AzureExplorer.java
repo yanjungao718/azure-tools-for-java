@@ -57,8 +57,8 @@ public class AzureExplorer extends Tree {
     @Nonnull
     public static List<Node<?>> getModules() {
         return explorerExtensionPoint.getExtensionList().stream()
-                .map(IExplorerContributor::getNode)
-                .sorted(Comparator.comparing(Node::zOrder))
+                .map(IExplorerContributor::getModuleNode)
+                .sorted(Comparator.comparing(Node::order))
                 .collect(Collectors.toList());
     }
 
