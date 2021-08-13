@@ -82,7 +82,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
             HttpClientProviders.createInstance();
             Azure.az(AzureAccount.class);
-
             Hooks.onErrorDropped(ex -> {
                 if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
                     log.info(ex.getMessage());
@@ -97,6 +96,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+        ProxyUtils.initProxy();
         if (StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().environment())) {
             Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(AzureConfigurations.getInstance().getState().environment()));
         } else if (CommonSettings.getEnvironment() != null) {

@@ -119,10 +119,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        ProxyUtils.initProxy();
-
         this.azureSettings = AzureSettings.getSafeInstance(project);
-
         if (isDataFileValid()) {
             // read legacy settings from old data.xml
             try {
@@ -221,7 +218,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
-        if (Azure.az().config().getHttpProxy() != null) {
+        if (StringUtils.isNotBlank(Azure.az().config().getProxySource())) {
             final Map<String, String> map = Optional.ofNullable(AzureTelemeter.getCommonProperties()).map(HashMap::new).orElse(new HashMap<>());
             map.put(PROXY, "true");
             AzureTelemeter.setCommonProperties(map);
