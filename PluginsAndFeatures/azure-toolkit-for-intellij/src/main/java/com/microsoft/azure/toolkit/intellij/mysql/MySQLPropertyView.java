@@ -97,12 +97,6 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         init();
         initListeners();
 
-        AzureEventBus.after("mysql|server.delete", (MySqlServer server) -> {
-            if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
-                this.closeEditor();
-            }
-        });
-
         AzureEventBus.after("mysql|server.start", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
