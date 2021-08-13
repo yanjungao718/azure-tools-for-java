@@ -15,14 +15,18 @@ import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.storage.Kind;
-import com.microsoft.azure.management.storage.SkuName;
-import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.intellij.storage.component.VMStorageAccountCreationDialog;
+import com.microsoft.azure.toolkit.intellij.storage.task.CreateStorageAccountTask;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.storage.model.Kind;
+import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
+import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -34,7 +38,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
 import com.microsoft.intellij.forms.CreateVirtualNetworkForm;
 import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.azure.toolkit.intellij.vm.VMWizardModel;
@@ -112,7 +115,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
             public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
-                    setText(String.format("%s (%s)", sa.name(), sa.resourceGroupName()));
+                    setText(String.format("%s (%s)", sa.name(), sa.resourceGroup()));
                 }
             }
         });
@@ -318,7 +321,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (storageAccounts == null) {
-                List<StorageAccount> accounts = azure.storageAccounts().list();
+                List<StorageAccount> accounts = Azure.az(AzureStorageAccount.class).subscription(model.getSubscription().getId()).list();
                 storageAccounts = new TreeMap<>();
                 for (StorageAccount storageAccount : accounts) {
                     storageAccounts.put(storageAccount.name(), storageAccount);
@@ -401,8 +404,8 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         for (StorageAccount storageAccount : storageAccounts.values()) {
             // only general purpose accounts support page blobs, so only they can be used to create vm;
             // zone-redundant acounts not supported for vm
-            if (storageAccount.kind() == Kind.STORAGE
-                    && storageAccount.sku().name() != SkuName.STANDARD_ZRS) {
+            if ((Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE) || Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE_V2))
+                    && !Objects.equals(storageAccount.entity().getRedundancy(), Redundancy.STANDARD_ZRS)) {
                 filteredStorageAccounts.add(storageAccount);
             }
         }
@@ -646,27 +649,19 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void showNewStorageForm() {
-        final CreateArmStorageAccountForm form = new CreateArmStorageAccountForm(project);
-        form.fillFields(model.getSubscription(), model.getRegion());
-
-        form.setOnCreate(() -> AzureTaskManager.getInstance().runLater(() -> {
-            com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount = form.getStorageAccount();
-
-            if (newStorageAccount != null) {
-                model.setNewStorageAccount(newStorageAccount);
-                model.setWithNewStorageAccount(true);
-                ((DefaultComboBoxModel) storageComboBox.getModel()).insertElementAt(newStorageAccount.getName() + " (New)", 0);
-                storageComboBox.setSelectedIndex(0);
-            } else {
-                storageComboBox.setSelectedItem(null);
-            }
-        }));
-
-        form.show();
+        final VMStorageAccountCreationDialog dialog = new VMStorageAccountCreationDialog(project);
+        dialog.setOkActionListener((data) -> {
+            model.setStorageAccountConfig(data);
+            model.setStorageAccount(null);
+            ((DefaultComboBoxModel) storageComboBox.getModel()).insertElementAt(data.getName() + " (New)", 0);
+            storageComboBox.setSelectedIndex(0);
+            DefaultLoader.getIdeHelper().invokeLater(dialog::close);
+        });
+        dialog.show();
     }
 
     private void validateFinish() {
-        final boolean enabled = ((storageComboBox.getSelectedItem() instanceof StorageAccount) || model.isWithNewStorageAccount()) &&
+        final boolean enabled = ((storageComboBox.getSelectedItem() instanceof StorageAccount) || Objects.nonNull(model.getStorageAccountConfig())) &&
             (!subnetComboBox.isEnabled() || subnetComboBox.getSelectedItem() instanceof String);
         model.getCurrentNavigationState().FINISH.setEnabled(enabled);
     }
@@ -697,7 +692,10 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         }
                     }
                 }
-
+                // create storage account when use choose to create new one
+                if (Objects.nonNull(model.getStorageAccountConfig())) {
+                    model.setStorageAccount(new CreateStorageAccountTask(model.getStorageAccountConfig()).execute());
+                }
                 final com.microsoft.azure.management.compute.VirtualMachine vm = AzureSDKManager
                     .createVirtualMachine(model.getSubscription().getId(),
                                           model.getName(),
@@ -709,8 +707,6 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                           model.getKnownMachineImage(),
                                           model.isKnownMachineImage(),
                                           model.getStorageAccount(),
-                                          model.getNewStorageAccount(),
-                                          model.isWithNewStorageAccount(),
                                           model.getVirtualNetwork(),
                                           model.getNewNetwork(),
                                           model.isWithNewNetwork(),

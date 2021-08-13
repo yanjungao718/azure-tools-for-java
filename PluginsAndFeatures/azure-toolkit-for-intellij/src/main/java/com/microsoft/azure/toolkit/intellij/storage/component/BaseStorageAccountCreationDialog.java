@@ -52,7 +52,7 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
         setData(config);
     }
 
-    private void initListeners() {
+    protected void initListeners() {
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
         this.performanceComboBox.addItemListener(this::onPerformanceChanged);
         this.kindComboBox.addItemListener(this::onKindChanged);
