@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -17,6 +18,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import lombok.Getter;
+import org.eclipse.jgit.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,13 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         this.subscriptionId = subscriptionId;
         this.server = server;
         this.loadActions();
+        AzureEventBus.before("sqlserver|server.delete", this::onServerStatusChanging);
+    }
+
+    private void onServerStatusChanging(ISqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.server.entity().getId(), server.entity().getId())) {
+            serverState = SERVER_UPDATING;
+        }
     }
 
     @Override
@@ -65,9 +74,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "sqlserver|server.delete", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
-        this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.subscriptionId, this.getId(), SqlServerNode.this);
     }
 
