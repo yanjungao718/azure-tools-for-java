@@ -242,13 +242,9 @@ public abstract class AzureManagerBase implements AzureManager {
             .withInterceptor(new TelemetryInterceptor())
             .withInterceptor(new RestExceptionHandlerInterceptor())
             .withUserAgent(CommonSettings.USER_AGENT);
-        Optional.ofNullable(createProxyFromConfig()).map(proxy -> {
+        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
             configurable.withProxy(proxy);
-            Optional.ofNullable(createProxyAuthenticatorFromConfig()).map(authenticator -> {
-                configurable.withProxyAuthenticator(authenticator);
-                return authenticator;
-            });
-            return proxy;
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
         });
         return configurable.authenticate(credentials);
     }
@@ -258,13 +254,9 @@ public abstract class AzureManagerBase implements AzureManager {
         final InsightsManager.Configurable configurable = buildAzureManager(InsightsManager.configure())
             .withInterceptor(new TelemetryInterceptor())
             .withInterceptor(new RestExceptionHandlerInterceptor());
-        Optional.ofNullable(createProxyFromConfig()).map(proxy -> {
+        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
             configurable.withProxy(proxy);
-            Optional.ofNullable(createProxyAuthenticatorFromConfig()).map(authenticator -> {
-                configurable.withProxyAuthenticator(authenticator);
-                return authenticator;
-            });
-            return proxy;
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
         });
 
         return configurable.authenticate(credentials, subscriptionId);
