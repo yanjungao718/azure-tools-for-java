@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.properties;
 
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
@@ -17,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.database.DatabaseTemplateUtils;
 import com.microsoft.azure.toolkit.lib.common.database.FirewallRuleEntity;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -24,7 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
+import com.microsoft.azure.toolkit.lib.sqlserver.service.impl.SqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
@@ -32,7 +35,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -71,9 +74,13 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
+    private final Project project;
+    private final VirtualFile virtualFile;
 
-    public SqlServerPropertyView(@Nonnull final VirtualFile virtualFile) {
+    public SqlServerPropertyView(@Nonnull final Project project, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
+        this.project = project;
+        this.virtualFile = virtualFile;
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
         connectionStringsSeparator.addContentComponent(databaseLabel);
@@ -87,6 +94,21 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         connectionStringsSpring.getOutputTextArea().setText(DatabaseTemplateUtils.toSpringTemplate(jdbcUrl, SQLSERVER_DRIVER_CLASS_NAME));
         init();
         initListeners();
+
+        AzureEventBus.after("sqlserver|server.delete", this::onMySqlServerStatusDeleted);
+        AzureEventBus.before("sqlserver|server.delete", this::onMySqlServerStatusDeleting);
+    }
+
+    private void onMySqlServerStatusDeleted(SqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.property.getServer().entity().getId(), server.entity().getId())) {
+            AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance(this.project).closeFile(this.virtualFile));
+        }
+    }
+
+    private void onMySqlServerStatusDeleting(SqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.property.getServer().entity().getId(), server.entity().getId())) {
+            AzureTaskManager.getInstance().runLater(() -> overview.getStatusTextField().setText("Deleting..."));
+        }
     }
 
     private JdbcUrl getJdbcUrl(final String hostname, final String database, final String username) {
@@ -224,14 +246,14 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
             this.showProperty(this.property);
         };
         // show property in background
-        String taskTitle = Node.getProgressMessage(actionName, MySQLModule.MODULE_NAME, name);
+        String taskTitle = Node.getProgressMessage(actionName, SqlServerModule.MODULE_NAME, name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, taskTitle, false, runnable));
     }
 
     private void refreshProperty(String sid, String resourceGroup, String name) {
         // find server
         try {
-            ISqlServer server = Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
+            SqlServer server = (SqlServer) Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
             this.property.setServer(server);
         } catch (Exception ex) {
             String error = "find Azure Database for MySQL server information";

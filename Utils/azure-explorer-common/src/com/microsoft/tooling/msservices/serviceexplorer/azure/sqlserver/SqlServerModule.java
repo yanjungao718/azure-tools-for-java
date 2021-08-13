@@ -45,7 +45,7 @@ public class SqlServerModule extends AzureRefreshableNode {
 
     @Override
     public void removeNode(String sid, String id, Node node) {
-        Azure.az(AzureSqlServer.class).sqlServer(id).delete();
+        Azure.az(AzureSqlServer.class).subscription(sid).sqlServer(id).delete();
         removeDirectChildNode(node);
     }
 
