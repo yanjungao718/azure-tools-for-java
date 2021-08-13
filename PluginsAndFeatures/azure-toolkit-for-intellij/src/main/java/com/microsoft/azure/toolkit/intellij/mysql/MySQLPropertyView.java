@@ -97,15 +97,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         init();
         initListeners();
 
-        AzureEventBus.after("mysql|server.delete", (MySqlServer server) -> {
-            if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
-                this.closeEditor();
-            }
-        });
-
         AzureEventBus.after("mysql|server.start", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
         AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql|server.delete", this::onMySqlServerStatusDeleted);
         AzureEventBus.before("mysql|server.start", this::onMySqlServerStatusChanging);
         AzureEventBus.before("mysql|server.stop", this::onMySqlServerStatusChanging);
         AzureEventBus.before("mysql|server.restart", this::onMySqlServerStatusChanging);
@@ -126,6 +121,12 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private void onMySqlServerStatusChanging(MySqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
             AzureTaskManager.getInstance().runLater(() -> overview.getStatusTextField().setText("Updating..."));
+        }
+    }
+
+    private void onMySqlServerStatusDeleted(MySqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
+            AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance(this.project).closeFile(this.virtualFile));
         }
     }
 
