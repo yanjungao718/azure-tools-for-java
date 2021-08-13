@@ -38,7 +38,7 @@ import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateQueueAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
-import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
+import com.microsoft.azure.toolkit.intellij.storage.CreateStorageAccountAction;
 import com.microsoft.azure.toolkit.intellij.vm.CreateVMAction;
 import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
