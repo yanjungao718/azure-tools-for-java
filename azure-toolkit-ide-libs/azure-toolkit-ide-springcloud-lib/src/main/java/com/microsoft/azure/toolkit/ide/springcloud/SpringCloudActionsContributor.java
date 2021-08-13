@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.Action;
 import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.ide.common.action.ActionView;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
-public class SpringCloudActions implements IActionsContributor {
+public class SpringCloudActionsContributor implements IActionsContributor {
 
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
@@ -34,7 +34,7 @@ public class SpringCloudActions implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         final Consumer<SpringCloudApp> openPublicUrl = s -> {
-            final Runnable runnable = () -> am.getAction(ResourceCommonActions.OPEN_URL).handle(s.publicUrl());
+            final Runnable runnable = () -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.publicUrl());
             tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_public_url", s.name()), runnable);
         };
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", "/icons/action/browser.svg")
@@ -43,7 +43,7 @@ public class SpringCloudActions implements IActionsContributor {
         am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
 
         final Consumer<SpringCloudApp> openTestUrl = s -> {
-            final Runnable runnable = () -> am.getAction(ResourceCommonActions.OPEN_URL).handle(s.testUrl());
+            final Runnable runnable = () -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.testUrl());
             tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_test_url", s.name()), runnable);
         };
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
@@ -59,34 +59,34 @@ public class SpringCloudActions implements IActionsContributor {
 
     @Override
     public void registerGroups(AzureActionManager am) {
-        final ActionGroup serviceActionGroup = new ActionGroup("",
-                ResourceCommonActions.SERVICE_REFRESH
+        final ActionGroup serviceActionGroup = new ActionGroup(
+                ResourceCommonActionsContributor.SERVICE_REFRESH
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
-        final ActionGroup clusterActionGroup = new ActionGroup("",
-                ResourceCommonActions.OPEN_PORTAL_URL,
-                ResourceCommonActions.CREATE,
-                ResourceCommonActions.REFRESH
+        final ActionGroup clusterActionGroup = new ActionGroup(
+                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                ResourceCommonActionsContributor.CREATE,
+                ResourceCommonActionsContributor.REFRESH
         );
         am.registerGroup(CLUSTER_ACTIONS, clusterActionGroup);
 
-        final ActionGroup appActionGroup = new ActionGroup("",
-                ResourceCommonActions.OPEN_PORTAL_URL,
-                SpringCloudActions.OPEN_PUBLIC_URL,
-                SpringCloudActions.OPEN_TEST_URL,
+        final ActionGroup appActionGroup = new ActionGroup(
+                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                SpringCloudActionsContributor.OPEN_PUBLIC_URL,
+                SpringCloudActionsContributor.OPEN_TEST_URL,
                 "---",
-                ResourceCommonActions.START,
-                ResourceCommonActions.STOP,
-                ResourceCommonActions.RESTART,
-                ResourceCommonActions.DELETE,
+                ResourceCommonActionsContributor.START,
+                ResourceCommonActionsContributor.STOP,
+                ResourceCommonActionsContributor.RESTART,
+                ResourceCommonActionsContributor.DELETE,
                 "---",
-                ResourceCommonActions.DEPLOY,
+                ResourceCommonActionsContributor.DEPLOY,
                 "---",
-                ResourceCommonActions.SHOW_PROPERTIES,
-                ResourceCommonActions.REFRESH,
+                ResourceCommonActionsContributor.SHOW_PROPERTIES,
+                ResourceCommonActionsContributor.REFRESH,
                 "---",
-                SpringCloudActions.STREAM_LOG
+                SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
     }

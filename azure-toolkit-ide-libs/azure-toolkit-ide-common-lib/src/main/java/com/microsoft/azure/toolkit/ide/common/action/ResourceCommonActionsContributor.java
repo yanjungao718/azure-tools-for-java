@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
-public class ResourceCommonActions implements IActionsContributor {
+public class ResourceCommonActionsContributor implements IActionsContributor {
 
     public static final Action.Id<IAzureResource<?>> START = Action.Id.of("action.resource.start");
     public static final Action.Id<IAzureResource<?>> STOP = Action.Id.of("action.resource.stop");
