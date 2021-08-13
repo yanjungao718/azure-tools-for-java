@@ -15,6 +15,10 @@ public class StorageAccountCreationDialog extends BaseStorageAccountCreationDial
 
     public StorageAccountCreationDialog(Project project) {
         super(project);
+    }
+
+    @Override
+    protected void init() {
         this.performanceComboBox.addItemListener(this::onPerformanceChanged);
     }
 

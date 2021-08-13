@@ -16,12 +16,14 @@ public class VMStorageAccountCreationDialog extends BaseStorageAccountCreationDi
 
     public VMStorageAccountCreationDialog(Project project) {
         super(project);
-        this.initialize();
     }
 
-    private void initialize() {
+    @Override
+    protected void init() {
+        super.init();
         performanceComboBox.setValue(Performance.STANDARD, true);
         kindComboBox.setItemsLoader(() -> Arrays.asList(Kind.STORAGE_V2, Kind.STORAGE));
         redundancyComboBox.setItemsLoader(() -> Arrays.asList(Redundancy.PREMIUM_LRS, Redundancy.STANDARD_GRS, Redundancy.STANDARD_RAGRS));
     }
+
 }
