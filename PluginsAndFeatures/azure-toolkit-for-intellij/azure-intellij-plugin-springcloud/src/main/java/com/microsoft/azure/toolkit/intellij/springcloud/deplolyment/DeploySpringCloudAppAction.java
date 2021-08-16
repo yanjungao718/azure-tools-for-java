@@ -47,7 +47,6 @@ public class DeploySpringCloudAppAction extends AnAction {
         configuration.setApp(app);
         AzureTaskManager.getInstance().runLater(() -> {
             if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-                configuration.setApp(null);
                 settings.storeInLocalWorkspace();
                 manager.addConfiguration(settings);
                 manager.setBeforeRunTasks(configuration, new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration())));

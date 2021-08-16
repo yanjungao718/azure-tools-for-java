@@ -48,7 +48,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         };
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
                 .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", ((SpringCloudApp) r).name()).toString()).orElse(null))
-                .enabled(Objects::nonNull);
+                .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
