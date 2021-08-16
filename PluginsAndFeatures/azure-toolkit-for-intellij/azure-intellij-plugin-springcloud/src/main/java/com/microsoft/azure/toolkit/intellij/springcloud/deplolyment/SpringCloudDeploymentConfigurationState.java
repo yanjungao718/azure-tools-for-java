@@ -11,13 +11,18 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
@@ -29,11 +34,14 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.Nonnull;
-import java.util.function.Consumer;
+import java.util.HashMap;
+import java.util.Map;
 
-class SpringCloudDeploymentConfigurationState implements RunProfileState {
+public class SpringCloudDeploymentConfigurationState implements RunProfileState {
     private static final int GET_URL_TIMEOUT = 60;
     private static final int GET_STATUS_TIMEOUT = 180;
     private static final String UPDATE_APP_WARNING = "It may take some moments for the configuration to be applied at server side!";
@@ -53,26 +61,38 @@ class SpringCloudDeploymentConfigurationState implements RunProfileState {
     public @Nullable ExecutionResult execute(Executor executor, @NotNull ProgramRunner<?> runner) throws ExecutionException {
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
-        final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
+        processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
+        final ConsoleMessager messager = new ConsoleMessager(processHandler);
+        final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         consoleView.attachToProcess(processHandler);
-        final MyMessager messager = new MyMessager(processHandler::setText);
-        AzureMessager.getContext().setMessager(messager);
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final SpringCloudAppConfig appConfig = this.config.getAppConfig();
-            final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
-            final SpringCloudDeployment deployment = task.execute();
-            // TODO: notify azure explorer to refresh
-            final SpringCloudApp app = deployment.app();
-            final SpringCloudCluster cluster = app.getCluster();
-            if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-                AzureMessager.getDefaultMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
+        final Disposable subscribe = Mono.fromRunnable(() -> this.execute(messager))
+                .doOnTerminate(processHandler::notifyComplete)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe((res) -> messager.success("Deploy succeed!"), messager::error);
+        processHandler.addProcessListener(new ProcessAdapter() {
+            @Override
+            public void processTerminated(@NotNull ProcessEvent event) {
+                subscribe.dispose();
             }
-            printPublicUrl(app);
-            processHandler.setText("Deploy succeed");
-            processHandler.notifyComplete();
         });
+
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    @AzureOperation(name = "springcloud|app.create_update", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    public void execute(IAzureMessager messager) {
+        AzureMessager.getContext().setMessager(messager);
+        AzureTelemetry.getContext().setProperties(getTelemetryProperties());
+        final SpringCloudAppConfig appConfig = this.config.getAppConfig();
+        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
+        final SpringCloudDeployment deployment = task.execute();
+        final SpringCloudApp app = deployment.app();
+        final SpringCloudCluster cluster = app.getCluster();
+        if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+            AzureMessager.getDefaultMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
+        }
+        printPublicUrl(app);
     }
 
     private void printPublicUrl(final SpringCloudApp app) {
@@ -92,25 +112,35 @@ class SpringCloudDeploymentConfigurationState implements RunProfileState {
         }
     }
 
+    protected Map<String, String> getTelemetryProperties() {
+        final Map<String, String> props = new HashMap<>();
+        final SpringCloudAppConfig cfg = config.getAppConfig();
+        props.put("runtime", String.valueOf(cfg.getRuntimeVersion()));
+        props.put("subscriptionId", String.valueOf(cfg.getSubscriptionId()));
+        props.put("public", String.valueOf(cfg.isPublic()));
+        props.put("jvmOptions", String.valueOf(StringUtils.isNotEmpty(cfg.getDeployment().getJvmOptions())));
+        props.put("instanceCount", String.valueOf(cfg.getDeployment().getInstanceCount()));
+        props.put("memory", String.valueOf(cfg.getDeployment().getMemoryInGB()));
+        props.put("cpu", String.valueOf(cfg.getDeployment().getCpu()));
+        props.put("persistentStorage", String.valueOf(cfg.getDeployment().getEnablePersistentStorage()));
+        return props;
+    }
+
     @RequiredArgsConstructor
-    private static class MyMessager extends IntellijAzureMessager {
-        private final Consumer<String> out;
+    private static class ConsoleMessager extends IntellijAzureMessager {
+        private final RunProcessHandler handler;
 
         @Override
-        public void info(@Nonnull String message, String title) {
-            out.accept(message);
-        }
-
-        @Override
-        public void success(@Nonnull String message, String title) {
-            out.accept(message);
-            super.success(message, title);
-        }
-
-        @Override
-        public void error(@Nonnull String message, String title) {
-            out.accept(message);
-            super.error(message, title);
+        public boolean show(IAzureMessage raw) {
+            if (raw.getType() == IAzureMessage.Type.INFO) {
+                handler.setText(raw.getMessage().toString());
+                return true;
+            } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
+                handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
+            } else if (raw.getType() == IAzureMessage.Type.ERROR) {
+                handler.println(raw.getContent(), ProcessOutputType.STDERR);
+            }
+            return super.show(raw);
         }
     }
 }
