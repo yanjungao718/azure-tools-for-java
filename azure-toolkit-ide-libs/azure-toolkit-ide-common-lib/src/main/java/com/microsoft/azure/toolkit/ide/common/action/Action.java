@@ -7,10 +7,12 @@ package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
@@ -77,12 +79,20 @@ public class Action<D> {
             if (condition.test(source, e)) {
                 final AzureString title = Optional.ofNullable(this.view).map(b -> b.title).map(t -> t.apply(source))
                         .orElse(AzureString.fromString(IAzureOperation.UNKNOWN_NAME));
-                final AzureTask<Void> task = new AzureTask<>(title, () -> handler.accept(source, e));
+                final AzureTask<Void> task = new AzureTask<>(title, () -> handle(source, e, handler));
                 task.setType(AzureOperation.Type.ACTION.name());
                 AzureTaskManager.getInstance().runInBackground(task);
                 return;
             }
         }
+    }
+
+    protected void handle(D source, Object e, BiConsumer<D, Object> handler) {
+        if (source instanceof IAzureResource) {
+            AzureTelemetry.getActionContext().setProperty("subscriptionId", ((IAzureResource<?>) source).subscriptionId());
+            AzureTelemetry.getActionContext().setProperty("resourceType", source.getClass().getSimpleName());
+        }
+        handler.accept(source, e);
     }
 
     public void handle(D source) {
