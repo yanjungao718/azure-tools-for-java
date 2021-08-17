@@ -21,7 +21,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import lombok.Getter;
-import org.eclipse.jgit.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -56,6 +57,7 @@ public class MySQLNode extends Node implements TelemetryProperties {
 
     public void onMySqlServerStatusChanged(MySqlServer server) {
         if (StringUtils.equalsIgnoreCase(this.server.id(), server.id())) {
+            this.server.refresh();
             this.serverState = server.entity().getState();
         }
     }
@@ -102,36 +104,20 @@ public class MySQLNode extends Node implements TelemetryProperties {
         return super.getNodeActions();
     }
 
-    private void refreshNode() {
-        server.refresh();
-        this.serverState = server.entity().getState();
-    }
-
-    @AzureOperation(name = "mysql.delete", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
-        this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.server.entity().getSubscriptionId(), this.getId(), MySQLNode.this);
     }
 
-    @AzureOperation(name = "mysql.start", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
-        this.serverState = SERVER_UPDATING;
         this.getServer().start();
-        this.refreshNode();
     }
 
-    @AzureOperation(name = "mysql.stop", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
-        this.serverState = SERVER_UPDATING;
         this.getServer().stop();
-        this.refreshNode();
     }
 
-    @AzureOperation(name = "mysql.restart", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
-        this.serverState = SERVER_UPDATING;
         this.getServer().restart();
-        this.refreshNode();
     }
 
     @AzureOperation(name = "mysql.open_portal", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)

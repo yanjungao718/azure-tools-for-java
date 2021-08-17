@@ -101,13 +101,13 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.10.0', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.11.0-SNAPSHOT', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
         }
 
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.10.0', {
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.11.0-SNAPSHOT', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -117,20 +117,20 @@ subprojects {
 
 sourceSets {
     main {
-        java.srcDirs 'src'
-        kotlin.srcDirs 'src'
+        java.srcDirs 'src/main/java'
+        kotlin.srcDirs 'src/main/kotlin'
         resources {
-            srcDir 'resources'
+            srcDir 'src/main/resources'
             exclude 'bundle/**'
         }
     }
     test {
         java {
-            srcDir 'Test/java'
+            srcDir 'src/test/java'
         }
-        kotlin.srcDirs 'Test/java'
+        kotlin.srcDirs 'src/test/kotlin'
         resources {
-            srcDir 'Test/resources'
+            srcDir 'src/test/resources'
         }
     }
 }
@@ -152,7 +152,7 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.10.0'
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.11.0-SNAPSHOT'
     }
 }
 
@@ -167,6 +167,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     compile 'com.microsoft.azure:azure-toolkit-springcloud-lib'
     compile 'com.microsoft.azure:azure-toolkit-mysql-lib'
+    compile 'com.microsoft.azure:azure-toolkit-storage-lib'
     aspect "com.microsoft.azure:azure-toolkit-common-lib",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
@@ -178,17 +179,17 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.55.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.56.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.55.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.56.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.55.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.56.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
