@@ -72,7 +72,8 @@ public class DatabaseConnectionUtils {
             }
         } catch (final SQLException exception) {
             errorCode = exception.getErrorCode();
-            errorMessage = exception.getErrorCode() == CONNECTION_ERROR_CODE ? String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
+            errorMessage = exception.getErrorCode() == CONNECTION_ERROR_CODE ?
+                String.format(CONNECTION_ISSUE_MESSAGE, exception.getMessage()) : exception.getMessage();
         } catch (final ClassNotFoundException | RuntimeException exception) {
             errorCode = exception instanceof ClassNotFoundException ? CLASS_NOT_FOUND_ERROR_CODE : UNKNOWN_EXCEPTION_ERROR_CODE;
             errorMessage = exception.getMessage();

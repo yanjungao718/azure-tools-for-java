@@ -228,7 +228,8 @@ abstract class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource
             Optional.ofNullable(serverId.subscriptionId()).ifPresent(subscriptionId ->
                 this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscriptionId, Subscription::getId), true));
             Optional.ofNullable(serverId.name()).ifPresent(name ->
-                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name, server -> ((AbstractAzureEntityManager) server).entity().getName()), true));
+                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name,
+                        server -> ((AbstractAzureEntityManager) server).entity().getName()), true));
         }));
         Optional.ofNullable(resource.getPassword()).ifPresent(config ->
                 Optional.ofNullable(config.password()).ifPresent(password -> this.inputPasswordField.setText(String.valueOf(password))));
