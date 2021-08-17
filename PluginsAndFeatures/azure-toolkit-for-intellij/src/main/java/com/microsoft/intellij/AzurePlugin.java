@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
+import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
 import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -36,7 +37,6 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -139,7 +139,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     private void initializeWhatsNew(Project project) {
         EventUtil.executeWithLog(SYSTEM, SHOW_WHATS_NEW,
             operation -> {
-                WhatsNewManager.INSTANCE.showWhatsNew(false, project);
+                WhatsNewAction.showWhatsNew(false, project);
             },
             error -> {
                 // swallow this exception as shown whats new in startup should not block users

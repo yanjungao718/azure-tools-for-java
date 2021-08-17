@@ -1,5 +1,5 @@
 intellij {
-    plugins = ['java', 'maven', 'maven-model', 'gradle']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', 'markdown']
 }
 dependencies {
     compile 'com.microsoft.azure:azure-toolkit-auth-lib:0.11.0-SNAPSHOT'
