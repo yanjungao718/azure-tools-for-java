@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.component.IView;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,63 +20,56 @@ import java.util.function.Function;
 
 @Getter
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class ActionView implements IView.Label {
 
     @Nonnull
-    private final Label view;
+    private final String label;
+    private final String iconPath;
+    @Nullable
+    private AzureString title;
     private final boolean enabled;
 
     @Override
-    public String getTitle() {
-        return this.view.getTitle();
-    }
-
-    @Override
-    public String getIconPath() {
-        return this.view.getIconPath();
-    }
-
-    @Override
     public String getDescription() {
-        return this.view.getDescription();
+        return Optional.ofNullable(this.title).map(AzureString::toString).orElse(null);
     }
 
     @Override
     public void dispose() {
-        this.view.dispose();
     }
 
     @RequiredArgsConstructor
-    @AllArgsConstructor
     @Setter
     @Getter
     @Accessors(chain = true, fluent = true)
     public static class Builder {
         @Nonnull
-        protected final Function<Object, String> title;
+        protected final Function<Object, String> label;
         @Nullable
         protected Function<Object, String> iconPath;
         @Nullable
-        protected Function<Object, String> description;
+        protected Function<Object, AzureString> title;
         @Nullable
         protected Function<Object, Boolean> enabled = s -> true;
 
-        public Builder(String title) {
-            this(s -> title);
+        public Builder(String label) {
+            this(s -> label);
         }
 
-        public Builder(String title, String iconPath) {
-            this(s -> title, s -> iconPath, null, (s) -> true);
+        public Builder(String label, String iconPath) {
+            this(s -> label);
+            this.iconPath = (s) -> iconPath;
         }
 
         public ActionView toActionView(Object s) {
             try {
                 final Boolean enabled = Optional.ofNullable(this.enabled).map(p -> p.apply(s)).orElse(true);
                 final String iconPath = Optional.ofNullable(this.iconPath).map(p -> p.apply(s)).orElse(null);
-                final String description = Optional.ofNullable(this.description).map(p -> p.apply(s)).orElse(null);
-                return new ActionView(new Static(this.title.apply(s), iconPath, description), enabled);
+                final AzureString title = Optional.ofNullable(this.title).map(p -> p.apply(s)).orElse(null);
+                return new ActionView(this.label.apply(s), iconPath, title, enabled);
             } catch (final Exception e) {
-                return new ActionView(new Static(""), false);
+                return new ActionView("", "", false);
             }
         }
     }

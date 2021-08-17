@@ -22,7 +22,7 @@ public class AzureResourceLabelView<T extends IAzureResource<?>> implements IVie
     @Getter
     private final T resource;
     @Getter
-    private final String title;
+    private final String label;
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
     @Getter
     private String description;
@@ -33,7 +33,7 @@ public class AzureResourceLabelView<T extends IAzureResource<?>> implements IVie
 
     public AzureResourceLabelView(@Nonnull T resource) {
         this.resource = resource;
-        this.title = resource.name();
+        this.label = resource.name();
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("common|resource.refresh", listener);
         AzureEventBus.on("common|resource.status_changed", listener);

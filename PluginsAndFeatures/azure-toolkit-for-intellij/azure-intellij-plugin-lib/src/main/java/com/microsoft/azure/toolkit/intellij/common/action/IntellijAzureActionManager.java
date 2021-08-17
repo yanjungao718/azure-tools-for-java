@@ -96,7 +96,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             if (Objects.nonNull(view)) {
                 if (Objects.nonNull(view.getIconPath()))
                     presentation.setIcon(AzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
-                presentation.setText(view.getTitle());
+                presentation.setText(view.getLabel());
                 presentation.setDescription(view.getDescription());
                 presentation.setEnabled(view.isEnabled());
             }

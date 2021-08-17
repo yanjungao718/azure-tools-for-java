@@ -21,7 +21,7 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
     @Getter
     private final T service;
     @Getter
-    private final String title;
+    private final String label;
     @Getter
     private final String iconPath;
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
@@ -36,13 +36,13 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
         this(service, service.name());
     }
 
-    public AzureServiceLabelView(@Nonnull T service, String title) {
-        this(service, title, String.format("/icons/%s.svg", service.getClass().getSimpleName().toLowerCase()));
+    public AzureServiceLabelView(@Nonnull T service, String label) {
+        this(service, label, String.format("/icons/%s.svg", service.getClass().getSimpleName().toLowerCase()));
     }
 
-    public AzureServiceLabelView(@Nonnull T service, String title, String iconPath) {
+    public AzureServiceLabelView(@Nonnull T service, String label, String iconPath) {
         this.service = service;
-        this.title = title;
+        this.label = label;
         this.iconPath = iconPath;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("common|service.refresh", listener);

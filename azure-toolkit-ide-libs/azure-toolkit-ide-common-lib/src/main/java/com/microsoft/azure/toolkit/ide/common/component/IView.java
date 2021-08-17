@@ -42,7 +42,7 @@ public interface IView {
     }
 
     interface Label extends IView {
-        String getTitle();
+        String getLabel();
 
         String getIconPath();
 
@@ -57,7 +57,7 @@ public interface IView {
         @AllArgsConstructor
         class Static implements Label {
             @Nonnull
-            protected final String title;
+            protected final String label;
             @Nullable
             protected String iconPath;
             @Nullable

@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -33,26 +32,20 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        final Consumer<SpringCloudApp> openPublicUrl = s -> {
-            final Runnable runnable = () -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.publicUrl());
-            tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_public_url", s.name()), runnable);
-        };
+        final Consumer<SpringCloudApp> openPublicUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.publicUrl());
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", "/icons/action/browser.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_public_url", ((SpringCloudApp) r).name()).toString()).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_public_url", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).entity().isPublic());
         am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
 
-        final Consumer<SpringCloudApp> openTestUrl = s -> {
-            final Runnable runnable = () -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.testUrl());
-            tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_test_url", s.name()), runnable);
-        };
+        final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.testUrl());
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", ((SpringCloudApp) r).name()).toString()).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.stream_log", ((SpringCloudApp) r).name()).toString()).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.stream_log", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(STREAM_LOG, new Action<>(streamLogView));
     }
