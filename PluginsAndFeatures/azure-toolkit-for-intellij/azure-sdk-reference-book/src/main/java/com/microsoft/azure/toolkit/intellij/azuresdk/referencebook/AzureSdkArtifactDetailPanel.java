@@ -31,6 +31,7 @@ public class AzureSdkArtifactDetailPanel {
     private BiConsumer<? super AzureSdkArtifactEntity, String> onArtifactOrVersionSelected;
     private final AzureSdkArtifactEntity artifact;
     private final Map<String, String> linkNames = ImmutableMap.of(
+        "sample", "Samples",
         "github", "GitHub Repository",
         "repopath", "Maven Repository",
         "msdocs", "Microsoft Docs",
