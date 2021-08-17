@@ -5,7 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.mysql;
 
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
+import com.microsoft.azure.toolkit.intellij.connector.database.MySQLDatabaseResourcePanel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,11 @@ public class MySQLDatabaseResource extends DatabaseResource {
         AZURE_MYSQL("Microsoft.DBforMySQL", "Azure Database for MySQL");
         private final String type;
         private final String title;
+
+        @Override
+        public AzureFormJPanel<DatabaseResource> getResourcesPanel(@Nonnull String type, final Project project) {
+            return new MySQLDatabaseResourcePanel();
+        }
 
         @Override
         public MySQLDatabaseResource read(@Nonnull final Element resourceEle) {

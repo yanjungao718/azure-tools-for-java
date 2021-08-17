@@ -13,8 +13,8 @@ import com.microsoft.azure.toolkit.intellij.sqlserver.task.CreateSqlServerTask;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.actions.AzureSignInAction;
@@ -58,7 +58,7 @@ public class CreateSqlServerAction extends NodeActionListener {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             DefaultLoader.getIdeHelper().invokeLater(dialog::close);
-            ISqlServer server = new CreateSqlServerTask(config).execute();
+            SqlServer server = new CreateSqlServerTask(config).execute();
             refreshAzureExplorer(server);
         };
         String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), SqlServerModule.MODULE_NAME, config.getServerName());
@@ -66,7 +66,7 @@ public class CreateSqlServerAction extends NodeActionListener {
     }
 
     @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
-    private void refreshAzureExplorer(ISqlServer server) {
+    private void refreshAzureExplorer(SqlServer server) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, server));

@@ -5,14 +5,12 @@
 
 package com.microsoft.azure.toolkit.lib.mysql;
 
-import com.azure.core.util.ExpandableStringEnum;
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,7 +20,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 

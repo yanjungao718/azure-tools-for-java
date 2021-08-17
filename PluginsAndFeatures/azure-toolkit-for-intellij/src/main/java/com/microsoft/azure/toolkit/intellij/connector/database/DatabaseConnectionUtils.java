@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
-import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
+import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
