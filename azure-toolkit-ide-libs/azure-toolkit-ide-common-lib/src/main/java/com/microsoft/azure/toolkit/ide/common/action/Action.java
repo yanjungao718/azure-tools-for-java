@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 public class Action<D> {
     public static final String SOURCE = "ACTION_SOURCE";
     @Nonnull
-    private List<AbstractMap.SimpleEntry<Object, Object>> handlers = new ArrayList<>();
+    private List<AbstractMap.SimpleEntry<BiPredicate<D, ?>, BiConsumer<D, ?>>> handlers = new ArrayList<>();
     @Nullable
     @Getter
     private ActionView.Builder view;
@@ -35,7 +35,7 @@ public class Action<D> {
     }
 
     public Action(@Nonnull Consumer<D> handler) {
-        this.registerHandler((d) -> true, handler);
+        this.registerHandler((d, e) -> true, (d, e) -> handler.accept(d));
     }
 
     public <E> Action(@Nonnull BiConsumer<D, E> handler) {
@@ -44,7 +44,7 @@ public class Action<D> {
 
     public Action(@Nonnull Consumer<D> handler, @Nullable ActionView.Builder view) {
         this.view = view;
-        this.registerHandler((d) -> true, handler);
+        this.registerHandler((d, e) -> true, (d, e) -> handler.accept(d));
     }
 
     public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable ActionView.Builder view) {
@@ -52,7 +52,7 @@ public class Action<D> {
         this.registerHandler((d, e) -> true, handler);
     }
 
-    private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable ActionView.Builder view) {
+    private Action(@Nonnull List<AbstractMap.SimpleEntry<BiPredicate<D, ?>, BiConsumer<D, ?>>> handlers, @Nullable ActionView.Builder view) {
         this.view = view;
         this.handlers = handlers;
     }
@@ -65,13 +65,11 @@ public class Action<D> {
     @SuppressWarnings("unchecked")
     public void handle(D source, Object e) {
         for (int i = this.handlers.size() - 1; i >= 0; i--) {
-            final AbstractMap.SimpleEntry<Object, Object> p = this.handlers.get(i);
-            final Object condition = p.getKey();
-            if (condition instanceof BiPredicate && ((BiPredicate<D, Object>) condition).test(source, e)) {
-                ((BiConsumer<D, Object>) p.getValue()).accept(source, e);
-                return;
-            } else if (condition instanceof Predicate && ((Predicate<D>) condition).test(source)) {
-                ((Consumer<D>) p.getValue()).accept(source);
+            final AbstractMap.SimpleEntry<BiPredicate<D, ?>, BiConsumer<D, ?>> p = this.handlers.get(i);
+            final BiPredicate<D, Object> condition = (BiPredicate<D, Object>) p.getKey();
+            final BiConsumer<D, Object> handler = (BiConsumer<D, Object>) p.getValue();
+            if (condition.test(source, e)) {
+                handler.accept(source, e);
                 return;
             }
         }
@@ -82,7 +80,7 @@ public class Action<D> {
     }
 
     public void registerHandler(@Nonnull Predicate<D> condition, @Nonnull Consumer<D> handler) {
-        this.handlers.add(new AbstractMap.SimpleEntry<>(condition, handler));
+        this.handlers.add(new AbstractMap.SimpleEntry<>((d, e) -> condition.test(d), (d, e) -> handler.accept(d)));
     }
 
     public <E> void registerHandler(@Nonnull BiPredicate<D, E> condition, @Nonnull BiConsumer<D, E> handler) {
