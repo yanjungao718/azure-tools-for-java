@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -82,7 +81,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
-            AzureTaskManager.getInstance().runOnPooledThread(() -> this.action.handle(source, e));
+            this.action.handle(source, e);
         }
 
         @Override
