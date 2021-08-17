@@ -6,6 +6,11 @@
 package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.component.IView;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -69,7 +75,11 @@ public class Action<D> {
             final BiPredicate<D, Object> condition = (BiPredicate<D, Object>) p.getKey();
             final BiConsumer<D, Object> handler = (BiConsumer<D, Object>) p.getValue();
             if (condition.test(source, e)) {
-                handler.accept(source, e);
+                final AzureString title = Optional.ofNullable(this.view).map(b -> b.title).map(t -> t.apply(source))
+                        .orElse(AzureString.fromString(IAzureOperation.UNKNOWN_NAME));
+                final AzureTask<Void> task = new AzureTask<>(title, () -> handler.accept(source, e));
+                task.setType(AzureOperation.Type.ACTION.name());
+                AzureTaskManager.getInstance().runInBackground(task);
                 return;
             }
         }
