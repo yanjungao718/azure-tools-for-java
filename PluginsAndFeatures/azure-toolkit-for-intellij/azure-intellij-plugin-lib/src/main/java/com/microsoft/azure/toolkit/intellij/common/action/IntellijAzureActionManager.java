@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -39,9 +38,9 @@ public class IntellijAzureActionManager extends AzureActionManager {
         final IntellijAzureActionManager am = new IntellijAzureActionManager();
         register(am);
         final List<IActionsContributor> contributors = actionsExtensionPoint.getExtensionList();
-        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getZOrder)).forEach((e) -> e.registerActions(am));
-        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getZOrder)).forEach((e) -> e.registerHandlers(am));
-        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getZOrder)).forEach((e) -> e.registerGroups(am));
+        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerActions(am));
+        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerHandlers(am));
+        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerGroups(am));
     }
 
     @Override
@@ -53,7 +52,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
     public <D> Action<D> getAction(Action.Id<D> id) {
         //noinspection unchecked
         final AnActionWrapper<D> action = ((AnActionWrapper<D>) ActionManager.getInstance().getAction(id.getId()));
-        return new Action.Proxy<>(action.getAction(), id.getId());
+        return new Action.Delegate<>(action.getAction(), id.getId());
     }
 
     @Override
@@ -82,7 +81,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
-            AzureTaskManager.getInstance().runOnPooledThread(() -> this.action.handle(source, e));
+            this.action.handle(source, e);
         }
 
         @Override
@@ -96,7 +95,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             if (Objects.nonNull(view)) {
                 if (Objects.nonNull(view.getIconPath()))
                     presentation.setIcon(AzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
-                presentation.setText(view.getTitle());
+                presentation.setText(view.getLabel());
                 presentation.setDescription(view.getDescription());
                 presentation.setEnabled(view.isEnabled());
             }

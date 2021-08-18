@@ -40,7 +40,7 @@ public class Node<D> {
     @Getter
     private ActionGroup actions;
     @Getter
-    private int zOrder;
+    private int order;
 
     public Node(@Nonnull D data) {
         this(data, null);

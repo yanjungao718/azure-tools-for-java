@@ -10,8 +10,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
+import com.microsoft.azure.toolkit.lib.common.entity.AbstractAzureResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -86,7 +88,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             if (AzureMessager.getMessager().confirm(message, "Delete Spring Cloud App")) {
                 AzureTaskManager.getInstance().runInModal(deleteTitle, () -> {
                     this.setEnabled(false);
-                    this.closeEditor();
+                    IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
                     this.app.remove();
                 });
             }
@@ -124,7 +126,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         AzureEventBus.after("springcloud|app.remove", (SpringCloudApp app) -> {
             if (this.app.name().equals(app.name())) {
                 AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.app.name()), "");
-                this.closeEditor();
+                IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
             }
         });
         AzureEventBus.after("springcloud|app.update", (SpringCloudApp app) -> {
@@ -150,7 +152,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
             AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
                 this.app.refresh();
-                final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).map(d -> d.refresh()).orElse(null);
+                final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).map(AbstractAzureResource::refresh).orElse(null);
                 AzureTaskManager.getInstance().runLater(this::rerender);
             });
         });
@@ -211,10 +213,6 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
 
     @Override
     public void dispose() {
-    }
-
-    private void closeEditor() {
-//        DefaultLoader.getUIHelper().closeSpringCloudAppPropertyView(project, this.app.entity().getId());
     }
 
     private void createUIComponents() {

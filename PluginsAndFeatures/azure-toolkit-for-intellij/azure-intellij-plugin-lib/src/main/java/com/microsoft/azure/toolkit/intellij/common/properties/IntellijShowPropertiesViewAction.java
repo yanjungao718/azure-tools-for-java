@@ -42,10 +42,16 @@ public class IntellijShowPropertiesViewAction {
             final String name = getFileTypeName(resource);
             itemVirtualFile.setFileType(new AzureResourceFileType(name, icon));
         }
-        AzureTaskManager.getInstance().runInModal(String.format("Loading properties of app(%s)", resource.name()), () -> {
-            itemVirtualFile.putUserData(AZURE_RESOURCE_KEY, resource);
-            AzureTaskManager.getInstance().runLater(() -> manager.openFile(itemVirtualFile, true, true));
-        });
+        itemVirtualFile.putUserData(AZURE_RESOURCE_KEY, resource);
+        AzureTaskManager.getInstance().runLater(() -> manager.openFile(itemVirtualFile, true, true));
+    }
+
+    public static void closePropertiesView(@Nonnull IAzureResource<?> resource, @Nonnull Project project) {
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        final LightVirtualFile file = searchOpenedFile(fileEditorManager, resource);
+        if (file != null) {
+            AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(file));
+        }
     }
 
     @Nullable

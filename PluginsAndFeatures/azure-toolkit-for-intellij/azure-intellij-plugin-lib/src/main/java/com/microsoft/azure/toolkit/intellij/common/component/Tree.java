@@ -201,7 +201,7 @@ public class Tree extends SimpleTree implements DataProvider {
                         final Icon icon = AzureIcons.getIcon(view.getIconPath(), Tree.class);
                         renderer.setIcon(icon);
                     }
-                    value = view.getTitle();
+                    value = view.getLabel();
                     renderer.setToolTipText(view.getDescription());
                 }
                 if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {

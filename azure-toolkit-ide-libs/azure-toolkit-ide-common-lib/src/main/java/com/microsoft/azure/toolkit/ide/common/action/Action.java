@@ -6,7 +6,13 @@
 package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.component.IView;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +23,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -24,44 +31,36 @@ import java.util.function.Predicate;
 
 @Accessors(chain = true, fluent = true)
 public class Action<D> {
-    @SuppressWarnings("rawtypes")
-    public static final Consumer EMPTY_HANDLER = (s) -> {
-        throw new AzureToolkitRuntimeException("handler not registered");
-    };
     public static final String SOURCE = "ACTION_SOURCE";
     @Nonnull
-    private List<AbstractMap.SimpleEntry<Object, Object>> handlers = new ArrayList<>();
+    private List<AbstractMap.SimpleEntry<BiPredicate<D, ?>, BiConsumer<D, ?>>> handlers = new ArrayList<>();
     @Nullable
     @Getter
     private ActionView.Builder view;
 
+    public Action(@Nullable ActionView.Builder view) {
+        this.view = view;
+    }
+
     public Action(@Nonnull Consumer<D> handler) {
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d) -> true, handler);
-        }
+        this.registerHandler((d, e) -> true, (d, e) -> handler.accept(d));
     }
 
     public <E> Action(@Nonnull BiConsumer<D, E> handler) {
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d, e) -> true, handler);
-        }
+        this.registerHandler((d, e) -> true, handler);
     }
 
     public Action(@Nonnull Consumer<D> handler, @Nullable ActionView.Builder view) {
         this.view = view;
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d) -> true, handler);
-        }
+        this.registerHandler((d, e) -> true, (d, e) -> handler.accept(d));
     }
 
     public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable ActionView.Builder view) {
         this.view = view;
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d, e) -> true, handler);
-        }
+        this.registerHandler((d, e) -> true, handler);
     }
 
-    private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable ActionView.Builder view) {
+    private Action(@Nonnull List<AbstractMap.SimpleEntry<BiPredicate<D, ?>, BiConsumer<D, ?>>> handlers, @Nullable ActionView.Builder view) {
         this.view = view;
         this.handlers = handlers;
     }
@@ -74,16 +73,26 @@ public class Action<D> {
     @SuppressWarnings("unchecked")
     public void handle(D source, Object e) {
         for (int i = this.handlers.size() - 1; i >= 0; i--) {
-            final AbstractMap.SimpleEntry<Object, Object> p = this.handlers.get(i);
-            final Object condition = p.getKey();
-            if (condition instanceof BiPredicate && ((BiPredicate<D, Object>) condition).test(source, e)) {
-                ((BiConsumer<D, Object>) p.getValue()).accept(source, e);
-                return;
-            } else if (condition instanceof Predicate && ((Predicate<D>) condition).test(source)) {
-                ((Consumer<D>) p.getValue()).accept(source);
+            final AbstractMap.SimpleEntry<BiPredicate<D, ?>, BiConsumer<D, ?>> p = this.handlers.get(i);
+            final BiPredicate<D, Object> condition = (BiPredicate<D, Object>) p.getKey();
+            final BiConsumer<D, Object> handler = (BiConsumer<D, Object>) p.getValue();
+            if (condition.test(source, e)) {
+                final AzureString title = Optional.ofNullable(this.view).map(b -> b.title).map(t -> t.apply(source))
+                        .orElse(AzureString.fromString(IAzureOperation.UNKNOWN_NAME));
+                final AzureTask<Void> task = new AzureTask<>(title, () -> handle(source, e, handler));
+                task.setType(AzureOperation.Type.ACTION.name());
+                AzureTaskManager.getInstance().runInBackground(task);
                 return;
             }
         }
+    }
+
+    protected void handle(D source, Object e, BiConsumer<D, Object> handler) {
+        if (source instanceof IAzureResource) {
+            AzureTelemetry.getActionContext().setProperty("subscriptionId", ((IAzureResource<?>) source).subscriptionId());
+            AzureTelemetry.getActionContext().setProperty("resourceType", source.getClass().getSimpleName());
+        }
+        handler.accept(source, e);
     }
 
     public void handle(D source) {
@@ -91,27 +100,22 @@ public class Action<D> {
     }
 
     public void registerHandler(@Nonnull Predicate<D> condition, @Nonnull Consumer<D> handler) {
-        this.handlers.add(new AbstractMap.SimpleEntry<>(condition, handler));
+        this.handlers.add(new AbstractMap.SimpleEntry<>((d, e) -> condition.test(d), (d, e) -> handler.accept(d)));
     }
 
     public <E> void registerHandler(@Nonnull BiPredicate<D, E> condition, @Nonnull BiConsumer<D, E> handler) {
         this.handlers.add(new AbstractMap.SimpleEntry<>(condition, handler));
     }
 
-    public static <T> Consumer<T> emptyHandler() {
-        //noinspection unchecked
-        return (Consumer<T>) EMPTY_HANDLER;
-    }
-
     @Getter
     @Accessors(chain = true, fluent = true)
-    public static class Proxy<D> extends Action<D> {
+    public static class Delegate<D> extends Action<D> {
         @Nonnull
         private final String id;
         @Nonnull
         private final Action<D> action;
 
-        public Proxy(@Nonnull Action<D> action, @Nonnull String id) {
+        public Delegate(@Nonnull Action<D> action, @Nonnull String id) {
             super(action.handlers, action.view);
             this.id = id;
             this.action = action;

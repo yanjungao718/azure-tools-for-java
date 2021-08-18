@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -92,8 +91,11 @@ public class CreateFunctionAppAction extends NodeActionListener {
         final AzureString title = title("function.create_detail", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
-            public void info(@NotNull String message, String title) {
-                // swallow info notification for action
+            public boolean show(IAzureMessage raw) {
+                if (raw.getType() != IAzureMessage.Type.INFO) {
+                    return super.show(raw);
+                }
+                return false;
             }
         };
         final AzureTask<IFunctionApp> task = new AzureTask<>(null, title, false, () -> {

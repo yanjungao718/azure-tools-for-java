@@ -27,13 +27,10 @@ public interface IView {
             Optional.ofNullable(this.getUpdater()).ifPresent(Updater::updateChildren);
         }
 
-        default void setUpdater(Updater updater) {
-        }
+        void setUpdater(Updater updater);
 
         @Nullable
-        default Updater getUpdater() {
-            return null;
-        }
+        Updater getUpdater();
 
         interface Updater {
             default void updateView() {
@@ -45,7 +42,7 @@ public interface IView {
     }
 
     interface Label extends IView {
-        String getTitle();
+        String getLabel();
 
         String getIconPath();
 
@@ -60,7 +57,7 @@ public interface IView {
         @AllArgsConstructor
         class Static implements Label {
             @Nonnull
-            protected final String title;
+            protected final String label;
             @Nullable
             protected String iconPath;
             @Nullable
