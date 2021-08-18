@@ -10,17 +10,24 @@ import com.microsoft.azure.toolkit.intellij.connector.database.component.Databas
 import com.microsoft.azure.toolkit.intellij.connector.database.component.ServerComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.UsernameComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResourceEntity;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collections;
+import java.util.Objects;
 
 public class SqlServerDatabaseResourcePanel extends DatabaseResourcePanel {
 
     public SqlServerDatabaseResourcePanel() {
         this.jdbcUrl = JdbcUrl.sqlserver(StringUtils.EMPTY);
         envPrefixTextField.setText("AZURE_SQL_");
+        this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
+                Azure.az(AzureSqlServer.class).subscription(this.serverComboBox.getSubscription().getId()).list());
 
     }
 

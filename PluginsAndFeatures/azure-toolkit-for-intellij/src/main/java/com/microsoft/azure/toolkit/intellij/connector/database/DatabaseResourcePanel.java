@@ -26,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
-import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
@@ -85,9 +84,6 @@ abstract class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource
         this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
                 .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
                 .orElse(Password.SaveType.UNTIL_RESTART));
-        // server loader
-        this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
-                Azure.az(AzureMySql.class).subscription(this.serverComboBox.getSubscription().getId()).list());
         // database loader
         this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ||
                 !StringUtils.equals("Ready", this.databaseComboBox.getServer().entity().getState()) ?
