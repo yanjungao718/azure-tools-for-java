@@ -48,7 +48,7 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode implements
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.list", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.list", params = {"this.appService.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         EventUtil.executeWithLog(getServiceName(), TelemetryConstants.LIST_FILE, operation -> {
             operation.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);

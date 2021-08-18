@@ -131,7 +131,7 @@ public class AzureArtifactManager {
     @Nullable
     @AzureOperation(
         name = "common|artifact.get_module",
-        params = {"artifact.getName()"},
+        params = {"azureArtifact.getName()"},
         type = AzureOperation.Type.TASK
     )
     public Module getModuleFromAzureArtifact(AzureArtifact azureArtifact) {

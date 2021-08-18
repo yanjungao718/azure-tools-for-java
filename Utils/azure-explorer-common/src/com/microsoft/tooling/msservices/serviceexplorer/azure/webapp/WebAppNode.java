@@ -115,40 +115,40 @@ public class WebAppNode extends WebAppBaseNode {
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "webapp.delete", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
 
-    @AzureOperation(name = "webapp.start", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.start", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         this.webApp.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp.stop", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.stop", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         this.webApp.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(name = "webapp.restart", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.restart", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         this.webApp.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp.open_portal", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_portal", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.webApp.subscriptionId(), this.webApp.id());
     }
 
-    @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_browser", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.webApp.hostName());
     }
 
-    @AzureOperation(name = "webapp.show_properties", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.show_properties", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }

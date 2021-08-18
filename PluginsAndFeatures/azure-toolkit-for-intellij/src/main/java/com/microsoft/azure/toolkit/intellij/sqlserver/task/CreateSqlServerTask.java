@@ -35,7 +35,7 @@ public class CreateSqlServerTask {
         name = "sqlserver|server.create",
         params = {
             "config.getServerName()",
-            "config.getSubscription().displayName()"
+            "config.getSubscription().getName()"
         },
         type = AzureOperation.Type.SERVICE
     )
