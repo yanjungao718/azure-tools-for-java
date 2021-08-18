@@ -51,9 +51,9 @@ public class Node<D> {
         this.view = view;
     }
 
-    public <CD> Node<D> addChildren(
-            @Nonnull Function<? super D, ? extends List<CD>> getChildrenData,
-            @Nonnull BiFunction<CD, Node<D>, Node<?>> buildChildNode) {
+    public <C> Node<D> addChildren(
+            @Nonnull Function<? super D, ? extends List<C>> getChildrenData,
+            @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
         this.childrenBuilders.add(new ChildrenNodeBuilder<>(getChildrenData, buildChildNode));
         return this;
     }
@@ -88,9 +88,9 @@ public class Node<D> {
     }
 
     @RequiredArgsConstructor
-    private static class ChildrenNodeBuilder<D, CD> {
-        private final Function<? super D, ? extends List<CD>> getChildrenData;
-        private final BiFunction<CD, Node<D>, Node<?>> buildChildNode;
+    private static class ChildrenNodeBuilder<D, C> {
+        private final Function<? super D, ? extends List<C>> getChildrenData;
+        private final BiFunction<C, Node<D>, Node<?>> buildChildNode;
 
         private List<Node<?>> build(Node<D> n) {
             final val childrenData = this.getChildrenData.apply(n.data);

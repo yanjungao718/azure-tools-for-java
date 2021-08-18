@@ -105,9 +105,8 @@ public class EnvironmentVariablesTextFieldWithBrowseButton extends TextFieldWith
             if (buf.length() > 0) {
                 buf.append(";");
             }
-            buf.append(StringUtil.escapeChar(entry.getKey(), ';'))
-               .append("=")
-               .append(StringUtil.escapeChar(entry.getValue(), ';'));
+            buf.append(StringUtil.escapeChar(entry.getKey(), ';')).append("=")
+                .append(StringUtil.escapeChar(entry.getValue(), ';'));
         }
         return buf.toString();
     }

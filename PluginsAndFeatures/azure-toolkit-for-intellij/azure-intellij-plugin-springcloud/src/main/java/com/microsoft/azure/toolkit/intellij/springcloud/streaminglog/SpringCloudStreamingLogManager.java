@@ -77,7 +77,8 @@ public class SpringCloudStreamingLogManager {
     }
 
     @SneakyThrows
-    public static InputStream getLogStream(SpringCloudApp app, String instanceName, int sinceSeconds, int tailLines, int limitBytes, boolean follow) throws IOException, HttpException {
+    public static InputStream getLogStream(SpringCloudApp app, String instanceName, int sinceSeconds, int tailLines, int limitBytes, boolean follow)
+            throws IOException, HttpException {
         final URIBuilder endpoint = new URIBuilder(app.entity().getLogStreamingEndpoint(instanceName));
         endpoint.addParameter("follow", String.valueOf(follow));
         if (sinceSeconds > 0) {

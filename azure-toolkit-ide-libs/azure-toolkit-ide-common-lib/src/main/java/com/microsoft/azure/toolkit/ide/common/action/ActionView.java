@@ -64,10 +64,10 @@ public class ActionView implements IView.Label {
 
         public ActionView toActionView(Object s) {
             try {
-                final Boolean enabled = Optional.ofNullable(this.enabled).map(p -> p.apply(s)).orElse(true);
-                final String iconPath = Optional.ofNullable(this.iconPath).map(p -> p.apply(s)).orElse(null);
-                final AzureString title = Optional.ofNullable(this.title).map(p -> p.apply(s)).orElse(null);
-                return new ActionView(this.label.apply(s), iconPath, title, enabled);
+                final Boolean e = Optional.ofNullable(this.enabled).map(p -> p.apply(s)).orElse(true);
+                final String i = Optional.ofNullable(this.iconPath).map(p -> p.apply(s)).orElse(null);
+                final AzureString t = Optional.ofNullable(this.title).map(p -> p.apply(s)).orElse(null);
+                return new ActionView(this.label.apply(s), i, t, e);
             } catch (final Exception e) {
                 return new ActionView("", "", false);
             }

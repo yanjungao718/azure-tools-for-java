@@ -54,6 +54,7 @@ public class IntellijAzureMessager implements IAzureMessager {
                     MessageDialogBuilder.yesNo(title, raw.getContent()).guessWindowAndAsk();
                 });
                 return true;
+            default:
         }
         final AzureTask<?> task = AzureTaskContext.current().getTask();
         final Boolean backgrounded = Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);

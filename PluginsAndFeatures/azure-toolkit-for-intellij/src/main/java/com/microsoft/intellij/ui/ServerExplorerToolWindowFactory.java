@@ -72,7 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -402,6 +401,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           int row,
                                           boolean focused) {
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || value instanceof LoadingNode) {
+                // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
                 value = com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer.renderNode(value, this);
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
                 return;

@@ -44,7 +44,7 @@ public class BeforeRunTaskUtils {
     public static void addBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
         final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
         final BeforeRunTask<?> task = createBuildTask(artifact, config);
-        if(Objects.nonNull(task)){ // task is null if artifact is File type.
+        if (Objects.nonNull(task)) { // task is null if artifact is File type.
             addTask(editor, tasks, task, config);
         }
     }
@@ -64,8 +64,9 @@ public class BeforeRunTaskUtils {
                 return getIntellijBuildTasks(editor, (Artifact) artifact.getReferencedObject());
             case File:
                 return Collections.emptyList();
+            default:
+                throw new AzureToolkitRuntimeException("unsupported project/artifact type");
         }
-        throw new AzureToolkitRuntimeException("unsupported project/artifact type");
     }
 
     public static @Nullable BeforeRunTask<?> createBuildTask(@Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
@@ -78,8 +79,9 @@ public class BeforeRunTaskUtils {
                 return createIntellijBuildTask((Artifact) artifact.getReferencedObject(), config);
             case File:
                 return null;
+            default:
+                throw new AzureToolkitRuntimeException("unsupported project/artifact type");
         }
-        throw new AzureToolkitRuntimeException("unsupported project/artifact type");
     }
 
     @NotNull
