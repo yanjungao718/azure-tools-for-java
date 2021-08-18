@@ -394,12 +394,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         @Override
         public void customizeCellRenderer(@NotNull JTree jtree,
-                                          Object value,
+                                          final Object v,
                                           boolean selected,
                                           boolean expanded,
                                           boolean isLeaf,
                                           int row,
                                           boolean focused) {
+            Object value = v;
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || value instanceof LoadingNode) {
                 // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
                 value = com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer.renderNode(value, this);
