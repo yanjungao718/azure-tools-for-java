@@ -133,6 +133,9 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
                 resource.getType(), resource.getId(), resource.getUsername());
         }
         final String saved = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.getPassword().saveType());
+        if (resource.getPassword().saveType() == Password.SaveType.UNTIL_RESTART && StringUtils.isBlank(saved)) {
+            return Optional.empty();
+        }
         final DatabaseConnectionUtils.ConnectResult result = DatabaseConnectionUtils.connectWithPing(resource.getJdbcUrl(), resource.getUsername(), saved);
         if (StringUtils.isNotBlank(saved) && result.isConnected()) {
             return Optional.of(saved);
