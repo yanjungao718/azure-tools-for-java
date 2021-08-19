@@ -48,9 +48,4 @@ public class NetworkDiagnose {
             return StringUtils.EMPTY;
         }
     }
-
-    public static void main(String[] args) throws IOException {
-        new NetworkDiagnose().checkAzure(AzureEnvironment.AZURE);
-        System.in.read();
-    }
 }

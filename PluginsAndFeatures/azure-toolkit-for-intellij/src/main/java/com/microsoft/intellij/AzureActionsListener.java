@@ -50,6 +50,7 @@ import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import lombok.Lombok;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Hooks;
@@ -70,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.SERVICE_NAME;
@@ -102,6 +104,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
                         properties.put(SERVICE_NAME, SYSTEM);
                         properties.put(OPERATION_NAME, "network_diagnose");
                         properties.put("sites", sites);
+                        properties.put(PROXY, Boolean.toString(StringUtils.isNotBlank(Azure.az().config().getProxySource())));
                         AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
                     });
                 } else {
