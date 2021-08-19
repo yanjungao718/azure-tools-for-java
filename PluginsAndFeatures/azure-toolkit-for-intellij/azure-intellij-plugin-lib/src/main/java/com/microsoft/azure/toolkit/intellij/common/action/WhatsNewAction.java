@@ -43,11 +43,10 @@ public class WhatsNewAction extends AnAction {
             "azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.md";
     private static final String AZURE_TOOLKIT_FOR_JAVA = "What's New in Azure Toolkit for Java";
     private static final String AZURE_TOOLKIT_WHATS_NEW = "AzureToolkit.WhatsNew";
-    private static final String VERSION_PATTERN = "<!-- Version: (.*) -->";
-    private static final String WHATS_NEW_CONTENT = "WHAT_S_NEW";
-    private static final String WHAT_S_NEW_CONTENT_PATH = "/whatsnew.md";
-    private static final Key<String> WHATS_NEW_ID = new Key<>(WHATS_NEW_CONTENT);
     private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
+    private static final String VERSION_PATTERN = "<!-- Version: (.*) -->";
+    private static final String CONTENT_PATH = "/whatsnew.md";
+    private static final Key<String> CONTENT_KEY = new Key<>("WHATS_NEW_IN_AZURE_TOOLKIT");
 
     @Override
     public void actionPerformed(@NotNull final AnActionEvent event) {
@@ -68,7 +67,7 @@ public class WhatsNewAction extends AnAction {
     private static void doShow(String content, DefaultArtifactVersion version, boolean manually, @NotNull Project project) {
         final FileEditorManager manager = FileEditorManager.getInstance(project);
         final VirtualFile file = Arrays.stream(manager.getOpenFiles())
-                .filter(f -> StringUtils.equals(f.getUserData(WHATS_NEW_ID), WHATS_NEW_CONTENT))
+                .filter(f -> StringUtils.equals(f.getUserData(CONTENT_KEY), CONTENT_PATH))
                 .findFirst().orElse(createVirtualFile(content));
         AzureTaskManager.getInstance().runAndWait(() -> {
             if (manager.getProject().isDisposed()) {
@@ -99,14 +98,14 @@ public class WhatsNewAction extends AnAction {
         final LightVirtualFile virtualFile = new LightVirtualFile(AZURE_TOOLKIT_FOR_JAVA);
         virtualFile.setFileType(fileType);
         virtualFile.setContent(null, content, true);
-        virtualFile.putUserData(WHATS_NEW_ID, WHATS_NEW_CONTENT);
+        virtualFile.putUserData(CONTENT_KEY, CONTENT_PATH);
         virtualFile.setWritable(false);
         return virtualFile;
     }
 
     @Nullable
     private static String getWhatsNewContent() {
-        try (final InputStream html = WhatsNewAction.class.getResourceAsStream(WHAT_S_NEW_CONTENT_PATH)) {
+        try (final InputStream html = WhatsNewAction.class.getResourceAsStream(CONTENT_PATH)) {
             if (html != null) {
                 return new String(StreamUtil.readBytes(html), StandardCharsets.UTF_8);
             }
