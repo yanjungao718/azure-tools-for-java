@@ -88,9 +88,9 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
 
-    public static boolean IS_WINDOWS = SystemInfo.isWindows;
+    public static final boolean IS_WINDOWS = SystemInfo.isWindows;
 
-    public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());
+    public static final boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());
 
     public static String pluginFolder = PluginUtil.getPluginRootDirectory();
 
@@ -107,6 +107,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     @Override
     public void runActivity(@NotNull Project project) {
         this.azureSettings = AzureSettings.getSafeInstance(project);
+        initializeAIRegistry(project);
+        // Showing dialog needs to be run in UI thread
         initializeWhatsNew(project);
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
