@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.AnimatedIcon;
-import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.intellij.connector.database.component.ServerC
 import com.microsoft.azure.toolkit.intellij.connector.database.component.TestConnectionActionPanel;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.UsernameComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.entity.AbstractAzureEntityManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResourceEntity;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -224,8 +223,7 @@ abstract class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource
             Optional.ofNullable(serverId.subscriptionId()).ifPresent(subscriptionId ->
                 this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscriptionId, Subscription::getId), true));
             Optional.ofNullable(serverId.name()).ifPresent(name ->
-                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name,
-                        server -> ((AbstractAzureEntityManager) server).entity().getName()), true));
+                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name, server -> ((IDatabaseServer) server).entity().getName()), true));
         }));
         Optional.ofNullable(resource.getPassword()).ifPresent(config ->
                 Optional.ofNullable(config.password()).ifPresent(password -> this.inputPasswordField.setText(String.valueOf(password))));
