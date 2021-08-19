@@ -7,8 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -22,7 +21,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -69,7 +67,7 @@ public class MySQLNode extends Node implements TelemetryProperties {
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
+    public AzureIconSymbol getIconSymbol() {
         boolean running = StringUtils.equalsIgnoreCase("READY", serverState);
         boolean updating = StringUtils.equalsIgnoreCase(SERVER_UPDATING, serverState);
         return running ? AzureIconSymbol.MySQL.RUNNING : updating ? AzureIconSymbol.MySQL.UPDATING : AzureIconSymbol.MySQL.STOPPED;

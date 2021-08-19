@@ -7,14 +7,12 @@ package com.microsoft.azure.toolkit.intellij.sqlserver.task;
 
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
-import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -41,7 +39,7 @@ public class CreateSqlServerTask {
         },
         type = AzureOperation.Type.SERVICE
     )
-    public ISqlServer execute() {
+    public SqlServer execute() {
         final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();
@@ -55,22 +53,22 @@ public class CreateSqlServerTask {
             }
 
             // create sql server
-            SqlServerEntity entity = this.fromConfig(this.config);
-            return Azure.az(AzureSqlServer.class).sqlServer(entity).create().withAdministratorLoginPassword(String.valueOf(config.getPassword())).commit();
+            return Azure.az(AzureSqlServer.class).subscription(config.getSubscription().getId())
+                    .create(com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerConfig.builder()
+                    .name(config.getServerName()).subscription(config.getSubscription())
+                    .resourceGroup(config.getResourceGroup()).region(config.getRegion())
+                    .administratorLoginName(config.getAdminUsername())
+                    .administratorLoginPassword(String.valueOf(config.getPassword()))
+                    .enableAccessFromAzureServices(config.isAllowAccessFromAzureServices())
+                    .enableAccessFromLocalMachine(config.isAllowAccessFromLocalMachine())
+                    .build())
+                    .commit();
         } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.systemError, e, null, null);
             throw e;
         } finally {
             operation.complete();
         }
-    }
-
-    private SqlServerEntity fromConfig(SqlServerConfig config) {
-        return SqlServerEntity.builder().name(config.getServerName()).subscriptionId(config.getSubscription().getId())
-                .resourceGroup(config.getResourceGroup().getName()).region(Region.fromName(config.getRegion().getName()))
-                .administratorLoginName(config.getAdminUsername())
-                .enableAccessFromAzureServices(config.isAllowAccessFromAzureServices()).enableAccessFromLocalMachine(config.isAllowAccessFromLocalMachine())
-                .build();
     }
 
 }

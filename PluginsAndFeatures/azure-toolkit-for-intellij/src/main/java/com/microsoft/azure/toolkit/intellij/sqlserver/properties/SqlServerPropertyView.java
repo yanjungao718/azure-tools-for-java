@@ -10,24 +10,24 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.database.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel;
-import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerDatabaseComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.database.DatabaseTemplateUtils;
-import com.microsoft.azure.toolkit.lib.common.database.FirewallRuleEntity;
-import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
+import com.microsoft.azure.toolkit.lib.database.entity.FirewallRuleEntity;
+import com.microsoft.azure.toolkit.lib.database.utils.DatabaseTemplateUtils;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.impl.SqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
@@ -48,9 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO (qianjin): shared common code
- */
 public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     public static final String ID = "com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView";
@@ -67,7 +64,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private JPanel contextPanel;
     private JScrollPane scrollPane;
     private MySQLPropertyActionPanel propertyActionPanel;
-    private SqlServerDatabaseComboBox databaseComboBox;
+    private DatabaseComboBox databaseComboBox;
     private JLabel databaseLabel;
 
     private final SqlServerProperty property = new SqlServerProperty();
@@ -173,14 +170,15 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         Runnable runnable = () -> {
             // refresh property
             SqlServerEntity entity = this.property.getServer().entity();
-            refreshProperty(entity.getSubscriptionId(), entity.getResourceGroup(), entity.getName());
+            refreshProperty(entity.getSubscriptionId(), entity.getResourceGroupName(), entity.getName());
             boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices) || !originalAllowAccessToLocal.equals(allowAccessToLocal)) {
                 // update
-                SqlServerEntity updateEntity = SqlServerEntity.builder().id(entity.getId()).name(entity.getName()).resourceGroup(entity.getResourceGroup())
-                    .enableAccessFromAzureServices(allowAccessToAzureServices).enableAccessFromLocalMachine(allowAccessToLocal).build();
-                Azure.az(AzureSqlServer.class).sqlServer(updateEntity).update().commit();
+                this.property.getServer().update()
+                        .withEnableAccessFromAzureServices(allowAccessToAzureServices)
+                        .withEnableAccessFromLocalMachine(allowAccessToLocal)
+                        .commit();
                 originalAllowAccessToAzureServices = allowAccessToAzureServices;
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
@@ -253,7 +251,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private void refreshProperty(String sid, String resourceGroup, String name) {
         // find server
         try {
-            SqlServer server = (SqlServer) Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
+            SqlServer server = Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
             this.property.setServer(server);
         } catch (Exception ex) {
             String error = "find Azure Database for MySQL server information";
@@ -276,7 +274,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
             overview.getSubscriptionTextField().setText(subscription.getName());
         }
         databaseComboBox.setServer(property.getServer());
-        overview.getResourceGroupTextField().setText(entity.getResourceGroup());
+        overview.getResourceGroupTextField().setText(entity.getResourceGroupName());
         overview.getStatusTextField().setText(entity.getState());
         overview.getLocationTextField().setText(entity.getRegion().getLabel());
         overview.getSubscriptionIDTextField().setText(entity.getSubscriptionId());

@@ -7,8 +7,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;

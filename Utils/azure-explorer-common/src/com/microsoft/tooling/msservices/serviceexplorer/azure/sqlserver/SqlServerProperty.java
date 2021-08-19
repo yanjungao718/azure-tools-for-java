@@ -5,8 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
-import com.microsoft.azure.toolkit.lib.common.database.FirewallRuleEntity;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
+import com.microsoft.azure.toolkit.lib.database.entity.FirewallRuleEntity;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 public class SqlServerProperty {
 
-    private ISqlServer server;
+    private SqlServer server;
     private List<FirewallRuleEntity> firewallRules;
 
 }
