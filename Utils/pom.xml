@@ -58,6 +58,7 @@
         <module>./spark-tools</module>
         <module>./hdinsight-node-common</module>
         <module>./spark-localrun-mock</module>
+        <module>azure-toolkit-ide-libs</module>
     </modules>
     <profiles>
         <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->
