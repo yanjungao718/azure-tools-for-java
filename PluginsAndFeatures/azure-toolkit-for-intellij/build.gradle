@@ -53,7 +53,7 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal']
 	downloadSources = Boolean.valueOf(sources)
 }
 

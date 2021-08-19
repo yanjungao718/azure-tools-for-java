@@ -1,4 +1,5 @@
 <idea-plugin>
+    <depends optional="true" config-file="com.microsoft.tooling.msservices.intellij.azure-markdown.xml">org.intellij.plugins.markdown</depends>
     <resource-bundle>com.microsoft.azure.toolkit.operation.title.action</resource-bundle>
     <extensionPoints>
         <extensionPoint name="actions" interface="com.microsoft.azure.toolkit.ide.common.IActionsContributor"/>
@@ -12,10 +13,13 @@
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.common.preload.AzurePreloadingActivity"/>
     </extensions>
     <actions>
+        <action id="Actions.WhatsNew"
+                class="com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction" text="What's New in Azure Toolkit for Java"
+                description="Show new features of Azure Toolkit for Java"/>
         <action id="AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain"
                 class="com.microsoft.azure.toolkit.intellij.common.messager.IntellijNeverShowAgainAction"
                 text="Never Show Again"
-                description="Never Show Again">
+                description="Never show again">
         </action>
     </actions>
 </idea-plugin>

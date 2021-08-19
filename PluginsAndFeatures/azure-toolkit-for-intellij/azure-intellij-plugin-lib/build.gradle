@@ -1,6 +1,20 @@
 intellij {
-    plugins = ['java', 'maven', 'maven-model', 'gradle']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', 'markdown']
 }
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+    test {
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}
+
 dependencies {
     compile 'com.microsoft.azure:azure-toolkit-auth-lib:0.11.0-SNAPSHOT'
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.11.0-SNAPSHOT'

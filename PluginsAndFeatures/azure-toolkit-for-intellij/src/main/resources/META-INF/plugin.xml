@@ -42,7 +42,6 @@
   <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.modules.java</depends>
-  <depends>org.intellij.plugins.markdown</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
@@ -165,9 +164,6 @@
   </applicationListeners>
 
   <actions>
-    <action id="Actions.WhatsNew"
-            class="com.microsoft.intellij.actions.ShowWhatsNewAction" text="What's New"
-            description="Show What's New"/>
     <action id="Actions.LibraryConfigurationAction"
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
