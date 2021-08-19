@@ -106,6 +106,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     @Override
     public void runActivity(@NotNull Project project) {
         this.azureSettings = AzureSettings.getSafeInstance(project);
+        initializeWhatsNew(project);
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
             firstInstallationByVersion = isFirstInstallationByVersion();
@@ -143,24 +144,24 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     private void initializeWhatsNew(Project project) {
         EventUtil.executeWithLog(SYSTEM, SHOW_WHATS_NEW,
-            operation -> {
-                final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);
-                final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-                ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null);
-            },
-            error -> {
-                // swallow this exception as shown whats new in startup should not block users
-            });
+                operation -> {
+                    final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);
+                    final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
+                    ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null);
+                },
+                error -> {
+                    // swallow this exception as shown whats new in startup should not block users
+                });
     }
 
     private void afterInitialization(Project myProject) {
         Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS)
-            .subscribeOn(Schedulers.newThread())
-            .take(1)
-            .subscribe(next -> {
-                WorkspaceTaggingActivity.runActivity(myProject);
-                AzureSdkEnforcer.enforce(myProject);
-            });
+                .subscribeOn(Schedulers.newThread())
+                .take(1)
+                .subscribe(next -> {
+                    WorkspaceTaggingActivity.runActivity(myProject);
+                    AzureSdkEnforcer.enforce(myProject);
+                });
     }
 
     private void initializeAIRegistry(Project myProject) {
@@ -177,9 +178,9 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                         if (key != null && !key.isEmpty()) {
                             String unknown = message("unknown");
                             List<ApplicationInsightsResource> list =
-                                ApplicationInsightsResourceRegistry.getAppInsightsResrcList();
+                                    ApplicationInsightsResourceRegistry.getAppInsightsResrcList();
                             ApplicationInsightsResource resourceToAdd = new ApplicationInsightsResource(
-                                key, key, unknown, unknown, unknown, unknown, false);
+                                    key, key, unknown, unknown, unknown, unknown, false);
                             if (!list.contains(resourceToAdd)) {
                                 ApplicationInsightsResourceRegistry.getAppInsightsResrcList().add(resourceToAdd);
                             }
@@ -216,27 +217,27 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     private void loadWebappsSettings(Project myProject) {
         StartupManager.getInstance(myProject).runWhenProjectIsInitialized(
-            new Runnable() {
-                @Override
-                public void run() {
-                    Module[] modules = ModuleManager.getInstance(myProject).getModules();
-                    Set<String> javaModules = new HashSet<String>();
-                    for (Module module : modules) {
-                        if (ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))) {
-                            javaModules.add(module.getName());
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        Module[] modules = ModuleManager.getInstance(myProject).getModules();
+                        Set<String> javaModules = new HashSet<String>();
+                        for (Module module : modules) {
+                            if (ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))) {
+                                javaModules.add(module.getName());
+                            }
                         }
-                    }
-                    Set<String> keys = AzureSettings.getSafeInstance(myProject).getPropertyKeys();
-                    for (String key : keys) {
-                        if (key.endsWith(".webapps")) {
-                            String projName = key.substring(0, key.lastIndexOf("."));
-                            if (!javaModules.contains(projName)) {
-                                AzureSettings.getSafeInstance(myProject).unsetProperty(key);
+                        Set<String> keys = AzureSettings.getSafeInstance(myProject).getPropertyKeys();
+                        for (String key : keys) {
+                            if (key.endsWith(".webapps")) {
+                                String projName = key.substring(0, key.lastIndexOf("."));
+                                if (!javaModules.contains(projName)) {
+                                    AzureSettings.getSafeInstance(myProject).unsetProperty(key);
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
     }
 
     private void telemetryAI(Project myProject) {
@@ -262,11 +263,11 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             extractJobViewResource();
         } catch (ExtractHdiJobViewException e) {
             Notification hdiSparkJobListNaNotification = new Notification(
-                "Azure Toolkit plugin",
-                e.getMessage(),
-                "The HDInsight cluster Spark Job list feature is not available since " + e.getCause().toString() +
-                    " Reinstall the plugin to fix that.",
-                NotificationType.WARNING);
+                    "Azure Toolkit plugin",
+                    e.getMessage(),
+                    "The HDInsight cluster Spark Job list feature is not available since " + e.getCause().toString() +
+                            " Reinstall the plugin to fix that.",
+                    NotificationType.WARNING);
 
             Notifications.Bus.notify(hdiSparkJobListNaNotification);
         }
@@ -276,7 +277,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 if (azureLibrary.getLocation() != null) {
                     if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
                         for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator +
-                            CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                                CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
                             new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
                             copyResourceFile(entryName, pluginFolder + File.separator + entryName);
                         }
@@ -392,8 +393,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
                 if (!toFile.renameTo(toFile)) {
                     throw new ExtractHdiJobViewException("Copying Job view zip file are not finished",
-                        new IOException("The native file system has not finished the file copy for " +
-                            toFile.getPath() + " in 1 minute"));
+                            new IOException("The native file system has not finished the file copy for " +
+                                    toFile.getPath() + " in 1 minute"));
                 }
 
                 unzip(toFile.getAbsolutePath(), toFile.getParent());
@@ -402,7 +403,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             }
         } else {
             throw new ExtractHdiJobViewException("Can't find HDInsight job view zip package",
-                new FileNotFoundException("The HDInsight Job view zip file " + HTML_ZIP_FILE_NAME + " is not found"));
+                    new FileNotFoundException("The HDInsight Job view zip file " + HTML_ZIP_FILE_NAME + " is not found"));
         }
     }
 
