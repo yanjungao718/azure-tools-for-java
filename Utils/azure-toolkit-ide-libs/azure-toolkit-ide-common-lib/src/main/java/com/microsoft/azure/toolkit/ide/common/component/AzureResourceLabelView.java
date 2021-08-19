@@ -46,7 +46,7 @@ public class AzureResourceLabelView<T extends IAzureResource<?>> implements IVie
         if (source instanceof IAzureResource && ((IAzureResource<?>) source).id().equals(this.resource.id())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             if ("common|resource.refresh".equals(type)) {
-                if (((AzureOperationEvent<?>) event).getStage() == AzureOperationEvent.Stage.AFTER) {
+                if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                     tm.runLater(this::updateChildren);
                 }
             } else if ("common|resource.status_changed".equals(type)) {
