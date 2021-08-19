@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.W
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
 import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
 import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
@@ -147,7 +148,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 operation -> {
                     final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);
                     final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-                    ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null);
+                    AzureTaskManager.getInstance().runLater(()-> ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null));
                 },
                 error -> {
                     // swallow this exception as shown whats new in startup should not block users
