@@ -148,7 +148,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 operation -> {
                     final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);
                     final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-                    AzureTaskManager.getInstance().runLater(()-> ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null));
+                    AzureTaskManager.getInstance().runLater(() -> ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null));
                 },
                 error -> {
                     // swallow this exception as shown whats new in startup should not block users
