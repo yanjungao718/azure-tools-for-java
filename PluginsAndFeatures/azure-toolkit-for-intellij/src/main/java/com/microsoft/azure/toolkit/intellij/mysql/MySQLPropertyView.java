@@ -320,6 +320,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         if (subscription != null) {
             overview.getSubscriptionTextField().setText(subscription.getName());
             databaseComboBox.setServer(server);
+            databaseComboBox.refreshItems();
         }
         overview.getResourceGroupTextField().setText(server.entity().getResourceGroupName());
         overview.getStatusTextField().setText(server.entity().getState());
