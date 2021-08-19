@@ -140,7 +140,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
 
     @AzureOperation(
             name = "function.prepare_staging_folder_detail",
-            params = {"stagingFolder.getName()", "this.deployModel.getAppName()"},
+            params = {"stagingFolder.getName()", "this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
@@ -167,7 +167,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     @Override
     @AzureOperation(
             name = "function.complete_deployment",
-            params = {"this.deployModel.getAppName()"},
+            params = {"this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )
     protected void onSuccess(IFunctionApp result, @NotNull RunProcessHandler processHandler) {
