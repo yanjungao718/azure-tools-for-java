@@ -107,6 +107,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     @Override
     public void runActivity(@NotNull Project project) {
         this.azureSettings = AzureSettings.getSafeInstance(project);
+        initializeAIRegistry(project);
+        // Showing dialog needs to be run in UI thread
         initializeWhatsNew(project);
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
