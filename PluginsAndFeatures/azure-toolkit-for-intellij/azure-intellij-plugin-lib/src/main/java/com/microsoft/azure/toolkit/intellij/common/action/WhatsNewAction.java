@@ -13,6 +13,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.StreamUtil;
@@ -26,7 +27,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,13 +34,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WhatsNewAction extends AnAction {
-    private static final String WHATSNEW_URL = "https://github.com/microsoft/azure-tools-for-java/tree/develop/PluginsAndFeatures/" +
-            "azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.md";
+public class WhatsNewAction extends AnAction implements DumbAware {
+    public static final String ID = "Actions.WhatsNew";
+    private static final String WHATSNEW_URL = "https://aka.ms/whatsnewazureintellij";
     private static final String AZURE_TOOLKIT_FOR_JAVA = "What's New in Azure Toolkit for Java";
     private static final String AZURE_TOOLKIT_WHATS_NEW = "AzureToolkit.WhatsNew";
     private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
@@ -49,22 +50,19 @@ public class WhatsNewAction extends AnAction {
     private static final Key<String> CONTENT_KEY = new Key<>("WHATS_NEW_IN_AZURE_TOOLKIT");
 
     @Override
-    public void actionPerformed(@NotNull final AnActionEvent event) {
-        showWhatsNew(true, event.getProject());
-    }
-
     @AzureOperation(name = "common.load_whatsnew", type = AzureOperation.Type.ACTION)
-    public static synchronized void showWhatsNew(boolean manually, @NotNull Project project) {
+    public void actionPerformed(@Nonnull final AnActionEvent event) {
+        final boolean manually = !"AzurePluginStartupActivity".equals(event.getPlace());
         final String content = getWhatsNewContent();
         final DefaultArtifactVersion currentVersion = getVersion(content);
         final DefaultArtifactVersion lastVersion = getLastVersion();
         if (manually || compare(currentVersion, lastVersion)) {
             saveVersion(currentVersion);
-            doShow(content, currentVersion, manually, project);
+            doShow(content, currentVersion, manually, Objects.requireNonNull(event.getProject()));
         }
     }
 
-    private static void doShow(String content, DefaultArtifactVersion version, boolean manually, @NotNull Project project) {
+    private static void doShow(String content, DefaultArtifactVersion version, boolean manually, @Nonnull Project project) {
         final FileEditorManager manager = FileEditorManager.getInstance(project);
         final VirtualFile file = Arrays.stream(manager.getOpenFiles())
                 .filter(f -> StringUtils.equals(f.getUserData(CONTENT_KEY), CONTENT_PATH))
@@ -132,7 +130,7 @@ public class WhatsNewAction extends AnAction {
         return StringUtils.isEmpty(shownVersionValue) ? null : new DefaultArtifactVersion(shownVersionValue);
     }
 
-    @NotNull
+    @Nonnull
     private static DefaultArtifactVersion getVersion(String content) {
         try (final Scanner scanner = new Scanner(content)) {
             // Read the first comment line to get the whats new version

@@ -12,6 +12,11 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -139,7 +144,9 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     private void initializeWhatsNew(Project project) {
         EventUtil.executeWithLog(SYSTEM, SHOW_WHATS_NEW,
             operation -> {
-                WhatsNewAction.showWhatsNew(false, project);
+                final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);
+                final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
+                ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null);
             },
             error -> {
                 // swallow this exception as shown whats new in startup should not block users
