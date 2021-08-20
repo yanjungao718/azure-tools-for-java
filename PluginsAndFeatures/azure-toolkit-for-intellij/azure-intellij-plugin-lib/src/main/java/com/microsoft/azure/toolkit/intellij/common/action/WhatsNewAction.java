@@ -113,7 +113,7 @@ public class WhatsNewAction extends AnAction implements DumbAware {
      * @return true if {@code versionA} is a newer version or {@code versionB} is null, false otherwise.
      */
     private static boolean compare(DefaultArtifactVersion versionA, DefaultArtifactVersion versionB) {
-        return versionB == null || (versionA != null && versionA.compareTo(versionB) >= 0);
+        return versionB == null || (versionA != null && versionA.compareTo(versionB) > 0);
     }
 
     private static void saveVersion(DefaultArtifactVersion version) {
