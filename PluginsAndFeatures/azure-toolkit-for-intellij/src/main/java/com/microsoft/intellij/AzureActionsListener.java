@@ -6,16 +6,19 @@
 package com.microsoft.intellij;
 
 import com.azure.core.implementation.http.HttpClientProviders;
+import com.azure.core.management.AzureEnvironment;
 import com.google.gson.Gson;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.exception.ExceptionUtils;
 import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -23,6 +26,8 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
@@ -36,6 +41,7 @@ import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
+import com.microsoft.intellij.util.NetworkDiagnose;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -44,22 +50,31 @@ import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import lombok.Lombok;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Hooks;
-import rx.exceptions.Exceptions;
+import reactor.core.scheduler.Schedulers;
 import rx.internal.util.PlatformDependent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.SERVICE_NAME;
 
 @Slf4j
 public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
@@ -71,6 +86,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     private PluginSettings settings;
 
+
     static {
         // fix the class load problem for intellij plugin
         final ClassLoader current = Thread.currentThread().getContextClassLoader();
@@ -79,8 +95,18 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             HttpClientProviders.createInstance();
             Azure.az(AzureAccount.class);
             Hooks.onErrorDropped(ex -> {
-                if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
+                Throwable cause = findExceptionInExceptionChain(ex, Arrays.asList(InterruptedException.class, UnknownHostException.class));
+                if (cause instanceof InterruptedException) {
                     log.info(ex.getMessage());
+                } else if (cause instanceof UnknownHostException) {
+                    NetworkDiagnose.checkAzure(AzureEnvironment.AZURE).publishOn(Schedulers.parallel()).subscribe(sites -> {
+                        final Map<String, String> properties = new HashMap<>();
+                        properties.put(SERVICE_NAME, SYSTEM);
+                        properties.put(OPERATION_NAME, "network_diagnose");
+                        properties.put("sites", sites);
+                        properties.put(PROXY, Boolean.toString(StringUtils.isNotBlank(Azure.az().config().getProxySource())));
+                        AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
+                    });
                 } else {
                     throw Lombok.sneakyThrow(ex);
                 }
@@ -99,6 +125,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());
+        IntellijAzureActionManager.register();
         Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
@@ -199,5 +226,16 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
                 }
             }
         }
+    }
+
+    private static Throwable findExceptionInExceptionChain(Throwable ex, List<Class> classes) {
+        for (Throwable cause : ExceptionUtils.getThrowableList(ex)) {
+            for (Class clz : classes) {
+                if (cause != null && clz.isAssignableFrom(cause.getClass())) {
+                    return cause;
+                }
+            }
+        }
+        return null;
     }
 }

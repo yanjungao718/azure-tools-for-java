@@ -6,18 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.connector.database.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureResourceEntity;
+import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-public class DatabaseComboBox<S, T> extends AzureComboBox<T> {
+public class DatabaseComboBox<S extends IDatabaseServer, T extends IAzureResourceEntity> extends AzureComboBox<T> {
 
     @Getter
     private S server;
-    @Setter
-    private Function<T, String> itemTextFunc;
 
     public void setServer(S server) {
         if (Objects.equals(server, this.server)) {
@@ -33,7 +31,7 @@ public class DatabaseComboBox<S, T> extends AzureComboBox<T> {
 
     @Override
     protected String getItemText(Object item) {
-        return Objects.nonNull(itemTextFunc) && Objects.nonNull(item) ? itemTextFunc.apply((T) item) : super.getItemText(item);
+        return Objects.nonNull(item) && item instanceof IAzureResourceEntity ? ((IAzureResourceEntity) item).getName() : super.getItemText(item);
     }
 
     @Override

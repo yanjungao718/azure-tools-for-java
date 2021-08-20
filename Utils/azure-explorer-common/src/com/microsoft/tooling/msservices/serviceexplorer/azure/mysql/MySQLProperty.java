@@ -5,8 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlFirewallRule;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlFirewallRule;
 import lombok.Getter;
 import lombok.Setter;
 

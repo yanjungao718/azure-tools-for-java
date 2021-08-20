@@ -9,7 +9,7 @@ import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 
 import java.util.function.Function;
 

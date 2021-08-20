@@ -6,14 +6,12 @@
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureResource;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
-import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
+import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -76,11 +74,6 @@ public class DatabaseResource implements AzureResource {
     }
 
     protected interface DatabaseDefinition extends ResourceDefinition<DatabaseResource> {
-
-        @Override
-        default AzureFormJPanel<DatabaseResource> getResourcesPanel(@Nonnull String type, final Project project) {
-            return new DatabaseResourcePanel(this);
-        }
 
         @Override
         default boolean write(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {

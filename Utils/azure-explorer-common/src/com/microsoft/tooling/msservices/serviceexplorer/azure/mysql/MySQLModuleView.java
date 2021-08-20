@@ -5,7 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 import java.util.List;
