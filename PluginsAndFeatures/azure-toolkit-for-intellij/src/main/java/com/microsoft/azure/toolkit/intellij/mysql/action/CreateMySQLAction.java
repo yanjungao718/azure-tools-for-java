@@ -102,6 +102,7 @@ public class CreateMySQLAction extends NodeActionListener {
             final MySqlServer server = Azure.az(AzureMySql.class).subscription(subscriptionId).create(MySqlServerConfig.builder()
                     .subscription(config.getSubscription())
                     .resourceGroup(config.getResourceGroup())
+                    .region(config.getRegion())
                     .name(config.getServerName())
                     .version(config.getVersion())
                     .administratorLoginName(config.getAdminUsername())
