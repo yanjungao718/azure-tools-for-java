@@ -66,7 +66,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final ConsoleMessager messager = new ConsoleMessager(processHandler);
         final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         consoleView.attachToProcess(processHandler);
-        final Disposable subscribe = Mono.fromRunnable(() -> this.execute(messager))
+        final Disposable subscribe = Mono.fromCallable(() -> this.execute(messager))
                 .doOnTerminate(processHandler::notifyComplete)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe((res) -> messager.success("Deploy succeed!"), messager::error);
@@ -81,7 +81,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     }
 
     @AzureOperation(name = "springcloud|app.create_update", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
-    public void execute(IAzureMessager messager) {
+    public SpringCloudDeployment execute(IAzureMessager messager) {
         AzureMessager.getContext().setMessager(messager);
         AzureTelemetry.getContext().setProperties(getTelemetryProperties());
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
@@ -90,9 +90,10 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final SpringCloudApp app = deployment.app();
         final SpringCloudCluster cluster = app.getCluster();
         if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-            AzureMessager.getDefaultMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
+            messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
         printPublicUrl(app);
+        return deployment;
     }
 
     private void printPublicUrl(final SpringCloudApp app) {
@@ -136,6 +137,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 handler.setText(raw.getMessage().toString());
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
+                handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
+            } else if (raw.getType() == IAzureMessage.Type.WARNING) {
                 handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
                 handler.println(raw.getContent(), ProcessOutputType.STDERR);

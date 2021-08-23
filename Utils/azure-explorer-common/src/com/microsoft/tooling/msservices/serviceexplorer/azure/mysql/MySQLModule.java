@@ -7,15 +7,16 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,8 +33,8 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
         AzureEventBus.after("mysql|server.delete", this::onMySqlServerCreatedOrRemoved);
     }
 
-    private void onMySqlServerCreatedOrRemoved(MySqlServer server) {
-        refreshItems();
+    private void onMySqlServerCreatedOrRemoved(AzureOperationEvent.Source source) {
+        this.load(true);
     }
 
     public void renderChildren(List<MySqlServer> servers) {
@@ -44,7 +45,8 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
+    @Nonnull
+    public AzureIconSymbol getIconSymbol() {
         return AzureIconSymbol.MySQL.MODULE;
     }
 
