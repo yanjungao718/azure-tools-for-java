@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.intellij.mysql.action.OpenMySQLByToolsAction;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.ConnectToMySQLAction;
 import com.microsoft.azure.toolkit.intellij.sqlserver.CreateSqlServerAction;
 import com.microsoft.azure.toolkit.intellij.sqlserver.OpenSqlServerByToolsAction;
-import com.microsoft.azure.toolkit.intellij.storage.OpenStorageBrowserAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.azure.toolkit.intellij.appservice.action.ProfileFlightRecordAction;
