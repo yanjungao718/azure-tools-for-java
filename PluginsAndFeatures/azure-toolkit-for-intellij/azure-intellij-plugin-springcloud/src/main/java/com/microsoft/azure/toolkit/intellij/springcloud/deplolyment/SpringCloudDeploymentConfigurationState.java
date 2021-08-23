@@ -90,7 +90,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final SpringCloudApp app = deployment.app();
         final SpringCloudCluster cluster = app.getCluster();
         if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-            AzureMessager.getDefaultMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
+            messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
         printPublicUrl(app);
     }
@@ -136,6 +136,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 handler.setText(raw.getMessage().toString());
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
+                handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
+            } else if (raw.getType() == IAzureMessage.Type.WARNING) {
                 handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
                 handler.println(raw.getContent(), ProcessOutputType.STDERR);
