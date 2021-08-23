@@ -152,7 +152,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
             this.panel.setConfiguration(config);
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                if (Objects.nonNull(config.app) && StringUtils.isBlank(config.appConfig.getAppName())) {
+                if (Objects.nonNull(config.app)) {
                     config.appConfig = SpringCloudAppConfig.fromApp(config.app);
                 }
                 AzureTaskManager.getInstance().runLater(() -> this.panel.setData(config.appConfig), AzureTask.Modality.ANY);
