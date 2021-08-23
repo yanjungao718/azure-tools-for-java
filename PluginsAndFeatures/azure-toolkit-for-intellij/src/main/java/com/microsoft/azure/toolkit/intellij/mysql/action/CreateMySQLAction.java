@@ -76,7 +76,7 @@ public class CreateMySQLAction extends NodeActionListener {
     }
 
     @AzureOperation(
-        name = "mysql.create",
+        name = "mysql|server.create.task",
         params = {
             "config.getServerName()",
             "config.getSubscription().getName()"

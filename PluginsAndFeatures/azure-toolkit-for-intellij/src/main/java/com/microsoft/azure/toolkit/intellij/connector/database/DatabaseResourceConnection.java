@@ -149,7 +149,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
     @Nonnull
     private static Optional<String> inputPassword(@Nonnull final Project project, @Nonnull final DatabaseResource resource) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
-        final AzureString title = AzureOperationBundle.title("mysql.update_password");
+        final AzureString title = AzureOperationBundle.title("mysql|update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(project, resource);
             if (dialog.showAndGet()) {
