@@ -10,13 +10,9 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.sqlserver.creation.SqlServerCreationDialog;
 import com.microsoft.azure.toolkit.intellij.sqlserver.task.CreateSqlServerTask;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -58,19 +54,10 @@ public class CreateSqlServerAction extends NodeActionListener {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             DefaultLoader.getIdeHelper().invokeLater(dialog::close);
-            SqlServer server = new CreateSqlServerTask(config).execute();
-            refreshAzureExplorer(server);
+            new CreateSqlServerTask(config).execute();
         };
         String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), SqlServerModule.MODULE_NAME, config.getServerName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, progressMessage, false, runnable));
     }
 
-    @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
-    private void refreshAzureExplorer(SqlServer server) {
-        AzureTaskManager.getInstance().runLater(() -> {
-            if (AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, server));
-            }
-        });
-    }
 }
