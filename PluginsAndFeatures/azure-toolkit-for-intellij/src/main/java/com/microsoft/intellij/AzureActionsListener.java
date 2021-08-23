@@ -118,7 +118,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
-        AzureInitializer.initialize();
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
@@ -136,7 +135,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         } catch (IOException e) {
             PluginUtil.displayErrorDialogAndLog("Error", "An error occurred while attempting to load settings", e);
         }
-
+        AzureInitializer.initialize();
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
