@@ -152,6 +152,9 @@ configurations {
     compile.exclude module:'log4j'
     compile.exclude module:'stax-api'
     compile.exclude module:'groovy-xml'
+    compile.exclude module:'azure-core-http-netty'
+    compile.exclude module:'netty-transport'
+    compile.exclude module:'netty-resolver'
     cucumberRuntime {
         extendsFrom testRuntime
     }
