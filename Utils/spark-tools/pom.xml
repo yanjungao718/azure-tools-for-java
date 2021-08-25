@@ -161,7 +161,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <outputDirectory>${basedir}/../../../PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/</outputDirectory>
+                    <outputDirectory>${basedir}/../../../PluginsAndFeatures/azure-toolkit-for-intellij/src/main/resources/spark/</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
