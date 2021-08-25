@@ -65,7 +65,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private Button rbtnAutomated;
     private Label lblAuthenticationFile;
     private Button btnBrowse;
-    private Button btnCreateAuthenticationFile;
     private Label lblDeviceInfo;
     private Label lblAutomatedInfo;
 
@@ -202,19 +201,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         btnBrowse.setText("Browse...");
-        new Label(compositeAutomated, SWT.NONE);
-        new Label(compositeAutomated, SWT.NONE);
-
-        btnCreateAuthenticationFile = new Button(compositeAutomated, SWT.NONE);
-        btnCreateAuthenticationFile.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                doCreateServicePrincipal();
-            }
-        });
-        btnCreateAuthenticationFile.setEnabled(false);
-        btnCreateAuthenticationFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnCreateAuthenticationFile.setText("New...");
 
         fileDialog = new FileDialog(btnBrowse.getShell(), SWT.OPEN);
         fileDialog.setText("Select Authentication File");
@@ -232,7 +218,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         lblAuthenticationFile.setEnabled(enabled);
         textAuthenticationFilePath.setEnabled(enabled);
         btnBrowse.setEnabled(enabled);
-        btnCreateAuthenticationFile.setEnabled(enabled);
     }
 
     @Override

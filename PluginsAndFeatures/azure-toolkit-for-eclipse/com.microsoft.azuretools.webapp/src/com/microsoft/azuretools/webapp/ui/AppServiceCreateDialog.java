@@ -26,6 +26,7 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
@@ -55,9 +56,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -345,6 +349,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
+        fillJavaVersion();
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
@@ -362,7 +367,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillAppServicePlansDetails();
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
-        fillJavaVersion();
+
         return scrolledComposite;
     }
 
@@ -398,6 +403,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         });
         comboAppServicePlan.setBounds(0, 0, 26, 22);
         dec_comboAppServicePlan = decorateContorolAndRegister(comboAppServicePlan);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
 
         lblAppServiceUseExictingLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExictingLocation.setEnabled(true);
@@ -446,6 +452,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         dec_textAppSevicePlanName = decorateContorolAndRegister(textAppSevicePlanName);
         textAppSevicePlanName.setText(APP_SERVICE_PLAN_PREFIX + date);
         textAppSevicePlanName.setEnabled(false);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textAppSevicePlanName, "New app service plan");
 
         lblAppServiceCreateNewLocation = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -464,6 +471,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanLocation.setEnabled(false);
         dec_comboAppServicePlanLocation = decorateContorolAndRegister(comboAppServicePlanLocation);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanLocation, "App service plan location");
 
         lblAppServiceCreateNewPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -475,6 +483,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanPricingTier = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlanPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanPricingTier.setEnabled(false);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanPricingTier, "App service plan pricing tier");
 
         new Label(compositeAppServicePlan, SWT.NONE);
         linkAppServicePricing = new Link(compositeAppServicePlan, SWT.NONE);
@@ -520,6 +529,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboResourceGroup.setBounds(0, 0, 26, 22);
         dec_comboSelectResGr = decorateContorolAndRegister(comboResourceGroup);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboResourceGroup, "Existing resource group");
 
         btnResourceGroupCreateNew = new Button(compositeResourceGroup, SWT.RADIO);
         btnResourceGroupCreateNew.addSelectionListener(new SelectionAdapter() {
@@ -543,6 +553,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         textResourceGroupName.setText(RESOURCE_GROUP_PREFIX + date);
         textResourceGroupName.setEnabled(false);
         dec_textNewResGrName = decorateContorolAndRegister(textResourceGroupName);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textResourceGroupName, "New resource group");
     }
 
     private void createRuntimeGroup(Composite composite) {
@@ -583,6 +594,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
         comboLinuxRuntime = new Combo(compositeRuntime, SWT.READ_ONLY);
         comboLinuxRuntime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        comboLinuxRuntime.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetDefaultSelected(SelectionEvent arg0) {
+                fillAppServicePlanPricingTiers();
+            }
+
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                fillAppServicePlanPricingTiers();
+            }
+        });
 
         lblJavaVersion = new Label(compositeRuntime, SWT.NONE);
         lblJavaVersion.setText(LBL_JAVA);
@@ -651,6 +673,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
             }
         });
+        AccessibilityUtils.addAccessibilityNameForUIComponent(tblAppSettings, "App settings");
 
         appSettingsEditor = new TableEditor(tblAppSettings);
         appSettingsEditor.horizontalAlignment = SWT.LEFT;
@@ -831,6 +854,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             comboWebContainer.setEnabled(!enabled);
         }
         fillAppServicePlans();
+        fillAppServicePlanPricingTiers();
     }
 
     private void radioAppServicePlanLogic() {
@@ -1100,14 +1124,22 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     protected void fillAppServicePlanPricingTiers() {
         try {
+            final PricingTier defaultValue = ObjectUtils.firstNonNull(getSelectedPricingTier(), DEFAULT_PRICINGTIER);
+
             comboAppServicePlanPricingTier.removeAll();
             binderAppServicePlanPricingTier = new ArrayList<>();
-            List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
+
+            final OperatingSystem os = getSelectedOS();
+            final RuntimeStack runtimeStack = getSelectedRuntimeStack();
+
+            final List<PricingTier> pricingTiers = os == OperatingSystem.LINUX
+                    ? AzureMvpModel.getInstance().listPricingTierForLinuxRuntime(runtimeStack) : AzureMvpModel.getInstance().listPricingTier();
+
             for (int i = 0; i < pricingTiers.size(); i++) {
                 PricingTier pricingTier = pricingTiers.get(i);
                 comboAppServicePlanPricingTier.add(pricingTier.toString());
                 binderAppServicePlanPricingTier.add(pricingTier);
-                if (pricingTier.equals(DEFAULT_PRICINGTIER)) {
+                if (pricingTier.equals(defaultValue)) {
                     comboAppServicePlanPricingTier.select(i);
                 }
             }
@@ -1331,28 +1363,44 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             index = comboAppServicePlanLocation.getSelectionIndex();
             model.setRegion(index < 0 ? null : binderAppServicePlanLocation.get(index).name());
 
-            index = comboAppServicePlanPricingTier.getSelectionIndex();
-            model.setPricing(index < 0 ? null : binderAppServicePlanPricingTier.get(index).toString());
+            model.setPricing(Optional.ofNullable(getSelectedPricingTier()).map(PricingTier::toString).orElse(APPSETTINGS_TOOLTIP));
         } else {
             index = comboAppServicePlan.getSelectionIndex();
             model.setAppServicePlanId(index < 0 ? null : binderAppServicePlan.get(index).id());
         }
 
         // Runtime
-        chooseWin = btnOSGroupWin.getSelection();
-        model.setOS(chooseWin ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
-        if (chooseWin) {
+        final OperatingSystem os = getSelectedOS();
+        model.setOS(getSelectedOS());
+        if (os == OperatingSystem.WINDOWS) {
             index = cbJavaVersion.getSelectionIndex();
             model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
 
             index = comboWebContainer.getSelectionIndex();
             model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
         } else {
-            String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
-            String[] part = linuxRuntime.split(" ");
-            model.setStack(part[0]);
-            model.setVersion(part[1]);
+            final RuntimeStack runtimeStack = getSelectedRuntimeStack();
+            model.setStack(runtimeStack.stack());
+            model.setVersion(runtimeStack.version());
         }
+    }
+
+    private PricingTier getSelectedPricingTier() {
+        final int index = comboAppServicePlanPricingTier.getSelectionIndex();
+        return index < 0 ? null : binderAppServicePlanPricingTier.get(index);
+    }
+
+    private OperatingSystem getSelectedOS() {
+        return btnOSGroupWin.getSelection() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
+    }
+
+    private RuntimeStack getSelectedRuntimeStack() {
+        final String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
+        final String[] runtime = linuxRuntime.split(" ");
+        return RuntimeStack.getAll().stream()
+                .filter(stack -> StringUtils.equalsIgnoreCase(runtime[0], stack.stack()) && StringUtils.equalsIgnoreCase(runtime[1], stack.version()))
+                .findFirst()
+                .orElseGet(() -> new RuntimeStack(runtime[0], runtime[1]));
     }
 
 }
