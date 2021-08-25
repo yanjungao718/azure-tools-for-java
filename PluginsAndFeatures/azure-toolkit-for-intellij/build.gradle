@@ -1,8 +1,25 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.4.18"
-    id "org.jetbrains.kotlin.jvm" version "1.3.41"
-    id "de.undercouch.download" version "4.0.4"
-    id "com.github.ben-manes.versions" version "0.28.0"
+    id "org.jetbrains.intellij" version "0.7.2"
+    id "org.jetbrains.kotlin.jvm" version "1.4.20"
+    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id "de.undercouch.download" version "4.1.1"
+    id "com.github.ben-manes.versions" version "0.39.0"
+    id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
+    id "com.github.spotbugs" version "4.7.1"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+    ajc {
+        enabled = false
+    }
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+    ajc {
+        enabled = false
+    }
 }
 
 import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
@@ -15,59 +32,112 @@ processResources {
 }
 
 group 'com.microsoft.azuretools'
+apply plugin: 'java'
 
 compileJava {
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-
-checkstyle {
-    toolVersion = '8.30'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
-}
+//apply plugin: 'checkstyle'
+//
+//checkstyle {
+//    toolVersion = '8.30'
+//    configFile = new File('config/checkstyle/checkstyle.xml')
+//    showViolations = false
+//}
 
 intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', dep_plugins, "properties", 'markdown']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal']
 	downloadSources = Boolean.valueOf(sources)
+}
+
+
+// disable runIde tasks in subprojects to prevent starting-up multiple ide.
+gradle.taskGraph.whenReady { graph ->
+    def hasRootRunTask = graph.hasTask(':runIde')
+
+    if (hasRootRunTask) {
+        graph.getAllTasks().each { task ->
+            // look for *:runIde
+            def subRunTask = (task.path =~ /:.+:runIde/)
+            if (subRunTask) {
+                println "TRACER skipping ${task.path} because ':runIde' was specified"
+                task.enabled = false
+            }
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.freefair.aspectj.post-compile-weaving'
+
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+    group = 'com.microsoft.azuretools'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply plugin: 'org.jetbrains.intellij'
+    intellij {
+        version = intellij_version
+        updateSinceUntilBuild = false
+        downloadSources = Boolean.valueOf(sources)
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.0-SNAPSHOT'
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.jetbrains:annotations:21.0.1'
+        // https://mvnrepository.com/artifact/org.projectlombok/lombok
+        compileOnly 'org.projectlombok:lombok:1.18.20'
+        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.12.0-SNAPSHOT', {
+            exclude group: "com.squareup.okhttp3", module: "okhttp"
+            exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+            exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+        }
+
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.12.0-SNAPSHOT', {
+            exclude group: "com.squareup.okhttp3", module: "okhttp"
+            exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+            exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+        }
+    }
 }
 
 sourceSets {
     main {
-        java.srcDirs 'src'
-        kotlin.srcDirs 'src'
+        java.srcDirs 'src/main/java'
+        kotlin.srcDirs 'src/main/kotlin'
         resources {
-            srcDir 'resources'
+            srcDir 'src/main/resources'
             exclude 'bundle/**'
         }
     }
     test {
         java {
-            srcDir 'Test/java'
+            srcDir 'src/test/java'
         }
-        kotlin.srcDirs 'Test/java'
+        kotlin.srcDirs 'src/test/kotlin'
         resources {
-            srcDir 'Test/resources'
+            srcDir 'src/test/resources'
         }
     }
 }
@@ -80,57 +150,107 @@ repositories {
 configurations {
     compile.exclude module:'slf4j-api'
     compile.exclude module:'log4j'
+    compile.exclude module:'stax-api'
     cucumberRuntime {
         extendsFrom testRuntime
     }
 }
 
-apply plugin: 'java'
+dependencyManagement {
+    imports {
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.0-SNAPSHOT'
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.0-SNAPSHOT'
+    }
+}
 
 dependencies {
-    compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
-    compile 'commons-io:commons-io:2.7'
-    compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
-    compile 'net.minidev:json-smart:2.3'
-    compile 'com.microsoft.azure:azure-client-runtime:1.7.5', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.44.0', {
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-sdk-reference-book')
+    compile project(':azure-intellij-resource-connector-lib')
+    compile project(':azure-intellij-resource-connector-aad')
+    compile project(':azure-intellij-plugin-springcloud')
+    compile project(':azure-intellij-plugin-service-explorer')
+
+    compile 'com.microsoft.azure:azure-client-authentication'
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib'
+    compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
+    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib'
+    compile 'com.microsoft.azure:azure-toolkit-mysql-lib'
+    compile 'com.microsoft.azure:azure-toolkit-storage-lib'
+    aspect "com.microsoft.azure:azure-toolkit-common-lib",  {
+        exclude group: "com.squareup.okhttp3", module: "okhttp"
+        exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+        exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+    }
+    compile 'com.microsoft.azure:azure-client-runtime', {
+        exclude group: "com.squareup.okhttp3", module: "okhttp"
+        exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+        exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+    }
+
+    compile 'com.microsoft.azuretools:azuretools-core:3.57.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.44.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.57.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.44.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.57.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.6.0'
-    compile 'com.microsoft.azure:azure-tools-common:0.14.0'
-    compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
-    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.3'
+
+    compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
+    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
+    compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
+
+    compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
+    compile "com.github.akarnokd:rxjava3-interop:3.0.2"
+    compile 'commons-io:commons-io'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
+    compile group: 'org.apache.commons', name: 'commons-lang3'
+    compile 'net.minidev:json-smart:2.4.7'
+    compile group: 'org.dom4j', name: 'dom4j', {
+        exclude group: "javax.xml.stream", module: "stax-api"
+        exclude group: "xpp3", module: "xpp3"
+        exclude group: "pull-parser", module: "pull-parser"
+        exclude group: "net.java.dev.msv", module: "xsdlib"
+    }
     compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20")
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
+    compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
 
     testCompile 'junit:junit:4.13'
     testCompile 'info.cukes:cucumber-junit:1.2.6'
     testCompile 'info.cukes:cucumber-java:1.2.6'
     testCompile 'org.mockito:mockito-core:2.7.22'
-    testCompile 'org.assertj:assertj-swing-junit:3.9.2'
+    testCompile 'org.assertj:assertj-swing-junit:3.17.1'
 
-    testCompile 'com.github.tomakehurst:wiremock:2.26.3'
+    testCompile 'com.github.tomakehurst:wiremock:2.27.2'
     testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
     testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
-    testCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    testCompile 'javax.servlet:javax.servlet-api:4.0.1'
 
     testCompile "org.jetbrains.kotlin:kotlin-stdlib"
     testCompile "org.jetbrains.kotlin:kotlin-test"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit"
+
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }
 
 test {
@@ -175,15 +295,35 @@ test.dependsOn cucumber
 defaultTasks 'buildPlugin'
 
 wrapper() {
-    gradleVersion = '5.0'
+    gradleVersion = '6.5'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 apply plugin: BundleBuildIDEAPlugin
 
 installIdea.dependsOn buildPlugin
-installIdea.dependsOn checkstyleMain
+//installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
+}
+
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+    ignoreFailures = true
+    showStackTraces = true
+    showProgress = true
+    effort = 'max'
+    reportLevel = 'high'
+    maxHeapSize = '1g'
+    extraArgs = [ '-nested:false' ]
+    jvmArgs = [ '-Duser.language=en' ]
+    includeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-include.xml")
+    excludeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-exclude.xml")
 }

@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.helpers;
@@ -33,15 +16,13 @@ import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import javax.swing.Icon;
-import javax.swing.JOptionPane;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 public interface UIHelper {
@@ -106,14 +87,19 @@ public interface UIHelper {
 
     void openWebAppPropertyView(@NotNull WebAppNode node);
 
-    default void openFunctionAppPropertyView(@NotNull FunctionNode node) {
+    default void openFunctionAppPropertyView(@NotNull FunctionAppNode node) {
 
-    }
-
-    default void openSpringCloudAppPropertyView(@NotNull SpringCloudAppNode node) {
     }
 
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
+
+    default void openMySQLPropertyView(@NotNull String id, @NotNull Object project) {
+
+    }
+
+    default void openSqlServerPropertyView(@NotNull String id, @NotNull Object project) {
+
+    }
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
@@ -154,4 +140,17 @@ public interface UIHelper {
     default String showInputDialog(Component component, String message, String title, Icon icon) {
         return (String) JOptionPane.showInputDialog(component, message, title, JOptionPane.QUESTION_MESSAGE, icon, null, null);
     }
+
+    default void showInfoNotification(String title, String message) {
+
+    }
+
+    default void showErrorNotification(String title, String message) {
+
+    }
+
+    default void showWarningNotification(String title, String message) {
+
+    }
+
 }

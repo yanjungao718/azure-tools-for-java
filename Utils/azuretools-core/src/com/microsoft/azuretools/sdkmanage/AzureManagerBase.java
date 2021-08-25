@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.sdkmanage;
@@ -27,30 +10,40 @@ import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
+import com.microsoft.azuretools.authmanage.interact.INotification;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
+import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
 
-import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.authmanage.Environment.CHINA;
 import static com.microsoft.azuretools.authmanage.Environment.GERMAN;
 import static com.microsoft.azuretools.authmanage.Environment.GLOBAL;
@@ -67,15 +60,15 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String GLOBAL_SCM_SUFFIX = ".scm.azurewebsites.net";
 
     private static final Logger LOGGER = Logger.getLogger(AzureManagerBase.class.getName());
+    private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
-    protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
     protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
     protected static final Settings settings = new Settings();
 
     protected AzureManagerBase() {
-        this.subscriptionManager = new SubscriptionManagerPersist(this);
+        this.subscriptionManager = new SubscriptionManager();
     }
 
     @Override
@@ -106,43 +99,48 @@ public abstract class AzureManagerBase implements AzureManager {
         }
     }
 
-    @Override
-    public String getTenantIdBySubscription(String subscriptionId) throws IOException {
-        final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
-                .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
-                .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
-                .findFirst().orElseThrow(() -> new IOException("Failed to find storage subscription id"));
-        return subscriptionTenantPair.second().tenantId();
-    }
-
     protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
         return configurable.withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT);
+            .withUserAgent(CommonSettings.USER_AGENT);
     }
 
     @Override
-    public List<Subscription> getSubscriptions() throws IOException {
+    public List<Subscription> getSubscriptions() {
         return getSubscriptionsWithTenant().stream().map(Pair::first).collect(Collectors.toList());
     }
 
     @Override
-    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException {
+    @AzureOperation(name = "account|subscription.list.tenant|authorized", type = AzureOperation.Type.SERVICE)
+    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
         // could be multi tenant - return all subscriptions for the current account
         final List<Tenant> tenants = getTenants(authentication);
-        for (Tenant tenant : tenants) {
-            final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
-            final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
-            for (Subscription subscription : tenantSubscriptions) {
-                subscriptions.add(new Pair<>(subscription, tenant));
+        final List<String> failedTenantIds = new ArrayList<>();
+        for (final Tenant tenant : tenants) {
+            try {
+                final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
+                final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
+                for (final Subscription subscription : tenantSubscriptions) {
+                    subscriptions.add(new Pair<>(subscription, tenant));
+                }
+            } catch (final Exception e) {
+                // just skip for cases user failing to get subscriptions of tenants he/she has no permission to get access token.
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+                failedTenantIds.add(tenant.tenantId());
+
             }
         }
+        if (!failedTenantIds.isEmpty()) {
+            final INotification nw = CommonSettings.getUiFactory().getNotificationWindow();
+            nw.deliver("Lack permission for some tenants", "You don't have permission on the tenant(s): " + StringUtils.join(failedTenantIds, ","));
+        }
+
         return subscriptions;
     }
 
     @Override
-    public Azure getAzure(String sid) throws IOException {
+    public @Nullable Azure getAzure(String sid) {
         if (!isSignedIn()) {
             return null;
         }
@@ -157,24 +155,15 @@ public abstract class AzureManagerBase implements AzureManager {
         return azure;
     }
 
-    @Override
-    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
-        if (!isSignedIn()) {
-            return null;
-        }
-        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
-            return authSpringCloud(sid, tid);
-        });
-    }
-
-    @Override
-    public InsightsManager getInsightsManager(String sid) throws IOException {
+    public @Nullable InsightsManager getInsightsManager(String sid) {
         if (!isSignedIn()) {
             return null;
         }
         return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            // Register insights namespace first
+            final Azure azure = getAzure(sid);
+            azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
+            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authApplicationInsights(sid, tid);
         });
     }
@@ -193,7 +182,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public String getManagementURI() throws IOException {
+    public @Nullable String getManagementURI() {
         if (!isSignedIn()) {
             return null;
         }
@@ -201,6 +190,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getEnvironment().getAzureEnvironment().resourceManagerEndpoint();
     }
 
+    @Override
     public String getStorageEndpointSuffix() {
         if (!isSignedIn()) {
             return null;
@@ -209,17 +199,12 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public Settings getSettings() {
-        return settings;
-    }
-
-    @Override
-    public void drop() throws IOException {
+    public void drop() {
         LOGGER.log(Level.INFO, "ServicePrincipalAzureManager.drop()");
         this.subscriptionManager.cleanSubscriptions();
     }
 
-    protected abstract String getCurrentTenantId() throws IOException;
+    protected abstract String getCurrentTenantId();
 
     protected boolean isSignedIn() {
         return false;
@@ -237,45 +222,64 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
-    private List<Subscription> getSubscriptions(Azure.Authenticated tenantAuthentication) {
-        return tenantAuthentication.subscriptions().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-                    return Observable.empty();
-                })
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+    @AzureOperation(name = "account|subscription.list.tenant", params = {"authentication.tenantId()"}, type = AzureOperation.Type.TASK)
+    private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
+        return az(AzureAccount.class).account().getSubscriptions();
     }
 
-    private List<Tenant> getTenants(Azure.Authenticated authentication) {
+    @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
+    protected List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-                    return Observable.empty();
-                })
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+            .toList()
+            .toBlocking()
+            .singleOrDefault(Collections.emptyList());
     }
 
+    @AzureOperation(name = "account|tenant.auth", params = {"tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return Azure.configure()
-                .withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(credentials);
-    }
-
-    protected AppPlatformManager authSpringCloud(String subscriptionId, String tenantId) {
-        final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(AppPlatformManager.configure())
-                .authenticate(credentials, subscriptionId);
+        final Azure.Configurable configurable = Azure.configure()
+            .withInterceptor(new TelemetryInterceptor())
+            .withInterceptor(new RestExceptionHandlerInterceptor())
+            .withUserAgent(CommonSettings.USER_AGENT);
+        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
+            configurable.withProxy(proxy);
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
+        });
+        return configurable.authenticate(credentials);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(InsightsManager.configure())
-                .authenticate(credentials, subscriptionId);
+        final InsightsManager.Configurable configurable = buildAzureManager(InsightsManager.configure())
+            .withInterceptor(new TelemetryInterceptor())
+            .withInterceptor(new RestExceptionHandlerInterceptor());
+        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
+            configurable.withProxy(proxy);
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
+        });
+
+        return configurable.authenticate(credentials, subscriptionId);
+    }
+
+    private static Proxy createProxyFromConfig() {
+        final AzureConfiguration config = az().config();
+        if (StringUtils.isNotBlank(config.getProxySource())) {
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.getHttpProxyHost(), config.getHttpProxyPort()));
+        }
+        return null;
+    }
+
+    private static Authenticator createProxyAuthenticatorFromConfig() {
+        final AzureConfiguration az = az().config();
+        if (StringUtils.isNoneBlank(az.getProxySource(), az.getProxyUsername(), az.getProxyPassword())) {
+            return (route, response) -> {
+                String credential = Credentials.basic(az.getProxyUsername(), az.getProxyPassword());
+                return response.request().newBuilder()
+                    .header("Proxy-Authorization", credential)
+                    .build();
+            };
+        }
+        return null;
     }
 }

@@ -1,0 +1,10 @@
+<idea-plugin>
+    <resource-bundle>com.microsoft.azure.toolkit.operation.title.sdk</resource-bundle>
+    <actions>
+        <action id="AzureToolkit.OpenSdkReferenceBook"
+                class="com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReferenceBookAction"
+                text="Azure SDK Reference Book"
+                description="Open Azure SDK reference book dialog.">
+        </action>
+    </actions>
+</idea-plugin>

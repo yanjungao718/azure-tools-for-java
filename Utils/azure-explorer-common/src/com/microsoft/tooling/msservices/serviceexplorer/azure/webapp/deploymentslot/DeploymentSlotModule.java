@@ -1,80 +1,61 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import java.io.IOException;
-
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+
 import java.util.List;
 
 public class DeploymentSlotModule extends AzureRefreshableNode implements DeploymentSlotModuleView {
     private static final String MODULE_ID = WebAppModule.class.getName();
     private static final String ICON_PATH = "Slot_16.png";
-    private static final String MODULE_NAME = "Deployment Slots";
 
     private final DeploymentSlotModulePresenter presenter;
+    public static final String MODULE_NAME = "Deployment Slots";
     protected final String subscriptionId;
-    protected final String webAppId;
+    protected final IWebApp webapp;
 
-    public DeploymentSlotModule(final Node parent, final String subscriptionId, final String webAppId) {
+    public DeploymentSlotModule(final Node parent, final String subscriptionId, final IWebApp webapp) {
         super(MODULE_ID, MODULE_NAME, parent, ICON_PATH);
         this.subscriptionId = subscriptionId;
-        this.webAppId = webAppId;
+        this.webapp = webapp;
         presenter = new DeploymentSlotModulePresenter<>();
         presenter.onAttachView(this);
     }
 
     @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        boolean isLinux = webapp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
+        return isLinux ? AzureIconSymbol.DeploymentSlot.MODULE_ON_LINUX : AzureIconSymbol.DeploymentSlot.MODULE;
+    }
+
+    @Override
+    @AzureOperation(name = "webapp|deployment.delete", params = {"name", "this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     public void removeNode(final String sid, final String name, Node node) {
-        try {
-            presenter.onDeleteDeploymentSlot(sid, this.webAppId, name);
-            removeDirectChildNode(node);
-        } catch (Exception e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Deployment Slot",
-                e, "Azure Services Explorer - Error Deleting Deployment Slot", false, true);
-        }
+        presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
+        removeDirectChildNode(node);
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
-        try {
-            presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webAppId);
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        }
+    @AzureOperation(name = "webapp|deployment.reload", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    protected void refreshItems() {
+        presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
     }
 
     @Override
-    public void renderDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
-        slots.forEach(slot -> addChildNode(
-            new DeploymentSlotNode(slot.id(), slot.parent().id(), slot.parent().name(),
-                this, slot.name(), slot.state(), slot.operatingSystem().toString(),
-                this.subscriptionId, slot.defaultHostName())));
+    public void renderDeploymentSlots(@NotNull final List<IWebAppDeploymentSlot> slots) {
+        slots.forEach(slot -> addChildNode(new DeploymentSlotNode(slot, DeploymentSlotModule.this)));
     }
 }

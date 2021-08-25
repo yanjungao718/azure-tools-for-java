@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.core.mvp.model.container;
@@ -27,7 +10,8 @@ import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryCredentials;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -35,11 +19,12 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class ContainerRegistryMvpModel {
 
@@ -67,9 +52,9 @@ public class ContainerRegistryMvpModel {
      */
     public List<ResourceEx<Registry>> listContainerRegistries(boolean force) {
         List<ResourceEx<Registry>> registryList = new ArrayList<>();
-        List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         for (Subscription sub : subscriptions) {
-            registryList.addAll(listRegistryBySubscriptionId(sub.subscriptionId(), force));
+            registryList.addAll(listRegistryBySubscriptionId(sub.getId(), force));
         }
         return registryList;
     }
@@ -82,15 +67,11 @@ public class ContainerRegistryMvpModel {
             return subscriptionIdToRegistryMap.get(sid);
         }
         List<ResourceEx<Registry>> registryList = new ArrayList<>();
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            for (Registry registry: azure.containerRegistries().list()) {
-                registryList.add(new ResourceEx<>(registry, sid));
-            }
-            subscriptionIdToRegistryMap.put(sid, registryList);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        for (Registry registry: azure.containerRegistries().list()) {
+            registryList.add(new ResourceEx<>(registry, sid));
         }
+        subscriptionIdToRegistryMap.put(sid, registryList);
         return registryList;
     }
 
@@ -134,7 +115,7 @@ public class ContainerRegistryMvpModel {
     /**
      * Set AdminUser enabled status of container registry.
      */
-    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) throws IOException {
+    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
         if (registries != null) {

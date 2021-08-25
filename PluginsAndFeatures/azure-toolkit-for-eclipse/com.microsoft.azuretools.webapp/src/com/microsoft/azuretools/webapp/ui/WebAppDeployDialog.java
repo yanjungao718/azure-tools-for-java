@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.webapp.ui;
@@ -233,9 +216,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
     private void createAppGroup(Composite container) {
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        gd_table.heightHint = 250;
-        table.setLayoutData(gd_table);
+        GridData gridTable = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        gridTable.heightHint = 250;
+        table.setLayoutData(gridTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         table.addListener(SWT.Selection, (e) -> {
@@ -368,12 +351,12 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
         compositeSlot.setLayout(new GridLayout(2, false));
 
-        Composite compositeSlotCb = new Composite(compositeSlot, SWT.LEFT);
         RowLayout rowLayout = new RowLayout();
         rowLayout.marginLeft = 0;
         rowLayout.marginTop = 0;
         rowLayout.marginRight = 0;
         rowLayout.marginBottom = 0;
+        Composite compositeSlotCb = new Composite(compositeSlot, SWT.LEFT);
         compositeSlotCb.setLayout(rowLayout);
 
         btnDeployToSlot = new Button(compositeSlotCb, SWT.CHECK);
@@ -599,7 +582,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                             webAppDetails.subscriptionDetail = sd;
                             webAppDetails.resourceGroup = rg;
                             webAppDetails.appServicePlan = findAppSevicePlanByID(webApp.appServicePlanId(), rgaspMap);
-                            webAppDetails.appServicePlanResourceGroup = findResouceGroupByName(
+                            webAppDetails.appServicePlanResourceGroup = findResourceGroupByName(
                                 webApp.resourceGroupName(), srgMap.get(sd));
                             webAppDetailsList.add(webAppDetails);
                         }
@@ -753,7 +736,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         return null;
     }
 
-    private ResourceGroup findResouceGroupByName(String rgName, List<ResourceGroup> rgs) {
+    private ResourceGroup findResourceGroupByName(String rgName, List<ResourceGroup> rgs) {
         if (rgs == null) {
             return null;
         }

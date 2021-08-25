@@ -22,6 +22,5 @@ branches:
   - develop.next
 install: skip
 script:
-- 'travis_wait 40 ./gradlew buildAll --quiet'
+- ' ./gradlew buildAll --quiet'
 dist: trusty
-

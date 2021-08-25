@@ -1,78 +1,49 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.PublishingProfileFormat;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.SkuName;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
-import com.microsoft.azure.management.appservice.WebContainer;
-import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.azure.core.management.exception.ManagementException;
+import com.azure.resourcemanager.AzureResourceManager;
+import com.azure.resourcemanager.resources.models.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import org.apache.commons.io.IOUtils;
+import com.microsoft.azuretools.utils.IProgressIndicator;
+import lombok.extern.java.Log;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
+// todo: Refactor to tasks in app service library
+@Deprecated
+@Log
 public class AzureWebAppMvpModel {
 
-    public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
+    public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
 
-    private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS = Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
-    private static final List<WebAppUtils.WebContainerMod> JAVA_11_JAR_CONTAINERS = Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_11);
+    private static final String STOP_WEB_APP = "Stopping web app...";
+    private static final String STOP_DEPLOYMENT_SLOT = "Stopping deployment slot...";
+    private static final String DEPLOY_SUCCESS_WEB_APP = "Deploy succeed, restarting web app...";
+    private static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
 
     private AzureWebAppMvpModel() {
-        subscriptionIdToWebApps = new ConcurrentHashMap<>();
     }
 
     public static AzureWebAppMvpModel getInstance() {
@@ -80,646 +51,224 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * get the web app by ID.
+     * API to create Web App on Docker.
+     *
+     * @param model parameters
+     * @return instance of created WebApp
      */
-    public WebApp getWebAppById(String sid, String id) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        WebApp app = azure.webApps().getById(id);
-        if (app == null) {
-            throw new IOException(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
+    @AzureOperation(
+            name = "docker.create_from_private_image",
+            params = {
+                "model.getWebAppName()",
+                "model.getSubscriptionId()",
+                "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
+            },
+            type = AzureOperation.Type.SERVICE
+    )
+    public IWebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
+        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .id(model.getAppServicePlanId())
+                .subscriptionId(model.getSubscriptionId())
+                .name(model.getAppServicePlanName())
+                .resourceGroup(model.getResourceGroupName())
+                .region(model.getLocationName())
+                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+        final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
+        // todo: support start up file in docker configuration
+        final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
+                .image(pr.getImageTagWithServerUrl())
+                .registryUrl(pr.getServerUrl())
+                .userName(pr.getUsername())
+                .password(pr.getPassword())
+                .startUpCommand(pr.getStartupFile()).build();
+        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
+                .withName(model.getWebAppName())
+                .withResourceGroup(resourceGroup.name())
+                .withPlan(appServicePlan.id())
+                .withRuntime(Runtime.DOCKER)
+                .withDockerConfiguration(dockerConfiguration)
+                .commit();
+    }
+
+    /**
+     * Update container settings for existing Web App on Linux.
+     *
+     * @param webAppId     id of Web App on Linux instance
+     * @param imageSetting new container settings
+     * @return instance of the updated Web App on Linux
+     */
+    @AzureOperation(
+        name = "docker|image.update",
+        params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    public IWebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
+        final IWebApp app = com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).webapp(webAppId);
+        // clearTags(app);
+        if (imageSetting instanceof PrivateRegistryImageSetting) {
+            final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+            final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
+                    .image(pr.getImageTagWithServerUrl())
+                    .registryUrl(pr.getServerUrl())
+                    .userName(pr.getUsername())
+                    .password(pr.getPassword())
+                    .startUpCommand(pr.getStartupFile()).build();
+            app.update().withDockerConfiguration(dockerConfiguration).commit();
         }
+        // status-free restart.
+        app.restart();
         return app;
     }
 
     /**
      * API to create new Web App by setting model.
      */
-    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
-        switch (model.getOS()) {
-            case WINDOWS:
-                return createWebAppOnWindows(model);
-            case LINUX:
-                return createWebAppOnLinux(model);
-            default:
-                throw new Exception("Invalid operating system setting: " + model.getOS());
+    @AzureOperation(
+            name = "webapp.create_detail",
+            params = {"model.getWebAppName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
+        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .id(model.getAppServicePlanId())
+                .subscriptionId(model.getSubscriptionId())
+                .name(model.getAppServicePlanName())
+                .resourceGroup(model.getResourceGroup())
+                .region(model.getRegion())
+                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing())).build();
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+        final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
+                .enableApplicationLog(model.isEnableApplicationLog())
+                .applicationLogLevel(com.microsoft.azure.toolkit.lib.appservice.model.LogLevel.fromString(model.getApplicationLogLevel()))
+                .enableWebServerLogging(model.isEnableWebServerLogging())
+                .webServerLogQuota(model.getWebServerLogQuota())
+                .webServerRetentionPeriod(model.getWebServerRetentionPeriod())
+                .enableDetailedErrorMessage(model.isEnableDetailedErrorMessage())
+                .enableFailedRequestTracing(model.isEnableFailedRequestTracing()).build();
+        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
+                .withName(model.getWebAppName())
+                .withResourceGroup(resourceGroup.name())
+                .withPlan(appServicePlan.id())
+                .withRuntime(model.getRuntime())
+                .withDiagnosticConfig(diagnosticConfig)
+                .commit();
+    }
+
+    // todo: Move duplicated codes to azure common library
+    private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
+        final AzureResourceManager az =
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
+        try {
+            return az.resourceGroups().getByName(resourceGroup);
+        } catch (ManagementException e) {
+            return az.resourceGroups().define(resourceGroup).withRegion(region).create();
         }
+    }
+
+    private IAppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
+        final AzureAppService az = getAzureAppServiceClient(servicePlanEntity.getSubscriptionId());
+        final IAppServicePlan appServicePlan = az.appServicePlan(servicePlanEntity);
+        if (appServicePlan.exists()) {
+            return appServicePlan;
+        }
+        return appServicePlan.create()
+                // todo: remove duplicated parameters declared in service plan entity
+                .withName(servicePlanEntity.getName())
+                .withResourceGroup(servicePlanEntity.getResourceGroup())
+                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(servicePlanEntity.getRegion()))
+                .withPricingTier(servicePlanEntity.getPricingTier())
+                .withOperatingSystem(servicePlanEntity.getOperatingSystem())
+                .commit();
     }
 
     /**
      * API to create a new Deployment Slot by setting model.
      */
-    public DeploymentSlot createDeploymentSlot(@NotNull WebAppSettingModel model) throws Exception {
-        final WebApp app = getWebAppById(model.getSubscriptionId(), model.getWebAppId());
-        final String name = model.getNewSlotName();
-        final String configurationSource = model.getNewSlotConfigurationSource();
-        final DeploymentSlot.DefinitionStages.Blank definedSlot = app.deploymentSlots().define(name);
-
-        if (configurationSource.equals(app.name())) {
-            return definedSlot.withConfigurationFromParent().create();
+    @AzureOperation(
+            name = "webapp|deployment.create",
+            params = {"model.getNewSlotName()", "model.getWebAppName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
+        String configurationSource = model.getNewSlotConfigurationSource();
+        if (StringUtils.equalsIgnoreCase(configurationSource, webApp.name())) {
+            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_PARENT;
         }
+        if (StringUtils.equalsIgnoreCase(configurationSource, DO_NOT_CLONE_SLOT_CONFIGURATION)) {
+            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_NEW;
+        }
+        return webApp.deploymentSlot(model.getSlotName()).create()
+                .withName(model.getNewSlotName())
+                .withConfigurationSource(configurationSource).commit();
+    }
 
-        final DeploymentSlot configurationSourceSlot = app.deploymentSlots()
-            .list()
-            .stream()
-            .filter(s -> configurationSource.equals(s.name()))
-            .findAny()
-            .orElse(null);
+    public AzureAppService getAzureAppServiceClient(String subscriptionId) {
+        return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId);
+    }
 
-        if (configurationSourceSlot != null) {
-            return definedSlot.withConfigurationFromDeploymentSlot(configurationSourceSlot).create();
+    @AzureOperation(
+            name = "webapp|artifact.upload",
+            params = {"file.getName()", "deployTarget.name()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public void deployArtifactsToWebApp(@NotNull final IWebAppBase deployTarget, @NotNull final File file,
+                                        boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
+        if (!(deployTarget instanceof IWebApp || deployTarget instanceof IWebAppDeploymentSlot)) {
+            final String error = "the deployment target is not a valid (deployment slot of) Web App";
+            final String action = "select a valid Web App or deployment slot to deploy the artifact";
+            throw new AzureToolkitRuntimeException(error, action);
+        }
+        // stop target app service
+        String stopMessage = deployTarget instanceof IWebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
+        progressIndicator.setText(stopMessage);
+        deployTarget.stop();
+
+        final DeployType deployType = getDeployTypeByWebContainer(deployTarget.getRuntime().getWebContainer());
+        // java se runtime will always deploy to root
+        if (isDeployToRoot ||
+                Objects.equals(deployTarget.getRuntime().getWebContainer(), com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
+            deployTarget.deploy(deployType, file);
         } else {
-            return definedSlot.withBrandNewConfiguration().create();
-        }
-    }
-
-    /**
-    * API to create Web App on Windows .
-    *
-    * @param model parameters
-    * @return instance of created WebApp
-    * @throws Exception exception
-    */
-    public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-
-        WebApp.DefinitionStages.WithCreate withCreate;
-        if (model.isCreatingAppServicePlan()) {
-            withCreate = withCreateNewWindowsServicePlan(azure, model);
-        } else {
-            withCreate = withExistingWindowsServicePlan(azure, model);
+            final String webappPath = String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
+            deployTarget.deploy(deployType, file, webappPath);
         }
 
-        return withCreate
-                .withJavaVersion(model.getJdkVersion())
-                .withWebContainer(WebContainer.fromString(model.getWebContainer()))
-                .create();
+        String successMessage = deployTarget instanceof IWebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
+        progressIndicator.setText(successMessage);
+        deployTarget.start();
     }
 
-    /**
-     * API to create Web App on Linux.
-     */
-    public WebApp createWebAppOnLinux(@NotNull WebAppSettingModel model) throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-
-        WebApp.DefinitionStages.WithDockerContainerImage withCreate;
-        if (model.isCreatingAppServicePlan()) {
-            withCreate = withCreateNewLinuxServicePlan(azure, model);
-        } else {
-            withCreate = withExistingLinuxServicePlan(azure, model);
+    // todo: get deploy type with runtime&artifact
+    private static DeployType getDeployTypeByWebContainer(com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer) {
+        if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
+            return DeployType.JAR;
         }
-
-        return withCreate.withBuiltInImage(model.getLinuxRuntime()).create();
-    }
-
-    private AppServicePlan.DefinitionStages.WithCreate prepareWithCreate(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
-
-        final String[] tierSize = model.getPricing().split("_");
-        if (tierSize.length != 2) {
-            throw new Exception("Cannot get valid price tier");
+        if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72)) {
+            return DeployType.EAR;
         }
-        final PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
-
-        final AppServicePlan.DefinitionStages.WithGroup withGroup = azure
-            .appServices()
-            .appServicePlans()
-            .define(model.getAppServicePlanName())
-            .withRegion(model.getRegion());
-
-        final AppServicePlan.DefinitionStages.WithPricingTier withPricingTier;
-        final String resourceGroup = model.getResourceGroup();
-        if (model.isCreatingResGrp()) {
-            withPricingTier = withGroup.withNewResourceGroup(resourceGroup);
-        } else {
-            withPricingTier = withGroup.withExistingResourceGroup(resourceGroup);
-        }
-
-        return withPricingTier.withPricingTier(pricingTier).withOperatingSystem(model.getOS());
-    }
-
-    private WebApp.DefinitionStages.WithNewAppServicePlan prepareServicePlan(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
-
-        final WebApp.DefinitionStages.NewAppServicePlanWithGroup appWithGroup = azure
-            .webApps()
-            .define(model.getWebAppName())
-            .withRegion(model.getRegion());
-
-        final String resourceGroup = model.getResourceGroup();
-        if (model.isCreatingResGrp()) {
-            return appWithGroup.withNewResourceGroup(resourceGroup);
-        }
-        return appWithGroup.withExistingResourceGroup(resourceGroup);
-    }
-
-    private WebApp.DefinitionStages.WithCreate withCreateNewWindowsServicePlan(
-            @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
-
-        final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
-        final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
-        return withNewAppServicePlan.withNewWindowsPlan(withCreate);
-    }
-
-    private WebApp.DefinitionStages.WithDockerContainerImage withCreateNewLinuxServicePlan(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
-
-        final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
-        final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
-        return withNewAppServicePlan.withNewLinuxPlan(withCreate);
-    }
-
-    private WebApp.DefinitionStages.WithCreate withExistingWindowsServicePlan(
-            @NotNull Azure azure, @NotNull WebAppSettingModel model) {
-
-        AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-        WebApp.DefinitionStages.ExistingWindowsPlanWithGroup withGroup = azure
-            .webApps()
-            .define(model.getWebAppName())
-            .withExistingWindowsPlan(servicePlan);
-
-        if (model.isCreatingResGrp()) {
-            return withGroup.withNewResourceGroup(model.getResourceGroup());
-        }
-        return withGroup.withExistingResourceGroup(model.getResourceGroup());
-    }
-
-    private WebApp.DefinitionStages.WithDockerContainerImage withExistingLinuxServicePlan(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
-
-        AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-        WebApp.DefinitionStages.ExistingLinuxPlanWithGroup withGroup = azure
-            .webApps()
-            .define(model.getWebAppName())
-            .withExistingLinuxPlan(servicePlan);
-
-        if (model.isCreatingResGrp()) {
-            return withGroup.withNewResourceGroup(model.getResourceGroup());
-        }
-        return withGroup.withExistingResourceGroup(model.getResourceGroup());
-    }
-
-    public void deployWebApp() {
-        // TODO
-    }
-
-    public void deleteWebApp(String sid, String appId) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).webApps().deleteById(appId);
-        subscriptionIdToWebApps.remove(sid);
-    }
-
-    /**
-     * API to create Web App on Docker.
-     *
-     * @param model parameters
-     * @return instance of created WebApp
-     * @throws IOException IOExceptions
-     */
-    public WebApp createWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model)
-            throws IOException {
-        PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
-        WebApp app;
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-        PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
-
-        WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
-        if (model.isCreatingNewAppServicePlan()) {
-            // new asp
-            AppServicePlan.DefinitionStages.WithCreate asp;
-            if (model.isCreatingNewResourceGroup()) {
-                // new rg
-                asp = azure.appServices().appServicePlans()
-                        .define(model.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                        .withNewResourceGroup(model.getResourceGroupName())
-                        .withPricingTier(pricingTier)
-                        .withOperatingSystem(OperatingSystem.LINUX);
-                app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                        .withNewResourceGroup(model.getResourceGroupName())
-                        .withNewLinuxPlan(asp)
-                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                        .withCredentials(pr.getUsername(), pr.getPassword())
-                        .withStartUpCommand(pr.getStartupFile()).create();
-            } else {
-                // old rg
-                asp = azure.appServices().appServicePlans()
-                        .define(model.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                        .withExistingResourceGroup(model.getResourceGroupName())
-                        .withPricingTier(pricingTier)
-                        .withOperatingSystem(OperatingSystem.LINUX);
-                app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                        .withExistingResourceGroup(model.getResourceGroupName())
-                        .withNewLinuxPlan(asp)
-                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                        .withCredentials(pr.getUsername(), pr.getPassword())
-                        .withStartUpCommand(pr.getStartupFile()).create();
-            }
-        } else {
-            // old asp
-            AppServicePlan asp = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-            if (model.isCreatingNewResourceGroup()) {
-                // new rg
-                app = webAppDefinition
-                        .withExistingLinuxPlan(asp)
-                        .withNewResourceGroup(model.getResourceGroupName())
-                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                        .withCredentials(pr.getUsername(), pr.getPassword())
-                        .withStartUpCommand(pr.getStartupFile()).create();
-            } else {
-                // old rg
-                app = webAppDefinition
-                        .withExistingLinuxPlan(asp)
-                        .withExistingResourceGroup(model.getResourceGroupName())
-                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                        .withCredentials(pr.getUsername(), pr.getPassword())
-                        .withStartUpCommand(pr.getStartupFile()).create();
-            }
-        }
-        return app;
-        // TODO: update cache
-    }
-
-    /**
-     * Update container settings for existing Web App on Linux.
-     *
-     * @param sid          Subscription id
-     * @param webAppId     id of Web App on Linux instance
-     * @param imageSetting new container settings
-     * @return instance of the updated Web App on Linux
-     */
-    public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) throws Exception {
-        WebApp app = getWebAppById(sid, webAppId);
-        clearTags(app);
-        if (imageSetting instanceof PrivateRegistryImageSetting) {
-            PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
-            app.update().withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).apply();
-        } else {
-            // TODO: other types of ImageSetting, e.g. Docker Hub
-        }
-        // status-free restart.
-        stopWebApp(sid, webAppId);
-        startWebApp(sid, webAppId);
-        return app;
-    }
-
-    /**
-     * Update app settings of webapp.
-     *
-     * @param sid      subscription id
-     * @param webAppId webapp id
-     * @param toUpdate entries to add/modify
-     * @param toRemove entries to remove
-     * @throws Exception exception
-     */
-    public void updateWebAppSettings(String sid, String webAppId, Map<String, String> toUpdate, Set<String> toRemove)
-            throws Exception {
-        WebApp app = getWebAppById(sid, webAppId);
-        clearTags(app);
-        com.microsoft.azure.management.appservice.WebAppBase.Update<WebApp> update = app.update()
-                .withAppSettings(toUpdate);
-        for (String key : toRemove) {
-            update = update.withoutAppSetting(key);
-        }
-        update.apply();
+        return DeployType.WAR;
     }
 
     /**
      * Update app settings of deployment slot.
+     * todo: move to app service library
      */
-    public void updateDeploymentSlotAppSettings(final String subsciptionId, final String webAppId,
-                                                final String slotName, final Map<String, String> toUpdate,
-                                                final Set<String> toRemove) throws Exception {
-        final DeploymentSlot slot = getWebAppById(subsciptionId, webAppId).deploymentSlots().getByName(slotName);
-        clearTags(slot);
-        com.microsoft.azure.management.appservice.WebAppBase.Update<DeploymentSlot> update = slot.update()
-            .withAppSettings(toUpdate);
-        for (String key : toRemove) {
-            update = update.withoutAppSetting(key);
-        }
-        update.apply();
-    }
-
-    public void deleteWebAppOnLinux(String sid, String appid) throws IOException {
-        deleteWebApp(sid, appid);
-    }
-
-    public void restartWebApp(String sid, String appid) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).webApps().getById(appid).restart();
-    }
-
-    public void startWebApp(String sid, String appid) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).webApps().getById(appid).start();
-    }
-
-    public void stopWebApp(String sid, String appid) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).webApps().getById(appid).stop();
-    }
-
-    public void startDeploymentSlot(final String subscriptionId, final String appId,
-                                    final String slotName) throws IOException {
-        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
-        app.deploymentSlots().getByName(slotName).start();
-    }
-
-    public void stopDeploymentSlot(final String subscriptionId, final String appId,
-                                   final String slotName) throws IOException {
-        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
-        app.deploymentSlots().getByName(slotName).stop();
-    }
-
-    public void restartDeploymentSlot(final String subscriptionId, final String appId,
-                                      final String slotName) throws IOException {
-        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
-        app.deploymentSlots().getByName(slotName).restart();
-    }
-
-    public void swapSlotWithProduction(final String subscriptionId, final String appId,
-                                       final String slotName) throws IOException {
-        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
-        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
-        slot.swap("production");
-    }
-
-    public void deleteDeploymentSlotNode(final String subscriptionId, final String appId,
-                                         final String slotName) throws IOException {
-        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
-        app.deploymentSlots().deleteByName(slotName);
-    }
-
-    /**
-     * Get all the deployment slots of a web app by the subscription id and web app id.
-     */
-    public List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) throws IOException {
-        final List<DeploymentSlot> deploymentSlots = new ArrayList<>();
-        final WebApp webApp = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
-        deploymentSlots.addAll(webApp.deploymentSlots().list());
-        return deploymentSlots;
-    }
-
-    /**
-     * List app service plan by subscription id and resource group name.
-     */
-    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
-        List<AppServicePlan> appServicePlans = new ArrayList<>();
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return appServicePlans;
-    }
-
-    /**
-     * List app service plan by subscription id.
-     */
-    public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) throws IOException {
-        return AuthMethodManager.getInstance().getAzureClient(sid).appServices().appServicePlans().list(true);
-    }
-
-    /**
-     * List Web Apps by Subscription ID.
-     */
-    @Deprecated
-    public List<ResourceEx<WebApp>> listWebAppsOnWindowsBySubscriptionId(final String sid, final boolean force) {
-        return this.listWebAppsOnWindows(sid, force);
-    }
-
-    /**
-     * List all the Web Apps on Windows in selected subscriptions.
-     */
-    public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(final boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
-            webApps.addAll(listWebAppsOnWindows(sid, force));
-        }
-        return webApps;
-    }
-
-    /**
-     * List Web App on Linux by Subscription ID.
-     *
-     * @param sid   subscription Id
-     * @param force flag indicating whether force to fetch most updated data from server
-     * @return list of Web App on Linux
-     */
-    @Deprecated
-    public List<ResourceEx<WebApp>> listWebAppsOnLinuxBySubscriptionId(final String sid, final boolean force) {
-        return this.listWebAppsOnLinux(sid, force);
-    }
-
-    /**
-     * List all the Web Apps in selected subscriptions.
-     *
-     * @param force flag indicating whether force to fetch most updated data from server
-     * @return list of Web App
-     */
-    public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (subs.size() == 0) {
-            return webApps;
-        }
-        Observable.from(subs).flatMap((sd) ->
-            Observable.create((subscriber) -> {
-                List<ResourceEx<WebApp>> webAppList = listWebApps(sd.subscriptionId(), force);
-                synchronized (webApps) {
-                    webApps.addAll(webAppList);
-                }
-                subscriber.onCompleted();
-            }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
-        return webApps;
-    }
-
-    /**
-     * List web apps on linux by subscription id.
-     */
-    public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId, final boolean force) {
-        return listWebApps(subscriptionId, force)
-            .stream()
-            .filter(resourceEx -> OperatingSystem.LINUX.equals(resourceEx.getResource().operatingSystem()))
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * List web apps on windows by subscription id.
-     */
-    public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
-        return listWebApps(subscriptionId, force)
-            .stream()
-            .filter(resourceEx -> OperatingSystem.WINDOWS.equals((resourceEx.getResource().operatingSystem())))
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * List all web apps by subscription id.
-     */
-    @NotNull
-    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
-        if (!force && subscriptionIdToWebApps.get(subscriptionId) != null) {
-            return subscriptionIdToWebApps.get(subscriptionId);
-        }
-
-        List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-            webApps = azure.webApps().list()
-                .stream()
-                .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
-                .collect(Collectors.toList());
-            subscriptionIdToWebApps.put(subscriptionId, webApps);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return webApps;
-    }
-
-    /**
-     * List available web containers for jar files.
-     */
-    public static List<WebAppUtils.WebContainerMod> listWebContainersForJarFile(JdkModel jdkModel) {
-        if (jdkModel == null || jdkModel.getJavaVersion() == null) {
-            return Collections.emptyList();
-        }
-        final String javaVersion = jdkModel.getJavaVersion().toString();
-        if (javaVersion.startsWith("1.8")) {
-            return JAVA_8_JAR_CONTAINERS;
-        } else if (javaVersion.startsWith("11")) {
-            return JAVA_11_JAR_CONTAINERS;
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * List available web containers for war files.
-     */
-    public static List<WebAppUtils.WebContainerMod> listWebContainersForWarFile() {
-        return Arrays.asList(
-                WebAppUtils.WebContainerMod.Newest_Jetty_91,
-                WebAppUtils.WebContainerMod.Newest_Jetty_93,
-                WebAppUtils.WebContainerMod.Newest_Tomcat_70,
-                WebAppUtils.WebContainerMod.Newest_Tomcat_80,
-                WebAppUtils.WebContainerMod.Newest_Tomcat_85,
-                WebAppUtils.WebContainerMod.Newest_Tomcat_90
-        );
-    }
-
-    public List<WebAppUtils.WebContainerMod> listWebContainers() {
-        List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
-        Collections.addAll(webContainers, WebAppUtils.WebContainerMod.values());
-        return webContainers;
-    }
-
-    /**
-     * List available Third Party JDKs.
-     */
-    public List<JdkModel> listJdks() {
-        List<JdkModel> jdkModels = new ArrayList<>();
-        Collections.addAll(jdkModels, JdkModel.values());
-        return jdkModels;
-    }
-
-    /**
-     * List all available Java linux RuntimeStacks.
-     * todo: For those unchanged list, like jdk versions, web containers,
-     * linux runtimes, do we really need to get the values from Mvp model every time?
-     */
-    public List<RuntimeStack> getLinuxRuntimes() {
-        return WebAppUtils.getAllJavaLinuxRuntimeStacks();
-    }
-
-    /**
-     * List all the Web Apps on Linux in selected subscriptions.
-     * @param force flag indicating whether force to fetch most updated data from server
-     * @return list of Web App on Linux
-     */
-    public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(final boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
-            webApps.addAll(listWebAppsOnLinux(sid, force));
-        }
-        return webApps;
-    }
-
-    /**
-     * Download publish profile of web app.
-     *
-     * @param sid      subscription id
-     * @param webAppId webapp id
-     * @param filePath file path to save publish profile
-     * @return status indicating whether it is successful or not
-     * @throws Exception exception
-     */
-    public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) throws Exception {
-        WebApp app = getWebAppById(sid, webAppId);
-        return AppServiceUtils.getPublishingProfileXmlWithSecrets(app, filePath);
-    }
-
-    /**
-     * Download publish profile of deployment slot.
-     */
-    public boolean getSlotPublishingProfileXmlWithSecrets(final String sid, final String webAppId, final String slotName,
-                                                          final String filePath) throws Exception {
-        final WebApp app = getWebAppById(sid, webAppId);
-        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
-        final File file = new File(Paths.get(filePath, slotName + "_" + System.currentTimeMillis() + ".PublishSettings")
-            .toString());
-        file.createNewFile();
-        try (final InputStream inputStream = slot.manager().inner().webApps()
-            .listPublishingProfileXmlWithSecretsSlot(slot.resourceGroupName(), app.name(), slotName,
-                    new CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP));
-             OutputStream outputStream = new FileOutputStream(file);
-        ) {
-            IOUtils.copy(inputStream, outputStream);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Refers https://github.com/microsoft/vscode-azureappservice/blob/v0.16.5/src/explorer/SiteTreeItem.ts#L133
-    public static boolean isHttpLogEnabled(WebAppBase webAppBase) {
-        final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
-        return config != null && config.inner() != null && config.inner().httpLogs() != null &&
-                config.inner().httpLogs().fileSystem() != null && config.inner().httpLogs().fileSystem().enabled();
-    }
-
-    public static void enableHttpLog(WebAppBase.Update webApp) {
-        webApp.withContainerLoggingEnabled().apply();
-    }
-
-    public void clearWebAppsCache() {
-        subscriptionIdToWebApps.clear();
-    }
-
-    public List<Region> getAvailableRegions(String subscriptionId, PricingTier pricingTier) throws IOException {
-        if (StringUtils.isEmpty(subscriptionId) || pricingTier == null || pricingTier.toSkuDescription() == null) {
-            return Collections.emptyList();
-        }
-        final SkuName skuName = SkuName.fromString(pricingTier.toSkuDescription().tier());
-        final List<GeoRegionInner> geoRegionInnerList = AuthMethodManager.getInstance()
-                .getAzureClient(subscriptionId).appServices().inner().listGeoRegions(skuName, false, false, false);
-        return geoRegionInnerList.stream()
-                .map(regionInner -> Region.fromName(regionInner.displayName()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Work Around:
-     * When a web app is created from Azure Portal, there are hidden tags associated with the app.
-     * It will be messed up when calling "update" API.
-     * An issue is logged at https://github.com/Azure/azure-libraries-for-java/issues/508 .
-     * Remove all tags here to make it work.
-     */
-    private void clearTags(@NotNull final WebAppBase app) {
-        app.inner().withTags(null);
+    @AzureOperation(
+            name = "webapp|deployment.update_settings",
+            params = {"slot.entity().getName()", "slot.entity().getWebappName()"},
+            type = AzureOperation.Type.SERVICE
+    )
+    public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
+        final AzureResourceManager azureResourceManager =
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(slot.entity().getSubscriptionId());
+        final com.azure.resourcemanager.appservice.models.DeploymentSlot slotClient =
+                azureResourceManager.webApps().getById(slot.webApp().id()).deploymentSlots().getById(slot.id());
+        slotClient.update().withAppSettings(toUpdate).apply();
     }
 
     private static final class SingletonHolder {

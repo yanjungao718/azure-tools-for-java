@@ -1,29 +1,13 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.securestore;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Interface for secure store operations
@@ -33,18 +17,40 @@ public interface SecureStore {
      * Load password or credential from the secure store
      *
      * @param serviceName the unique service name
-     * @param userName the user name or key for the credential
+     * @param key the key for the credential
+     * @param userName the user name for the credential, may be null, if no username is suitable
      * @return the password stored for serviceName and userName combination, null for not found
      */
-    @Nullable
-    String loadPassword(@NotNull String serviceName, @NotNull String userName);
+    @Nullable String loadPassword(@Nonnull String serviceName, @Nullable String key, @Nullable String userName);
 
     /**
      * Save password or credential into the secure store
      *
      * @param serviceName the unique service name
-     * @param userName the user name or key for the credential
+     * @param key the key for the credential, may be null, if no key is suitable
+     * @param userName the user name for the credential, may be null, if no username is suitable
      * @param password the password for serviceName and userName combination to store, null for cleaning the saved one
      */
-    void savePassword(@NotNull String serviceName, @NotNull String userName, @Nullable String password);
+    void savePassword(@Nonnull String serviceName, @Nullable String key, @Nullable String userName, @Nonnull String password);
+
+    /**
+     * Remove password or credential from the secure store
+     *
+     * @param serviceName the unique service name
+     * @param key the key for the credential, may be null, if no key is suitable
+     * @param userName the user name or key for the credential
+     */
+    void forgetPassword(@Nonnull String serviceName, @Nullable String key, @Nullable String userName);
+
+    /**
+     * Migration password for old style to new style
+     *
+     * @param oldKeyOrServiceName the previous service name or key
+     * @param oldUsername the previous user name or key for the credential
+     * @param serviceName the unique service name
+     * @param key the key for the credential, may be null, if no key is suitable
+     * @param userName the user name or key for the credential
+     */
+    void migratePassword(@Nonnull String oldKeyOrServiceName, @Nullable String oldUsername,
+                         @Nonnull String serviceName, @Nullable String key, @Nullable String userName);
 }

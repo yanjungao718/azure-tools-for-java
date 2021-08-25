@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.helpers.azure.sdk;
@@ -40,11 +23,9 @@ import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
-import com.microsoft.azure.management.storage.AccessTier;
-import com.microsoft.azure.management.storage.Kind;
-import com.microsoft.azure.management.storage.SkuName;
-import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azure.management.storage.StorageAccountSkuType;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -67,43 +48,11 @@ public class AzureSDKManager {
 
     private static final String INSIGHTS_REGION_LIST_URL = "https://management.azure.com/providers/microsoft.insights?api-version=2015-05-01";
 
-    public static StorageAccount createStorageAccount(String subscriptionId, String name, String region, boolean newResourceGroup, String resourceGroup,
-                                                      Kind kind, AccessTier accessTier, boolean enableEncription, String skuName) throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        Azure azure = azureManager.getAzure(subscriptionId);
-        StorageAccount.DefinitionStages.WithGroup newStorageAccountBlank = azure.storageAccounts().define(name).withRegion(region);
-        StorageAccount.DefinitionStages.WithCreate newStorageAccountWithGroup;
-        if (newResourceGroup) {
-            newStorageAccountWithGroup = newStorageAccountBlank.withNewResourceGroup(resourceGroup);
-        } else {
-            newStorageAccountWithGroup = newStorageAccountBlank.withExistingResourceGroup(resourceGroup);
-        }
-
-        if (Kind.STORAGE.equals(kind)) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
-        } else if (Kind.STORAGE_V2.equals(kind)) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKindV2();
-        } else if (Kind.BLOB_STORAGE.equals(kind)) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
-        } else {
-            throw new Exception("Unknown Storage Account Kind:" + kind.toString());
-
-        }
-
-        if (enableEncription) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobEncryption();
-        }
-
-        return newStorageAccountWithGroup.withSku(StorageAccountSkuType.fromSkuName(SkuName.fromString(skuName))).create();
-    }
-
     public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name,
                                                       @NotNull String resourceGroup, boolean withNewResourceGroup,
                                                       @NotNull String size, @NotNull String region,
                                                       final VirtualMachineImage vmImage, Object knownImage,
                                                       boolean isKnownImage, final StorageAccount storageAccount,
-                                                      com.microsoft.tooling.msservices.model.storage.StorageAccount
-                                                              newStorageAccount, boolean withNewStorageAccount,
                                                       final Network network, VirtualNetwork newNetwork,
                                                       boolean withNewNetwork, @NotNull String subnet,
                                                       @Nullable PublicIPAddress pip, boolean withNewPip,
@@ -194,21 +143,8 @@ public class AzureSDKManager {
         }
         withCreate = withCreate.withSize(size);
         // ---- Storage Account --------
-        if (withNewStorageAccount) {
-            StorageAccount.DefinitionStages.WithCreate newAccount;
-            StorageAccount.DefinitionStages.WithGroup withGroupAccount = azure.storageAccounts()
-                    .define(newStorageAccount.getName()).withRegion(newStorageAccount.getLocation());
-            if (newStorageAccount.isNewResourceGroup()) {
-                newAccount = withGroupAccount.withNewResourceGroup(newStorageAccount.getResourceGroupName());
-            } else {
-                newAccount = withGroupAccount.withExistingResourceGroup(newStorageAccount.getResourceGroupName());
-            }
-            // only general purpose accounts used to create vm
-            newAccount.withGeneralPurposeAccountKind().withSku(SkuName.fromString(newStorageAccount.getType()));
-            withCreate = withCreate.withNewStorageAccount(newAccount);
-        } else {
-            withCreate = withCreate.withExistingStorageAccount(storageAccount);
-        }
+        com.microsoft.azure.management.storage.StorageAccount existedStorageAccount = azure.storageAccounts().getById(storageAccount.id());
+        withCreate = withCreate.withExistingStorageAccount(existedStorageAccount);
         if (withNewAvailabilitySet) {
             withCreate = withCreate.withNewAvailabilitySet(name + "as");
         } else if (availabilitySet != null) {
@@ -266,12 +202,12 @@ public class AzureSDKManager {
                 .create();
     }
 
-    public static ApplicationInsightsComponent createInsightsResource(@NotNull SubscriptionDetail subscription,
+    public static ApplicationInsightsComponent createInsightsResource(@NotNull Subscription subscription,
                                                                       @NotNull String resourceGroupName,
                                                                       boolean isNewGroup,
                                                                       @NotNull String resourceName,
                                                                       @NotNull String location) throws IOException {
-        return createInsightsResource(subscription.getSubscriptionId(), resourceGroupName, resourceName, location);
+        return createInsightsResource(subscription.getId(), resourceGroupName, resourceName, location);
     }
 
     public static List<String> getLocationsForInsights(String subscriptionId) throws IOException {
@@ -280,7 +216,8 @@ public class AzureSDKManager {
         if (azureManager == null) {
             return Collections.emptyList();
         }
-        final String accessToken = azureManager.getAccessToken(azureManager.getTenantIdBySubscription(subscriptionId));
+        Subscription subscription = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
+        final String accessToken = azureManager.getAccessToken(subscription.getTenantId());
         request.setHeader("Authorization", String.format("Bearer %s", accessToken));
         final CloseableHttpResponse response = HttpClients.createDefault().execute(request);
         final InputStream responseStream = response.getEntity().getContent();

@@ -1,33 +1,14 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.telemetry;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class TelemetryConstants {
 
     // production name
+    public static final String APP_SERVICE = "appservice";
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
     public static final String SPRING_CLOUD = "springcloud";
@@ -55,6 +36,7 @@ public class TelemetryConstants {
     public static final String AZURECODE_SAMPLES = "azure-code-samples";
     public static final String LIB_CONFIGURATION = "libraries-configuration";
     public static final String PLUGIN_INSTALL = "install-plugin";
+    public static final String PLUGIN_TRANSFER_SETTINGS = "transfer-configuration";
     public static final String PLUGIN_LOAD = "load-plugin";
     public static final String PLUGIN_UPGRADE = "upgrade-plugin";
     public static final String PLUGIN_UNINSTALL = "uninstall-plugin";
@@ -67,6 +49,7 @@ public class TelemetryConstants {
     public static final String STOP_WEBAPP = "stop-webapp";
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
+    public static final String WEBAPP_SSHINTO = "sshinto-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
     public static final String START_STREAMING_LOG_WEBAPP = "start-streaming-log-webapp";
     public static final String STOP_STREAMING_LOG_WEBAPP = "stop-streaming-log-webapp";
@@ -114,6 +97,8 @@ public class TelemetryConstants {
     public static final String BROWSE_DOCKER_CONTAINER = "browser-docker-container";
     public static final String DELETE_DOCKER_CONTAINER = "delete-docker-container";
     public static final String DELETE_DOCKER_IMAGE = "delete-docker-image";
+    public static final String GET_PUBLISH_FILE = "get-publish-file";
+    public static final String SAVE_APP_SERVICE = "save-appservice";
     public static final String DEPLOY_WEBAPP_DOCKERLOCAL = "deploy-webapp-dockerlocal";
     public static final String DEPLOY_WEBAPP_DOCKERHOST = "deploy-webapp-dockerhost";
     public static final String DEPLOY_WEBAPP_CONTAINER = "deploy-webapp-container";
@@ -195,6 +180,11 @@ public class TelemetryConstants {
     public static final String PROVISION_A_CLUSTER = "provision-a-cluster";
     public static final String DELETE_A_CLUSTER = "delete-a-cluster";
     public static final String UPDATE_A_CLUSTER = "update-a-cluster";
+    public static final String SHOW_WHATS_NEW = "show-whats-new";
+    public static final String UNHANDLED_EXCEPTION = "unhandled-exception";
+    public static final String LIST_FILE = "list-file";
+    public static final String REFRESH_FILE = "refresh-file";
+    public static final String OPEN_FILE = "open-file";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
@@ -208,14 +198,9 @@ public class TelemetryConstants {
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
     public static final String AZURE_ENVIRONMENT = "azureEnvironment";
+    public static final String PRICING_TIER = "pricingTier";
+    public static final String TRIGGER_TYPE = "triggerType";
+    public static final String REGION = "region";
 
-    public static final Map<String, String> signInSPProp = new HashMap<>();
-    public static final Map<String, String> signInDCProp = new HashMap<>();
-    public static final Map<String, String> signInAZProp = new HashMap<>();
-
-    static {
-        signInSPProp.put(SIGNIN_METHOD, SIGNIN_SP);
-        signInDCProp.put(SIGNIN_METHOD, SIGNIN_DC);
-        signInAZProp.put(SIGNIN_METHOD, SIGNIN_AZ);
-    }
+    public static final String PROXY = "proxy";
 }
