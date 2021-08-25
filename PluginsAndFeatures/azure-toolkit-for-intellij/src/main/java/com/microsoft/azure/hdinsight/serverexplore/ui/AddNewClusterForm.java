@@ -36,7 +36,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.ui.HintTextField;
-import com.microsoft.intellij.ui.JTextAreaWithTheme;
+import com.microsoft.intellij.ui.ErrorTextArea;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -70,7 +70,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JTextField clusterNameOrUrlField;
     private JPanel livyServiceCard;
     protected JTextField livyEndpointField;
-    protected JTextAreaWithTheme validationErrorMessageField;
+    protected ErrorTextArea validationErrorMessageField;
     private JPanel authComboBoxPanel;
     protected JComboBox<AuthType> authComboBox;
     protected JPanel authCardsPanel;

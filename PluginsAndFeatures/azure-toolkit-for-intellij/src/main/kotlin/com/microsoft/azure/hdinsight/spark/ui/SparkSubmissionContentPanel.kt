@@ -63,7 +63,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.lang.containsInvisibleChars
 import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
-import com.microsoft.intellij.ui.JLabelWithTheme
+import com.microsoft.intellij.ui.ErrorLabel
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
@@ -103,14 +103,14 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     // All view components
     private val errorMessageLabels = arrayOf(
-            JLabelWithTheme(getErrorMessageClusterNameNull(isSignedIn)),
-            JLabelWithTheme("Artifact should not be null!"),
-            JLabelWithTheme("Could not find the local jar package for Artifact"),
-            JLabelWithTheme("Main class name should not be null")
+            ErrorLabel(getErrorMessageClusterNameNull(isSignedIn)),
+            ErrorLabel("Artifact should not be null!"),
+            ErrorLabel("Could not find the local jar package for Artifact"),
+            ErrorLabel("Main class name should not be null")
                     .apply {
                         isVisible = true
                     },
-            JLabelWithTheme()
+            ErrorLabel()
             // Don't add more we won't like to add more message labels
     )
 
@@ -138,7 +138,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }}
 
     private val hdiReaderErrorLabel: JLabel =
-        JLabelWithTheme("No Ambari permission to submit job to the selected cluster...").apply {
+        ErrorLabel("No Ambari permission to submit job to the selected cluster...").apply {
             toolTipText = "No Ambari permission to submit job to the selected cluster. Please ask the cluster owner or user access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or link to the selected cluster."
             isVisible = false
         }

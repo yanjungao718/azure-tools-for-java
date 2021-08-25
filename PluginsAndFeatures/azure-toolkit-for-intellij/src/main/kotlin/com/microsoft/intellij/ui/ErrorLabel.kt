@@ -7,9 +7,9 @@ package com.microsoft.intellij.ui
 
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import org.apache.commons.lang3.StringUtils
-import javax.swing.JTextArea
+import javax.swing.JLabel
 
-class JTextAreaWithTheme : JTextArea() {
+class ErrorLabel(text: String = ""): JLabel(text) {
     override fun setText(text: String?) {
         foreground = DarkThemeManager.getInstance().errorMessageColor
         background = if (StringUtils.isEmpty(text)) {
