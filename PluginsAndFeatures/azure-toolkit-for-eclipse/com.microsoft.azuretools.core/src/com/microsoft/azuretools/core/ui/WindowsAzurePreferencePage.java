@@ -11,6 +11,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_ALLOW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_DENY;
 
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
@@ -34,7 +35,6 @@ import org.w3c.dom.Document;
 
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
@@ -143,8 +143,8 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
                     }
 
                     String instID = DataOperations.getProperty(dataFile, Messages.instID);
-                    if (instID == null || instID.isEmpty() || !GetHashMac.isValidHashMac(instID)) {
-                        DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.getHashMac());
+                    if (instID == null || instID.isEmpty() || !InstallationIdUtils.isValidHashMac(instID)) {
+                        DataOperations.updatePropertyValue(doc, Messages.instID, InstallationIdUtils.getHashMac());
                         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
                         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
                     }
@@ -197,7 +197,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
         DataOperations.updatePropertyValue(doc, Messages.version,
                 Activator.getDefault().getBundle().getVersion().toString());
-        DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.getHashMac());
+        DataOperations.updatePropertyValue(doc, Messages.instID, InstallationIdUtils.getHashMac());
         DataOperations.updatePropertyValue(doc, Messages.prefVal, String.valueOf(btnPreference.getSelection()));
         ParserXMLUtility.saveXMLFile(dataFile, doc);
     }
