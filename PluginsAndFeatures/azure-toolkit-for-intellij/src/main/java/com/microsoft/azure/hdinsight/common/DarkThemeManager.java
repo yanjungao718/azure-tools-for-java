@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.hdinsight.common;
 
+import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.util.ui.UIUtil;
 
 import java.awt.*;
@@ -47,13 +50,18 @@ public class DarkThemeManager {
         return Gold;
     }
 
-    public Color getErrorMessageColor() {
-        // TODO: fix the Color with JBColor
-        if (UIUtil.isUnderDarcula()) {
-            return new Color(255, 80, 80);
-        }
+    public Color getErrorTextBackgroundColor() {
+        final EditorColorsScheme editorColorsScheme =
+                EditorColorsManager.getInstance().getGlobalScheme();
+        final Color consoleBackgroundColor =
+                editorColorsScheme.getColor(ConsoleViewContentType.CONSOLE_BACKGROUND_KEY);
+        return consoleBackgroundColor != null
+                ? consoleBackgroundColor
+                : editorColorsScheme.getDefaultBackground();
+    }
 
-        return Color.red;
+    public Color getErrorMessageColor() {
+        return UIUtil.getErrorForeground();
     }
 
     public Color getWarningMessageColor() {
