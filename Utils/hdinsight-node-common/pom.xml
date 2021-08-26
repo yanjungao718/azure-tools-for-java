@@ -54,7 +54,7 @@
                                         </copy>
                                         <zip destfile="${project.basedir}/target/hdinsight_jobview_html.zip" basedir="${basedir}/resources/htmlResources" />
                                         <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.hdinsight/resources/hdinsight_jobview_html.zip" overwrite="true" />
-                                        <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-intellij/resources/hdinsight_jobview_html.zip" overwrite="true" />
+                                        <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-intellij/src/main/resources/hdinsight_jobview_html.zip" overwrite="true" />
                                     </target>
                                 </configuration>
                                 <goals>

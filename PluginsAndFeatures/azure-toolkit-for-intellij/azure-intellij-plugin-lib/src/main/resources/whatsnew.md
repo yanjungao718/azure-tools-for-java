@@ -1,5 +1,20 @@
-<!-- Version: 3.55.0 -->
+<!-- Version: 3.56.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.56.0
+### Added
+- Support proxy with credential(username, password)
+- Add `Samples` link for SDK libs on Azure SDK reference book
+
+### Changed
+- Fix the high failure rate problem for SSH into Linux Webapp operation
+- List all local-installed function core tools for function core tools path setting
+- Synchronize status on storage account in different views
+- Synchronize status on Azure Database for MySQL in different views
+- Synchronize status on SQL Server in different views
+- Redesign the creation UI of storage account
+
+  <img src="https://user-images.githubusercontent.com/19339116/130544615-7a8824aa-0a43-4a07-b91f-5ef10c017e40.png" />
 
 ## 3.55.1
 ### Added

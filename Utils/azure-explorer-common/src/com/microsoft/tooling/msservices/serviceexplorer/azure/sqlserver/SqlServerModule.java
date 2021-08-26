@@ -6,9 +6,10 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -27,6 +28,13 @@ public class SqlServerModule extends AzureRefreshableNode {
     public SqlServerModule(final Node parent) {
         super(SQL_SERVER_DATABASE_MODULE_ID, MODULE_NAME, parent);
         createListener();
+
+        AzureEventBus.after("sqlserver|server.create", this::onServerCreatedOrRemoved);
+        AzureEventBus.after("sqlserver|server.delete", this::onServerCreatedOrRemoved);
+    }
+
+    private void onServerCreatedOrRemoved(AzureOperationEvent.Source source) {
+        this.load(true);
     }
 
     @Override
@@ -36,7 +44,7 @@ public class SqlServerModule extends AzureRefreshableNode {
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refreshItems() {
         List<SqlServer> servers = Azure.az(AzureSqlServer.class).list();
         servers.stream()
             .filter(server -> Objects.nonNull(server.entity()))

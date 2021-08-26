@@ -29,7 +29,6 @@ import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -152,7 +151,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
             this.panel.setConfiguration(config);
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                if (Objects.nonNull(config.app) && StringUtils.isBlank(config.appConfig.getAppName())) {
+                if (Objects.nonNull(config.app)) {
                     config.appConfig = SpringCloudAppConfig.fromApp(config.app);
                 }
                 AzureTaskManager.getInstance().runLater(() -> this.panel.setData(config.appConfig), AzureTask.Modality.ANY);

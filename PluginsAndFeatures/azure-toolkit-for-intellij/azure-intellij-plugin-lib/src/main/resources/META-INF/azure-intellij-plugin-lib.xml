@@ -1,5 +1,4 @@
 <idea-plugin>
-    <depends optional="true" config-file="com.microsoft.tooling.msservices.intellij.azure-markdown.xml">org.intellij.plugins.markdown</depends>
     <resource-bundle>com.microsoft.azure.toolkit.operation.title.action</resource-bundle>
     <extensionPoints>
         <extensionPoint name="actions" interface="com.microsoft.azure.toolkit.ide.common.IActionsContributor"/>

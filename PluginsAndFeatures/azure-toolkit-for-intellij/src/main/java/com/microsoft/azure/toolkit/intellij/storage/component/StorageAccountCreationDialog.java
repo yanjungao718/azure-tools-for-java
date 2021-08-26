@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.storage.component;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
 
 import java.awt.event.ItemEvent;
@@ -29,6 +30,9 @@ public class StorageAccountCreationDialog extends BaseStorageAccountCreationDial
             final boolean kindVisible = Objects.equals(Performance.PREMIUM, performance);
             this.kindComboBox.setVisible(kindVisible);
             this.kindLabel.setVisible(kindVisible);
+            if (!kindVisible) {
+                this.kindComboBox.setValue(Kind.STORAGE_V2);
+            }
         }
     }
 }

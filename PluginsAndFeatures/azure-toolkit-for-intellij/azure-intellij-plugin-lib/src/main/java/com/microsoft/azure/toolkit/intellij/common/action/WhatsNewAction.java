@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditorWithPreview;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
 import com.intellij.openapi.project.DumbAware;
@@ -24,9 +25,8 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,24 +68,20 @@ public class WhatsNewAction extends AnAction implements DumbAware {
                 .filter(f -> StringUtils.equals(f.getUserData(CONTENT_KEY), CONTENT_PATH))
                 .findFirst().orElse(createVirtualFile(content));
         AzureTaskManager.getInstance().runAndWait(() -> {
-            if (manager.getProject().isDisposed()) {
+            if (project.isDisposed()) {
                 return;
             }
+            file.putUserData(TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE, TextEditorWithPreview.Layout.SHOW_PREVIEW);
             final FileEditor[] editors = manager.openFile(file, true, true);
-            if (editors.length > 0) { // opened as markdown in editor when markdown plugin enabled.
-                for (final FileEditor fileEditor : editors) {
-                    if (fileEditor instanceof SplitFileEditor) {
-                        // Switch to markdown preview panel
-                        ((SplitFileEditor<?, ?>) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND, true);
-                    }
+            if (editors.length < 1) {
+                if (manually) {
+                    BrowserUtil.browse(WHATSNEW_URL);
+                } else {
+                    final String message = String.format("Azure Toolkit for Java is updated to <b><u>%s</u></b>", version.toString());
+                    final String title = "Azure Toolkit for Java Updated";
+                    final IntellijOpenInBrowserMessageAction changelog = new IntellijOpenInBrowserMessageAction("What's New", WHATSNEW_URL);
+                    AzureMessager.getMessager().info(message, title, changelog);
                 }
-            } else if (manually) {
-                BrowserUtil.browse(WHATSNEW_URL);
-            } else {
-                final String message = String.format("Azure Toolkit for Java is updated to <b><u>%s</u></b>", version.toString());
-                final String title = "Azure Toolkit for Java Updated";
-                final IntellijOpenInBrowserMessageAction changelog = new IntellijOpenInBrowserMessageAction("What's New", WHATSNEW_URL);
-                AzureMessager.getMessager().info(message, title, changelog);
             }
         });
     }
@@ -117,7 +113,7 @@ public class WhatsNewAction extends AnAction implements DumbAware {
      * @return true if {@code versionA} is a newer version or {@code versionB} is null, false otherwise.
      */
     private static boolean compare(DefaultArtifactVersion versionA, DefaultArtifactVersion versionB) {
-        return versionB == null || (versionA != null && versionA.compareTo(versionB) >= 0);
+        return versionB == null || (versionA != null && versionA.compareTo(versionB) > 0);
     }
 
     private static void saveVersion(DefaultArtifactVersion version) {

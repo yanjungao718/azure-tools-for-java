@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.extensions.ExtensionPointName;
@@ -29,6 +30,11 @@ import java.util.Objects;
 public class IntellijAzureActionManager extends AzureActionManager {
     private static final ExtensionPointName<IActionsContributor> actionsExtensionPoint =
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.actions");
+
+    /**
+     * register {@code ACTION_SOURCE} as data key, so that PreCachedDataContext can pre cache it.
+     */
+    private static final DataKey<Object> ACTION_SOURCE = DataKey.create("ACTION_SOURCE");
 
     private IntellijAzureActionManager() {
         super();
