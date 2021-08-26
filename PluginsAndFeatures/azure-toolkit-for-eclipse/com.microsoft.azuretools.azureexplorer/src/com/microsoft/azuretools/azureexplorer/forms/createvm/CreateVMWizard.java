@@ -37,6 +37,7 @@ import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azureexplorer.helpers.CreateStorageAccountTask;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -56,6 +57,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_VM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
@@ -127,7 +129,10 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                             }
                         }
                     }
-
+                    // create storage account when use choose to create new one
+                    if (Objects.nonNull(newStorageAccount)) {
+                        storageAccount = new CreateStorageAccountTask(newStorageAccount).execute();
+                    }
                     VirtualMachine vm = AzureSDKManager.createVirtualMachine(subscription.getId(),
                             name,
                             resourceGroupName,

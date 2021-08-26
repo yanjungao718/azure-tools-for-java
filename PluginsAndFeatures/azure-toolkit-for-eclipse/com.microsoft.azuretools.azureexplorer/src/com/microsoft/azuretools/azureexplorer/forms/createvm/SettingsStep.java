@@ -25,11 +25,17 @@ package com.microsoft.azuretools.azureexplorer.forms.createvm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.storage.model.Kind;
+import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
+import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -56,9 +62,6 @@ import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.management.storage.Kind;
-import com.microsoft.azure.management.storage.SkuName;
-import com.microsoft.azure.management.storage.StorageAccount;
 
 import com.microsoft.azuretools.azureexplorer.forms.CreateArmStorageAccountForm;
 import com.microsoft.azuretools.core.Activator;
@@ -357,7 +360,7 @@ public class SettingsStep extends WizardPage {
             @Override
             public void run() {
                 if (storageAccounts == null) {
-                    java.util.List<StorageAccount> accounts = wizard.getAzure().storageAccounts().list();
+                    List<StorageAccount> accounts = Azure.az(AzureStorageAccount.class).subscription(wizard.getSubscription().getId()).list();
                     storageAccounts = new TreeMap<String, StorageAccount>();
                     for (StorageAccount storageAccount : accounts) {
                         storageAccounts.put(storageAccount.name(), storageAccount);
@@ -409,9 +412,10 @@ public class SettingsStep extends WizardPage {
         Vector<StorageAccount> filteredStorageAccounts = new Vector<>();
 
         for (StorageAccount storageAccount : storageAccounts.values()) {
-            // VM and storage account need to be in the same region; only general purpose accounts support page blobs, so only they can be used to create vm
-            if (storageAccount.kind() == Kind.STORAGE
-                    && storageAccount.sku().name() != SkuName.STANDARD_ZRS) {
+            // only general purpose accounts support page blobs, so only they can be used to create vm;
+            // zone-redundant acounts not supported for vm
+            if ((Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE) || Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE_V2))
+                && !Objects.equals(storageAccount.entity().getRedundancy(), Redundancy.STANDARD_ZRS)) {
                 filteredStorageAccounts.add(storageAccount);
             }
         }
