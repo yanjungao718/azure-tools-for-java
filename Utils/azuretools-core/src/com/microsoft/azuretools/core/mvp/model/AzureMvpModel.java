@@ -206,7 +206,7 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "arm|deployment.list.subscription|rg",
-        params = {"name", "sid"},
+        params = {"rgName", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<Deployment>> getDeploymentByRgName(String sid, String rgName) {
@@ -249,7 +249,6 @@ public class AzureMvpModel {
      */
     @AzureOperation(
         name = "common.list_tiers",
-        params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<PricingTier> listPricingTier() {

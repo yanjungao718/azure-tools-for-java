@@ -11,6 +11,7 @@ import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -24,9 +25,12 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
 import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,7 +101,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
         return configurable.withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT);
+            .withUserAgent(CommonSettings.USER_AGENT);
     }
 
     @Override
@@ -226,33 +230,56 @@ public abstract class AzureManagerBase implements AzureManager {
     @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
     protected List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+            .toList()
+            .toBlocking()
+            .singleOrDefault(Collections.emptyList());
     }
 
     @AzureOperation(name = "account|tenant.auth", params = {"tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return Azure.configure()
+        final Azure.Configurable configurable = Azure.configure()
             .withInterceptor(new TelemetryInterceptor())
             .withInterceptor(new RestExceptionHandlerInterceptor())
-            .withUserAgent(CommonSettings.USER_AGENT)
-            .withProxy(createProxyFromConfig())
-            .authenticate(credentials);
+            .withUserAgent(CommonSettings.USER_AGENT);
+        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
+            configurable.withProxy(proxy);
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
+        });
+        return configurable.authenticate(credentials);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(InsightsManager.configure())
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .withProxy(createProxyFromConfig())
-                .authenticate(credentials, subscriptionId);
+        final InsightsManager.Configurable configurable = buildAzureManager(InsightsManager.configure())
+            .withInterceptor(new TelemetryInterceptor())
+            .withInterceptor(new RestExceptionHandlerInterceptor());
+        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
+            configurable.withProxy(proxy);
+            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
+        });
+
+        return configurable.authenticate(credentials, subscriptionId);
     }
 
     private static Proxy createProxyFromConfig() {
-        return Optional.ofNullable(com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy())
-            .map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
+        final AzureConfiguration config = az().config();
+        if (StringUtils.isNotBlank(config.getProxySource())) {
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.getHttpProxyHost(), config.getHttpProxyPort()));
+        }
+        return null;
+    }
+
+    private static Authenticator createProxyAuthenticatorFromConfig() {
+        final AzureConfiguration az = az().config();
+        if (StringUtils.isNoneBlank(az.getProxySource(), az.getProxyUsername(), az.getProxyPassword())) {
+            return (route, response) -> {
+                String credential = Credentials.basic(az.getProxyUsername(), az.getProxyPassword());
+                return response.request().newBuilder()
+                    .header("Proxy-Authorization", credential)
+                    .build();
+            };
+        }
+        return null;
     }
 }

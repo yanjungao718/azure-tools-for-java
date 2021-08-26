@@ -70,6 +70,19 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.56.0
+### Added
+- Support proxy with credential(username, password)
+- Add `Samples` link for SDK libs on Azure SDK reference book
+
+### Changed
+- Fix the high failure rate problem for SSH into Linux Webapp operation
+- List all local-installed function core tools for function core tools path setting
+- Synchronize status on storage account in different views
+- Synchronize status on Azure Database for MySQL in different views
+- Synchronize status on SQL Server in different views
+- Redesign the creation UI of storage account
+
 ## 3.55.1
 ### Added
 - Add support for IntelliJ 2021.2
