@@ -176,6 +176,7 @@ public final class ActionConstants {
         String CREATE = OPERATION_PREFIX + "create-storage-account";
         String DELETE = OPERATION_PREFIX + "delete-storage-account";
         String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-storage-in-portal";
+        String OPEN_STORAGE_BROWSER_IN_PORTAL = OPERATION_PREFIX + "open-storage-browser-in-portal";
         String DETACH = OPERATION_PREFIX + "detach-storage-account";
         String DELETE_STORAGE_TABLE = OPERATION_PREFIX + "delete-storage-table";
     }

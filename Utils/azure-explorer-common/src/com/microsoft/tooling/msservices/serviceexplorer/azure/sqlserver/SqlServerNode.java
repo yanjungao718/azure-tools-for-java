@@ -5,9 +5,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -17,7 +17,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import lombok.Getter;
+import org.eclipse.jgit.util.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,18 +30,25 @@ public class SqlServerNode extends Node implements TelemetryProperties {
     @Getter
     private final String subscriptionId;
     @Getter
-    private final ISqlServer server;
+    private final SqlServer server;
     private String serverState;
 
-    public SqlServerNode(AzureRefreshableNode parent, String subscriptionId, ISqlServer server) {
+    public SqlServerNode(AzureRefreshableNode parent, String subscriptionId, SqlServer server) {
         super(server.entity().getId(), server.entity().getName(), parent, true);
         this.subscriptionId = subscriptionId;
         this.server = server;
         this.loadActions();
+        AzureEventBus.before("sqlserver|server.delete", this::onServerStatusChanging);
+    }
+
+    private void onServerStatusChanging(SqlServer server) {
+        if (StringUtils.equalsIgnoreCase(this.server.entity().getId(), server.entity().getId())) {
+            serverState = SERVER_UPDATING;
+        }
     }
 
     @Override
-    @Nullable
+    @Nonnull
     public AzureIconSymbol getIconSymbol() {
         boolean running = SERVER_READY.equals(server.entity().getState());
         boolean updating = SERVER_UPDATING.equals(serverState);
@@ -65,9 +74,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "sqlserver|server.delete", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
-        this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.subscriptionId, this.getId(), SqlServerNode.this);
     }
 

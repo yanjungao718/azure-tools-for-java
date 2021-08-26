@@ -44,11 +44,11 @@ public class WebAppNode extends WebAppBaseNode {
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        if (WebAppBaseState.UPDATING.equals(state)) {
+        if (WebAppBaseState.UPDATING == state) {
             return AzureIconSymbol.WebApp.UPDATING;
         }
         boolean isLinux = webApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
-        boolean running = WebAppBaseState.RUNNING.equals(state);
+        boolean running = WebAppBaseState.RUNNING == state;
         if (isLinux) {
             return running ? AzureIconSymbol.WebApp.RUNNING_ON_LINUX : AzureIconSymbol.WebApp.STOPPED_ON_LINUX;
         } else {
@@ -110,45 +110,45 @@ public class WebAppNode extends WebAppBaseNode {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(SSH_INTO).setEnabled(running);
+        getNodeActionByName(SSH_INTO).setEnabled(running && webApp.getRuntime().isLinux());
         getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "webapp.delete", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
 
-    @AzureOperation(name = "webapp.start", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.start", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         this.webApp.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp.stop", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.stop", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         this.webApp.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(name = "webapp.restart", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.restart", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         this.webApp.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp.open_portal", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_portal", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.webApp.subscriptionId(), this.webApp.id());
     }
 
-    @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_browser", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.webApp.hostName());
     }
 
-    @AzureOperation(name = "webapp.show_properties", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.show_properties", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }
