@@ -441,7 +441,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         setInput(input);
         if (input instanceof RedisExplorerEditorInput) {
             RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) input;
-            this.redisExplorerPresenter.initializeResourceData(redisInput.getSubscriptionId(), redisInput.getId());
+            this.redisExplorerPresenter.initializeResourceData(redisInput.getId(), redisInput.getId());
             this.setPartName(redisInput.getRedisName());
             this.redisExplorerPresenter.onReadDbNum();
         }

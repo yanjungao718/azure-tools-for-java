@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.microsoft.azuretools.azureexplorer.editors.utils.DockerUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -67,7 +68,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.components.AzureListenerWrapper;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -585,9 +585,9 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         if (input instanceof ContainerRegistryExplorerEditorInput) {
             ContainerRegistryExplorerEditorInput containerInput = (ContainerRegistryExplorerEditorInput) input;
             this.setPartName(containerInput.getName());
-            this.subscriptionId = containerInput.getSubscriptionId();
+            this.subscriptionId = containerInput.getId();
             this.registryId = containerInput.getId();
-            containerExplorerPresenter.onGetRegistryProperty(containerInput.getSubscriptionId(),
+            containerExplorerPresenter.onGetRegistryProperty(containerInput.getId(),
                     containerInput.getId());
         }
 

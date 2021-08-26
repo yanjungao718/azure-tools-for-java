@@ -25,6 +25,11 @@ package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_REDIS;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
 
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -73,9 +78,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
@@ -85,18 +89,16 @@ import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private static Activator LOG = Activator.getDefault();
     protected final AzureManager azureManager;
-    private List<SubscriptionDetail> selectedSubscriptions;
-    private List<Location> sortedLocations;
+    private List<Subscription> selectedSubscriptions;
+    private List<Region> sortedLocations;
     private List<String> sortedGroups;
-    private SubscriptionDetail currentSub;
+    private Subscription currentSub;
     private boolean noSSLPort = false;
     private boolean newResGrp = true;
     private boolean loaded = false;
@@ -169,8 +171,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     public CreateRedisCacheForm(Shell parentShell) throws IOException {
         super(parentShell);
         azureManager = AuthMethodManager.getInstance().getAzureManager();
-        List<SubscriptionDetail> allSubs = azureManager.getSubscriptionManager().getSubscriptionDetails();
-        selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
+        selectedSubscriptions = azureManager.getSelectedSubscriptions();
         if (selectedSubscriptions.size() > 0) {
             currentSub = selectedSubscriptions.get(0);
         }
@@ -305,8 +306,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
         });
 
-        for (SubscriptionDetail sub : selectedSubscriptions) {
-            cbSubs.add(String.format(SUBS_COMBO_ITEMS_FORMAT, sub.getSubscriptionName(), sub.getSubscriptionId()));
+        for (Subscription sub : selectedSubscriptions) {
+            cbSubs.add(String.format(SUBS_COMBO_ITEMS_FORMAT, sub.getName(), sub.getId()));
         }
 
         cbSubs.addSelectionListener(new SelectionAdapter() {
@@ -367,7 +368,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbLocations.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).name();
+                selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).getLabel();
                 validateFields();
             }
         });
@@ -398,7 +399,6 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                     @Override
                     public void run() {
                         try {
-                            AzureModelController.updateSubscriptionMaps(null);
                             DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -464,7 +464,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         final Operation operation = TelemetryManager.createOperation(REDIS, CREATE_REDIS);
         try {
             operation.start();
-            Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
+            Azure azure = azureManager.getAzure(currentSub.getId());
             ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, dnsNameValue,
                     selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
             ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -510,24 +510,25 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         super.okPressed();
     }
 
-    private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
+    private void fillLocationsAndResourceGrps(Subscription selectedSub) {
         cbLocations.removeAll();
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
+        List<? extends Region> locations = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).listRegions(selectedSub.getId());
         if (locations != null) {
-            sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName))
+            sortedLocations = locations.stream().sorted(Comparator.comparing(Region::getLabel))
                     .collect(Collectors.toList());
-            for (Location location : sortedLocations) {
-                cbLocations.add(location.displayName());
+            for (Region location : sortedLocations) {
+                cbLocations.add(location.getLabel());
             }
             if (sortedLocations.size() > 0) {
                 cbLocations.select(0);
-                selectedLocationValue = sortedLocations.get(0).name();
+                selectedLocationValue = sortedLocations.get(0).getLabel();
             }
         }
         cbUseExisting.removeAll();
-        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
+        List<ResourceGroup> groups = AzureMvpModel.getInstance().getResourceGroups(selectedSub.getId()).stream()
+            .map(ResourceEx::getResource).collect(Collectors.toList());
         if (groups != null) {
-            sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+            sortedGroups = groups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
             for (String group : sortedGroups) {
                 cbUseExisting.add(group);
             }
@@ -566,10 +567,10 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         if (currentSub != null) {
-            if (currentSub.getSubscriptionName() != null)
-                properties.put("SubscriptionName", currentSub.getSubscriptionName());
-            if (currentSub.getSubscriptionId() != null)
-                properties.put("SubscriptionId", currentSub.getSubscriptionId());
+            if (currentSub.getName() != null)
+                properties.put("SubscriptionName", currentSub.getName());
+            if (currentSub.getId() != null)
+                properties.put("SubscriptionId", currentSub.getId());
         }
         return properties;
     }

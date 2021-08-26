@@ -285,7 +285,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void openRedisPropertyView(RedisCacheNode node) {
         EventUtil.executeWithLog(TelemetryConstants.REDIS, TelemetryConstants.REDIS_READPROP, (operation) -> {
-            String sid = node.getSubscriptionId();
+            String sid = node.getId();
             String resId = node.getResourceId();
             if (sid == null || resId == null) {
                 return;
@@ -297,7 +297,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void openRedisExplorer(@NotNull RedisCacheNode node) {
         IWorkbench workbench = PlatformUI.getWorkbench();
-        RedisExplorerEditorInput input = new RedisExplorerEditorInput(node.getSubscriptionId(),
+        RedisExplorerEditorInput input = new RedisExplorerEditorInput(node.getId(),
                 node.getResourceId(), node.getName());
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(RedisExplorerEditor.ID);
         openEditor(EditorType.REDIS_EXPLORER, input, descriptor);
@@ -315,7 +315,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
-        String sid = node.getSubscriptionId();
+        String sid = node.getId();
         String resId = node.getResourceId();
         if (Utils.isEmptyString(sid) || Utils.isEmptyString(resId)) {
             return;
@@ -397,7 +397,7 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         IWorkbench workbench = PlatformUI.getWorkbench();
-        WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(node.getSubscriptionId(), node.getId(), node.getName());
+        WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(node.getId(), node.getId(), node.getName());
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
         openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
@@ -409,7 +409,7 @@ public class UIHelperImpl implements UIHelper {
         }
         IWorkbench workbench = PlatformUI.getWorkbench();
         DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
-            node.getSubscriptionId(), node.getWebAppId(), node.getName());
+            node.getId(), node.getWebAppId(), node.getName());
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
         openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }

@@ -29,6 +29,9 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.wizard.WizardPage;
@@ -52,7 +55,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -60,7 +63,6 @@ import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azureexplorer.forms.CreateArmStorageAccountForm;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.AzureModel;
 
 public class SettingsStep extends WizardPage {
     private static final String CREATE_NEW = "<< Create new >>";
@@ -263,8 +265,9 @@ public class SettingsStep extends WizardPage {
                     @Override
                     public void run() {
                         // Resource groups already initialized in cache when loading locations on SelectImageStep
-                        List<ResourceGroup> resourceGroups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(wizard.getSubscription());
-                        List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+                        List<ResourceGroup> resourceGroups = (List<ResourceGroup>) AzureMvpModel.getInstance().getResourceGroups(wizard.getSubscription().getId()).stream()
+                            .map(ResourceEx::getResource).collect(Collectors.toList());
+                        List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
                         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -589,7 +592,7 @@ public class SettingsStep extends WizardPage {
         form.setOnCreate(new Runnable() {
             @Override
             public void run() {
-                com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount = form.getStorageAccount();
+                StorageAccountConfig newStorageAccount = form.getStorageAccount();
                 if (newStorageAccount != null) {
                     wizard.setNewStorageAccount(newStorageAccount);
                     wizard.setWithNewStorageAccount(true);

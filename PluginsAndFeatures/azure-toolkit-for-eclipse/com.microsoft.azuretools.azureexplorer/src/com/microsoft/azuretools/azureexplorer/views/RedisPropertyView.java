@@ -239,7 +239,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         txtNameValue.setText(property.getName());
         txtTypeValue.setText(property.getType());
         txtResGrpValue.setText(property.getGroupName());
-        txtSubscriptionValue.setText(property.getSubscriptionId());
+        txtSubscriptionValue.setText(property.getId());
         txtRegionValue.setText(property.getRegionName());
         txtHostNameValue.setText(property.getHostName());
         txtSslPortValue.setText(String.valueOf(property.getSslPort()));
