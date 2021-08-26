@@ -585,9 +585,9 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         if (input instanceof ContainerRegistryExplorerEditorInput) {
             ContainerRegistryExplorerEditorInput containerInput = (ContainerRegistryExplorerEditorInput) input;
             this.setPartName(containerInput.getName());
-            this.subscriptionId = containerInput.getId();
+            this.subscriptionId = containerInput.getSubscriptionId();
             this.registryId = containerInput.getId();
-            containerExplorerPresenter.onGetRegistryProperty(containerInput.getId(),
+            containerExplorerPresenter.onGetRegistryProperty(containerInput.getSubscriptionId(),
                     containerInput.getId());
         }
 

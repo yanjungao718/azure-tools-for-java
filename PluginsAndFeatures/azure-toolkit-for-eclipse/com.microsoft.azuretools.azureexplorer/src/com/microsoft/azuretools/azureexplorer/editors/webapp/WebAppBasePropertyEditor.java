@@ -481,13 +481,13 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         if (input instanceof WebAppPropertyEditorInput) {
             WebAppPropertyEditorInput webappInput = (WebAppPropertyEditorInput) input;
             this.setPartName(webappInput.getName());
-            this.subscriptionId = webappInput.getId();
+            this.subscriptionId = webappInput.getSubscriptionId();
             this.webAppId = webappInput.getId();
             this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, null);
         } else if (input instanceof DeploymentSlotPropertyEditorInput) {
             DeploymentSlotPropertyEditorInput slotInput = (DeploymentSlotPropertyEditorInput) input;
             this.setPartName(slotInput.getName());
-            this.subscriptionId = slotInput.getId();
+            this.subscriptionId = slotInput.getSubscriptionId();
             this.webAppId = slotInput.getWebappId();
             this.slotName = slotInput.getName();
             this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, slotName);
