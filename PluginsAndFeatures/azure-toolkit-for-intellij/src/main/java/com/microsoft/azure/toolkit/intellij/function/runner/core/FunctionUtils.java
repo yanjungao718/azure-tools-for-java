@@ -30,6 +30,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
+import com.microsoft.azure.toolkit.lib.appservice.utils.FunctionCliResolver;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
@@ -155,7 +156,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "function.validate_project",
+        name = "common.validate_project",
         params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )

@@ -10,6 +10,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.database.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel;
@@ -20,9 +21,9 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azure.toolkit.lib.mysql.model.MySqlDatabaseEntity;
-import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -111,9 +112,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         if (StringUtils.equalsIgnoreCase(this.property.getServer().id(), server.id())) {
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 this.property.getServer().refresh();
-                AzureTaskManager.getInstance().runLater(() -> {
-                    showProperty(property);
-                });
+                AzureTaskManager.getInstance().runLater(() -> showProperty(property));
             });
         }
     }
@@ -207,7 +206,7 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         final Runnable runnable = () -> {
             final String subscriptionId = property.getSubscriptionId();
             // refresh property
-            refreshProperty(subscriptionId, property.getServer().entity().getResourceGroup(), property.getServer().name());
+            refreshProperty(subscriptionId, property.getServer().entity().getResourceGroupName(), property.getServer().name());
             final boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices)) {
                 if (allowAccessToAzureServices) {
@@ -320,10 +319,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         final Subscription subscription = az(AzureAccount.class).account().getSubscription(sid);
         if (subscription != null) {
             overview.getSubscriptionTextField().setText(subscription.getName());
-            databaseComboBox.setSubscription(subscription);
             databaseComboBox.setServer(server);
+            databaseComboBox.refreshItems();
         }
-        overview.getResourceGroupTextField().setText(server.entity().getResourceGroup());
+        overview.getResourceGroupTextField().setText(server.entity().getResourceGroupName());
         overview.getStatusTextField().setText(server.entity().getState());
         overview.getLocationTextField().setText(server.entity().getRegion().getLabel());
         overview.getSubscriptionIDTextField().setText(sid);

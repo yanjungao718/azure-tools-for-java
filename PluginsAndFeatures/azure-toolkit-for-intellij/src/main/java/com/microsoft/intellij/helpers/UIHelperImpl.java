@@ -35,7 +35,6 @@ import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
 import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
 import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
-import com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider;
 import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView;
 import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
@@ -43,8 +42,6 @@ import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -76,7 +73,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang.ArrayUtils;
@@ -91,7 +87,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
@@ -413,30 +408,6 @@ public class UIHelperImpl implements UIHelper {
                 ((DeploymentPropertyView) fileEditor).onLoadProperty(node);
             }
         }
-    }
-
-    @Override
-    public void openSpringCloudAppPropertyView(SpringCloudAppNode node) {
-        final Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        final String id = node.getApp().entity().getId();
-        final String subscription = node.getApp().entity().getSubscriptionId();
-        final String appName = node.getApp().name();
-        final LightVirtualFile existing = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
-        final LightVirtualFile itemVirtualFile = Objects.isNull(existing) ? createVirtualFile(appName, subscription, id) : existing;
-        if (Objects.isNull(existing)) {
-            itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
-        }
-        AzureTaskManager.getInstance().runInModal(String.format("Loading properties of app(%s)", appName), () -> {
-            final SpringCloudCluster cluster = node.getApp().getCluster();
-            final SpringCloudApp app = Objects.requireNonNull(cluster).app(appName);
-            itemVirtualFile.putUserData(SpringCloudAppPropertiesEditorProvider.APP_KEY, app);
-            AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(itemVirtualFile, true, true));
-        });
     }
 
     @Override

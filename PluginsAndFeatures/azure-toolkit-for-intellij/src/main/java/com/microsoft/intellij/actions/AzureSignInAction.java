@@ -343,7 +343,9 @@ public class AzureSignInAction extends AzureAnAction {
             operation.trackProperty(AZURE_ENVIRONMENT, Azure.az(AzureCloud.class).getName());
             return loginCallable.call();
         } catch (Exception e) {
-            EventUtil.logError(operation, ErrorType.userError, e, properties, null);
+            if (shouldNoticeErrorToUser(e)) {
+                EventUtil.logError(operation, ErrorType.userError, e, properties, null);
+            }
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
         } finally {
             operation.complete();

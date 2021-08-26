@@ -15,8 +15,9 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
-import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.model.MySqlServerConfig;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -25,9 +26,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -37,8 +36,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 
 import java.util.Collections;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name("Create")
 public class CreateMySQLAction extends NodeActionListener {
@@ -58,19 +55,10 @@ public class CreateMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInAction.requireSignedIn(project, () -> doActionPerformed(true, project));
+        AzureSignInAction.requireSignedIn(project, () -> doActionPerformed(project));
     }
 
-    private void doActionPerformed(boolean isLoggedIn, Project project) {
-        try {
-            if (!isLoggedIn ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                return;
-            }
-        } catch (final Exception ex) {
-            AzurePlugin.log(message("common.error.signIn"), ex);
-            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
-        }
+    private void doActionPerformed(Project project) {
         final MySQLCreationDialog dialog = new MySQLCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createAzureMySQL(data, project, dialog));
         dialog.show();
@@ -88,7 +76,7 @@ public class CreateMySQLAction extends NodeActionListener {
     }
 
     @AzureOperation(
-        name = "mysql.create",
+        name = "mysql|server.create.task",
         params = {
             "config.getServerName()",
             "config.getSubscription().getName()"
@@ -111,13 +99,16 @@ public class CreateMySQLAction extends NodeActionListener {
                 config.setResourceGroup(Azure.az(AzureGroup.class).get(subscriptionId, config.getResourceGroup().getName()));
             }
             // create mysql server
-            final MySqlServer server = Azure.az(AzureMySql.class).subscription(subscriptionId).create()
-                .withResourceGroupName(config.getResourceGroup().getName())
-                .withRegion(config.getRegion())
-                .withName(config.getServerName())
-                .withVersion(config.getVersion())
-                .withAdministratorLogin(config.getAdminUsername())
-                .withAdministratorLoginPassword(String.valueOf(config.getPassword())).commit();
+            final MySqlServer server = Azure.az(AzureMySql.class).subscription(subscriptionId).create(MySqlServerConfig.builder()
+                    .subscription(config.getSubscription())
+                    .resourceGroup(config.getResourceGroup())
+                    .region(config.getRegion())
+                    .name(config.getServerName())
+                    .version(config.getVersion())
+                    .administratorLoginName(config.getAdminUsername())
+                    .administratorLoginPassword(String.valueOf(config.getPassword()))
+                    .build())
+                    .commit();
             // update access from azure services
             if (config.isAllowAccessFromAzureServices()) {
                 server.firewallRules().enableAzureAccessRule();

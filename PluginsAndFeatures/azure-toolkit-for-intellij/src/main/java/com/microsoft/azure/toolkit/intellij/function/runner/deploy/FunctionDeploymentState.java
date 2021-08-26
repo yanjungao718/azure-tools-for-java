@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
-import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
@@ -44,7 +44,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -141,7 +140,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
 
     @AzureOperation(
             name = "function.prepare_staging_folder_detail",
-            params = {"stagingFolder.getName()", "this.deployModel.getAppName()"},
+            params = {"stagingFolder.getName()", "this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
@@ -168,7 +167,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     @Override
     @AzureOperation(
             name = "function.complete_deployment",
-            params = {"this.deployModel.getAppName()"},
+            params = {"this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )
     protected void onSuccess(IFunctionApp result, @NotNull RunProcessHandler processHandler) {
@@ -191,33 +190,19 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     // todo: create shared run state messenger for all run states
     @RequiredArgsConstructor
     private static class FunctionDeploymentMessenger extends IntellijAzureMessager {
-        private final RunProcessHandler processHandler;
+        private final RunProcessHandler handler;
 
         @Override
-        public void info(@Nonnull String message, String title) {
-            processHandler.setText(message);
-        }
-
-        @Override
-        public void info(@Nonnull AzureString message, String title, IAzureMessage.Action... actions) {
-            info(message.toString());
-        }
-
-        @Override
-        public void success(@Nonnull String message, String title) {
-            processHandler.println(message, ProcessOutputTypes.SYSTEM);
-            super.success(message, title);
-        }
-
-        @Override
-        public void error(@Nonnull String message, String title) {
-            processHandler.println(message, ProcessOutputTypes.STDERR);
-            super.error(message, title);
-        }
-
-        @Override
-        public void warning(@Nonnull String message, String title) {
-            processHandler.setText(message);
+        public boolean show(IAzureMessage raw) {
+            if (raw.getType() == IAzureMessage.Type.INFO || raw.getType() == IAzureMessage.Type.WARNING) {
+                handler.setText(raw.getMessage().toString());
+                return true;
+            } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
+                handler.println(raw.getMessage().toString(), ProcessOutputType.SYSTEM);
+            } else if (raw.getType() == IAzureMessage.Type.ERROR) {
+                handler.println(raw.getContent(), ProcessOutputType.STDERR);
+            }
+            return super.show(raw);
         }
     }
 

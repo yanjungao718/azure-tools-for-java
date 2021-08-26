@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
-import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.tooling.msservices.helpers.Name;

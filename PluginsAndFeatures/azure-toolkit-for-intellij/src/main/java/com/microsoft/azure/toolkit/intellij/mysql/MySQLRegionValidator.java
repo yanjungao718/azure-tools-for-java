@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 
 import java.util.function.Function;
 

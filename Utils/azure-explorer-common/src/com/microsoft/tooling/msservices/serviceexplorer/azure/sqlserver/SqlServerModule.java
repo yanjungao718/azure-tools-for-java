@@ -6,16 +6,17 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
+import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,16 +28,24 @@ public class SqlServerModule extends AzureRefreshableNode {
     public SqlServerModule(final Node parent) {
         super(SQL_SERVER_DATABASE_MODULE_ID, MODULE_NAME, parent);
         createListener();
+
+        AzureEventBus.after("sqlserver|server.create", this::onServerCreatedOrRemoved);
+        AzureEventBus.after("sqlserver|server.delete", this::onServerCreatedOrRemoved);
+    }
+
+    private void onServerCreatedOrRemoved(AzureOperationEvent.Source source) {
+        this.load(true);
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
+    @Nonnull
+    public AzureIconSymbol getIconSymbol() {
         return AzureIconSymbol.SqlServer.MODULE;
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
-        List<ISqlServer> servers = Azure.az(AzureSqlServer.class).sqlServers();
+    protected void refreshItems() {
+        List<SqlServer> servers = Azure.az(AzureSqlServer.class).list();
         servers.stream()
             .filter(server -> Objects.nonNull(server.entity()))
             .map(server -> new SqlServerNode(this, server.entity().getSubscriptionId(), server))
@@ -78,7 +87,7 @@ public class SqlServerModule extends AzureRefreshableNode {
     }
 
     private boolean isCurrentModuleEvent(Object eventObject) {
-        return eventObject != null && eventObject instanceof ISqlServer;
+        return eventObject != null && eventObject instanceof SqlServer;
     }
 
 }

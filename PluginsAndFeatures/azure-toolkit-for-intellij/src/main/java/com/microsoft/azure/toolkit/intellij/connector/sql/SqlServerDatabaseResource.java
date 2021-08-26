@@ -5,7 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.sql;
 
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
+import com.microsoft.azure.toolkit.intellij.connector.database.SqlServerDatabaseResourcePanel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,11 @@ public class SqlServerDatabaseResource extends DatabaseResource {
         SQL_SERVER("Microsoft.Sql", "SQL Server");
         private final String type;
         private final String title;
+
+        @Override
+        public AzureFormJPanel<DatabaseResource> getResourcesPanel(@Nonnull String type, final Project project) {
+            return new SqlServerDatabaseResourcePanel();
+        }
 
         @Override
         public SqlServerDatabaseResource read(@Nonnull final Element resourceEle) {
