@@ -40,13 +40,14 @@ public class DeployToAzureHandler extends AzureAbstractHandler {
         }
         try {
             if (MavenUtils.isMavenProject(project)) {
-                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
-                IContainer container;
-                container = MavenUtils.getPomFile(project).getParent();
-                action.launch(container, () -> {
-                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppDeployDialog.go(shell, project));
-                    return null;
-                });
+//                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+//                IContainer container;
+//                container = MavenUtils.getPomFile(project).getParent();
+//                action.launch(container, () -> {
+//                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppDeployDialog.go(shell, project));
+//                    return null;
+//                });
+                DefaultLoader.getIdeHelper().invokeLater(() -> WebAppDeployDialog.go(shell, project));
             } else {
                 WebAppDeployDialog.go(shell, project);
             }

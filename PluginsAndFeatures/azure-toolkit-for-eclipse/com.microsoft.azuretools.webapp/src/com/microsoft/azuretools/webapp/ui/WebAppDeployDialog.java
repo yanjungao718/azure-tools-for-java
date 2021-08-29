@@ -103,11 +103,16 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @SuppressWarnings("restriction")
 public class WebAppDeployDialog extends AppServiceBaseDialog {
 
     private static ILog LOG = Activator.getDefault().getLog();
+    private static final String REFRESHING = "Refreshing...";
     private static int connection_read_timeout_ms = 10000;
 
     private Table table;
@@ -221,6 +226,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         table.addListener(SWT.Selection, (e) -> {
+            if (table.getSelectionCount() == 1 && table.getSelection()[0].getText() == REFRESHING) {
+                return;
+            }
             fillAppServiceDetails();
             fillSlot();
         });
@@ -465,7 +473,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         super.create();
         Display.getDefault().asyncExec(() -> {
             doFillTable(false);
-            fillUserSettings();
         });
     }
 
@@ -529,18 +536,25 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         try {
             webAppDetailsMap.clear();
             table.removeAll();
-
-            List<IWebApp> webAppDetailsList = Azure.az(AzureAppService.class).webapps(forceRefresh).stream()
-                    .filter(webApp -> !webApp.getRuntime().isDocker()
-                            && !Objects.equals(webApp.getRuntime().getJavaVersion(), JavaVersion.OFF))
-                    .sorted((o1, o2) -> o1.name().compareTo(o2.name())).collect(Collectors.toList());
-            for (IWebApp webApp : webAppDetailsList) {
-                TableItem item = new TableItem(table, SWT.NULL);
-                item.setText(new String[] {webApp.name(), webApp.getRuntime().getWebContainer().getValue(),
-                        webApp.getRuntime().getJavaVersion().getValue(), webApp.resourceGroup()});
-                webAppDetailsMap.put(webApp.name(), webApp);
-            }
-
+            TableItem refreshingItem = new TableItem(table, SWT.NULL);
+            refreshingItem.setText(REFRESHING);
+            Mono.fromCallable(() -> {
+                return Azure.az(AzureAppService.class).webapps(forceRefresh).stream()
+                        .filter(webApp -> !webApp.getRuntime().isDocker()
+                                && !Objects.equals(webApp.getRuntime().getJavaVersion(), JavaVersion.OFF))
+                        .sorted((o1, o2) -> o1.name().compareTo(o2.name())).collect(Collectors.toList());
+            }).subscribeOn(Schedulers.newSingle("@doFillTable")).subscribe(webAppDetailsList -> {
+                DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    table.removeAll();
+                    for (IWebApp webApp : webAppDetailsList) {
+                        TableItem item = new TableItem(table, SWT.NULL);
+                        item.setText(new String[] { webApp.name(), webApp.getRuntime().getWebContainer().getValue(),
+                                webApp.getRuntime().getJavaVersion().getValue(), webApp.resourceGroup() });
+                        webAppDetailsMap.put(webApp.name(), webApp);
+                    }
+                    fillUserSettings();
+                });
+            });
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillTable@AppServiceCreateDialog", e));
         }
@@ -884,8 +898,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         return EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP_SLOT, (operation) -> {
             return AzureWebAppMvpModel.getInstance().createDeploymentSlotFromSettingModel(webApp, webAppSettingModel);
         }, (e) -> {
-                throw new RuntimeException("create slot failed", e);
-            });
+            throw new RuntimeException("create slot failed", e);
+        });
     }
 
     private void collectData() {
@@ -928,10 +942,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         fillSlot();
                     });
                 }, (ex) -> {
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                    LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                             "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
-                        Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                    });
+                    Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                });
             });
         } catch (Exception ex) {
             ex.printStackTrace();
