@@ -73,8 +73,7 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
         }
-        final AzureResourceManager azureResourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
-        final ResourceNameAvailabilityInner result = azureResourceManager.webApps().manager().serviceClient()
+        final ResourceNameAvailabilityInner result = Azure.az(AzureAppService.class).getAppServiceManager(subscriptionId).webApps().manager().serviceClient()
                 .getResourceProviders().checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEB_SITES);
         if (!result.nameAvailable()) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());

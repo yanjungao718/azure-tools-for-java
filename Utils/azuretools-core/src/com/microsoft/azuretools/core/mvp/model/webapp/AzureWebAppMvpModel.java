@@ -5,9 +5,6 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.azure.core.management.exception.ManagementException;
-import com.azure.resourcemanager.AzureResourceManager;
-import com.azure.resourcemanager.resources.models.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
@@ -20,7 +17,10 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import lombok.extern.java.Log;
@@ -86,7 +86,7 @@ public class AzureWebAppMvpModel {
                 .startUpCommand(pr.getStartupFile()).build();
         return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
-                .withResourceGroup(resourceGroup.name())
+                .withResourceGroup(resourceGroup.getName())
                 .withPlan(appServicePlan.id())
                 .withRuntime(Runtime.DOCKER)
                 .withDockerConfiguration(dockerConfiguration)
@@ -152,7 +152,7 @@ public class AzureWebAppMvpModel {
                 .enableFailedRequestTracing(model.isEnableFailedRequestTracing()).build();
         return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
-                .withResourceGroup(resourceGroup.name())
+                .withResourceGroup(resourceGroup.getName())
                 .withPlan(appServicePlan.id())
                 .withRuntime(model.getRuntime())
                 .withDiagnosticConfig(diagnosticConfig)
@@ -161,13 +161,7 @@ public class AzureWebAppMvpModel {
 
     // todo: Move duplicated codes to azure common library
     private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
-        final AzureResourceManager az =
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
-        try {
-            return az.resourceGroups().getByName(resourceGroup);
-        } catch (ManagementException e) {
-            return az.resourceGroups().define(resourceGroup).withRegion(region).create();
-        }
+        return new CreateResourceGroupTask(subscriptionId, resourceGroup, Region.fromName(region)).execute();
     }
 
     private IAppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
@@ -264,11 +258,7 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
-        final AzureResourceManager azureResourceManager =
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(slot.entity().getSubscriptionId());
-        final com.azure.resourcemanager.appservice.models.DeploymentSlot slotClient =
-                azureResourceManager.webApps().getById(slot.webApp().id()).deploymentSlots().getById(slot.id());
-        slotClient.update().withAppSettings(toUpdate).apply();
+        slot.update().withAppSettings(toUpdate).commit();
     }
 
     private static final class SingletonHolder {

@@ -128,8 +128,7 @@ public class DeploymentSlotNode extends WebAppBaseNode {
     @AzureOperation(name = "webapp|deployment.swap", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void swap() {
         // todo: add swap method to app service library
-        final AzureResourceManager resourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
-        resourceManager.webApps().getById(webApp.id()).swap(slot.name());
+        webApp.swap(slot.name());
     }
 
     @AzureOperation(name = "webapp|deployment.open_portal", params = {"this.slot.name()"}, type = AzureOperation.Type.ACTION)
