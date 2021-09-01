@@ -5,9 +5,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.azure.resourcemanager.AzureResourceManager;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
