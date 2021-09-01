@@ -5,16 +5,16 @@
 
 package com.microsoft.azuretools.core.handlers;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.core.ui.SignInDialog;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.core.ui.SignInDialog;
-import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 
 public class SignInCommandHandler extends AzureAbstractHandler {
 

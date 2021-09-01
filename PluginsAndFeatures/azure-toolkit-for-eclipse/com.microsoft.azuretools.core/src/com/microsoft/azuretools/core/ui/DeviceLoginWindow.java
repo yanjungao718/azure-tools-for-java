@@ -5,15 +5,17 @@
 
 package com.microsoft.azuretools.core.ui;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
+import com.azure.identity.DeviceCodeInfo;
+import com.microsoft.aad.adal4j.AdalErrorCode;
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationException;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
+import lombok.Setter;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -35,60 +37,68 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import com.microsoft.aad.adal4j.AdalErrorCode;
-import com.microsoft.aad.adal4j.AuthenticationCallback;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationException;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.DeviceCode;
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
-import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.components.AzureDialogWrapper;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class DeviceLoginWindow implements IDeviceLoginUI {
 
     private static ILog LOG = Activator.getDefault().getLog();
-    private AuthenticationResult authenticationResult = null;
+    private DeviceLoginDialog dialog;
+
+    @Setter
+    private Future future;
 
     public DeviceLoginWindow() {
     }
 
     @Override
-    public AuthenticationResult authenticate(AuthenticationContext authenticationContext, DeviceCode deviceCode,
-        AuthenticationCallback<AuthenticationResult> authenticationCallback) {
+    public void promptDeviceCode(DeviceCodeInfo deviceCode) {
         final Runnable gui = () -> {
             try {
-                Display display = Display.getDefault();
+                final Display display = Display.getDefault();
                 final Shell activeShell = display.getActiveShell();
-                DeviceLoginDialog dlg = new DeviceLoginDialog(activeShell, authenticationContext, deviceCode,
-                    authenticationCallback);
-                dlg.open();
-                authenticationResult = dlg.authenticationResult;
+                dialog = new DeviceLoginDialog(activeShell, deviceCode);
+                dialog.open();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
             }
         };
         Display.getDefault().syncExec(gui);
-        return authenticationResult;
+    }
+
+    public void closePrompt() {
+        if (dialog != null) {
+            Display.getDefault().syncExec(() -> dialog.close());
+        }
+    }
+
+    @Override
+    public void cancel() {
+        if (future != null) {
+            this.future.cancel(true);
+        }
     }
 
     private class DeviceLoginDialog extends AzureDialogWrapper {
 
-        private final DeviceCode deviceCode;
-        private final Future<?> future;
+        private final DeviceCodeInfo deviceCode;
         private AuthenticationResult authenticationResult = null;
         private Browser browser;
         private Link link;
         private final ExecutorService es = Executors.newSingleThreadExecutor();
 
-        public DeviceLoginDialog(Shell parentShell, AuthenticationContext authenticationContext, DeviceCode deviceCode,
-            AuthenticationCallback<AuthenticationResult> authenticationCallback) {
+        public DeviceLoginDialog(Shell parentShell, DeviceCodeInfo deviceCode
+        ) {
             super(parentShell);
             setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
             this.deviceCode = deviceCode;
-            future = es
-                .submit(() -> pullAuthenticationResult(authenticationContext, deviceCode, authenticationCallback));
         }
 
         @Override
@@ -101,22 +111,21 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             GridData gridData = new GridData(GridData.FILL_BOTH);
             area.setLayoutData(gridData);
 
-
-            link = new Link(area,SWT.NONE);
+            link = new Link(area, SWT.NONE);
             link.setText(createHtmlFormatMessage(area));
             link.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
                         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-              .openURL(new URL(deviceCode.getVerificationUrl()));
+                            .openURL(new URL(deviceCode.getVerificationUrl()));
                     } catch (PartInitException | MalformedURLException ex) {
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
                     }
                 }
             });
 
-            Label label = new Label(area,SWT.NONE);
+            Label label = new Label(area, SWT.NONE);
             label.setText("Waiting for signing in with the code, do not close the window.");
 
             return area;
@@ -143,7 +152,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         @Override
         protected void cancelPressed() {
-            future.cancel(true);
+            DeviceLoginWindow.this.cancel();
             super.cancelPressed();
         }
 
@@ -162,7 +171,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         }
 
         private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
-            final AuthenticationCallback<AuthenticationResult> callback) {
+                                              final AuthenticationCallback<AuthenticationResult> callback) {
             long remaining = deviceCode.getExpiresIn();
             long interval = Math.min(3, deviceCode.getInterval());
             long expiredTime = System.currentTimeMillis() + remaining * 1000;
@@ -190,7 +199,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         private String createHtmlFormatMessage(Composite composite) {
             final String verificationUrl = deviceCode.getVerificationUrl();
             return deviceCode.getMessage()
-                .replace(verificationUrl, String.format("<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>", verificationUrl, verificationUrl,verificationUrl,verificationUrl));
+                .replace(verificationUrl, String.format("<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>", verificationUrl, verificationUrl, verificationUrl, verificationUrl));
         }
     }
 }

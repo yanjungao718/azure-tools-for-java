@@ -5,24 +5,21 @@
 
 package com.microsoft.azuretools.core.ui;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
-
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.BaseADAuthManager;
+import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -46,16 +43,12 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import com.microsoft.azuretools.adauth.AuthCanceledException;
-import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.AuthMethod;
-import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
 
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private static final String AZURE_SIGN_IN = "Azure Sign In";
@@ -233,7 +226,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             authMethodDetailsResult.setAccountEmail(accountEmail);
         } else { // automated
             String authPath = textAuthenticationFilePath.getText();
-            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, new HashMap<>(), null);
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 this.setErrorMessage("Select authentication file");
                 return;
@@ -263,15 +256,15 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     }
 
     @Nullable
-    private synchronized BaseADAuthManager doSignIn() {
+    private synchronized IdentityAzureManager doSignIn() {
         try {
-            final BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
+            final IdentityAzureManager dcAuthManager = IdentityAzureManager.getInstance();
 
             if (dcAuthManager.isSignedIn()) {
                 doSignOut();
             }
             signInAsync(dcAuthManager);
-            accountEmail = dcAuthManager.getAccountEmail();
+            accountEmail = Azure.az(AzureAccount.class).account().getEntity().getEmail();
 
             return dcAuthManager;
         } catch (Exception ex) {
@@ -283,19 +276,16 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         return null;
     }
 
-    private void signInAsync(final BaseADAuthManager dcAuthManager) throws InvocationTargetException, InterruptedException {
+    private void signInAsync(final IdentityAzureManager dcAuthManager) throws InvocationTargetException, InterruptedException {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         IRunnableWithProgress op = (monitor) -> {
             operation.start();
             monitor.beginTask("Signing In...", IProgressMonitor.UNKNOWN);
             try {
-                EventUtil.logEvent(EventType.info, operation, signInDCProp, null);
-                dcAuthManager.signIn(null);
-            } catch (AuthCanceledException ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
-                System.out.println(ex.getMessage());
+                EventUtil.logEvent(EventType.info, operation, new HashMap<>(), null);
+                dcAuthManager.signInOAuth().block();
             } catch (Exception ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
+                EventUtil.logError(operation, ErrorType.userError, ex, new HashMap<>(), null);
                 System.out.println("run@ProgressDialog@signInAsync@SingInDialog: " + ex.getMessage());
                 Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), "Sign In Error"));
             } finally {
@@ -308,91 +298,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private void doSignOut() {
         accountEmail = null;
         // AuthMethod.AD is deprecated.
-        AuthMethod.DC.getAdAuthManager().signOut();
-    }
-
-    private void doCreateServicePrincipal() {
-        setErrorMessage(null);
-        BaseADAuthManager dcAuthManager = null;
-        try {
-            if (getAuthMethodManager().isSignedIn()) {
-                getAuthMethodManager().signOut();
-            }
-
-            dcAuthManager = doSignIn();
-            if (dcAuthManager == null || !dcAuthManager.isSignedIn()) {
-                // canceled by the user
-                System.out.println(">> Canceled by the user");
-                return;
-            }
-
-            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
-            SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
-
-            IRunnableWithProgress op = new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Getting Subscription List...", IProgressMonitor.UNKNOWN);
-                    try {
-                        subscriptionManager.getSubscriptionDetails();
-                    } catch (Exception ex) {
-                        System.out.println("run@ProgressDialog@doCreateServicePrincipal@SignInDialog: " + ex.getMessage());
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@doCreateServicePrincipal@SignInDialogg", ex));
-                    }
-                }
-            };
-            new ProgressMonitorDialog(this.getShell()).run(true, false, op);
-
-            SrvPriSettingsDialog d = SrvPriSettingsDialog.go(this.getShell(), subscriptionManager.getSubscriptionDetails());
-            List<SubscriptionDetail> subscriptionDetailsUpdated;
-            String destinationFolder;
-            if (d != null) {
-                subscriptionDetailsUpdated = d.getSubscriptionDetails();
-                destinationFolder = d.getDestinationFolder();
-            } else {
-                System.out.println(">> Canceled by the user");
-                return;
-            }
-
-            Map<String, List<String>> tidSidsMap = new HashMap<>();
-            for (SubscriptionDetail sd : subscriptionDetailsUpdated) {
-                if (sd.isSelected()) {
-                    System.out.format(">> %s\n", sd.getSubscriptionName());
-                    String tid = sd.getTenantId();
-                    List<String> sidList;
-                    if (!tidSidsMap.containsKey(tid)) {
-                        sidList = new LinkedList<>();
-                    } else {
-                        sidList = tidSidsMap.get(tid);
-                    }
-                    sidList.add(sd.getSubscriptionId());
-                    tidSidsMap.put(tid, sidList);
-                }
-            }
-
-            SrvPriCreationStatusDialog d1 = SrvPriCreationStatusDialog
-                    .go(accessTokenAzureManager, this.getShell(), tidSidsMap, destinationFolder);
-            if (d1 == null) {
-                System.out.println(">> Canceled by the user");
-                return;
-            }
-
-            String path = d1.getSelectedAuthFilePath();
-            if (path == null) {
-                System.out.println(">> No file was created");
-                return;
-            }
-
-            textAuthenticationFilePath.setText(path);
-            fileDialog.setFilterPath(destinationFolder);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doCreateServicePrincipal@SignInDialog", ex));
-        } finally {
-            if (dcAuthManager != null) {
-                dcAuthManager.signOut();
-            }
-        }
+        AuthMethodManager.getInstance().signOut();
     }
 }

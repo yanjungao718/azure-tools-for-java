@@ -30,7 +30,7 @@
   </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho-version>0.25.0</tycho-version>
+    <tycho-version>2.4.0</tycho-version>
     <azuretool.eclipse.version>3.27.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 

@@ -10,6 +10,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 
@@ -24,7 +25,6 @@ import org.eclipse.ui.IStartup;
 import org.w3c.dom.Document;
 
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
@@ -41,7 +41,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
  * This class gets executed after the Workbench initializes.
  */
 public class WACPStartUp implements IStartup {
-    private String _hashmac = GetHashMac.getHashMac();
+    private String _hashmac = InstallationIdUtils.getHashMac();
 
     @Override
     public void earlyStartup() {
@@ -98,7 +98,7 @@ public class WACPStartUp implements IStartup {
                                     || StringHelper.isNullOrWhiteSpace(hdinsightPrefValue)) {
                                 setValues(dataFile, StringHelper.isNullOrWhiteSpace(prefValue),
                                         StringHelper.isNullOrWhiteSpace(hdinsightPrefValue));
-                            } else if (StringUtils.isEmpty(instID) || !GetHashMac.isValidHashMac(instID)) {
+                            } else if (StringUtils.isEmpty(instID) || !InstallationIdUtils.isValidHashMac(instID)) {
                                 upgrade = true;
                                 Document doc = ParserXMLUtility.parseXMLFile(dataFile);
                                 DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);
