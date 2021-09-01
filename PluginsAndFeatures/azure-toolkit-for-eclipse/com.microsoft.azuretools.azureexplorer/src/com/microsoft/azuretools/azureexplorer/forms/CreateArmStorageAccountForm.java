@@ -25,8 +25,12 @@ package com.microsoft.azuretools.azureexplorer.forms;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_STORAGE_ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.net.URL;
 import java.util.Comparator;
@@ -60,20 +64,15 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import com.microsoft.tooling.msservices.model.ReplicationTypes;
 import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
@@ -114,11 +113,11 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     private ComboViewer resourceGroupViewer;
 
     private Runnable onCreate;
-    private SubscriptionDetail subscription;
+    private Subscription subscription;
     private Location region;
-    private com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount;
+    private StorageAccountConfig newStorageAccount;
 
-    public CreateArmStorageAccountForm(Shell parentShell, SubscriptionDetail subscription, Location region) {
+    public CreateArmStorageAccountForm(Shell parentShell, Subscription subscription, Location region) {
         super(parentShell);
         this.subscription = subscription;
         this.region = region;
@@ -337,26 +336,29 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         if (subscription == null) {
             String name = nameTextField.getText();
             AccessTier accessTier = (AccessTier) accessTierComboBox.getData(accessTierComboBox.getText());
-            SubscriptionDetail subscriptionDetail = (SubscriptionDetail) subscriptionComboBox.
+            Subscription Subscription = (Subscription) subscriptionComboBox.
                 getData(subscriptionComboBox.getText());
-            setSubscription(subscriptionDetail);
+            setSubscription(Subscription);
             DefaultLoader.getIdeHelper().runInBackground(null, "Creating storage account", false, true,
                     "Creating storage account " + name + "...", new Runnable() {
                         @Override
                         public void run() {
                             EventUtil.executeWithLog(STORAGE, CREATE_STORAGE_ACCOUNT, (operation) -> {
-                                AzureSDKManager
-                                    .createStorageAccount(subscriptionDetail.getSubscriptionId(), name, region,
-                                        isNewResourceGroup, resourceGroupName, kind, accessTier, false, replication);
+//                                AzureSDKManager
+//                                    .createStorageAccount(Subscription.getId(), name, region,
+//                                        isNewResourceGroup, resourceGroupName, kind, accessTier, false, replication);
+
+
+
                                 // update resource groups cache if new resource group was created when creating
                                 // storage account
                                 if (isNewResourceGroup) {
-                                    AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                                    if (azureManager != null) {
-                                        ResourceGroup rg = azureManager.getAzure(subscriptionDetail.getSubscriptionId())
-                                            .resourceGroups().getByName(resourceGroupName);
-                                        AzureModelController.addNewResourceGroup(subscriptionDetail, rg);
-                                    }
+//                                    AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+//                                    if (azureManager != null) {
+//                                        ResourceGroup rg = azureManager.getAzure(Subscription.getId())
+//                                            .resourceGroups().getByName(resourceGroupName);
+//                                        AzureModelController.addNewResourceGroup(Subscription, rg);
+//                                    }
                                 }
 
                                 if (onCreate != null) {
@@ -373,14 +375,14 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         } else {
             EventUtil.executeWithLog(STORAGE, CREATE_STORAGE_ACCOUNT, (operation) -> {
                 //creating from 'create vm'
-                newStorageAccount =
-                    new com.microsoft.tooling.msservices.model.storage.StorageAccount(nameTextField.getText(),
-                        subscription.getSubscriptionId());
-                newStorageAccount.setResourceGroupName(resourceGroupName);
-                newStorageAccount.setNewResourceGroup(isNewResourceGroup);
-                newStorageAccount.setType(replication);
-                newStorageAccount.setLocation(region);
-                newStorageAccount.setKind(kind);
+//                newStorageAccount =
+//                    new com.microsoft.tooling.msservices.model.storage.StorageAccount(nameTextField.getText(),
+//                        subscription.getId());
+//                newStorageAccount.setResourceGroupName(resourceGroupName);
+//                newStorageAccount.setNewResourceGroup(isNewResourceGroup);
+//                newStorageAccount.setType(replication);
+//                newStorageAccount.setLocation(region);
+//                newStorageAccount.setKind(kind);
 
                 if (onCreate != null) {
                     onCreate.run();
@@ -400,12 +402,11 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
                 if (azureManager == null) {
                     return;
                 }
-                SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-                List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
-                for (SubscriptionDetail sub : subscriptionDetails) {
+                List<Subscription> Subscriptions = azureManager.getSelectedSubscriptions();
+                for (Subscription sub : Subscriptions) {
                     if (sub.isSelected()) {
-                        subscriptionComboBox.add(sub.getSubscriptionName());
-                        subscriptionComboBox.setData(sub.getSubscriptionName(), sub);
+                        subscriptionComboBox.add(sub.getName());
+                        subscriptionComboBox.setData(sub.getName(), sub);
                     }
                 }
                 subscriptionComboBox.addSelectionListener(new SelectionAdapter() {
@@ -414,7 +415,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
                     }
                 });
 
-                if (subscriptionDetails.size() > 0) {
+                if (Subscriptions.size() > 0) {
                     subscriptionComboBox.select(0);
                     loadRegionsAndGroups();
                 }
@@ -439,8 +440,8 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
             showAccessTier();
         } else { // create form create VM form
             subscriptionComboBox.setEnabled(false);
-            subscriptionComboBox.add(subscription.getSubscriptionName());
-            subscriptionComboBox.setData(subscription.getSubscriptionName(), subscription);
+            subscriptionComboBox.add(subscription.getName());
+            subscriptionComboBox.setData(subscription.getName(), subscription);
             subscriptionComboBox.select(0);
             kindCombo.add("General purpose"); // only General purpose accounts supported for VMs
             kindCombo.setData(Kind.STORAGE);
@@ -513,18 +514,19 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         this.onCreate = onCreate;
     }
 
-    public com.microsoft.tooling.msservices.model.storage.StorageAccount getStorageAccount() {
+    public StorageAccountConfig getStorageAccount() {
         return newStorageAccount;
     }
 
     public void loadRegionsAndGroups() {
-        Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-        if (subscription2Location == null || subscription2Location.get(subscriptionComboBox.getData(subscriptionComboBox.getText())) == null) {
+        subscriptionComboBox.getData(subscriptionComboBox.getText()).toString();
+        Subscription subs = (Subscription) subscriptionComboBox.
+            getData(subscriptionComboBox.getText());
+        if (subs != null) {
             DefaultLoader.getIdeHelper().runInBackground(null, "Loading Available Locations...", true, true, "", new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        AzureModelController.updateSubscriptionMaps(null);
                         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -545,11 +547,12 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
 
     }
     private void fillRegions() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(subscriptionComboBox.getData(subscriptionComboBox.getText()))
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
-        for (Location location : locations) {
-            regionComboBox.add(location.displayName());
-            regionComboBox.setData(location.displayName(), location);
+        Subscription subs = (Subscription) subscriptionComboBox.
+            getData(subscriptionComboBox.getText());
+        List<Region> locations = Azure.az(AzureAccount.class).listRegions(subs.getId());
+        for (Region location : locations) {
+            regionComboBox.add(location.getLabel());
+            regionComboBox.setData(location.getLabel(), location);
         }
         if (locations.size() > 0) {
             regionComboBox.select(0);
@@ -558,13 +561,13 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
 
     public void loadGroups() {
         resourceGrpCombo.add("<Loading...>");
-        Map<SubscriptionDetail, List<ResourceGroup>> subscription2Group = AzureModel.getInstance().getSubscriptionToResourceGroupMap();
-        if (subscription2Group == null || subscription2Group.get(subscriptionComboBox.getData(subscriptionComboBox.getText())) == null) {
+        Subscription subs = (Subscription) subscriptionComboBox.
+            getData(subscriptionComboBox.getText());
+        if (subs == null) {
             DefaultLoader.getIdeHelper().runInBackground(null, "Loading Resource Groups", true, true, "", new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        AzureModelController.updateSubscriptionMaps(null);
                         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -582,8 +585,9 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     }
 
     public void fillGroups() {
-        List<ResourceGroup> resourceGroups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(subscriptionComboBox.getData(subscriptionComboBox.getText()));
-        List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+        final Subscription subs = (Subscription) subscriptionComboBox.getData(subscriptionComboBox.getText());
+        List<ResourceGroup> resourceGroups = Azure.az(AzureGroup.class).list(subs.getId(), true);
+        List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -603,11 +607,11 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         accessTierLabel.setVisible(isBlobKind);
     }
 
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return subscription;
     }
 
-    public void setSubscription(SubscriptionDetail subscription) {
+    public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
     }
 
@@ -616,8 +620,8 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         final Map<String, String> properties = new HashMap<>();
 
         if (this.getSubscription() != null) {
-            if(this.getSubscription().getSubscriptionName() != null)  properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-            if(this.getSubscription().getSubscriptionId() != null)  properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+            if(this.getSubscription().getName() != null)  properties.put("SubscriptionName", this.getSubscription().getName());
+            if(this.getSubscription().getId() != null)  properties.put("SubscriptionId", this.getSubscription().getId());
         }
 
         return properties;

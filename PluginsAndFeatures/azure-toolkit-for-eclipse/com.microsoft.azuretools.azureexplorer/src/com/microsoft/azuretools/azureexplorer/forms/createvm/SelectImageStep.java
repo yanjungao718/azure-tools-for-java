@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -47,12 +51,9 @@ import com.microsoft.azure.management.compute.VirtualMachineOffer;
 import com.microsoft.azure.management.compute.VirtualMachinePublisher;
 import com.microsoft.azure.management.compute.VirtualMachineSku;
 import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class SelectImageStep extends WizardPage {
@@ -242,8 +243,8 @@ public class SelectImageStep extends WizardPage {
          // will set to null if selected subscription changes
             if (wizard.getRegion() == null) {
                 setPageComplete(false);
-                Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-                if (subscription2Location == null || subscription2Location.get(wizard.getSubscription()) == null) {
+
+                if (wizard.getSubscription() == null) {
                     DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
@@ -256,7 +257,6 @@ public class SelectImageStep extends WizardPage {
                         @Override
                         public void run() {
                             try {
-                                AzureModelController.updateSubscriptionMaps(null);
                                 DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
@@ -279,11 +279,11 @@ public class SelectImageStep extends WizardPage {
 
     private void fillRegions() {
         regionComboBox.removeAll();
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(wizard.getSubscription())
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
-        for (Location location : locations) {
-            regionComboBox.add(location.displayName());
-            regionComboBox.setData(location.displayName(), location);
+        Subscription subs = wizard.getSubscription();
+        List<Region> locations = Azure.az(AzureAccount.class).listRegions(subs.getId());
+        for (Region location : locations) {
+            regionComboBox.add(location.getLabel());
+            regionComboBox.setData(location.getLabel(), location);
         }
         if (locations.size() > 0) {
             regionComboBox.select(0);

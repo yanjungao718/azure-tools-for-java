@@ -8,6 +8,10 @@ package com.microsoft.azuretools.core.ui;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -36,7 +40,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
@@ -122,7 +125,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             public void run() {
                 System.out.println("refreshSubscriptionsAsync");
                 refreshSubscriptionsAsync();
-                setSubscriptionDetails();
+                setSubscriptions();
             }
         });
     }
@@ -134,7 +137,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Reading subscriptions...", IProgressMonitor.UNKNOWN);
                     EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
-                        subscriptionManager.getSubscriptionDetails();
+                        Azure.az(AzureAccount.class).account().reloadSubscriptions().block();
                     }, (ex) -> {
                             ex.printStackTrace();
                             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
@@ -149,7 +152,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
-    private void setSubscriptionDetails() {
+    private void setSubscriptions() {
         sdl = subscriptionManager.getSubscriptionDetails();
         for (SubscriptionDetail sd : sdl) {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -163,7 +166,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         table.removeAll();
         subscriptionManager.cleanSubscriptions();
         refreshSubscriptionsAsync();
-        setSubscriptionDetails();
+        setSubscriptions();
         subscriptionManager.setSubscriptionDetails(sdl);
     }
 
