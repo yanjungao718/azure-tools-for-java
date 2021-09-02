@@ -171,6 +171,7 @@ dependencies {
     compile project(':azure-sdk-reference-book')
     compile project(':azure-intellij-resource-connector-lib')
     compile project(':azure-intellij-resource-connector-aad')
+    compile project(':azure-intellij-plugin-vm')
     compile project(':azure-intellij-plugin-springcloud')
     compile project(':azure-intellij-plugin-service-explorer')
 
