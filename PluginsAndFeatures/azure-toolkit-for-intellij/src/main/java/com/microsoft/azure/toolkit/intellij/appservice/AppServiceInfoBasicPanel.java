@@ -72,7 +72,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             final Runtime platform = this.selectorRuntime.getValue();
-            return org.apache.commons.lang.StringUtils.isNotBlank(ext) && isSupportedArtifactType(platform, ext);
+            return StringUtils.isNotBlank(ext) && isSupportedArtifactType(platform, ext);
         });
         this.setDeploymentVisible(false);
         this.config = initConfig();
