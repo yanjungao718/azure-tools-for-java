@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.storage.component;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;

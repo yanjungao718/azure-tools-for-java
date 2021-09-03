@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.lib.mysql;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;

@@ -5,10 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql.creation;
 
-import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;

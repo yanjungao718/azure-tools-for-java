@@ -3,8 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
+import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
+import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
