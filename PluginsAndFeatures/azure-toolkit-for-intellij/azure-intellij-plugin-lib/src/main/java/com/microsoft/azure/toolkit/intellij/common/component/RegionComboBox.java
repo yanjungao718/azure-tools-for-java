@@ -3,16 +3,15 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.region;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +21,6 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class RegionComboBox extends AzureComboBox<Region> {
 
     private Subscription subscription;
-    private PricingTier tier = PricingTier.BASIC_B2;
 
     @Override
     protected String getItemText(final Object item) {
@@ -44,15 +42,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
         this.refreshItems();
     }
 
-    public void setPricingTier(PricingTier tier) {
-        if (Objects.equals(tier, this.tier)) {
-            return;
-        }
-        this.tier = tier;
-        this.refreshItems();
-    }
-
-    @NotNull
+    @Nonnull
     @Override
     @AzureOperation(
         name = "appservice|region.list.subscription|tier",

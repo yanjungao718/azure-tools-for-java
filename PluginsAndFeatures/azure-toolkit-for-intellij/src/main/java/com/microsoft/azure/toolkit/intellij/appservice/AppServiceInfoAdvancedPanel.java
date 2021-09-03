@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.RuntimeComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
