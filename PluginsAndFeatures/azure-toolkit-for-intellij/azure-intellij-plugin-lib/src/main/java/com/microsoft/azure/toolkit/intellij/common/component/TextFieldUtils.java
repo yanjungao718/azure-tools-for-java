@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.common.ui;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import javax.swing.*;
 import java.util.Objects;

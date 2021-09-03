@@ -3,22 +3,22 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
+package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         implements AzureForm<DraftResourceGroup> {
@@ -32,7 +32,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         this.init();
         this.subscription = subscription;
         this.textName.setSubscription(subscription);
-        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, message("appService.resourceGroup.description"));
+        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, AzureMessageBundle.message("common.resourceGroup.description").toString());
         this.pack();
     }
 
@@ -43,7 +43,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
 
     @Override
     protected String getDialogTitle() {
-        return message("appService.resourceGroup.create.title");
+        return AzureMessageBundle.message("common.resourceGroup.create.title").toString();
     }
 
     @Nullable
