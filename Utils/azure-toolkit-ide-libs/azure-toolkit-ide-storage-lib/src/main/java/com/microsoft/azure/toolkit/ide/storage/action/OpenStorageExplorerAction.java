@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.storage.action;
 
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
