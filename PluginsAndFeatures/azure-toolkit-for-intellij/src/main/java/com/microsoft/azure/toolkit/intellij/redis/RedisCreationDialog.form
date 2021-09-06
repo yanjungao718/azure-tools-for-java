@@ -19,6 +19,7 @@
         </constraints>
         <properties>
           <text value="Basic"/>
+          <titleFont style="1"/>
         </properties>
       </component>
       <component id="8792" class="javax.swing.JLabel">
@@ -54,6 +55,7 @@
         </constraints>
         <properties>
           <text value="Instance details"/>
+          <titleFont style="1"/>
         </properties>
       </component>
       <component id="5fc68" class="javax.swing.JLabel">
