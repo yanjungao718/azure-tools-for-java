@@ -543,7 +543,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         .filter(webApp -> !webApp.getRuntime().isDocker()
                                 && !Objects.equals(webApp.getRuntime().getJavaVersion(), JavaVersion.OFF))
                         .sorted((o1, o2) -> o1.name().compareTo(o2.name())).collect(Collectors.toList());
-            }).subscribeOn(Schedulers.newSingle("@doFillTable")).subscribe(webAppDetailsList -> {
+            }).subscribeOn(Schedulers.boundedElastic()).subscribe(webAppDetailsList -> {
                 DefaultLoader.getIdeHelper().invokeLater(() -> {
                     table.removeAll();
                     for (IWebApp webApp : webAppDetailsList) {
