@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -305,7 +306,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             if (obj instanceof TreeNode) {
                 String iconPath = ((TreeNode) obj).node.getIconPath();
                 if (iconPath != null) {
-                    return Activator.getImageDescriptor("icons/" + iconPath).createImage();
+                    return Optional.ofNullable(Activator.getImageDescriptor("icons/" + iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
                     // Activator.getDefault().getImageRegistry().get((((Node) obj).getIconPath()));
                 }
             }
