@@ -1,0 +1,178 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+package com.microsoft.azure.toolkit.intellij.redis;
+
+import com.azure.core.management.exception.ManagementException;
+import com.intellij.ide.BrowserUtil;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.redis.AzureRedis;
+import com.microsoft.azure.toolkit.redis.PricingTier;
+import com.microsoft.azure.toolkit.redis.RedisConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+public class RedisCreationDialog extends AzureDialog<RedisConfig> implements AzureForm<RedisConfig> {
+    private static final String PRICING_LINK = "https://azure.microsoft.com/en-us/pricing/details/cache";
+    private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
+    private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
+    private JPanel panel;
+    private SubscriptionComboBox subscriptionComboBox;
+    private AzureComboBox<PricingTier> pricingComboBox;
+    private ResourceGroupComboBox resourceGroupComboBox;
+    private ValidationDebouncedTextInput redisNameTextField;
+    private RegionComboBox regionComboBox;
+    private JCheckBox enableNonSSLCheckBox;
+    private JLabel lblPricing;
+
+    public RedisCreationDialog(Project project) {
+        super(project);
+        this.init();
+        initListeners();
+    }
+
+    @Override
+    public AzureForm<RedisConfig> getForm() {
+        return this;
+    }
+
+    @Override
+    protected String getDialogTitle() {
+        return "Create Azure Cache for Redis";
+    }
+
+    @Override
+    protected @Nullable JComponent createCenterPanel() {
+        return panel;
+    }
+
+    protected void initListeners() {
+        this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
+        redisNameTextField.setValidator(() -> {
+            try {
+                validateRedisName(redisNameTextField.getValue());
+            } catch (final IllegalArgumentException | AzureToolkitRuntimeException e) {
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.input(redisNameTextField).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
+            }
+            return AzureValidationInfo.OK;
+        });
+        lblPricing.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                BrowserUtil.browse(PRICING_LINK);
+            }
+        });
+    }
+
+    private void validateRedisName(String name) {
+        if (StringUtils.isEmpty(name)) {
+            throw new IllegalArgumentException(AzureMessageBundle.message("redis.name.validate.empty").toString());
+        }
+
+        if (name.length() > REDIS_CACHE_MAX_NAME_LENGTH || !name.matches(DNS_NAME_REGEX) || StringUtils.contains(name, "--")) {
+            throw new IllegalArgumentException(AzureMessageBundle.message("redis.name.validate.invalid").toString());
+        }
+
+        if (subscriptionComboBox.getValue() != null) {
+            CheckNameAvailabilityResultEntity resultEntity;
+            try {
+                resultEntity = Azure.az(AzureRedis.class).checkNameAvailability(subscriptionComboBox.getValue().getId(), name);
+            } catch (ManagementException e) {
+                throw new AzureToolkitRuntimeException(e.getMessage());
+            }
+            if (!resultEntity.isAvailable()) {
+                String message = resultEntity.getUnavailabilityReason();
+                throw new AzureToolkitRuntimeException(message);
+            }
+        }
+
+    }
+
+    private void onSubscriptionChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            final Subscription subscription = (Subscription) e.getItem();
+            this.resourceGroupComboBox.setSubscription(subscription);
+            this.regionComboBox.setSubscription(subscription);
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.resourceGroupComboBox.setSubscription(null);
+            this.regionComboBox.setSubscription(null);
+        }
+    }
+
+    private void createUIComponents() {
+        this.subscriptionComboBox = new SubscriptionComboBox();
+        this.resourceGroupComboBox = new ResourceGroupComboBox();
+        this.regionComboBox = new RegionComboBox();
+        this.redisNameTextField = new ValidationDebouncedTextInput();
+        this.pricingComboBox = new AzureComboBox<>() {
+            protected List<? extends PricingTier> loadItems() {
+                return PricingTier.values();
+            }
+
+            @Override
+            protected String getItemText(Object item) {
+                return item instanceof PricingTier ? item.toString() : super.getItemText(item);
+            }
+        };
+    }
+
+    @Override
+    public RedisConfig getData() {
+        RedisConfig config = new RedisConfig();
+        config.setSubscription(subscriptionComboBox.getValue());
+        config.setResourceGroup(resourceGroupComboBox.getValue());
+        config.setName(redisNameTextField.getText());
+        config.setPricingTier(pricingComboBox.getValue());
+        config.setRegion(regionComboBox.getValue());
+        config.setEnableNonSslPort(enableNonSSLCheckBox.isSelected());
+        return config;
+    }
+
+    @Override
+    public void setData(RedisConfig config) {
+        Optional.ofNullable(config.getName()).ifPresent(e -> redisNameTextField.setText(e));
+        Optional.ofNullable(config.getSubscription()).ifPresent(e -> subscriptionComboBox.setValue(e));
+        Optional.ofNullable(config.getResourceGroup()).ifPresent(e -> resourceGroupComboBox.setValue(e));
+        Optional.ofNullable(config.getPricingTier()).ifPresent(e -> pricingComboBox.setValue(e));
+        Optional.ofNullable(config.getRegion()).ifPresent(e -> regionComboBox.setValue(e));
+        enableNonSSLCheckBox.setSelected(config.isEnableNonSslPort());
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        final AzureFormInput<?>[] inputs = {
+            this.subscriptionComboBox,
+            this.resourceGroupComboBox,
+            this.redisNameTextField,
+            this.pricingComboBox,
+            this.regionComboBox
+        };
+        return Arrays.asList(inputs);
+    }
+}
