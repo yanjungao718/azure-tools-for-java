@@ -102,7 +102,7 @@ public class AzureModule extends AzureRefreshableNode {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             if (AuthMethodManager.getInstance().isRestoringSignIn()) {
-                return BASE_MODULE_NAME + " (Restoring Sign In)";
+                return BASE_MODULE_NAME + " (Signing In...)";
             }
             // not signed in
             if (azureManager == null) {
