@@ -58,7 +58,6 @@ public class AuthMethodManager {
 
     static {
         // fix the class load problem for intellij plugin
-        ClassLoader current = Thread.currentThread().getContextClassLoader();
         Logger.getLogger("com.microsoft.aad.adal4j.AuthenticationContext").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
@@ -139,7 +138,9 @@ public class AuthMethodManager {
 
     @Nullable
     public AzureManager getAzureManager() {
-        waitInitFinish();
+        if (!this.initFuture.isDone()) {
+            return null;
+        }
         if (!this.isSignedIn()) {
             return null;
         }
@@ -155,8 +156,14 @@ public class AuthMethodManager {
         notifySignOutEventListener();
     }
 
+    public boolean isRestoringSignIn() {
+        return !initFuture.isDone();
+    }
+
     public boolean isSignedIn() {
-        waitInitFinish();
+        if (!initFuture.isDone()) {
+            return false;
+        }
         return identityAzureManager != null && identityAzureManager.isSignedIn();
     }
 
@@ -249,12 +256,15 @@ public class AuthMethodManager {
                     }
                 };
                 EventUtil.logEvent(EventType.info, operation, telemetryProperties);
+                notifySignInEventListener();
             } catch (RuntimeException exception) {
                 initFuture.complete(true);
                 EventUtil.logError(operation, ErrorType.systemError, exception, null, null);
                 this.authMethodDetails = new AuthMethodDetails();
                 this.authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+                notifySignOutEventListener();
             }
+
             return this;
         });
     }
