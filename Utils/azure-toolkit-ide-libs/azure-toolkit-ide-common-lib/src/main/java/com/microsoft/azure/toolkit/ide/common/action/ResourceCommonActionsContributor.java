@@ -7,6 +7,9 @@ package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.lib.AzureService;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
@@ -28,7 +31,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureResource<?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
     public static final Action.Id<IAzureResource<?>> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
     public static final Action.Id<IAzureResource<?>> DEPLOY = Action.Id.of("action.resource.deploy");
-    public static final Action.Id<IAzureResource<?>> CREATE = Action.Id.of("action.resource.create");
+    public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
     public static final Action.Id<AzureService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
 
@@ -92,7 +95,16 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(DEPLOY, new Action<>(deployView));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("common|resource.create", ((IAzureResource<?>) r).name())).orElse(null));
+                .title(s -> Optional.ofNullable(s).map(r -> {
+                    String name = r.getClass().getSimpleName();
+                    if (r instanceof IAzureResource) {
+                        name = ((IAzureResource<?>) r).name();
+                    } else if (r instanceof AzureService) {
+                        name = ((AzureService) r).name();
+                    }
+                    return title("common|resource.create", name);
+                }).orElse(null))
+                .enabled(s -> s instanceof IAzureResource || s instanceof AzureService);
         am.registerAction(CREATE, new Action<>(createView));
     }
 }

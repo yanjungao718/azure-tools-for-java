@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,7 +61,7 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
         if ("common|service.refresh".equals(type)
                 && source instanceof AzureService
                 && ((AzureService) source).name().equals(this.service.name())) {
-            if (((AzureOperationEvent<?>) event).getStage() == AzureOperationEvent.Stage.AFTER) {
+            if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                 AzureTaskManager.getInstance().runLater(this::updateChildren);
             }
         }

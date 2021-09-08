@@ -25,8 +25,8 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.azure.toolkit.ide.common.action.Action;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -46,6 +46,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -297,6 +298,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // create child tree nodes for each child node
         node.getChildNodes().stream()
+            .filter(s -> !(s instanceof StorageModule))
             .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
             .map(childNode -> createTreeNode(childNode, project))
             .forEach(treeNode::add);
