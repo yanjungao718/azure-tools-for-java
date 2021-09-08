@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.redis;
 
-import com.azure.core.management.exception.ManagementException;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -48,6 +47,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     private RegionComboBox regionComboBox;
     private JCheckBox enableNonSSLCheckBox;
     private JLabel lblPricing;
+    private JLabel lblPricingHelp;
 
     public RedisCreationDialog(Project project) {
         super(project);
@@ -75,13 +75,13 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
         redisNameTextField.setValidator(() -> {
             try {
                 validateRedisName(redisNameTextField.getValue());
-            } catch (final IllegalArgumentException | AzureToolkitRuntimeException e) {
+            } catch (final Exception e) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(redisNameTextField).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
             }
             return AzureValidationInfo.OK;
         });
-        lblPricing.addMouseListener(new MouseAdapter() {
+        lblPricingHelp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
@@ -100,12 +100,8 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
         }
 
         if (subscriptionComboBox.getValue() != null) {
-            CheckNameAvailabilityResultEntity resultEntity;
-            try {
-                resultEntity = Azure.az(AzureRedis.class).checkNameAvailability(subscriptionComboBox.getValue().getId(), name);
-            } catch (ManagementException e) {
-                throw new AzureToolkitRuntimeException(e.getMessage());
-            }
+            final CheckNameAvailabilityResultEntity resultEntity =
+                    Azure.az(AzureRedis.class).checkNameAvailability(subscriptionComboBox.getValue().getId(), name);
             if (!resultEntity.isAvailable()) {
                 String message = resultEntity.getUnavailabilityReason();
                 throw new AzureToolkitRuntimeException(message);
