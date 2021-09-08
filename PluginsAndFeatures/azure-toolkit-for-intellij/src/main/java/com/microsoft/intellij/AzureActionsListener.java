@@ -125,7 +125,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         AzureRxTaskManager.register();
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());
         IntellijAzureActionManager.register();
-        Node.setNode2Actions(NodeActionsMap.node2Actions);
+        Node.setNode2Actions(NodeActionsMap.NODE_ACTIONS);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
