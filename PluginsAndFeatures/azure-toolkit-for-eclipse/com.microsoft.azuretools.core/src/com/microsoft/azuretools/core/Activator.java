@@ -10,8 +10,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,8 +25,10 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.event.EventListenerList;
 
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.core.utils.EclipseAzureTaskManager;
+import com.microsoft.azure.toolkit.eclipse.common.messager.EclipseAzureMessager;
+import com.microsoft.azure.toolkit.eclipse.common.task.EclipseAzureTaskManager;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -74,7 +74,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     // The plug-in ID
     public static final String PLUGIN_ID = "com.microsoft.azuretools.core"; //$NON-NLS-1$
 
-    public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s, machineid:%s";
@@ -117,6 +117,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
         dataFile = Paths.get(pluginInstLoc, File.separator,
                 com.microsoft.azuretools.core.utils.Messages.dataFileName).toString();
         AzureTaskManager.register(new EclipseAzureTaskManager());
+        AzureMessager.setDefaultMessager(new EclipseAzureMessager());
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
@@ -151,8 +152,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(),
                     TelemetryUtils.getMachieId(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal,
                             com.microsoft.azuretools.core.utils.Messages.instID)));
-            if (CommonSettings.getUiFactory() == null)
+            if (CommonSettings.getUiFactory() == null) {
                 CommonSettings.setUiFactory(new UIFactory());
+            }
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
             final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
             CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
@@ -225,6 +227,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             }
         }
     }
+
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
@@ -327,7 +330,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     }
 
     public static void removeUnNecessaryListener() {
-        for (int i = 0 ; i < depEveList.size(); i++) {
+        for (int i = 0; i < depEveList.size(); i++) {
             removeDeploymentEventListener(depEveList.get(i));
         }
         depEveList.clear();
@@ -374,8 +377,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
         IConsoleManager conMan = consolePlugin.getConsoleManager();
         IConsole[] existing = conMan.getConsoles();
         for (int i = 0; i < existing.length; i++) {
-            if (name.equals(existing[i].getName()))
+            if (name.equals(existing[i].getName())) {
                 return (MessageConsole) existing[i];
+            }
         }
         // no console found, so create a new one
         MessageConsole messageConsole = new MessageConsole(name, null);
