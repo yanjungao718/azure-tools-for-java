@@ -54,6 +54,7 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
             monitor.beginTask(title, IProgressMonitor.UNKNOWN);
             try {
                 task.setBackgrounded(true);
+                task.setMonitor(new EclipseTaskMonitor(monitor));
                 runnable.run();
             } finally {
                 monitor.done();
@@ -78,6 +79,7 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
                 monitor.beginTask(title, IProgressMonitor.UNKNOWN);
                 try {
                     task.setBackgrounded(false);
+                    task.setMonitor(new EclipseTaskMonitor(monitor));
                     runnable.run();
                 } finally {
                     monitor.done();
@@ -86,6 +88,25 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
         } catch (InvocationTargetException | InterruptedException e) {
             String msg = String.format("failed to execute task (%s)", task.getTitle());
             throw new AzureToolkitRuntimeException(msg, e);
+        }
+    }
+
+    private static class EclipseTaskMonitor implements AzureTask.Monitor {
+
+        private final IProgressMonitor monitor;
+
+        private EclipseTaskMonitor(IProgressMonitor monitor) {
+            this.monitor = monitor;
+        }
+
+        @Override
+        public void cancel() {
+            this.monitor.setCanceled(true);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return this.monitor.isCanceled();
         }
     }
 }
