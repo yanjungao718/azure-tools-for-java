@@ -14,15 +14,13 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class EclipseAzureTaskManager extends AzureTaskManager {
-
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
     protected void doRead(Runnable runnable, final AzureTask<?> task) {
@@ -36,7 +34,7 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunOnPooledThread(Runnable runnable, AzureTask<?> task) {
-        executor.submit(runnable);
+        Mono.fromRunnable(runnable).subscribeOn(Schedulers.boundedElastic()).subscribe();
     }
 
     @Override
