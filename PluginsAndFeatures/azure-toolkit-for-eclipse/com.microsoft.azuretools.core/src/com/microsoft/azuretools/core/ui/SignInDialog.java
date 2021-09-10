@@ -5,38 +5,11 @@
 
 package com.microsoft.azuretools.core.ui;
 
-import com.microsoft.aad.msal4j.MsalClientException;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.Account;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
-import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
-import com.microsoft.azuretools.authmanage.AuthMethod;
-import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import lombok.Getter;
-import lombok.Lombok;
 import lombok.SneakyThrows;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,19 +17,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import rx.Single;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private static final String AZURE_SIGN_IN = "Azure Sign In";
@@ -67,41 +27,17 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private Label lblDeviceInfo;
     private Label lblSP;
 
-    private AuthMethodDetails authMethodDetails;
-    private String accountEmail;
-    FileDialog fileDialog;
-
     private AuthConfiguration data = new AuthConfiguration();
-
-    @Getter
-    private CompletableFuture<AuthMethodDetails> authMethodDetailFuture = new CompletableFuture<>();
-
-    private static AuthMethodDetails apply(Account ac) {
-        return fromAccountEntity(ac.getEntity());
-    }
-
-    public AuthMethodDetails getAuthMethodDetails() {
-        return authMethodDetails;
-    }
 
     /**
      * Create the dialog.
      * @param parentShell
+     *
      */
     public SignInDialog(Shell parentShell) {
         super(parentShell);
         setHelpAvailable(false);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
-    }
-
-    public static SignInDialog go(Shell parentShell, AuthMethodDetails authMethodDetails) {
-        SignInDialog d = new SignInDialog(parentShell);
-        d.authMethodDetails = authMethodDetails;
-        d.create();
-        if (d.open() == Window.OK) {
-            return d;
-        }
-        return null;
     }
 
     @Override
@@ -192,129 +128,19 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     @SneakyThrows
     @Override
     public void okPressed() {
-        AuthConfiguration auth = new AuthConfiguration();
         if (btnAzureCli.getSelection()) {
-            auth.setType(AuthType.AZURE_CLI);
+            data.setType(AuthType.AZURE_CLI);
         } else if (btnDeviceCode.getSelection()) {
-            auth.setType(AuthType.DEVICE_CODE);
-            super.okPressed();
-            doDeviceCodeLogin();
-            return;
+            data.setType(AuthType.DEVICE_CODE);
 
         } else if (btnSPRadio.getSelection()) {
-            auth.setType(AuthType.SERVICE_PRINCIPAL);
-            throw new UnsupportedOperationException("SP doesn't support by now");
+            data.setType(AuthType.SERVICE_PRINCIPAL);
         }
-        loginNonDeviceCodeSingle(auth).subscribe(details -> {
-            this.authMethodDetailFuture.complete(details);
-        });
         super.okPressed();
     }
 
-    private void doDeviceCodeLogin() {
-        DeviceCodeAccount account = loginDeviceCodeSingle().toBlocking().value();
-        final IDeviceLoginUI deviceLoginUI = new DeviceLoginWindow();
-        new Thread(() -> {
-            authMethodDetailFuture =
-                    account.continueLogin()
-                            .subscribeOn(Schedulers.boundedElastic())
-                    .map(SignInDialog::apply)
-                    .doFinally(signal -> deviceLoginUI.closePrompt())
-                    .toFuture();
-            deviceLoginUI.setFuture(authMethodDetailFuture);
-        }).start();
-        deviceLoginUI.promptDeviceCode(account.getDeviceCode());
+    public AuthConfiguration getData() {
+        return data;
     }
 
-    private static AuthMethodDetails fromAccountEntity(AccountEntity entity) {
-        final AuthMethodDetails authMethodDetails = new AuthMethodDetails();
-        authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
-        authMethodDetails.setAuthType(entity.getType());
-        authMethodDetails.setClientId(entity.getClientId());
-        authMethodDetails.setTenantId(CollectionUtils.isEmpty(entity.getTenantIds()) ? "" : entity.getTenantIds().get(0));
-        authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudNameForAzureCli(entity.getEnvironment()));
-        authMethodDetails.setAccountEmail(entity.getEmail());
-        return authMethodDetails;
-    }
-
-    private static Single<DeviceCodeAccount> loginDeviceCodeSingle() {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
-        final AzureTask<DeviceCodeAccount> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
-            final AzureAccount az = Azure.az(AzureAccount.class);
-            return (DeviceCodeAccount) checkCanceled(null, az.loginAsync(AuthType.DEVICE_CODE, true), () -> {
-                throw Lombok.sneakyThrow(new InterruptedException("user cancel"));
-            });
-        });
-        return AzureTaskManager.getInstance().runInBackgroundAsObservable(deviceCodeTask).toSingle();
-    }
-
-    private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
-        final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true, () -> {
-            // todo add indicator
-            return doLogin(null, auth);
-        });
-        return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
-    }
-
-    private static AuthMethodDetails doLogin(IProgressMonitor indicator, AuthConfiguration auth) {
-        AuthMethodDetails authMethodDetailsResult = new AuthMethodDetails();
-        switch (auth.getType()) {
-            case SERVICE_PRINCIPAL:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInServicePrincipal(auth),
-                        AuthMethodDetails::new), "sp");
-                break;
-            case AZURE_CLI:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli(),
-                        AuthMethodDetails::new), "az");
-                break;
-            case OAUTH2:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth(),
-                        AuthMethodDetails::new), "oauth");
-                break;
-            default:
-                break;
-        }
-        return authMethodDetailsResult;
-    }
-
-    private static <T> T call(Callable<T> loginCallable, String authMethod) {
-        final Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(SIGNIN_METHOD, authMethod);
-
-        try {
-            operation.start();
-            operation.trackProperties(properties);
-            operation.trackProperty(AZURE_ENVIRONMENT, Azure.az(AzureCloud.class).getName());
-            return loginCallable.call();
-        } catch (Exception e) {
-            if (shouldNoticeErrorToUser(e)) {
-                EventUtil.logError(operation, ErrorType.userError, e, properties, null);
-            }
-            throw new AzureToolkitRuntimeException(e.getMessage(), e);
-        } finally {
-            operation.complete();
-        }
-    }
-
-    private static <T> T checkCanceled(IProgressMonitor indicator, Mono<? extends T> mono, Supplier<T> supplier) {
-        if (indicator == null) {
-            return mono.block();
-        }
-        final Mono<T> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
-                .any(cancel -> cancel).map(ignore -> supplier.get()).subscribeOn(Schedulers.boundedElastic());
-        return Mono.firstWithSignal(cancelMono, mono.subscribeOn(Schedulers.boundedElastic())).block();
-    }
-
-    private static boolean shouldNoticeErrorToUser(Throwable cause) {
-        if (cause instanceof InterruptedException) {
-            return false;
-        }
-
-        if (cause instanceof MsalClientException && StringUtils.equals(cause.getMessage(), "No Authorization code was returned from the server")) {
-            return false;
-        }
-        return true;
-    }
 }

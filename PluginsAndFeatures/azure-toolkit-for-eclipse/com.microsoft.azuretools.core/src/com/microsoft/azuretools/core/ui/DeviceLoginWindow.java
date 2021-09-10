@@ -43,16 +43,17 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
     @Setter
     private Future future;
 
-    public DeviceLoginWindow() {
+    private Shell shell;
+
+    public DeviceLoginWindow(Shell shell) {
+        this.shell = shell;
     }
 
     @Override
     public void promptDeviceCode(DeviceCodeInfo deviceCode) {
         final Runnable gui = () -> {
             try {
-                final Display display = Display.getDefault();
-                final Shell activeShell = display.getActiveShell();
-                dialog = new DeviceLoginDialog(activeShell, deviceCode);
+                dialog = new DeviceLoginDialog(shell, deviceCode);
                 dialog.open();
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -78,7 +79,6 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
     private class DeviceLoginDialog extends AzureDialogWrapper {
 
         private final DeviceCodeInfo deviceCode;
-        private Browser browser;
         private Link link;
 
         public DeviceLoginDialog(Shell parentShell, DeviceCodeInfo deviceCode
@@ -99,7 +99,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             area.setLayoutData(gridData);
 
             link = new Link(area, SWT.NONE);
-            link.setText(createHtmlFormatMessage(area));
+            link.setText(createHtmlFormatMessage());
             link.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -157,7 +157,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             okButton.setText("Copy&&Open");
         }
 
-        private String createHtmlFormatMessage(Composite composite) {
+        private String createHtmlFormatMessage() {
             final String verificationUrl = deviceCode.getVerificationUrl();
             return deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>", verificationUrl, verificationUrl, verificationUrl, verificationUrl));
