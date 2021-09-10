@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 
 public class EclipseAzureTaskManager extends AzureTaskManager {
 
-    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
     protected void doRead(Runnable runnable, final AzureTask<?> task) {
