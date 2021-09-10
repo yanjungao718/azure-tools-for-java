@@ -53,6 +53,7 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         int size = 18;
         final Image image = this.getIcon();
         final ImageData imgData = image.getImageData().scaledTo(size, size);
+        image.dispose();
         return new Image(this.getDisplay(), imgData);
     }
 
