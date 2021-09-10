@@ -7,6 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *
+ * Copied from org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
+ *
  *     Benjamin Pasero - initial API and implementation
  *     Tasktop Technologies - initial API and implementation
  */
