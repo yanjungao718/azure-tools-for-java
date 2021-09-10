@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.authmanage.AuthMethod;
@@ -37,14 +38,11 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
@@ -61,14 +59,12 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
 
 
 public class SignInCommandHandler extends AzureAbstractHandler {
@@ -188,9 +184,8 @@ public class SignInCommandHandler extends AzureAbstractHandler {
 
     private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
         final AzureString title = AzureOperationBundle.title("account.sign_in");
-        final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true, () -> {
-            return doLogin(null, auth);
-        });
+        final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true,
+                () -> doLogin(AzureTaskContext.current().getTask().getMonitor(), auth));
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
     }
 
@@ -216,19 +211,19 @@ public class SignInCommandHandler extends AzureAbstractHandler {
         return authMethodDetails;
     }
 
-    private static AuthMethodDetails doLogin(IProgressMonitor indicator, AuthConfiguration auth) {
+    private static AuthMethodDetails doLogin(AzureTask.Monitor monitor, AuthConfiguration auth) {
         AuthMethodDetails authMethodDetailsResult = new AuthMethodDetails();
         switch (auth.getType()) {
             case SERVICE_PRINCIPAL:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInServicePrincipal(auth),
+                authMethodDetailsResult = call(() -> checkCanceled(monitor, IdentityAzureManager.getInstance().signInServicePrincipal(auth),
                         AuthMethodDetails::new), "sp");
                 break;
             case AZURE_CLI:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli(),
+                authMethodDetailsResult = call(() -> checkCanceled(monitor, IdentityAzureManager.getInstance().signInAzureCli(),
                         AuthMethodDetails::new), "az");
                 break;
             case OAUTH2:
-                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth(),
+                authMethodDetailsResult = call(() -> checkCanceled(monitor, IdentityAzureManager.getInstance().signInOAuth(),
                         AuthMethodDetails::new), "oauth");
                 break;
             default:
@@ -272,11 +267,11 @@ public class SignInCommandHandler extends AzureAbstractHandler {
     }
 
 
-    private static <T> T checkCanceled(IProgressMonitor indicator, Mono<? extends T> mono, Supplier<T> supplier) {
-        if (indicator == null) {
+    private static <T> T checkCanceled(AzureTask.Monitor monitor, Mono<? extends T> mono, Supplier<T> supplier) {
+        if (monitor == null) {
             return mono.block();
         }
-        final Mono<T> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> indicator.isCanceled())
+        final Mono<T> cancelMono = Flux.interval(Duration.ofSeconds(1)).map(ignore -> monitor.isCancelled())
                 .any(cancel -> cancel).map(ignore -> supplier.get()).subscribeOn(Schedulers.boundedElastic());
         return Mono.firstWithSignal(cancelMono, mono.subscribeOn(Schedulers.boundedElastic())).block();
     }
