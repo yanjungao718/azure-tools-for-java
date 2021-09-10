@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -25,7 +26,6 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
 
 public class ApplicationInsightsResourceRegistryEclipse {
-
     /**
      * Method updates application insights registry by adding, removing or updating resources.
      * @param client

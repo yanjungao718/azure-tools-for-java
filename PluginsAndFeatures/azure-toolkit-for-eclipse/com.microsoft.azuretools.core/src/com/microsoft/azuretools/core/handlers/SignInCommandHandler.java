@@ -30,8 +30,11 @@ public class SignInCommandHandler extends AzureAbstractHandler {
         try {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
             boolean isSignIn = authMethodManager.isSignedIn();
-            if (isSignIn) return true;
+            if (isSignIn) {
+                return true;
+            }
             SignInDialog d = SignInDialog.go(shell, authMethodManager.getAuthMethodDetails());
+            d.getAuthMethodDetailFuture().get();
             if (null != d) {
                 AuthMethodDetails authMethodDetailsUpdated = d.getAuthMethodDetails();
                 authMethodManager.setAuthMethodDetails(authMethodDetailsUpdated);
