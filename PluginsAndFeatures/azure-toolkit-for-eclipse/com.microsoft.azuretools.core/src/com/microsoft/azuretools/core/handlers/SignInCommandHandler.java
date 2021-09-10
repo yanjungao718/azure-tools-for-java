@@ -323,7 +323,8 @@ public class SignInCommandHandler extends AzureAbstractHandler {
             if (isLoggedIn) {
                 persistAuthMethodDetails();
                 // from rxjava1 single to mono
-                SelectSubsriptionsCommandHandler.onSelectSubscriptions(shell);
+                AzureTaskManager.getInstance().runLater(() ->
+                        SelectSubsriptionsCommandHandler.onSelectSubscriptions(shell));
                 return true;
             }
             return false;
