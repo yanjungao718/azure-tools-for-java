@@ -182,6 +182,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-springcloud-lib'
     compile 'com.microsoft.azure:azure-toolkit-mysql-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
+    compile 'com.microsoft.azure:azure-toolkit-redis-lib'
     aspect "com.microsoft.azure:azure-toolkit-common-lib",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
