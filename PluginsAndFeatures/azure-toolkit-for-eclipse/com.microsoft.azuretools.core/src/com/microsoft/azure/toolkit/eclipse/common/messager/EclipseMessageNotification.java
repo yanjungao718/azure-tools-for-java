@@ -23,7 +23,7 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
 
     @Nonnull
     private final EclipseAzureMessage message;
-	private Image icon;
+    private Image icon;
 
     public EclipseMessageNotification(@Nonnull EclipseAzureMessage message, Display display) {
         super(display);
@@ -59,15 +59,15 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         return this.icon;
     }
 
-	@Override
-	public boolean close() {
-		if (Objects.nonNull(this.icon)) {
-			this.icon.dispose();
-		}
-		return super.close();
-	}
+    @Override
+    public boolean close() {
+        if (Objects.nonNull(this.icon)) {
+            this.icon.dispose();
+        }
+        return super.close();
+    }
 
-	@Override
+    @Override
     public Display getDisplay() {
         Shell shell = super.getShell();
         if (shell == null || shell.isDisposed()) {
