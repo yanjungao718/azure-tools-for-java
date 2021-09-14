@@ -38,6 +38,7 @@
         <module>azure-toolkit-ide-common-lib</module>
         <module>azure-toolkit-ide-springcloud-lib</module>
         <module>azure-toolkit-ide-storage-lib</module>
+        <module>azure-toolkit-ide-vm-lib</module>
     </modules>
 
     <properties>
