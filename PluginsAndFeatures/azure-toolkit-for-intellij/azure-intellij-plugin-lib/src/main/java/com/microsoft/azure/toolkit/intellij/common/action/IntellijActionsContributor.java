@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 
 import java.util.Objects;
@@ -19,7 +20,7 @@ public class IntellijActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
         am.<String>registerHandler(ResourceCommonActionsContributor.OPEN_URL, Objects::nonNull, BrowserUtil::browse);
-        am.<IAzureResource<?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES,
+        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()),
                 (s, e) -> IntellijShowPropertiesViewAction.showPropertyView(s, Objects.requireNonNull(e.getProject())));
     }

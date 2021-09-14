@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class IntellijAzureActionManager extends AzureActionManager {
     private static final ExtensionPointName<IActionsContributor> actionsExtensionPoint =
@@ -95,6 +96,12 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
             final IView.Label view = this.action.view(source);
             applyView(view, e.getPresentation());
+
+            final BiConsumer<T, Object> handler = action.handler(source, e);
+            if (handler == null) {
+                // Disable action if no handler is registered
+                e.getPresentation().setEnabled(false);
+            }
         }
 
         private static void applyView(IView.Label view, Presentation presentation) {
