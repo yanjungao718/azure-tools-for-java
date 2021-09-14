@@ -17,11 +17,13 @@ import org.eclipse.swt.widgets.Shell;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class EclipseMessageNotification extends AbstractNotificationPopup implements EclipseMessageView {
 
     @Nonnull
     private final EclipseAzureMessage message;
+    private Image icon;
 
     public EclipseMessageNotification(@Nonnull EclipseAzureMessage message, Display display) {
         super(display);
@@ -53,8 +55,16 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         int size = 18;
         final Image image = this.getIcon();
         final ImageData imgData = image.getImageData().scaledTo(size, size);
-        image.dispose();
-        return new Image(this.getDisplay(), imgData);
+        this.icon = new Image(this.getDisplay(), imgData);
+        return this.icon;
+    }
+
+    @Override
+    public boolean close() {
+        if (Objects.nonNull(this.icon)) {
+            this.icon.dispose();
+        }
+        return super.close();
     }
 
     @Override

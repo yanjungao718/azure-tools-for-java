@@ -16,12 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.regex.Pattern;
-
-import static java.util.regex.Pattern.compile;
 
 public class IntellijAzureMessage extends AzureHtmlMessage {
-    static final Pattern URL_PATTERN = compile("\\s+https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)");
     @Nullable
     @Getter
     @Setter
@@ -36,11 +32,11 @@ public class IntellijAzureMessage extends AzureHtmlMessage {
     }
 
     protected String getErrorColor() {
-        return Integer.toHexString(JBColor.RED.getRGB()).substring(2);
+        return "#" + Integer.toHexString(JBColor.RED.getRGB()).substring(2);
     }
 
     protected String getValueColor() {
-        return Integer.toHexString(JBColor.BLUE.getRGB()).substring(2);
+        return "#" + Integer.toHexString(JBColor.BLUE.getRGB()).substring(2);
     }
 }
 

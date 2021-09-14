@@ -236,24 +236,6 @@ public abstract class AbstractNotificationPopup extends Window {
         return containerPanel;
     }
 
-    private void setNullBackground(Composite outerCircle) {
-        Control[] var5;
-        int var4 = (var5 = outerCircle.getChildren()).length;
-
-        for (int var3 = 0; var3 < var4; ++var3) {
-            Control c = var5[var3];
-            try {
-                c.setBackground(null);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (c instanceof Composite) {
-                this.setNullBackground((Composite) c);
-            }
-        }
-
-    }
-
     protected void initializeBounds() {
         Rectangle clArea = this.getPrimaryClientArea();
         Point initialSize = this.shell.computeSize(-1, -1);
