@@ -22,11 +22,7 @@ import javax.annotation.Nullable;
 public final class ModuleResource implements Resource<String> {
     @EqualsAndHashCode.Include
     private final String moduleName;
-
-    @Override
-    public ResourceDefinition<String> getDefinition() {
-        return Definition.IJ_MODULE;
-    }
+    private final ResourceDefinition<String> definition = Definition.IJ_MODULE;
 
     @Override
     public String getData() {
@@ -35,6 +31,11 @@ public final class ModuleResource implements Resource<String> {
 
     @Override
     public String getId() {
+        return this.moduleName;
+    }
+
+    @Override
+    public String getDataId() {
         return this.moduleName;
     }
 

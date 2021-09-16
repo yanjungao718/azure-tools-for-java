@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.openapi.project.Project;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
@@ -25,11 +27,18 @@ public interface Resource<T> {
      */
     T getData();
 
-    String getId();
+    default String getId() {
+        return DigestUtils.md5Hex(this.getDataId());
+    }
+
+    String getDataId();
 
     String getName();
 
     default boolean writeTo(Element resourceEle) {
         return this.getDefinition().write(resourceEle, this);
+    }
+
+    default void navigate(Project project) {
     }
 }

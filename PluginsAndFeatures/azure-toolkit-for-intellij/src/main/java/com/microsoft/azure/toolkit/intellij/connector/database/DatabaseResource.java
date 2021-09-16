@@ -12,12 +12,12 @@ import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
@@ -36,13 +36,22 @@ public class DatabaseResource implements Resource<Database> {
     private final Definition definition;
 
     @Override
-    public String getId() {
-        return DigestUtils.md5Hex(this.data.getId());
+    public String getDataId() {
+        return this.data.getId();
     }
 
     @Override
     public String getName() {
         return this.data.getFullName();
+    }
+
+    @Override
+    public void navigate(Project project) {
+        if (DatabaseResource.Definition.AZURE_MYSQL == this.getDefinition()) {
+            DefaultLoader.getUIHelper().openMySQLPropertyView(this.getData().getServerId().id(), project);
+        } else if (DatabaseResource.Definition.SQL_SERVER == this.getDefinition()) {
+            DefaultLoader.getUIHelper().openSqlServerPropertyView(this.getData().getServerId().id(), project);
+        }
     }
 
     @Getter
@@ -74,7 +83,7 @@ public class DatabaseResource implements Resource<Database> {
             final Database database = resource.getData();
             final Password.SaveType saveType = database.getPassword().saveType();
             resourceEle.setAttribute(new Attribute("id", resource.getId()));
-            resourceEle.addContent(new Element("azureResourceId").addContent(database.getId()));
+            resourceEle.addContent(new Element("dataId").addContent(resource.getDataId()));
             resourceEle.addContent(new Element("url").setText(database.getJdbcUrl().toString()));
             resourceEle.addContent(new Element("username").setText(database.getUsername()));
             resourceEle.addContent(new Element("passwordSave").setText(saveType.name()));
@@ -88,8 +97,8 @@ public class DatabaseResource implements Resource<Database> {
 
         @Override
         public Resource<Database> read(@Nonnull Element resourceEle) {
-            final String id = resourceEle.getChildTextTrim("azureResourceId");
-            final Database db = new Database(id);
+            final String dataId = resourceEle.getChildTextTrim("dataId");
+            final Database db = new Database(dataId);
             final String defName = this.getName();
             db.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
             db.setUsername(resourceEle.getChildTextTrim("username"));
