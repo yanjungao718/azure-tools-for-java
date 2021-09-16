@@ -14,6 +14,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class Connection<R, C> {
     @EqualsAndHashCode.Include
     protected final ConnectionDefinition<R, C> definition;
     @Setter
+    @Getter(AccessLevel.NONE)
     private String envPrefix;
     private Map<String, String> env = new HashMap<>();
 
@@ -110,6 +112,13 @@ public class Connection<R, C> {
 
     protected Map<String, String> initEnv(Project project) {
         return Collections.emptyMap();
+    }
+
+    public String getEnvPrefix() {
+        if (StringUtils.isBlank(this.envPrefix)) {
+            return this.definition.getResourceDefinition().getDefaultEnvPrefix();
+        }
+        return this.envPrefix;
     }
 
     public void write(Element connectionEle) {
