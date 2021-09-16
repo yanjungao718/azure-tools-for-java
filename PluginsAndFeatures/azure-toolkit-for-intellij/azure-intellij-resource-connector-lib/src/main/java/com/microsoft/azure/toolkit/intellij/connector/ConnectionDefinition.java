@@ -85,7 +85,7 @@ public class ConnectionDefinition<R, C> {
                 .setAttribute("type", resource.getDefinition().getName())
                 .setText(resource.getId()));
         connectionEle.addContent(new Element("consumer")
-                .setAttribute("type", resource.getDefinition().getName())
+                .setAttribute("type", consumer.getDefinition().getName())
                 .setText(consumer.getId()));
         connectionEle.setAttribute("envPrefix", connection.getEnvPrefix());
         return true;
@@ -124,12 +124,16 @@ public class ConnectionDefinition<R, C> {
             if (Objects.nonNull(existedConnection)) { // modified
                 final Resource<R> connected = (Resource<R>) existedConnection.getResource();
                 final String template = "%s \"%s\" has already connected to %s \"%s\". \n" +
-                        "Do you want to reconnect it to database \"%s\"?";
+                        "Do you want to reconnect it to \"%s\"?";
                 final String msg = String.format(template,
                         consumer.getDefinition().getTitle(), consumer.getName(),
                         connected.getDefinition().getTitle(), connected.getName(),
                         resource.getName());
-                return AzureMessager.getMessager().confirm(msg, PROMPT_TITLE);
+                final boolean result = AzureMessager.getMessager().confirm(msg, PROMPT_TITLE);
+                if (result) {
+                    connectionManager.removeConnection(existedConnection.getResource().getId(), consumer.getId());
+                }
+                return result;
             }
         }
         return true; // is new or not modified.
