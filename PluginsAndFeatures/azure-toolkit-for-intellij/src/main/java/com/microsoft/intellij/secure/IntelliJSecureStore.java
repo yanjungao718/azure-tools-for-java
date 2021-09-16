@@ -7,7 +7,7 @@ package com.microsoft.intellij.secure;
 
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.ide.passwordSafe.PasswordSafe;
-import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -15,19 +15,36 @@ import javax.annotation.Nullable;
 
 import static com.intellij.credentialStore.CredentialAttributesKt.generateServiceName;
 
-public class IdeaSecureStore implements SecureStore {
-    private IdeaSecureStore() {
+public class IntelliJSecureStore implements ISecureStore {
+    private static class LazyHolder {
+        static final IntelliJSecureStore INSTANCE = new IntelliJSecureStore();
+    }
+
+    public static IntelliJSecureStore getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
+    private IntelliJSecureStore() {
     }
 
     // Leverage IntelliJ PasswordSafe component
     private PasswordSafe passwordSafe = PasswordSafe.getInstance();
 
-    private static class LazyHolder {
-        static final IdeaSecureStore INSTANCE = new IdeaSecureStore();
+    @Nullable
+    @Override
+    public String getProperty(@Nonnull String service, @Nonnull String key) {
+        return loadPassword(service, key, null);
     }
 
-    public static IdeaSecureStore getInstance() {
-        return LazyHolder.INSTANCE;
+    @Nullable
+    @Override
+    public String getProperty(@Nonnull String service, @Nonnull String key, @Nullable String defaultValue) {
+        return StringUtils.firstNonBlank(loadPassword(service, key, null), defaultValue);
+    }
+
+    @Override
+    public void setProperty(@Nonnull String service, @Nonnull String key, @Nullable String value) {
+        savePassword(service, key, null, value);
     }
 
     @Override

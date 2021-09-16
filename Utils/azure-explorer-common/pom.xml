@@ -141,6 +141,10 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-storage-lib</artifactId>
         </dependency>
+          <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-redis-lib</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>retrofit</artifactId>
@@ -181,7 +185,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.12</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>

@@ -36,9 +36,9 @@ public class PublishHandler extends AzureAbstractHandler {
         if (project == null) {
             return null;
         }
-        
-        SignInCommandHandler.requireSignedIn(PluginUtil.getParentShell(),  () -> {
-        	basePath = project.getLocation().toString();
+
+        SignInCommandHandler.requireSignedIn(PluginUtil.getParentShell(), () -> {
+            basePath = project.getLocation().toString();
             try {
                 if (MavenUtils.isMavenProject(project)) {
                     destinationPath = MavenUtils.getTargetPath(project);
@@ -51,8 +51,7 @@ public class PublishHandler extends AzureAbstractHandler {
                         return null;
                     });
                 } else {
-                    destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
-                            .normalize().toString();
+                    destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize().toString();
                     ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
                     WarUtil.export(project, destinationPath);
                     buildAndRun(event);
@@ -68,8 +67,7 @@ public class PublishHandler extends AzureAbstractHandler {
 
     private void buildAndRun(ExecutionEvent event) {
         DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-            PublishWebAppOnLinuxDialog dialog = new PublishWebAppOnLinuxDialog(PluginUtil.getParentShell(), basePath,
-                    destinationPath);
+            PublishWebAppOnLinuxDialog dialog = new PublishWebAppOnLinuxDialog(PluginUtil.getParentShell(), basePath, destinationPath);
             dialog.open();
         });
     }

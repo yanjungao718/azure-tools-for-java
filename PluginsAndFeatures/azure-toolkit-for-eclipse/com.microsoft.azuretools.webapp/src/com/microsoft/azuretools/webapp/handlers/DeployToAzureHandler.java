@@ -32,9 +32,9 @@ public class DeployToAzureHandler extends AzureAbstractHandler {
         IProject project = PluginUtil.getSelectedProject();
         Shell shell = HandlerUtil.getActiveWorkbenchWindowChecked(ee).getShell();
         if (project != null) {
-        	
-        	SignInCommandHandler.requireSignedIn(shell, () -> {
-        		try {
+
+            SignInCommandHandler.requireSignedIn(shell, () -> {
+                try {
                     if (MavenUtils.isMavenProject(project)) {
                         MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
                         IContainer container;
@@ -50,7 +50,7 @@ public class DeployToAzureHandler extends AzureAbstractHandler {
                     e.printStackTrace();
                     MessageDialog.openInformation(shell, TITLE, e.getMessage());
                 }
-        	});
+            });
         } else {
             MessageDialog.openInformation(shell, TITLE, NO_PROJECT_ERR);
             return null;
