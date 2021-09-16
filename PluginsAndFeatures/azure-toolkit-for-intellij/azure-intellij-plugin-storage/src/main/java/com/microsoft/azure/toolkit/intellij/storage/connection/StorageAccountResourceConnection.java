@@ -48,6 +48,10 @@ public class StorageAccountResourceConnection extends Connection<StorageAccount,
         final List<Pair<String, String>> properties = new ArrayList<>();
         properties.add(new ImmutablePair<>("azure.storage.accountName", String.format("${%s}", this.getEnvPrefix() + "ACCOUNT_NAME")));
         properties.add(new ImmutablePair<>("azure.storage.accountKey", String.format("${%s}", this.getEnvPrefix() + "ACCOUNT_KEY")));
+        final String blobEndpoint = String.format("https://%s.blob.core.windows.net/<your-container-name>/<your-blob-name>", this.resource.getName());
+        final String fileEndpoint = String.format("https://%s.file.core.windows.net/<your-fileshare-name>/<your-file-name>", this.resource.getName());
+        properties.add(new ImmutablePair<>("# azure.storage.blob-endpoint", blobEndpoint));
+        properties.add(new ImmutablePair<>("# azure.storage.file-endpoint", "<file-endpoint-URL>"));
         return properties;
     }
 
