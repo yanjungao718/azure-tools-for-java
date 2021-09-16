@@ -46,8 +46,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 .enabled(m -> m instanceof Module);
         final Action<Module> addAction = new Action<>(addHandler, addView);
 
-        final BiConsumer<Connection<?, ?>, AnActionEvent> editHandler =
-                (c, e) -> openDialog(c.getResource(), c.getConsumer(), e.getProject());
+        final BiConsumer<Connection<?, ?>, AnActionEvent> editHandler = (c, e) -> openDialog(c, e.getProject());
         final ActionView.Builder editView = new ActionView.Builder("Edit", "/icons/action/edit")
                 .title(t -> AzureOperationBundle.title("connector|explorer.edit_connection"))
                 .enabled(m -> m instanceof Connection);
@@ -90,6 +89,14 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             final ConnectorDialog dialog = new ConnectorDialog(project);
             dialog.setConsumer(c);
             dialog.setResource(r);
+            dialog.show();
+        });
+    }
+
+    private void openDialog(Connection<?, ?> c, Project project) {
+        AzureTaskManager.getInstance().runLater(() -> {
+            final ConnectorDialog dialog = new ConnectorDialog(project);
+            dialog.setData(c);
             dialog.show();
         });
     }
