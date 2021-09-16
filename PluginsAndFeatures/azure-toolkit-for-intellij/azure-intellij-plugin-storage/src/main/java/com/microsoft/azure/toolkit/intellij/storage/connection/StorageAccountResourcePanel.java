@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -49,8 +50,8 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
     @Override
     public void setData(StorageAccount account) {
         Optional.ofNullable(account).ifPresent((a -> {
-            this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId), true);
-            this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name), true);
+            this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId));
+            this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name));
         }));
     }
 
@@ -77,7 +78,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
         this.accountComboBox = new AzureComboBoxSimple<>(loader) {
             @Override
             protected String getItemText(Object item) {
-                return ((StorageAccount) item).name();
+                return Optional.ofNullable(item).map(i -> ((StorageAccount) i).name()).orElse(StringUtils.EMPTY);
             }
         };
     }

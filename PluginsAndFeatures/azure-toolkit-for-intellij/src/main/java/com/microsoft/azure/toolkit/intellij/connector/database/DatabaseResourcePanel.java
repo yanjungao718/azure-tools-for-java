@@ -221,8 +221,8 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
     @Override
     public void setData(Database db) {
         Optional.ofNullable(db.getServerId()).ifPresent((serverId -> {
-            this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.subscriptionId(), Subscription::getId), true);
-            this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.name(), server -> server.entity().getName()), true);
+            this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.subscriptionId(), Subscription::getId));
+            this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.name(), server -> server.entity().getName()));
         }));
         Optional.ofNullable(db.getPassword())
                 .flatMap(p -> Optional.ofNullable(p.password()))
@@ -235,7 +235,7 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
                     .orElse(Password.SaveType.UNTIL_RESTART));
         }
         Optional.ofNullable(db.getName()).ifPresent(dbName ->
-                this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, IAzureResourceEntity::getName), true));
+                this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, IAzureResourceEntity::getName)));
         Optional.ofNullable(db.getUsername())
                 .ifPresent((username -> this.usernameComboBox.setValue(username)));
     }
