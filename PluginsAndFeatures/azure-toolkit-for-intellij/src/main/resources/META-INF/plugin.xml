@@ -159,8 +159,6 @@
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
     <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionDefinitionPreloadingActivity"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceCompletionContributor"/>
-    <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceLineMarkerProvider"/>
   </extensions>
 
   <applicationListeners>

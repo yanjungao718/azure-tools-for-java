@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.database;
+package com.microsoft.azure.toolkit.intellij.connector.spring;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -22,25 +22,22 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
-import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
+import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-public class SpringDatasourceCompletionContributor extends CompletionContributor {
-
-    public SpringDatasourceCompletionContributor() {
+public class SpringPropertiesCompletionContributor extends CompletionContributor {
+    public SpringPropertiesCompletionContributor() {
         super();
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
@@ -49,23 +46,18 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                 if (module == null) {
                     return;
                 }
-                final List<LookupElement> lookupElements = generateLookupElements();
-                if (CollectionUtils.isNotEmpty(lookupElements)) {
-                    lookupElements.forEach(resultSet::addElement);
-                }
+                ConnectionManager.getDefinitions().stream()
+                        .filter(d -> d instanceof SpringSupportedConnectionDefinition)
+                        .map(definition -> LookupElementBuilder
+                                .create(definition.getName(), ((SpringSupportedConnectionDefinition) definition).getKeyProperty())
+                                .withIcon(AzureIcons.getIcon("/icons/connector/connect.svg"))
+                                .withInsertHandler(new MyInsertHandler(definition.getResourceDefinition()))
+                                .withBoldness(true)
+                                .withTypeText("String")
+                                .withTailText(String.format(" (%s)", definition.getResourceDefinition().getTitle())))
+                        .forEach(resultSet::addElement);
             }
         });
-    }
-
-    public List<LookupElement> generateLookupElements() {
-        return Arrays.stream(DatabaseResource.Definition.values()).map(definition -> LookupElementBuilder
-                        .create(definition.getName(), "spring.datasource.url")
-                        .withIcon(AzureIcons.getIcon("/icons/connector/connect.svg"))
-                        .withInsertHandler(new MyInsertHandler(definition))
-                        .withBoldness(true)
-                        .withTypeText("String")
-                        .withTailText(String.format(" (%s)", definition.getTitle())))
-                .collect(Collectors.toList());
     }
 
     @RequiredArgsConstructor
@@ -104,10 +96,12 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
 
         private void insert(Connection<?, ?> c, @Nonnull InsertionContext context) {
             final String envPrefix = c.getEnvPrefix();
-            final String builder = "=${" + envPrefix + "URL}" + StringUtils.LF
-                    + "spring.datasource.username=${" + envPrefix + "USERNAME}" + StringUtils.LF
-                    + "spring.datasource.password=${" + envPrefix + "PASSWORD}" + StringUtils.LF;
-            EditorModificationUtil.insertStringAtCaret(context.getEditor(), builder, true);
+            final List<Pair<String, String>> properties = ((SpringSupportedConnection) c).getSpringProperties();
+            final StringBuilder result = new StringBuilder("=").append(properties.get(0).getValue()).append(StringUtils.LF);
+            for (int i = 1; i < properties.size(); i++) {
+                result.append(properties.get(i).getKey()).append("=").append(properties.get(i).getValue()).append(StringUtils.LF);
+            }
+            EditorModificationUtil.insertStringAtCaret(context.getEditor(), result.toString(), true);
         }
     }
 }

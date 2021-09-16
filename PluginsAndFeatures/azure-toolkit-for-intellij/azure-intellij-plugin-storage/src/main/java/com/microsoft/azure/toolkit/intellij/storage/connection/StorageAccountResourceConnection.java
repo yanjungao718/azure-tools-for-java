@@ -12,14 +12,20 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupportedConnection;
+import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupportedConnectionDefinition;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class StorageAccountResourceConnection extends Connection<StorageAccount, String> {
+public class StorageAccountResourceConnection extends Connection<StorageAccount, String> implements SpringSupportedConnection {
     public static final Definition DEFINITION = Definition.MODULE_STORAGE;
 
     public StorageAccountResourceConnection(AzureServiceResource<StorageAccount> resource, ModuleResource consumer, Definition definition) {
@@ -29,11 +35,24 @@ public class StorageAccountResourceConnection extends Connection<StorageAccount,
     protected Map<String, String> initEnv(@Nonnull final Project project) {
         final StorageAccount account = this.resource.getData();
         final String conString = account.getConnectionString();
-        return Collections.singletonMap(this.getEnvPrefix() + "CONNECTION_STRING", conString);
+        final HashMap<String, String> env = new HashMap<>();
+        final String prefix = this.getEnvPrefix();
+        env.put(prefix + "CONNECTION_STRING", conString);
+        env.put(prefix + "ACCOUNT_NAME", account.name());
+        env.put(prefix + "ACCOUNT_KEY", account.getKey());
+        return env;
+    }
+
+    @Override
+    public List<Pair<String, String>> getSpringProperties() {
+        final List<Pair<String, String>> properties = new ArrayList<>();
+        properties.add(new ImmutablePair<>("azure.storage.accountName", String.format("${%s}", this.getEnvPrefix() + "ACCOUNT_NAME")));
+        properties.add(new ImmutablePair<>("azure.storage.accountKey", String.format("${%s}", this.getEnvPrefix() + "ACCOUNT_KEY")));
+        return properties;
     }
 
     @Getter
-    public static class Definition extends ConnectionDefinition<StorageAccount, String> {
+    public static class Definition extends ConnectionDefinition<StorageAccount, String> implements SpringSupportedConnectionDefinition {
         public static final Definition MODULE_STORAGE = new Definition(StorageAccountResource.DEFINITION, ModuleResource.Definition.IJ_MODULE);
 
         public Definition(ResourceDefinition<StorageAccount> rd, ResourceDefinition<String> cd) {
@@ -44,6 +63,11 @@ public class StorageAccountResourceConnection extends Connection<StorageAccount,
         @Override
         public Connection<StorageAccount, String> define(Resource<StorageAccount> resource, Resource<String> consumer) {
             return new StorageAccountResourceConnection((AzureServiceResource<StorageAccount>) resource, (ModuleResource) consumer, this);
+        }
+
+        @Override
+        public String getKeyProperty() {
+            return "azure.storage.accountName";
         }
     }
 }

@@ -14,17 +14,21 @@ import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordDialog;
+import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupportedConnection;
+import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupportedConnectionDefinition;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils.ACCESS_DENIED_ERROR_CODE;
 
-public class DatabaseResourceConnection extends Connection<Database, String> {
+public class DatabaseResourceConnection extends Connection<Database, String> implements SpringSupportedConnection {
 
     public DatabaseResourceConnection(DatabaseResource resource, ModuleResource consumer, Definition definition) {
         super(resource, consumer, definition);
@@ -45,6 +49,15 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
         envMap.put(this.getEnvPrefix() + "USERNAME", database.getUsername());
         envMap.put(this.getEnvPrefix() + "PASSWORD", loadPassword(resource).or(() -> inputPassword(project, resource)).orElse(""));
         return envMap;
+    }
+
+    @Override
+    public List<Pair<String, String>> getSpringProperties() {
+        final List<Pair<String, String>> properties = new ArrayList<>();
+        properties.add(new ImmutablePair<>("spring.datasource.url", String.format("${%s}", this.getEnvPrefix() + "URL")));
+        properties.add(new ImmutablePair<>("spring.datasource.username", String.format("${%s}", this.getEnvPrefix() + "USERNAME")));
+        properties.add(new ImmutablePair<>("spring.datasource.password", String.format("${%s}", this.getEnvPrefix() + "PASSWORD")));
+        return properties;
     }
 
     private static Optional<String> loadPassword(@Nonnull final Resource<Database> resource) {
@@ -90,7 +103,7 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
     }
 
     @Getter
-    public static class Definition extends ConnectionDefinition<Database, String> {
+    public static class Definition extends ConnectionDefinition<Database, String> implements SpringSupportedConnectionDefinition {
         public static final Definition MODULE_MYSQL = new Definition(DatabaseResource.Definition.AZURE_MYSQL, ModuleResource.Definition.IJ_MODULE);
         public static final Definition MODULE_SQL = new Definition(DatabaseResource.Definition.SQL_SERVER, ModuleResource.Definition.IJ_MODULE);
 
@@ -112,6 +125,11 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
             final boolean usernameModified = !StringUtils.equals(db.getUsername(), edb.getUsername());
             final boolean passwordSaveTypeModified = db.getPassword().saveType() != edb.getPassword().saveType();
             return urlModified || usernameModified || passwordSaveTypeModified;
+        }
+
+        @Override
+        public String getKeyProperty() {
+            return "spring.datasource.url";
         }
     }
 }
