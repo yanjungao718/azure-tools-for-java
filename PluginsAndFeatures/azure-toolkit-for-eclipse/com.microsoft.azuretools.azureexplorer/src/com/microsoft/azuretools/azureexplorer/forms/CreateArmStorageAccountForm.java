@@ -1,24 +1,8 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
+
 
 package com.microsoft.azuretools.azureexplorer.forms;
 
@@ -29,7 +13,11 @@ import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
-import com.microsoft.azure.toolkit.lib.storage.model.*;
+import com.microsoft.azure.toolkit.lib.storage.model.AccessTier;
+import com.microsoft.azure.toolkit.lib.storage.model.Kind;
+import com.microsoft.azure.toolkit.lib.storage.model.Performance;
+import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -43,16 +31,33 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.Vector;
 import java.util.stream.Collectors;
 
 public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
@@ -291,44 +296,44 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     }
 
     private void validateEmptyFields() {
-        boolean allFieldsCompleted = !(nameTextField.getText().isEmpty() || regionComboBox.getText().isEmpty()
-                || (createNewRadioButton.getSelection() && resourceGrpField.getText().trim().isEmpty())
-                || (useExistingRadioButton.getSelection() && resourceGrpCombo.getText().isEmpty()));
+        boolean allFieldsCompleted = !(nameTextField.getText().isEmpty() || regionComboBox.getText().isEmpty() ||
+            (createNewRadioButton.getSelection() && resourceGrpField.getText().trim().isEmpty()) ||
+            (useExistingRadioButton.getSelection() && resourceGrpCombo.getText().isEmpty()));
 
         buttonOK.setEnabled(allFieldsCompleted);
     }
 
     @Override
     protected void okPressed() {
-        if (nameTextField.getText().length() < 3 || nameTextField.getText().length() > 24
-                || !nameTextField.getText().matches("[a-z0-9]+")) {
+        if (nameTextField.getText().length() < 3 || nameTextField.getText().length() > 24 ||
+            !nameTextField.getText().matches("[a-z0-9]+")) {
             DefaultLoader.getUIHelper()
-                    .showError("Invalid storage account name. The name should be between 3 and 24 characters long and "
-                            + "can contain only lowercase letters and numbers.", "Azure Explorer");
+                .showError("Invalid storage account name. The name should be between 3 and 24 characters long and "
+                    + "can contain only lowercase letters and numbers.", "Azure Explorer");
             return;
         }
         if (subscription == null) {
             subscription = (Subscription) subscriptionComboBox.
-                    getData(subscriptionComboBox.getText());
+                getData(subscriptionComboBox.getText());
         }
         final boolean isNewResourceGroup = createNewRadioButton.getSelection();
         final ResourceGroup resourceGroup = isNewResourceGroup ? new DraftResourceGroup(subscription, resourceGrpField.getText()) : Azure.az(AzureGroup.class)
-                .subscription(subscription.getId())
-                .getByName(resourceGrpCombo.getText());
+            .subscription(subscription.getId())
+            .getByName(resourceGrpCombo.getText());
         Region region = ((Region) regionComboBox.getData(regionComboBox.getText()));
         Kind kind = (Kind) kindCombo.getData(kindCombo.getText());
         String name = nameTextField.getText();
 
         newStorageAccount = StorageAccountConfig.builder()
-                .name(name)
-                .region(region)
-                .kind(kind)
-                .resourceGroup(resourceGroup)
-                .performance((Performance) performanceCombo.getData(performanceCombo.getText()))
-                .redundancy((Redundancy) replicationComboBox.getData(replicationComboBox.getText()))
-                .subscription(subscription)
-                .accessTier(Optional.ofNullable(accessTierComboBox).map(t -> (AccessTier) accessTierComboBox.getData(accessTierComboBox.getText())).orElse(null))
-                .build();
+            .name(name)
+            .region(region)
+            .kind(kind)
+            .resourceGroup(resourceGroup)
+            .performance((Performance) performanceCombo.getData(performanceCombo.getText()))
+            .redundancy((Redundancy) replicationComboBox.getData(replicationComboBox.getText()))
+            .subscription(subscription)
+            .accessTier(Optional.ofNullable(accessTierComboBox).map(t -> (AccessTier) accessTierComboBox.getData(accessTierComboBox.getText())).orElse(null))
+            .build();
         this.onCreate.run();
         super.okPressed();
     }
@@ -361,7 +366,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
                 }
             } catch (Exception e) {
                 PluginUtil.displayErrorDialogWithAzureMsg(PluginUtil.getParentShell(), Messages.err,
-                        "An error occurred while loading subscriptions.", e);
+                    "An error occurred while loading subscriptions.", e);
             }
             for (Map.Entry<String, Kind> entry : ACCOUNT_KIND.entrySet()) {
                 kindCombo.add(entry.getKey());
@@ -424,7 +429,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         Kind kind = (Kind) kindCombo.getData(kindCombo.getText());
         Performance performance = (Performance) performanceCombo.getData(performanceCombo.getText());
         List<Redundancy> redundancies = Objects.isNull(performance) ? Collections.emptyList() :
-                Azure.az(AzureStorageAccount.class).listSupportedRedundancies(performance, kind);
+            Azure.az(AzureStorageAccount.class).listSupportedRedundancies(performance, kind);
         for (Redundancy redundancy : redundancies) {
             replicationComboBox.add(redundancy.getLabel());
             replicationComboBox.setData(redundancy.getLabel(), redundancy);
@@ -448,7 +453,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     public void loadRegionsAndGroups() {
         subscriptionComboBox.getData(subscriptionComboBox.getText()).toString();
         Subscription subs = (Subscription) subscriptionComboBox.
-                getData(subscriptionComboBox.getText());
+            getData(subscriptionComboBox.getText());
         if (subs != null) {
             AzureTaskManager.getInstance().runInBackground("Loading Available Locations...", () -> {
                 try {
@@ -473,9 +478,9 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
 
     private void fillRegions() {
         Subscription subs = (Subscription) subscriptionComboBox.
-                getData(subscriptionComboBox.getText());
+            getData(subscriptionComboBox.getText());
         final List<Region> locations = Azure.az(AzureAccount.class).listRegions(subs.getId());
-        AzureTaskManager.getInstance().runLater(() -> {            
+        AzureTaskManager.getInstance().runLater(() -> {
             for (Region location : locations) {
                 regionComboBox.add(location.getLabel());
                 regionComboBox.setData(location.getLabel(), location);
@@ -489,7 +494,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     public void loadGroups() {
         resourceGrpCombo.add("<Loading...>");
         Subscription subs = (Subscription) subscriptionComboBox.
-                getData(subscriptionComboBox.getText());
+            getData(subscriptionComboBox.getText());
         if (subs == null) {
             AzureTaskManager.getInstance().runInBackground("Loading Resource Groups", new Runnable() {
                 @Override
@@ -547,10 +552,12 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         final Map<String, String> properties = new HashMap<>();
 
         if (this.getSubscription() != null) {
-            if (this.getSubscription().getName() != null)
+            if (this.getSubscription().getName() != null) {
                 properties.put("SubscriptionName", this.getSubscription().getName());
-            if (this.getSubscription().getId() != null)
+            }
+            if (this.getSubscription().getId() != null) {
                 properties.put("SubscriptionId", this.getSubscription().getId());
+            }
         }
 
         return properties;
