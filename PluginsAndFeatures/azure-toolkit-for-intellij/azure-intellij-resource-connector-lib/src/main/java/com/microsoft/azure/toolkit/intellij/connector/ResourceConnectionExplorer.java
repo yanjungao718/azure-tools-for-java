@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
+import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
 public class ResourceConnectionExplorer extends Tree {
@@ -56,13 +57,14 @@ public class ResourceConnectionExplorer extends Tree {
     private static class ModuleNode extends Node<Module> {
         public ModuleNode(@Nonnull Module module) {
             super(module);
-            final MessageBusConnection bus = module.getProject().getMessageBus().connect();
-            bus.subscribe(CONNECTION_CHANGED, conn -> {
+            final MessageBusConnection connection = module.getProject().getMessageBus().connect();
+            connection.subscribe(CONNECTION_CHANGED, conn -> {
                 final Resource<?> consumer = conn.getConsumer();
                 if ((consumer instanceof ModuleResource) && ((ModuleResource) consumer).getModuleName().equals(module.getName())) {
                     this.view().refreshChildren();
                 }
             });
+            connection.subscribe(CONNECTIONS_REFRESHED, () -> this.view().refreshChildren());
         }
     }
 
