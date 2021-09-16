@@ -27,7 +27,7 @@ public class CreateStorageAccountAction {
             final StorageAccountCreationDialog dialog = new StorageAccountCreationDialog(project);
             dialog.setOkActionListener((config) -> {
                 dialog.close();
-                createStorageAccount(config);
+                create(config);
             });
             dialog.show();
         });
