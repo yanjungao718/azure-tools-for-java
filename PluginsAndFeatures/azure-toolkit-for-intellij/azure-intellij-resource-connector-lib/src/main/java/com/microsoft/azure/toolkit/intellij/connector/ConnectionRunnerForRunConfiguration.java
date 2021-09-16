@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
-import com.intellij.execution.Location;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.JavaParameters;
@@ -63,7 +62,7 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     public static class MyBeforeRunTask extends BeforeRunTask<MyBeforeRunTask> {
         private static final String NAME = "Connect Azure Resource";
         private static final String DESCRIPTION = "Connect Azure Resource";
-        private static final Icon ICON = AzureIcons.getIcon("/icons/azure.svg");
+        private static final Icon ICON = AzureIcons.getIcon("/icons/Common/Azure.svg");
         private static final Key<MyBeforeRunTask> ID = Key.create("ConnectionRunnerForConfigurationId");
         private List<Connection<?, ?>> connections;
 
@@ -81,11 +80,19 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     }
 
     public static class MyRunConfigurationExtension extends RunConfigurationExtension {
+
+        @Override
+        public <T extends RunConfigurationBase<?>> void updateJavaParameters(@Nonnull T config, @Nonnull JavaParameters params, RunnerSettings s) {
+            config.getBeforeRunTasks().stream().filter(t -> t instanceof MyBeforeRunTask).map(t -> (MyBeforeRunTask) t)
+                    .flatMap(t -> t.connections.stream())
+                    .forEach(c -> c.updateJavaParametersAtRun(config, params));
+        }
+
         @Override
         @SuppressWarnings("rawtypes")
-        protected void extendCreatedConfiguration(@Nonnull RunConfigurationBase<?> configuration, @Nonnull Location location) {
-            System.out.println(this + ".extendCreatedConfiguration");
-            final boolean applicable = this.isApplicableFor(configuration);
+        public boolean isApplicableFor(@Nonnull RunConfigurationBase<?> configuration) {
+            final boolean applicable = configuration.getProject().getService(ConnectionManager.class)
+                    .getConnections().stream().anyMatch(c -> c.isApplicableFor(configuration));
             final RunManagerEx manager = RunManagerEx.getInstanceEx(configuration.getProject());
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(configuration));
             final List<BeforeRunTask> myTasks = tasks.stream().filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
@@ -96,19 +103,7 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
                 tasks.removeAll(myTasks);
                 manager.setBeforeRunTasks(configuration, tasks);
             }
-        }
-
-        @Override
-        public <T extends RunConfigurationBase<?>> void updateJavaParameters(@Nonnull T config, @Nonnull JavaParameters params, RunnerSettings s) {
-            config.getBeforeRunTasks().stream().filter(t -> t instanceof MyBeforeRunTask).map(t -> (MyBeforeRunTask) t)
-                    .flatMap(t -> t.connections.stream())
-                    .forEach(c -> c.updateJavaParametersAtRun(config, params));
-        }
-
-        @Override
-        public boolean isApplicableFor(@Nonnull RunConfigurationBase<?> configuration) {
-            return configuration.getProject().getService(ConnectionManager.class)
-                    .getConnections().stream().anyMatch(c -> c.isApplicableFor(configuration));
+            return applicable;
         }
     }
 }
