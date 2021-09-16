@@ -329,7 +329,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
                 .subscription(subscription)
                 .accessTier(Optional.ofNullable(accessTierComboBox).map(t -> (AccessTier) accessTierComboBox.getData(accessTierComboBox.getText())).orElse(null))
                 .build();
-        new Thread(this.onCreate).start();
+        this.onCreate.run();
         super.okPressed();
     }
 
@@ -452,7 +452,9 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         if (subs != null) {
             AzureTaskManager.getInstance().runInBackground("Loading Available Locations...", () -> {
                 try {
-                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                    // warm cache
+                    Azure.az(AzureAccount.class).listRegions(subs.getId());
+                    AzureTaskManager.getInstance().runLater(new Runnable() {
                         @Override
                         public void run() {
                             fillRegions();
@@ -472,14 +474,16 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     private void fillRegions() {
         Subscription subs = (Subscription) subscriptionComboBox.
                 getData(subscriptionComboBox.getText());
-        List<Region> locations = Azure.az(AzureAccount.class).listRegions(subs.getId());
-        for (Region location : locations) {
-            regionComboBox.add(location.getLabel());
-            regionComboBox.setData(location.getLabel(), location);
-        }
-        if (locations.size() > 0) {
-            regionComboBox.select(0);
-        }
+        final List<Region> locations = Azure.az(AzureAccount.class).listRegions(subs.getId());
+        AzureTaskManager.getInstance().runLater(() -> {            
+            for (Region location : locations) {
+                regionComboBox.add(location.getLabel());
+                regionComboBox.setData(location.getLabel(), location);
+            }
+            if (locations.size() > 0) {
+                regionComboBox.select(0);
+            }
+        });
     }
 
     public void loadGroups() {
@@ -511,7 +515,7 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         final Subscription subs = (Subscription) subscriptionComboBox.getData(subscriptionComboBox.getText());
         List<ResourceGroup> resourceGroups = Azure.az(AzureGroup.class).list(subs.getId(), true);
         List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
-        DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Vector<Object> vector = new Vector<Object>();

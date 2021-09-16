@@ -22,7 +22,7 @@ public class EclipseStore implements IIdeStore {
     @Nullable
     @Override
     public String getProperty(@Nullable String service, @NotNull String key) {
-        return node.get(combineKey(service, key), "");
+        return node.get(combineKey(service, key), null);
     }
 
     @Nullable
@@ -33,19 +33,18 @@ public class EclipseStore implements IIdeStore {
 
     @Override
     public void setProperty(@Nullable String service, @NotNull String key, @Nullable String value) {
-    	if (value == null) {
-    		node.remove(combineKey(service, key));
-    		return;
-    		
-    	}
+        if (value == null) {
+            node.remove(combineKey(service, key));
+            return;
+
+        }
         node.put(combineKey(service, key), value);
         try {
-			node.flush();
-		} catch (BackingStoreException e) {
+            node.flush();
+        } catch (BackingStoreException e) {
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
-		}
+        }
     }
-
 
     private static String combineKey(String service, String key) {
         return StringUtils.isBlank(service) ? key : String.format("%s.%s", service, key);

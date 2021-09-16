@@ -7,6 +7,8 @@ package com.microsoft.azuretools.core.store;
 
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azuretools.core.Activator;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
@@ -23,7 +25,7 @@ public class EclipseSecureStore implements ISecureStore {
 
     public EclipseSecureStore() {
         ISecurePreferences preferences = SecurePreferencesFactory.getDefault();
-        node = preferences.node("com.microsoft.azuretools.core");
+        node = preferences.node(Activator.PLUGIN_ID);
     }
 
     @Override
