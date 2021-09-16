@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -18,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AzureResourceLabelView<T extends IAzureResource<?>> implements IView.Label, IView.Dynamic {
+public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements IView.Label, IView.Dynamic {
     @Nonnull
     @Getter
     private final T resource;
