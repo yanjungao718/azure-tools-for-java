@@ -158,7 +158,7 @@
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionDefinitionPreloadingActivity"/>
+    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceDefinitionRegisterActivity"/>
   </extensions>
 
   <applicationListeners>

@@ -18,11 +18,13 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.Objects;
 
 public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
@@ -39,20 +41,21 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
         if (Objects.isNull(module)) {
             return null;
         }
-        return element.getProject().getService(ConnectionManager.class)
-                .getConnectionsByConsumerId(module.getName()).stream()
-                .filter(c -> c.getConsumer().getName().equals(module.getName()))
-                .filter(c -> c instanceof SpringSupportedConnection)
-                .filter(c -> StringUtils.equals(propKey, ((SpringSupportedConnection) c).getSpringProperties().get(0).getKey()))
-                .filter(c -> StringUtils.equals(propVal, ((SpringSupportedConnection) c).getSpringProperties().get(0).getValue()))
-                .findFirst()
-                .map(Connection::getResource)
-                .map(r -> new LineMarkerInfo<>(
-                        element, element.getTextRange(),
+        final ImmutablePair<String, String> keyProp = new ImmutablePair<>(propKey, propVal);
+        final List<Connection<?, ?>> connections = element.getProject().getService(ConnectionManager.class)
+                .getConnectionsByConsumerId(module.getName());
+        for (final Connection<?, ?> connection : connections) {
+            final List<Pair<String, String>> properties = SpringSupported.getProperties(connection);
+            if (!properties.isEmpty() && properties.get(0).equals(keyProp)) {
+                final Resource<?> r = connection.getResource();
+                return new LineMarkerInfo<>(element, element.getTextRange(),
                         AzureIcons.getIcon("/icons/connector/connect.svg"),
                         element2 -> String.format("%s (%s)", r.getName(), r.getDefinition().getTitle()),
                         new SpringDatasourceNavigationHandler(r),
-                        GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
+                        GutterIconRenderer.Alignment.LEFT, () -> "");
+            }
+        }
+        return null;
     }
 
     @RequiredArgsConstructor

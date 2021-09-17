@@ -27,8 +27,10 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -46,15 +48,17 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
                 if (module == null) {
                     return;
                 }
-                ConnectionManager.getDefinitions().stream()
-                        .filter(d -> d instanceof SpringSupportedConnectionDefinition)
+                ResourceManager.getDefinitions(ResourceDefinition.RESOURCE).stream()
+                        .filter(d -> d instanceof SpringSupported)
+                        .map(d -> (SpringSupported<?>) d)
+                        .filter(d -> CollectionUtils.isNotEmpty(d.getSpringProperties()))
                         .map(definition -> LookupElementBuilder
-                                .create(definition.getName(), ((SpringSupportedConnectionDefinition) definition).getKeyProperty())
+                                .create(definition.getName(), definition.getSpringProperties().get(0).getKey())
                                 .withIcon(AzureIcons.getIcon("/icons/connector/connect.svg"))
-                                .withInsertHandler(new MyInsertHandler(definition.getResourceDefinition()))
+                                .withInsertHandler(new MyInsertHandler(definition))
                                 .withBoldness(true)
                                 .withTypeText("String")
-                                .withTailText(String.format(" (%s)", definition.getResourceDefinition().getTitle())))
+                                .withTailText(String.format(" (%s)", definition.getTitle())))
                         .forEach(resultSet::addElement);
             }
         });
@@ -95,8 +99,7 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
         }
 
         private void insert(Connection<?, ?> c, @Nonnull InsertionContext context) {
-            final String envPrefix = c.getEnvPrefix();
-            final List<Pair<String, String>> properties = ((SpringSupportedConnection) c).getSpringProperties();
+            final List<Pair<String, String>> properties = SpringSupported.getProperties(c);
             final StringBuilder result = new StringBuilder("=").append(properties.get(0).getValue()).append(StringUtils.LF);
             for (int i = 1; i < properties.size(); i++) {
                 result.append(properties.get(i).getKey()).append("=").append(properties.get(i).getValue()).append(StringUtils.LF);
