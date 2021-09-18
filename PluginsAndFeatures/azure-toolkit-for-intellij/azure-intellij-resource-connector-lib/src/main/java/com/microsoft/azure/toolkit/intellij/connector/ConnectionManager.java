@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import lombok.EqualsAndHashCode;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -33,22 +34,23 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
     }
 
     @Nullable
-    static ConnectionDefinition<?, ?> getDefinition(@Nonnull ResourceDefinition<?> rd, @Nonnull ResourceDefinition<?> cd) {
-        final String name = ConnectionDefinition.getConnectionName(rd, cd);
-        return Impl.definitions.get(name);
+    static ConnectionDefinition<?, ?> getDefinitionOrDefault(@Nonnull String name) {
+        return Impl.definitions.computeIfAbsent(name, def -> {
+            final String[] split = def.split(":");
+            final ResourceDefinition<?> rd = ResourceManager.getDefinition(split[0]);
+            final ResourceDefinition<?> cd = ResourceManager.getDefinition(split[1]);
+            return new ConnectionDefinition<>(rd, cd);
+        });
     }
 
     @Nonnull
     static ConnectionDefinition<?, ?> getDefinitionOrDefault(@Nonnull ResourceDefinition<?> rd, @Nonnull ResourceDefinition<?> cd) {
-        final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinition(rd, cd);
-        if (Objects.isNull(definition)) {
-            return new ConnectionDefinition<>(rd, cd);
-        }
-        return definition;
+        final String name = getName(rd, cd);
+        return Impl.definitions.computeIfAbsent(name, def -> new ConnectionDefinition<>(rd, cd));
     }
 
     static <R, C> void registerDefinition(ConnectionDefinition<R, C> definition) {
-        Impl.definitions.put(definition.getName(), definition);
+        Impl.definitions.put(getName(definition), definition);
     }
 
     void addConnection(Connection<?, ?> connection);
@@ -60,6 +62,15 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
     List<Connection<?, ?>> getConnectionsByResourceId(String id);
 
     List<Connection<?, ?>> getConnectionsByConsumerId(String id);
+
+    @EqualsAndHashCode.Include
+    static String getName(ConnectionDefinition<?, ?> definition) {
+        return getName(definition.getResourceDefinition(), definition.getConsumerDefinition());
+    }
+
+    static String getName(@Nonnull ResourceDefinition<?> rd, @Nonnull ResourceDefinition<?> cd) {
+        return String.format("%s:%s", rd.getName(), cd.getName());
+    }
 
     @Log
     @State(name = Impl.ELEMENT_NAME_CONNECTIONS, storages = {@Storage("azure/resource-connections.xml")})
@@ -101,7 +112,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
             for (final Connection<?, ?> connection : this.connections) {
                 final Element connectionEle = new Element(ELEMENT_NAME_CONNECTION);
-                connectionEle.setAttribute(FIELD_TYPE, connection.getDefinition().getName());
+                connectionEle.setAttribute(FIELD_TYPE, ConnectionManager.getName(connection.getDefinition()));
                 connection.write(connectionEle);
                 connectionsEle.addContent(connectionEle);
             }
@@ -111,12 +122,12 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         @Override
         public void loadState(@NotNull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
-                final String connectionType = connectionEle.getAttributeValue(FIELD_TYPE);
-                final ConnectionDefinition<?, ?> definition = definitions.get(connectionType);
+                final String name = connectionEle.getAttributeValue(FIELD_TYPE);
+                final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
                 try {
                     Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(this::addConnection);
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when load a resource connection of type '%s'", connectionType), e);
+                    log.log(Level.WARNING, String.format("error occurs when load a resource connection of type '%s'", name), e);
                 }
             }
         }

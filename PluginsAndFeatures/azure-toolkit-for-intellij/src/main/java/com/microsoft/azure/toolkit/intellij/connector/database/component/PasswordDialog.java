@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.database.Database;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -50,10 +49,10 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
     private JPasswordField passwordField;
     private PasswordSaveComboBox passwordSaveComboBox;
 
-    public PasswordDialog(Project project, Resource<Database> resource) {
+    public PasswordDialog(Project project, Database database) {
         super(project);
-        this.database = resource.getData();
-        setTitle(String.format(TITLE, resource.getName()));
+        this.database = database;
+        setTitle(String.format(TITLE, database.getName()));
         headerTextPane.setText(String.format(HEADER_PATTERN, this.database.getUsername(), this.database.getJdbcUrl().getDatabase(),
                 this.database.getJdbcUrl().getServerHost()));
         testConnectionButton.setEnabled(false);

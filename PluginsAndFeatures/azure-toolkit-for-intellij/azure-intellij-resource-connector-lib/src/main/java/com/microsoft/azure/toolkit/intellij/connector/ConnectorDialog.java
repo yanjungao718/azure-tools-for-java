@@ -31,7 +31,6 @@ import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.CONSUMER;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
-import static java.util.Optional.ofNullable;
 
 public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements AzureForm<Connection<?, ?>> {
     private final Project project;
@@ -92,12 +91,11 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     private boolean tryOpenCustomDialog() {
-        final ResourceDefinition<?> consumerDefinition = this.consumerTypeSelector.getValue();
-        final ResourceDefinition<?> resourceDefinition = this.resourceTypeSelector.getValue();
-        if (Objects.nonNull(consumerDefinition) && Objects.nonNull(resourceDefinition)) {
-            final var connectionDefinition = ConnectionManager.getDefinition(resourceDefinition, consumerDefinition);
-            final AzureDialog<? extends Connection<?, ?>> dialog = ofNullable(connectionDefinition)
-                    .map(ConnectionDefinition::getConnectorDialog).orElse(null);
+        final ResourceDefinition<?> cd = this.consumerTypeSelector.getValue();
+        final ResourceDefinition<?> rd = this.resourceTypeSelector.getValue();
+        if (Objects.nonNull(cd) && Objects.nonNull(rd)) {
+            final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(rd, cd);
+            final AzureDialog<? extends Connection<?, ?>> dialog = definition.getConnectorDialog();
             if (Objects.nonNull(dialog)) {
                 dialog.show();
                 return true;

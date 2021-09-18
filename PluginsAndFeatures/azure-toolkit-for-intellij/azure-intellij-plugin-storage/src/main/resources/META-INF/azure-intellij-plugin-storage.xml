@@ -5,6 +5,6 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResource"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinitionRegisterActivity"/>
     </extensions>
 </idea-plugin>
