@@ -14,6 +14,8 @@
             serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ResourceManager$Impl" />
         <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration" id="ConnectionRunnerForConfigurationId"/>
         <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$MyRunConfigurationExtension"/>
+        <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.SpringPropertiesCompletionContributor"/>
+        <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.SpringPropertiesLineMarkerProvider"/>
     </extensions>
     <actions>
         <action

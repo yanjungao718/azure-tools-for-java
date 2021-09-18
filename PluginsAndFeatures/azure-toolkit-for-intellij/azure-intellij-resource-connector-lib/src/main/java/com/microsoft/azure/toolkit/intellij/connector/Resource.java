@@ -10,6 +10,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * the <b>{@code resource}</b> in <b>{@code resource connection}</b><br>
@@ -40,5 +42,13 @@ public interface Resource<T> {
     }
 
     default void navigate(Project project) {
+    }
+
+    default Map<String, String> initEnv(Project project) {
+        return Collections.emptyMap();
+    }
+
+    default boolean isModified(Resource<T> resource) {
+        return !this.equals(resource);
     }
 }
