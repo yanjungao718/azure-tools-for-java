@@ -6,12 +6,12 @@
 package com.microsoft.azure.toolkit.ide.storage;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.storage.action.OpenStorageExplorerAction;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.storage.action.OpenStorageExplorerAction;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 
 import java.util.Optional;
@@ -44,6 +44,9 @@ public class StorageActionsContributor implements IActionsContributor {
 
         final ActionGroup accountActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                StorageActionsContributor.OPEN_STORAGE_EXPLORER,
+                "---",
+                ResourceCommonActionsContributor.CONNECT,
                 "---",
                 ResourceCommonActionsContributor.DELETE
         );

@@ -24,10 +24,10 @@ import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * the <b>{@code resource connection}</b>
@@ -81,7 +81,10 @@ public class Connection<R, C> {
      */
     @AzureOperation(name = "connector|connection.prepare_before_run", type = AzureOperation.Type.ACTION)
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
-        this.env = this.initEnv(configuration.getProject());
+        this.env = this.resource.initEnv(configuration.getProject()).entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey().replaceAll("%ENV_PREFIX%", this.getEnvPrefix()),
+                        Map.Entry::getValue));
         if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
             final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
             webAppConfiguration.setApplicationSettings(this.env);
@@ -108,10 +111,6 @@ public class Connection<R, C> {
             return ((IWebAppRunConfiguration) configuration).getModule();
         }
         return null;
-    }
-
-    protected Map<String, String> initEnv(Project project) {
-        return Collections.emptyMap();
     }
 
     public String getEnvPrefix() {

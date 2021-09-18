@@ -7,9 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +15,9 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * the <b>{@code resource}</b> in <b>{@code resource connection}</b><br>
@@ -47,9 +44,14 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
 
     public synchronized T getData() {
         if (Objects.isNull(this.data)) {
-            this.data = this.definition.get.apply(this.id.id());
+            this.data = this.definition.getResource(this.id.id());
         }
         return this.data;
+    }
+
+    @Override
+    public Map<String, String> initEnv(Project project) {
+        return this.definition.initEnv(this.data, project);
     }
 
     @Override
@@ -65,13 +67,12 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
 
     @Getter
     @RequiredArgsConstructor
-    public static class Definition<T extends IAzureResource<?>> implements ResourceDefinition<T> {
+    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+    public static abstract class Definition<T extends IAzureResource<?>> implements ResourceDefinition<T> {
+        @EqualsAndHashCode.Include
         private final String name;
         private final String title;
         private final String icon;
-        @Getter(AccessLevel.NONE)
-        private final Supplier<AzureFormJPanel<T>> select;
-        private final Function<String, T> get;
 
         @Override
         public Resource<T> define(T resource) {
@@ -82,10 +83,7 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
             return new AzureServiceResource<>(dataId, this);
         }
 
-        @Override
-        public AzureFormJPanel<T> getResourcePanel(Project project) {
-            return this.select.get();
-        }
+        public abstract T getResource(String dataId);
 
         @Override
         public boolean write(@Nonnull Element ele, @Nonnull Resource<T> resource) {
@@ -104,5 +102,7 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
         public String toString() {
             return this.getTitle();
         }
+
+        public abstract Map<String, String> initEnv(T data, Project project);
     }
 }
