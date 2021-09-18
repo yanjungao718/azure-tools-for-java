@@ -39,7 +39,7 @@ public class ModulePanel implements AzureFormJPanel<String> {
     public void setData(String module) {
         Optional.ofNullable(module).ifPresent((m -> {
             final ItemReference<Module> val = new ItemReference<>(m, Module::getName);
-            this.moduleComboBox.setValue(val, true);
+            this.moduleComboBox.setValue(val);
         }));
     }
 

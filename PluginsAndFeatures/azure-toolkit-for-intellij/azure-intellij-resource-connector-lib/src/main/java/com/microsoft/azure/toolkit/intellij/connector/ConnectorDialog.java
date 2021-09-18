@@ -31,7 +31,6 @@ import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.CONSUMER;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
-import static java.util.Optional.ofNullable;
 
 public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements AzureForm<Connection<?, ?>> {
     private final Project project;
@@ -49,6 +48,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private TitledSeparator resourceTitle;
     private TitledSeparator consumerTitle;
     protected JTextField envPrefixTextField;
+    private ResourceDefinition<?> resourceDefinition;
+    private ResourceDefinition<?> consumerDefinition;
 
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
@@ -78,11 +79,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     protected void onResourceOrConsumerTypeChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED && !tryOpenCustomDialog()) {
             if (Objects.equals(e.getSource(), this.consumerTypeSelector)) {
-                this.consumerPanel = this.updatePanel(this.consumerTypeSelector.getValue(), this.consumerPanelContainer);
+                this.setConsumerDefinition(this.consumerTypeSelector.getValue());
             } else {
-                final ResourceDefinition<?> rd = this.resourceTypeSelector.getValue();
-                this.envPrefixTextField.setText(rd.getDefaultEnvPrefix());
-                this.resourcePanel = this.updatePanel(rd, this.resourcePanelContainer);
+                this.setResourceDefinition(this.resourceTypeSelector.getValue());
             }
         }
         this.contentPane.revalidate();
@@ -92,12 +91,11 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     private boolean tryOpenCustomDialog() {
-        final ResourceDefinition<?> consumerDefinition = this.consumerTypeSelector.getValue();
-        final ResourceDefinition<?> resourceDefinition = this.resourceTypeSelector.getValue();
-        if (Objects.nonNull(consumerDefinition) && Objects.nonNull(resourceDefinition)) {
-            final var connectionDefinition = ConnectionManager.getDefinition(resourceDefinition, consumerDefinition);
-            final AzureDialog<? extends Connection<?, ?>> dialog = ofNullable(connectionDefinition)
-                    .map(ConnectionDefinition::getConnectorDialog).orElse(null);
+        final ResourceDefinition<?> cd = this.consumerTypeSelector.getValue();
+        final ResourceDefinition<?> rd = this.resourceTypeSelector.getValue();
+        if (Objects.nonNull(cd) && Objects.nonNull(rd)) {
+            final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(rd, cd);
+            final AzureDialog<? extends Connection<?, ?>> dialog = definition.getConnectorDialog();
             if (Objects.nonNull(dialog)) {
                 dialog.show();
                 return true;
@@ -118,7 +116,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
                 resourceManager.addResource(consumer);
                 connectionManager.addConnection(connection);
                 final String message = String.format("The connection between %s and %s has been successfully created.",
-                        resource.toString(), consumer.toString());
+                        resource.getName(), consumer.getName());
                 AzureMessager.getMessager().success(message);
                 project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(connection);
             }
@@ -189,14 +187,17 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     public void setResourceDefinition(@Nonnull ResourceDefinition<?> definition) {
-        if (!definition.equals(this.resourceTypeSelector.getValue()) || Objects.isNull(this.resourcePanel)) {
+        if (!definition.equals(this.resourceDefinition) || Objects.isNull(this.resourcePanel)) {
+            this.resourceDefinition = definition;
+            this.envPrefixTextField.setText(definition.getDefaultEnvPrefix());
             this.resourceTypeSelector.setValue(new ItemReference<>(definition.getName(), ResourceDefinition::getName));
             this.resourcePanel = this.updatePanel(definition, this.resourcePanelContainer);
         }
     }
 
     public void setConsumerDefinition(@Nonnull ResourceDefinition<?> definition) {
-        if (!definition.equals(this.consumerTypeSelector.getValue()) || Objects.isNull(this.consumerPanel)) {
+        if (!definition.equals(this.consumerDefinition) || Objects.isNull(this.consumerPanel)) {
+            this.consumerDefinition = definition;
             this.consumerTypeSelector.setValue(new ItemReference<>(definition.getName(), ResourceDefinition::getName));
             this.consumerPanel = this.updatePanel(definition, this.consumerPanelContainer);
         }

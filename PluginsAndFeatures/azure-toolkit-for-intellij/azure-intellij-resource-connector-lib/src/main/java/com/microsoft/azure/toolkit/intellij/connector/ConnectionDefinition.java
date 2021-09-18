@@ -24,23 +24,16 @@ import java.util.Objects;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ConnectionDefinition<R, C> {
     @Nonnull
+    @EqualsAndHashCode.Include
     private final ResourceDefinition<R> resourceDefinition;
     @Nonnull
+    @EqualsAndHashCode.Include
     private final ResourceDefinition<C> consumerDefinition;
     private static final String PROMPT_TITLE = "Azure Resource Connector";
 
     public ConnectionDefinition(@Nonnull ResourceDefinition<R> rd, @Nonnull ResourceDefinition<C> cd) {
         this.resourceDefinition = rd;
         this.consumerDefinition = cd;
-    }
-
-    @EqualsAndHashCode.Include
-    public final String getName() {
-        return getConnectionName(this.resourceDefinition, this.consumerDefinition);
-    }
-
-    public static String getConnectionName(@Nonnull ResourceDefinition<?> rd, @Nonnull ResourceDefinition<?> cd) {
-        return String.format("%s:%s", rd.getName(), cd.getName());
     }
 
     /**
@@ -105,7 +98,7 @@ public class ConnectionDefinition<R, C> {
         if (Objects.nonNull(existedResource)) { // not new
             final R current = resource.getData();
             final R origin = existedResource.getData();
-            if (Objects.equals(origin, current) && this.isModified(origin, current)) { // modified
+            if (Objects.equals(origin, current) && existedResource.isModified(resource)) { // modified
                 final String template = "%s \"%s\" with different configuration is found on your PC. \nDo you want to override it?";
                 final String msg = String.format(template, resource.getDefinition().getTitle(), resource.getName());
                 if (!AzureMessager.getMessager().confirm(msg, PROMPT_TITLE)) {
@@ -137,10 +130,6 @@ public class ConnectionDefinition<R, C> {
             }
         }
         return true; // is new or not modified.
-    }
-
-    protected boolean isModified(R origin, R current) {
-        return false;
     }
 
     /**
