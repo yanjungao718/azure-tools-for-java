@@ -36,7 +36,7 @@ public class CreateStorageAccountAction {
     @AzureOperation(name = "storage|account.create", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     public static void create(final StorageAccountConfig config) {
         final AzureString title = AzureOperationBundle.title("storage|account.create", config.getName());
-        AzureTaskManager.getInstance().runInBackground(title, () -> create(config));
+        AzureTaskManager.getInstance().runInBackground(title, () -> createStorageAccount(config));
     }
 
     public static StorageAccount createStorageAccount(StorageAccountConfig config) {
