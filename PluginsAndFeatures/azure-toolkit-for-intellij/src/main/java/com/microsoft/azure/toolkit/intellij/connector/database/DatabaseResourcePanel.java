@@ -243,10 +243,10 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-                this.subscriptionComboBox,
-                this.serverComboBox,
-                this.databaseComboBox,
-                this.usernameComboBox
+            this.subscriptionComboBox,
+            this.serverComboBox,
+            this.databaseComboBox,
+            this.usernameComboBox
         };
         return Arrays.asList(inputs);
     }

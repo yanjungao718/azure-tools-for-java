@@ -68,7 +68,7 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
     @Getter
     @RequiredArgsConstructor
     @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-    public static abstract class Definition<T extends IAzureResource<?>> implements ResourceDefinition<T> {
+    public abstract static class Definition<T extends IAzureResource<?>> implements ResourceDefinition<T> {
         @EqualsAndHashCode.Include
         private final String name;
         private final String title;
