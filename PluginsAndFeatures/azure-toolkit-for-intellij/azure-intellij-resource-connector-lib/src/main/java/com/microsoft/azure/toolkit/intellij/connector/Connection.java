@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Connection<R, C> {
+    public static final String ENV_PREFIX = "%ENV_PREFIX%";
     private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     @Nonnull
     @EqualsAndHashCode.Include
@@ -83,7 +84,7 @@ public class Connection<R, C> {
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
         this.env = this.resource.initEnv(configuration.getProject()).entrySet().stream()
                 .collect(Collectors.toMap(
-                        e -> e.getKey().replaceAll("%ENV_PREFIX%", this.getEnvPrefix()),
+                        e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()),
                         Map.Entry::getValue));
         if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
             final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;

@@ -8,12 +8,13 @@ package com.microsoft.azure.toolkit.intellij.storage.connection;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import lombok.Getter;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -33,21 +34,22 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     public Map<String, String> initEnv(StorageAccount account, Project project) {
         final String conString = account.getConnectionString();
         final HashMap<String, String> env = new HashMap<>();
-        env.put("%ENV_PREFIX%_CONNECTION_STRING", conString);
-        env.put("%ENV_PREFIX%_ACCOUNT_NAME", account.name());
-        env.put("%ENV_PREFIX%_ACCOUNT_KEY", account.getKey());
+        env.put(String.format("%s_CONNECTION_STRING", Connection.ENV_PREFIX), conString);
+        env.put(String.format("%s_ACCOUNT_NAME", Connection.ENV_PREFIX), account.name());
+        env.put(String.format("%s_ACCOUNT_KEY", Connection.ENV_PREFIX), account.getKey());
         return env;
     }
 
     @Override
     public List<Pair<String, String>> getSpringProperties() {
         final List<Pair<String, String>> properties = new ArrayList<>();
-        properties.add(new MutablePair<>("azure.storage.accountName", "${%ENV_PREFIX%_ACCOUNT_NAME}"));
-        properties.add(new MutablePair<>("azure.storage.accountKey", "${%ENV_PREFIX%_ACCOUNT_KEY}"));
-        final String blobEndpoint = "https://${%ENV_PREFIX%_ACCOUNT_NAME}.blob.core.windows.net/<your-container-name>/<your-blob-name>";
-        final String fileEndpoint = "https://${%ENV_PREFIX%_ACCOUNT_NAME}.file.core.windows.net/<your-fileshare-name>/<your-file-name>";
-        properties.add(new MutablePair<>("# azure.storage.blob-endpoint", blobEndpoint));
-        properties.add(new MutablePair<>("# azure.storage.file-endpoint", fileEndpoint));
+        final String suffix = Azure.az(AzureCloud.class).get().getStorageEndpointSuffix();
+        properties.add(Pair.of("azure.storage.accountName", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("azure.storage.accountKey", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
+        final String blobEndpoint = "https://${%s_ACCOUNT_NAME}.%s/<your-container-name>/<your-blob-name>";
+        final String fileEndpoint = "https://${%s_ACCOUNT_NAME}.%s/<your-fileshare-name>/<your-file-name>";
+        properties.add(Pair.of("# azure.storage.blob-endpoint", String.format(blobEndpoint, Connection.ENV_PREFIX, suffix)));
+        properties.add(Pair.of("# azure.storage.file-endpoint", String.format(fileEndpoint, Connection.ENV_PREFIX, suffix)));
         return properties;
     }
 

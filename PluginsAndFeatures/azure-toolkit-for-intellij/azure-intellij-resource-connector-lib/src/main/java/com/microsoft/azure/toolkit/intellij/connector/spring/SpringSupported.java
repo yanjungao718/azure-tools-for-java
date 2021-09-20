@@ -11,14 +11,15 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface SpringSupported<T> extends ResourceDefinition<T> {
     static List<Pair<String, String>> getProperties(Connection<?, ?> c) {
         final ResourceDefinition<?> rd = c.getResource().getDefinition();
         if (rd instanceof SpringSupported) {
-            final List<Pair<String, String>> properties = ((SpringSupported<?>) rd).getSpringProperties();
-            properties.forEach(p -> p.setValue(p.getValue().replaceAll("%ENV_PREFIX%", c.getEnvPrefix())));
-            return properties;
+            return ((SpringSupported<?>) rd).getSpringProperties().stream()
+                    .map(p -> Pair.of(p.getKey(), p.getValue().replaceAll(Connection.ENV_PREFIX, c.getEnvPrefix())))
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

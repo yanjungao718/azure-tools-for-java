@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -24,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -69,9 +69,9 @@ public class DatabaseResource implements Resource<Database> {
 
     public Map<String, String> initEnv(@Nonnull final Project project) {
         final Map<String, String> envMap = new HashMap<>();
-        envMap.put("%ENV_PREFIX%_URL", this.data.getJdbcUrl().toString());
-        envMap.put("%ENV_PREFIX%_USERNAME", this.data.getUsername());
-        envMap.put("%ENV_PREFIX%_PASSWORD", loadPassword().or(() -> inputPassword(project)).orElse(""));
+        envMap.put(String.format("%s_URL", Connection.ENV_PREFIX), this.data.getJdbcUrl().toString());
+        envMap.put(String.format("%s_USERNAME", Connection.ENV_PREFIX), this.data.getUsername());
+        envMap.put(String.format("%s_PASSWORD", Connection.ENV_PREFIX), loadPassword().or(() -> inputPassword(project)).orElse(""));
         return envMap;
     }
 
@@ -149,9 +149,9 @@ public class DatabaseResource implements Resource<Database> {
         @Override
         public List<Pair<String, String>> getSpringProperties() {
             final List<Pair<String, String>> properties = new ArrayList<>();
-            properties.add(new MutablePair<>("spring.datasource.url", "${%ENV_PREFIX%_URL}"));
-            properties.add(new MutablePair<>("spring.datasource.username", "${%ENV_PREFIX%_USERNAME}"));
-            properties.add(new MutablePair<>("spring.datasource.password", "${%ENV_PREFIX%_PASSWORD}"));
+            properties.add(Pair.of("spring.datasource.url", String.format("${%s_URL}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.datasource.username", String.format("${%s_USERNAME}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.datasource.password", String.format("${%s_PASSWORD}", Connection.ENV_PREFIX)));
             return properties;
         }
 

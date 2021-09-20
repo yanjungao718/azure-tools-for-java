@@ -93,15 +93,14 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         public boolean isApplicableFor(@Nonnull RunConfigurationBase<?> configuration) {
             final boolean applicable = configuration.getProject().getService(ConnectionManager.class)
                     .getConnections().stream().anyMatch(c -> c.isApplicableFor(configuration));
-            final RunManagerEx manager = RunManagerEx.getInstanceEx(configuration.getProject());
-            final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(configuration));
+            final List<BeforeRunTask> tasks = new ArrayList<>(configuration.getBeforeRunTasks());
             final List<BeforeRunTask> myTasks = tasks.stream().filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
             if (applicable && myTasks.isEmpty()) {
                 tasks.add(new MyBeforeRunTask());
-                manager.setBeforeRunTasks(configuration, tasks);
+                RunManagerEx.getInstanceEx(configuration.getProject()).setBeforeRunTasks(configuration, tasks);
             } else if (!applicable && !myTasks.isEmpty()) {
                 tasks.removeAll(myTasks);
-                manager.setBeforeRunTasks(configuration, tasks);
+                RunManagerEx.getInstanceEx(configuration.getProject()).setBeforeRunTasks(configuration, tasks);
             }
             return applicable;
         }
