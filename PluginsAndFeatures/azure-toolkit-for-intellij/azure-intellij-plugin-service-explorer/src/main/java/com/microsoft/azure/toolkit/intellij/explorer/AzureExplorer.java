@@ -13,12 +13,12 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.view.IView;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -38,7 +38,7 @@ public class AzureExplorer extends Tree {
 
     private Node<Azure> buildRoot() {
         final List<Node<?>> modules = getModules();
-        return new Node<>(Azure.az(), new IView.Label.Static(getTitle(), ICON)).lazy(false).addChildren(modules);
+        return new Node<>(Azure.az(), new NodeView.Static(getTitle(), ICON)).lazy(false).addChildren(modules);
     }
 
     private String getTitle() {
