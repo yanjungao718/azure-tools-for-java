@@ -47,6 +47,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -298,7 +299,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // create child tree nodes for each child node
         node.getChildNodes().stream()
-            .filter(s -> !(s instanceof StorageModule))
+            .filter(s -> !isOutdatedModule(s))
             .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
             .map(childNode -> createTreeNode(childNode, project))
             .forEach(treeNode::add);
@@ -365,6 +366,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 case add:
                     // create child tree nodes for the new nodes
                     for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                        if (isOutdatedModule(childNode)) {
+                            continue;
+                        }
                         treeNode.add(createTreeNode(childNode, project));
                     }
                     break;
@@ -482,5 +486,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 AzurePlugin.log(e.getMessage(), e);
             }
         }
+    }
+
+    private boolean isOutdatedModule(Node node) {
+        return node instanceof StorageModule || node instanceof VMArmModule;
     }
 }
