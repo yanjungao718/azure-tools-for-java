@@ -31,6 +31,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
     public static final Action.Id<IAzureBaseResource<?, ?>> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
     public static final Action.Id<IAzureBaseResource<?, ?>> DEPLOY = Action.Id.of("action.resource.deploy");
+    public static final Action.Id<IAzureResource<?>> CONNECT = Action.Id.of("action.resource.connect");
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
     public static final Action.Id<AzureService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
@@ -77,7 +78,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
 
         final Consumer<IAzureBaseResource<?, ?>> openPortalUrl = s -> am.getAction(OPEN_URL).handle(s.portalUrl());
-        final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open In Portal", "/icons/action/portal.svg")
+        final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open in Portal", "/icons/action/portal.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("common|resource.open_portal_url", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAzureBaseResource);
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
@@ -86,6 +87,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_URL, (s) -> {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
         });
+
+        final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/action/connect.svg")
+                .title(s -> Optional.ofNullable(s).map(r -> title("common|resource.connect", ((IAzureResource<?>) r).name())).orElse(null));
+        am.registerAction(CONNECT, new Action<>(connectView));
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("common|resource.show_properties", ((IAzureBaseResource<?, ?>) r).name())).orElse(null));

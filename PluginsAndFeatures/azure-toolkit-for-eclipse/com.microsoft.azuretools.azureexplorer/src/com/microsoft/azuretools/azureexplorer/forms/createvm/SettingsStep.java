@@ -31,6 +31,7 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
@@ -264,7 +265,7 @@ public class SettingsStep extends WizardPage {
     public void fillResourceGroups() {
         resourceGrpCombo.add("<Loading...>");
 
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading resource groups...", false, true, "Loading resource groups...", new Runnable() {
+        AzureTaskManager.getInstance().runInBackground("Loading resource groups...", new Runnable() {
                     @Override
                     public void run() {
                         // Resource groups already initialized in cache when loading locations on SelectImageStep
@@ -288,7 +289,7 @@ public class SettingsStep extends WizardPage {
     }
 
     private void retrieveVirtualNetworks() {
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading virtual networks...", false, true,
+        AzureTaskManager.getInstance().runInBackground(
                 "Loading virtual networks...", new Runnable() {
                     @Override
                     public void run() {
@@ -347,7 +348,7 @@ public class SettingsStep extends WizardPage {
         List<Network> filteredNetworks = new ArrayList<>();
 
         for (Network network : virtualNetworks) {
-            if (network.regionName().equals(wizard.getRegion().name())) {
+            if (network.regionName().equals(wizard.getRegion().getName())) {
                 filteredNetworks.add(network);
             }
         }
@@ -355,7 +356,7 @@ public class SettingsStep extends WizardPage {
     }
 
     private void retrieveStorageAccounts() {
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading storage accounts...", false, true,
+        AzureTaskManager.getInstance().runInBackground(
                 "Loading storage accounts...", new Runnable() {
             @Override
             public void run() {
@@ -423,7 +424,7 @@ public class SettingsStep extends WizardPage {
     }
 
     private void retrievePublicIpAddresses() {
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading public ip addresses...", false, true,
+        AzureTaskManager.getInstance().runInBackground(
                 "Loading public ip addresses...", new Runnable() {
             @Override
             public void run() {
@@ -479,7 +480,7 @@ public class SettingsStep extends WizardPage {
 
         for (PublicIPAddress publicIpAddress : publicIpAddresses) {
             // VM and public ip address need to be in the same region
-            if (publicIpAddress.regionName().equals(wizard.getRegion().name())) {
+            if (publicIpAddress.regionName().equals(wizard.getRegion().getName())) {
                 filteredPips.add(publicIpAddress);
             }
         }
@@ -487,7 +488,7 @@ public class SettingsStep extends WizardPage {
     }
 
     private void retrieveNetworkSecurityGroups() {
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading network security groups...", false, true,
+        AzureTaskManager.getInstance().runInBackground(
                 "Loading network security groups...", new Runnable() {
             @Override
             public void run() {
@@ -530,7 +531,7 @@ public class SettingsStep extends WizardPage {
     }
 
     private void retrieveAvailabilitySets() {
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading availability sets...", false, true,
+        AzureTaskManager.getInstance().runInBackground(
                 "Loading availability sets...", new Runnable() {
             @Override
             public void run() {
@@ -583,7 +584,7 @@ public class SettingsStep extends WizardPage {
 
         for (NetworkSecurityGroup nsg : networkSecurityGroups) {
             // VM and network security group
-            if (nsg.regionName().equals(wizard.getRegion().name())) {
+            if (nsg.regionName().equals(wizard.getRegion().getName())) {
                 filteredNsgs.add(nsg);
             }
         }
@@ -592,7 +593,6 @@ public class SettingsStep extends WizardPage {
 
     private void showNewStorageForm() {
         final CreateArmStorageAccountForm form = new CreateArmStorageAccountForm(PluginUtil.getParentShell(), wizard.getSubscription(), wizard.getRegion());
-
         form.setOnCreate(new Runnable() {
             @Override
             public void run() {
@@ -601,10 +601,11 @@ public class SettingsStep extends WizardPage {
                     wizard.setNewStorageAccount(newStorageAccount);
                     wizard.setWithNewStorageAccount(true);
                     wizard.setStorageAccount(null);
-                    storageComboBox.add(newStorageAccount.getName() + " (New)", 0);
-                    storageComboBox.select(0);
-//                    storageAccounts.put(newStorageAccount.name(), newStorageAccount);
-//                    fillStorage(newStorageAccount.name());
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        storageComboBox.add(newStorageAccount.getName() + " (New)", 0);
+                        storageComboBox.select(0);
+                    });
+
                 }
             }
         });

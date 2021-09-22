@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
@@ -242,7 +243,7 @@ public class AzureWebAppMvpModel {
         if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
             return DeployType.JAR;
         }
-        if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72)) {
+        if (Objects.equals(webContainer, WebContainer.JBOSS_7)) {
             return DeployType.EAR;
         }
         return DeployType.WAR;

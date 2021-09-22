@@ -30,9 +30,9 @@ import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -73,7 +73,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     protected String subnet;
     protected VirtualMachineSize size;
 
-    private Location region;
+    private Region region;
     private Network virtualNetwork;
     private VirtualNetwork newNetwork;
     private boolean isNewNetwork;
@@ -109,8 +109,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     @Override
     public boolean performFinish() {
         Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-        DefaultLoader.getIdeHelper().runInBackground(null, "Creating virtual machine " + name + "...", false, true,
-            "Creating virtual machine " + name + "...", new Runnable() {
+        AzureTaskManager.getInstance().runInBackground("Creating virtual machine " + name + "...", new Runnable() {
             @Override
             public void run() {
                 try {
@@ -138,7 +137,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                             resourceGroupName,
                             isNewResourceGroup,
                             size.name(),
-                            region.name(),
+                            region.getName(),
                             virtualMachineImage,
                             knownMachineImage,
                             isKnownMachineImage,
@@ -248,11 +247,11 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
         this.subnet = subnet;
     }
 
-    public Location getRegion() {
+    public Region getRegion() {
         return region;
     }
 
-    public void setRegion(Location region) {
+    public void setRegion(Region region) {
         this.region = region;
     }
 
@@ -401,7 +400,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
             properties.put("SubscriptionId", this.getSubscription().getId());
         }
         if(this.getName() != null) properties.put("Name", this.getName());
-        if(this.getRegion() != null) properties.put("Region", this.getRegion().displayName());
+        if(this.getRegion() != null) properties.put("Region", this.getRegion().getLabel());
         if(this.getSize() != null) properties.put("Size", this.getSize().name());
 
         return properties;
