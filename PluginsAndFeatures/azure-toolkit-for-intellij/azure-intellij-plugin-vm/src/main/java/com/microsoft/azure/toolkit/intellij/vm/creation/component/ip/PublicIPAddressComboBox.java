@@ -93,7 +93,9 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
     @Override
     protected List<? extends PublicIpAddress> loadItems() {
         final List<PublicIpAddress> list = subscription == null ? Collections.emptyList() : Azure.az(AzurePublicIpAddress.class)
-                .subscription(subscription.getId()).list().stream().filter(ip -> Objects.equals(ip.getRegion(), region)).collect(Collectors.toList());
+                .subscription(subscription.getId()).list().stream()
+                .filter(ip -> Objects.equals(ip.getRegion(), region) && !ip.hasAssignedNetworkInterface())
+                .collect(Collectors.toList());
         if (draftPublicIpAddress != null) {
             // Clean draft reference if the resource has been created
             list.stream().filter(storageAccount -> StringUtils.equals(storageAccount.getName(), draftPublicIpAddress.getName()) &&
