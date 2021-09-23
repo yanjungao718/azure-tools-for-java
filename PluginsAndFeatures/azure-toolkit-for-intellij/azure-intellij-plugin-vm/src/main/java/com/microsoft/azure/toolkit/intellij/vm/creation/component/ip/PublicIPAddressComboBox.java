@@ -9,6 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -18,15 +19,16 @@ import com.microsoft.azure.toolkit.lib.compute.AzureResourceDraft;
 import com.microsoft.azure.toolkit.lib.compute.ip.AzurePublicIpAddress;
 import com.microsoft.azure.toolkit.lib.compute.ip.DraftPublicIpAddress;
 import com.microsoft.azure.toolkit.lib.compute.ip.PublicIpAddress;
-import lombok.Setter;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,9 +37,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
     public static final PublicIpAddress NONE = new DraftPublicIpAddress("null", "null", "None");
 
     private Subscription subscription;
-    @Setter
     private ResourceGroup resourceGroup;
-    @Setter
     private Region region;
     private DraftPublicIpAddress draftPublicIpAddress;
 
@@ -55,6 +55,18 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
             return;
         }
         this.subscription = subscription;
+        Optional.ofNullable(draftPublicIpAddress).ifPresent(draftNetwork -> draftNetwork.setSubscriptionId(subscription.getId()));
+        this.refreshItems();
+    }
+
+    public void setResourceGroup(ResourceGroup resourceGroup) {
+        this.resourceGroup = resourceGroup;
+        Optional.ofNullable(draftPublicIpAddress).ifPresent(draftNetwork -> draftNetwork.setResourceGroup(resourceGroup.getName()));
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+        Optional.ofNullable(draftPublicIpAddress).ifPresent(draftNetwork -> draftNetwork.setRegion(region));
         this.refreshItems();
     }
 
@@ -65,23 +77,31 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         return result == NONE ? null : result;
     }
 
-    @Override
-    public void setValue(PublicIpAddress address) {
+    public void setDate(PublicIpAddress address) {
         if (address == null) {
             super.setValue(NONE);
-        } else {
-            super.setValue(address);
+            return;
         }
+        if (address instanceof DraftPublicIpAddress) {
+            draftPublicIpAddress = StringUtils.equals(address.status(), IAzureBaseResource.Status.DRAFT) ? (DraftPublicIpAddress) address : null;
+        }
+        setValue(new ItemReference<>(resource -> StringUtils.equals(address.getName(), resource.getName()) &&
+                StringUtils.equals(address.getResourceGroup(), resource.getResourceGroup())));
     }
 
     @Nonnull
     @Override
     protected List<? extends PublicIpAddress> loadItems() {
-        if (Objects.isNull(subscription)) {
-            return Collections.emptyList();
+        final List<PublicIpAddress> list = subscription == null ? Collections.emptyList() : Azure.az(AzurePublicIpAddress.class)
+                .subscription(subscription.getId()).list().stream().filter(ip -> Objects.equals(ip.getRegion(), region)).collect(Collectors.toList());
+        if (draftPublicIpAddress != null) {
+            // Clean draft reference if the resource has been created
+            list.stream().filter(storageAccount -> StringUtils.equals(storageAccount.getName(), draftPublicIpAddress.getName()) &&
+                            StringUtils.equals(storageAccount.getResourceGroup(), draftPublicIpAddress.getResourceGroup()))
+                    .findFirst()
+                    .ifPresent(resource -> this.draftPublicIpAddress = null);
         }
-        final List<PublicIpAddress> list = Azure.az(AzurePublicIpAddress.class).subscription(subscription.getId()).list();
-        final List<PublicIpAddress> additionalList = Stream.of(NONE, draftPublicIpAddress).filter(Objects::nonNull).collect(Collectors.toList());
+        final List<PublicIpAddress> additionalList = Stream.of(NONE, draftPublicIpAddress).distinct().filter(Objects::nonNull).collect(Collectors.toList());
         return ListUtils.union(additionalList, list);
     }
 
