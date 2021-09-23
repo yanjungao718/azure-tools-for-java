@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.compute.security.AzureNetworkSecurityGroup;
 import com.microsoft.azure.toolkit.lib.compute.security.NetworkSecurityGroup;
@@ -15,13 +16,20 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
+    private Region region;
     private Subscription subscription;
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
+        this.refreshItems();
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
         this.refreshItems();
     }
 
@@ -33,7 +41,8 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
     @Nonnull
     @Override
     protected List<? extends NetworkSecurityGroup> loadItems() throws Exception {
-        return Optional.ofNullable(subscription).map(subscription -> Azure.az(AzureNetworkSecurityGroup.class).list(subscription.getId())).orElse(Collections.emptyList());
+        return subscription == null ? Collections.emptyList() : Azure.az(AzureNetworkSecurityGroup.class).subscription(subscription.getId()).list().stream()
+                .filter(group -> Objects.equals(group.getRegion(), region)).collect(Collectors.toList());
     }
 
     public void setDate(NetworkSecurityGroup networkSecurityGroup) {

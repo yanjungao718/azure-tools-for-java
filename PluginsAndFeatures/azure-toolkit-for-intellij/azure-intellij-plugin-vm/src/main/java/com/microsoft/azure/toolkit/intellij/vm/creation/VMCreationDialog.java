@@ -208,6 +208,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             this.cbSize.setRegion(region);
             this.cbVirtualNetwork.setRegion(region);
             this.cbPublicIp.setRegion(region);
+            this.cbSecurityGroup.setRegion(region);
         }
     }
 
