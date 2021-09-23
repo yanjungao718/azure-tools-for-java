@@ -12,11 +12,13 @@ import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.storage.component.AzureStorageAccountComboBox;
+import com.microsoft.azure.toolkit.intellij.vm.creation.component.AzureStorageAccountComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.NetworkAvailabilityOptionsComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.SecurityGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.SubnetComboBox;
@@ -27,6 +29,7 @@ import com.microsoft.azure.toolkit.intellij.vm.creation.component.ip.PublicIPAdd
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -58,34 +61,33 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implements AzureForm<DraftVirtualMachine> {
-    public static final String SSH_PUBLIC_KEY_DESCRIPTION = "<html> Provide an RSA public key file in the single-line format (starting with \"ssh-rsa\") or " +
+    private static final String SSH_PUBLIC_KEY_DESCRIPTION = "<html> Provide an RSA public key file in the single-line format (starting with \"ssh-rsa\") or " +
             "the multi-line PEM format. <p/> You can generate SSH keys using ssh-keygen on Linux and OS X, or PuTTYGen on Windows. </html>";
-    public static final String SELECT_CERT_TITLE = "Select Cert for Your VM";
+    private static final String SELECT_CERT_TITLE = "Select Cert for Your VM";
+    private static final String VIRTUAL_MACHINE_CREATION_DIALOG_TITLE = "Create Virtual Machine";
     private JTabbedPane tabbedPane;
     private JPanel rootPane;
     private JPanel basicPane;
     private JLabel lblResourceGroup;
     private JLabel lblSubscription;
     private JLabel lblVirtualMachineName;
-    private JTextField txtVisualMachineName;
+    private ValidationDebouncedTextInput txtVisualMachineName;
     private JLabel lblRegion;
     private JRadioButton rdoSshPublicKey;
     private JRadioButton rdoPassword;
-    private JTextField txtUserName;
+    private ValidationDebouncedTextInput txtUserName;
     private JRadioButton rdoNoneSecurityGroup;
     private JRadioButton rdoBasicSecurityGroup;
     private JRadioButton rdoAdvancedSecurityGroup;
     private JRadioButton rdoNoneInboundPorts;
     private JRadioButton rdoAllowSelectedInboundPorts;
     private JCheckBox chkAzureSpotInstance;
-    private JRadioButton rdoCapacityOnly;
-    private JRadioButton rdoPriceOrCapacity;
     private JRadioButton rdoStopAndDeallocate;
     private JRadioButton rdoDelete;
     private JTextField txtMaximumPrice;
     private JLabel lblUserName;
-    private JTextField txtPassword;
-    private JTextField txtConfirmPassword;
+    private JPasswordField txtPassword;
+    private JPasswordField txtConfirmPassword;
     private JLabel lblPassword;
     private JLabel lblConfirmPassword;
     private JLabel lblCertificate;
@@ -94,7 +96,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JLabel lblSelectInboundPorts;
     private JLabel lblConfigureSecurityGroup;
     private SecurityGroupComboBox cbSecurityGroup;
-    private JLabel lblEvictionType;
     private JLabel lblEvictionPolicy;
     private JLabel lblMaximumPrice;
     private JLabel lblAvailabilityOptions;
@@ -126,6 +127,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private AzureStorageAccountComboBox cbStorageAccount;
     private JPanel networkPane;
     private JPanel advancedPane;
+    private AzurePasswordFieldInput passwordFieldInput;
+    private AzurePasswordFieldInput confirmPasswordFieldInput;
 
     @Getter
     private final Project project;
@@ -168,10 +171,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
 
         chkAzureSpotInstance.addItemListener(e -> toggleAzureSpotInstance(chkAzureSpotInstance.isSelected()));
         chkAzureSpotInstance.setSelected(false);
-
-        final ButtonGroup evictionTypeGroup = new ButtonGroup();
-        evictionTypeGroup.add(rdoCapacityOnly);
-        evictionTypeGroup.add(rdoPriceOrCapacity);
 
         final ButtonGroup evictionPolicyGroup = new ButtonGroup();
         evictionPolicyGroup.add(rdoStopAndDeallocate);
@@ -267,9 +266,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     private void toggleAzureSpotInstance(boolean enableAzureSpotInstance) {
-        lblEvictionType.setVisible(enableAzureSpotInstance);
-        rdoCapacityOnly.setVisible(enableAzureSpotInstance);
-        rdoPriceOrCapacity.setVisible(enableAzureSpotInstance);
         lblEvictionPolicy.setVisible(enableAzureSpotInstance);
         rdoStopAndDeallocate.setVisible(enableAzureSpotInstance);
         rdoDelete.setVisible(enableAzureSpotInstance);
@@ -291,23 +287,43 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private void toggleAuthenticationType(boolean isSSH) {
         lblPassword.setVisible(!isSSH);
         txtPassword.setVisible(!isSSH);
+        passwordFieldInput.setRequired(!isSSH);
         lblConfirmPassword.setVisible(!isSSH);
         txtConfirmPassword.setVisible(!isSSH);
+        confirmPasswordFieldInput.setRequired(!isSSH);
         lblCertificate.setVisible(isSSH);
         txtCertificate.setVisible(isSSH);
+        txtCertificate.setRequired(isSSH);
     }
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.cbSubscription = new SubscriptionComboBox();
+        this.cbSubscription.setRequired(true);
         this.cbImage = new VirtualMachineImageComboBox();
+        this.cbImage.setRequired(true);
         this.cbSize = new VirtualMachineSizeComboBox();
+        this.cbSize.setRequired(true);
         this.cbAvailabilityOptions = new NetworkAvailabilityOptionsComboBox();
         this.cbVirtualNetwork = new VirtualNetworkComboBox();
+        this.cbVirtualNetwork.setRequired(true);
         this.cbSubnet = new SubnetComboBox();
+        this.cbSubnet.setRequired(true);
         this.cbSecurityGroup = new SecurityGroupComboBox();
         this.cbPublicIp = new PublicIPAddressComboBox();
+        this.cbPublicIp.setRequired(true);
         this.cbStorageAccount = new AzureStorageAccountComboBox();
+        this.txtUserName = new ValidationDebouncedTextInput();
+        this.txtUserName.setRequired(true);
+
+        this.txtVisualMachineName = new ValidationDebouncedTextInput();
+        this.txtVisualMachineName.setRequired(true);
+        this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
+
+        this.txtPassword = new JPasswordField();
+        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword);
+        this.txtConfirmPassword = new JPasswordField();
+        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
 
         this.cbSubscription.refreshItems();
     }
@@ -319,7 +335,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
 
     @Override
     protected String getDialogTitle() {
-        return "Create Virtual Machine";
+        return VIRTUAL_MACHINE_CREATION_DIALOG_TITLE;
     }
 
     @Override
@@ -329,7 +345,10 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         final ResourceGroup resourceGroup = cbResourceGroup.getValue();
         final String resourceGroupName = Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
         final String vmName = txtVisualMachineName.getText();
-        final DraftVirtualMachine draftVirtualMachine = new DraftVirtualMachine(subscriptionId, resourceGroupName, vmName);
+        final DraftVirtualMachine draftVirtualMachine = new DraftVirtualMachine();
+        draftVirtualMachine.setSubscriptionId(subscriptionId);
+        draftVirtualMachine.setResourceGroup(resourceGroupName);
+        draftVirtualMachine.setName(vmName);
         draftVirtualMachine.setRegion(cbRegion.getValue());
         draftVirtualMachine.setNetwork(cbVirtualNetwork.getValue());
         draftVirtualMachine.setSubnet(cbSubnet.getValue());
@@ -338,7 +357,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         draftVirtualMachine.setUserName(txtUserName.getText());
         if (rdoPassword.isSelected()) {
             draftVirtualMachine.setAuthenticationType(AuthenticationType.Password);
-            draftVirtualMachine.setPassword(txtPassword.getText());
+            draftVirtualMachine.setPassword(passwordFieldInput.getValue());
         } else if (rdoSshPublicKey.isSelected()) {
             draftVirtualMachine.setAuthenticationType(AuthenticationType.SSH);
             try {
@@ -351,8 +370,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         draftVirtualMachine.setAvailabilitySet(cbAvailabilityOptions.getValue());
         // Azure Spot
         if (chkAzureSpotInstance.isSelected()) {
-            final AzureSpotConfig.EvictionType evictionType = rdoCapacityOnly.isSelected() ?
-                    AzureSpotConfig.EvictionType.CapacityOnly : AzureSpotConfig.EvictionType.PriceOrCapacity;
+            final AzureSpotConfig.EvictionType evictionType = AzureSpotConfig.EvictionType.CapacityOnly;
             final AzureSpotConfig.EvictionPolicy evictionPolicy = rdoStopAndDeallocate.isSelected() ?
                     AzureSpotConfig.EvictionPolicy.StopAndDeallocate : AzureSpotConfig.EvictionPolicy.Delete;
             final double maximumPrice = Double.parseDouble(txtMaximumPrice.getText());
@@ -368,23 +386,14 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup(subscriptionId, resourceGroupName, vmName + "-sg");
             draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
             final List<SecurityRule> policies = new ArrayList<>();
-            if (chkHTTP.isSelected()) {
-                policies.add(SecurityRule.HTTP_RULE);
-            }
-            if (chkHTTPS.isSelected()) {
-                policies.add(SecurityRule.HTTPS_RULE);
-            }
-            if (chkSSH.isSelected()) {
-                policies.add(SecurityRule.SSH_RULE);
-            }
-            if (chkRDP.isSelected()) {
-                policies.add(SecurityRule.RDP_RULE);
-            }
+            Optional.ofNullable(chkHTTP.isSelected() ? SecurityRule.HTTP_RULE : null).ifPresent(policies::add);
+            Optional.ofNullable(chkHTTPS.isSelected() ? SecurityRule.HTTPS_RULE : null).ifPresent(policies::add);
+            Optional.ofNullable(chkSSH.isSelected() ? SecurityRule.SSH_RULE : null).ifPresent(policies::add);
+            Optional.ofNullable(chkRDP.isSelected() ? SecurityRule.RDP_RULE : null).ifPresent(policies::add);
             draftNetworkSecurityGroup.setSecurityRuleList(policies);
             draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
         }
-        // todo: Implement storage account related logic, as currently we did not implement none storage
-        // draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
+        draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
         return draftVirtualMachine;
     }
 
@@ -415,44 +424,36 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         Optional.ofNullable(data.getImage()).ifPresent(image -> cbImage.setValue(image));
         Optional.ofNullable(data.getSize()).ifPresent(size -> cbSize.setValue(size));
         Optional.ofNullable(data.getUserName()).ifPresent(name -> txtUserName.setText(name));
+        cbAvailabilityOptions.setValue(data.getAvailabilitySet());
         // skip set value for password/cert
-        Optional.ofNullable(data.getNetwork()).ifPresent(network -> cbVirtualNetwork.setValue(network));
+        Optional.ofNullable(data.getNetwork()).ifPresent(network -> cbVirtualNetwork.setDate(network));
         Optional.ofNullable(data.getSubnet()).ifPresent(subnet -> cbSubnet.setValue(subnet));
+        rdoNoneSecurityGroup.setSelected(data.getSecurityGroup() == null);
         Optional.ofNullable(data.getSecurityGroup()).ifPresent(networkSecurityGroup -> {
             if (networkSecurityGroup.exists()) {
-                cbSecurityGroup.setValue(networkSecurityGroup);
+                rdoAdvancedSecurityGroup.setSelected(true);
+                cbSecurityGroup.setDate(networkSecurityGroup);
             } else if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
+                rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
                 if (CollectionUtils.isEmpty(securityRuleList)) {
                     rdoNoneInboundPorts.setSelected(true);
                 } else {
                     rdoAllowSelectedInboundPorts.setSelected(true);
-                    securityRuleList.forEach(rule -> {
-                        if (rule == SecurityRule.HTTP_RULE) {
-                            chkHTTP.setSelected(true);
-                        }
-                        if (rule == SecurityRule.HTTPS_RULE) {
-                            chkHTTPS.setSelected(true);
-                        }
-                        if (rule == SecurityRule.SSH_RULE) {
-                            chkSSH.setSelected(true);
-                        }
-                        if (rule == SecurityRule.RDP_RULE) {
-                            chkRDP.setSelected(true);
-                        }
-                    });
+                    chkHTTP.setSelected(securityRuleList.contains(SecurityRule.HTTP_RULE));
+                    chkHTTPS.setSelected(securityRuleList.contains(SecurityRule.HTTPS_RULE));
+                    chkSSH.setSelected(securityRuleList.contains(SecurityRule.SSH_RULE));
+                    chkRDP.setSelected(securityRuleList.contains(SecurityRule.RDP_RULE));
                 }
             }
         });
-        // todo: Implement storage account related logic
-        cbAvailabilityOptions.setValue(data.getAvailabilitySet());
-        cbPublicIp.setValue(data.getIpAddress());
+        cbPublicIp.setDate(data.getIpAddress());
+        cbStorageAccount.setDate(data.getStorageAccount());
         final AzureSpotConfig azureSpotConfig = data.getAzureSpotConfig();
         if (azureSpotConfig == null) {
             chkAzureSpotInstance.setSelected(false);
         } else {
-            rdoCapacityOnly.setSelected(azureSpotConfig.getType() == AzureSpotConfig.EvictionType.CapacityOnly);
-            rdoPriceOrCapacity.setSelected(azureSpotConfig.getType() == AzureSpotConfig.EvictionType.PriceOrCapacity);
+            chkAzureSpotInstance.setSelected(true);
             rdoStopAndDeallocate.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
             rdoDelete.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.Delete);
             txtMaximumPrice.setText(String.valueOf(azureSpotConfig.getMaximumPrice()));
@@ -461,19 +462,36 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount);
+        return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
+                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput);
     }
 
     @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<ValidationInfo> result = super.doValidateAll();
         // validate password
-        final String password = txtPassword.getText();
-        final String confirmPassword = txtConfirmPassword.getText();
-        if (!StringUtils.equals(password, confirmPassword)) {
-            result.add(new ValidationInfo("Password and confirm password must match.", txtConfirmPassword));
+        if (rdoPassword.isSelected()) {
+            final String password = passwordFieldInput.getValue();
+            final String confirmPassword = confirmPasswordFieldInput.getValue();
+            if (!StringUtils.equals(password, confirmPassword)) {
+                result.add(new ValidationInfo("Password and confirm password must match.", txtConfirmPassword));
+            }
         }
+
         return result;
+    }
+
+    private AzureValidationInfo validateVirtualMachineName() {
+        final String name = txtVisualMachineName.getText();
+        if (StringUtils.isEmpty(name) || name.length() > 15 || name.length() < 3) {
+            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must be between 3 and 15 "
+                    + "character long.").type(AzureValidationInfo.Type.ERROR).build();
+        }
+        if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
+            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must start with a letter, " +
+                    "contain only letters, numbers, and hyphens, and end with a letter or number.").type(AzureValidationInfo.Type.ERROR).build();
+        }
+        return AzureValidationInfo.OK;
     }
 
     enum SecurityGroupPolicy {
