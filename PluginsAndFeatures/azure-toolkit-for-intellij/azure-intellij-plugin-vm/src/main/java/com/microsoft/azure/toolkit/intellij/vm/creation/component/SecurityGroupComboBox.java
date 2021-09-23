@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.compute.security.AzureNetworkSecurityGroup;
 import com.microsoft.azure.toolkit.lib.compute.security.NetworkSecurityGroup;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -33,5 +34,10 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
     @Override
     protected List<? extends NetworkSecurityGroup> loadItems() throws Exception {
         return Optional.ofNullable(subscription).map(subscription -> Azure.az(AzureNetworkSecurityGroup.class).list(subscription.getId())).orElse(Collections.emptyList());
+    }
+
+    public void setDate(NetworkSecurityGroup networkSecurityGroup) {
+        setValue(new ItemReference<>(resource -> StringUtils.equals(resource.name(), networkSecurityGroup.name()) &&
+                StringUtils.equals(resource.resourceGroup(), networkSecurityGroup.resourceGroup())));
     }
 }
