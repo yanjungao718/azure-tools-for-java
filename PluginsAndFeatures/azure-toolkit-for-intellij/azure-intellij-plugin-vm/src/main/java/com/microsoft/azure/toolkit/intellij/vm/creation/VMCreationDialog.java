@@ -43,6 +43,7 @@ import com.microsoft.azure.toolkit.lib.compute.vm.DraftVirtualMachine;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AuthenticationType;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AzureSpotConfig;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
+import io.jsonwebtoken.lang.Collections;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -119,6 +120,10 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private TitledSeparator titleInboundPortRules;
     private InboundPortRulesForm pnlBasicPorts;
     private InboundPortRulesForm pnlPorts;
+    private JLabel lblPublicInboundPorts;
+    private JPanel pnlPublicInboundsRadios;
+    private JRadioButton rdoAllowSelectedInboundPorts;
+    private JRadioButton rdoNoneInboundPorts;
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
@@ -155,6 +160,13 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         rdoAdvancedSecurityGroup.addItemListener(e -> toggleSecurityGroup(SecurityGroupPolicy.Advanced));
         rdoNoneSecurityGroup.setSelected(true);
 
+        final ButtonGroup inboundPortsGroup = new ButtonGroup();
+        inboundPortsGroup.add(rdoNoneInboundPorts);
+        inboundPortsGroup.add(rdoAllowSelectedInboundPorts);
+        rdoNoneInboundPorts.addItemListener(e -> toggleInboundPortsPolicy(false));
+        rdoAllowSelectedInboundPorts.addItemListener(e -> toggleInboundPortsPolicy(true));
+        rdoNoneInboundPorts.setSelected(true);
+
         chkAzureSpotInstance.addItemListener(e -> toggleAzureSpotInstance(chkAzureSpotInstance.isSelected()));
         chkAzureSpotInstance.setSelected(false);
 
@@ -171,6 +183,11 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
 
         unifyComponentsStyle();
+    }
+
+    private void toggleInboundPortsPolicy(boolean allowInboundPorts) {
+        pnlPorts.toggleInboundPortsPolicy(allowInboundPorts);
+        pnlBasicPorts.toggleInboundPortsPolicy(allowInboundPorts);
     }
 
     private void onImageChanged(ItemEvent e) {
@@ -265,8 +282,11 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         titleInboundPortRules.setVisible(policy == SecurityGroupPolicy.Basic);
         pnlPorts.setVisible(policy == SecurityGroupPolicy.Basic);
         pnlBasicPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        lblPublicInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        pnlPublicInboundsRadios.setVisible(policy == SecurityGroupPolicy.Basic);
         lblConfigureSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
         cbSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
+        cbSecurityGroup.setRequired(policy == SecurityGroupPolicy.Advanced);
     }
 
     private void toggleAuthenticationType(boolean isSSH) {
@@ -416,6 +436,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             } else if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
                 rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
+                rdoNoneInboundPorts.setSelected(Collections.isEmpty(securityRuleList));
+                rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
                 pnlPorts.setData(securityRuleList);
                 pnlBasicPorts.setData(securityRuleList);
             }
