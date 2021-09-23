@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
@@ -19,6 +20,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.AzureStorageAccountComboBox;
+import com.microsoft.azure.toolkit.intellij.vm.creation.component.InboundPortRulesForm;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.NetworkAvailabilityOptionsComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.SecurityGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.SubnetComboBox;
@@ -42,7 +44,6 @@ import com.microsoft.azure.toolkit.lib.compute.vm.model.AuthenticationType;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AzureSpotConfig;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
 import lombok.Getter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +53,6 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -79,8 +79,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JRadioButton rdoNoneSecurityGroup;
     private JRadioButton rdoBasicSecurityGroup;
     private JRadioButton rdoAdvancedSecurityGroup;
-    private JRadioButton rdoNoneInboundPorts;
-    private JRadioButton rdoAllowSelectedInboundPorts;
     private JCheckBox chkAzureSpotInstance;
     private JRadioButton rdoStopAndDeallocate;
     private JRadioButton rdoDelete;
@@ -92,8 +90,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JLabel lblConfirmPassword;
     private JLabel lblCertificate;
     private AzureFileInput txtCertificate;
-    private JLabel lblPublicInboundPorts;
-    private JLabel lblSelectInboundPorts;
     private JLabel lblConfigureSecurityGroup;
     private SecurityGroupComboBox cbSecurityGroup;
     private JLabel lblEvictionPolicy;
@@ -109,7 +105,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JLabel lblStorageAccount;
     private JLabel lblAzureSportInstance;
     private JPanel pnlSecurityRadios;
-    private JPanel pnlPublicInboundsRadios;
     private VirtualMachineSizeComboBox cbSize;
     private SubscriptionComboBox cbSubscription;
     private ResourceGroupComboBox cbResourceGroup;
@@ -118,15 +113,12 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private NetworkAvailabilityOptionsComboBox cbAvailabilityOptions;
     private VirtualNetworkComboBox cbVirtualNetwork;
     private SubnetComboBox cbSubnet;
-    private JPanel pnlInboundPorts;
-    private JCheckBox chkHTTP;
-    private JCheckBox chkHTTPS;
-    private JCheckBox chkSSH;
-    private JCheckBox chkRDP;
     private PublicIPAddressComboBox cbPublicIp;
     private AzureStorageAccountComboBox cbStorageAccount;
-    private JPanel networkPane;
     private JPanel advancedPane;
+    private TitledSeparator titleInboundPortRules;
+    private InboundPortRulesForm pnlBasicPorts;
+    private InboundPortRulesForm pnlPorts;
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
@@ -138,7 +130,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.project = project;
 
         $$$setupUI$$$();
-
+        pnlPorts.addActionListenerToComponents(e -> pnlBasicPorts.setData(pnlPorts.getData()));
+        pnlBasicPorts.addActionListenerToComponents(e -> pnlPorts.setData(pnlBasicPorts.getData()));
         init();
     }
 
@@ -152,13 +145,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         rdoPassword.addItemListener(e -> toggleAuthenticationType(false));
         rdoSshPublicKey.addItemListener(e -> toggleAuthenticationType(true));
         rdoSshPublicKey.setSelected(true);
-
-        final ButtonGroup inboundPortsGroup = new ButtonGroup();
-        inboundPortsGroup.add(rdoNoneInboundPorts);
-        inboundPortsGroup.add(rdoAllowSelectedInboundPorts);
-        rdoNoneInboundPorts.addItemListener(e -> toggleInboundPortsPolicy(false));
-        rdoAllowSelectedInboundPorts.addItemListener(e -> toggleInboundPortsPolicy(true));
-        rdoNoneInboundPorts.setSelected(true);
 
         final ButtonGroup securityGroup = new ButtonGroup();
         securityGroup.add(rdoNoneSecurityGroup);
@@ -183,11 +169,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         cbImage.addItemListener(this::onImageChanged);
         txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
                 project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
-        unifyComponentsStyle();
-    }
 
-    private void toggleInboundPortsPolicy(boolean allowInboundPorts) {
-        Stream.of(chkRDP, chkHTTP, chkHTTPS, chkSSH).forEach(chk -> chk.setEnabled(allowInboundPorts));
+        unifyComponentsStyle();
     }
 
     private void onImageChanged(ItemEvent e) {
@@ -225,6 +208,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             this.cbSize.setRegion(region);
             this.cbVirtualNetwork.setRegion(region);
             this.cbPublicIp.setRegion(region);
+            this.cbSecurityGroup.setRegion(region);
         }
     }
 
@@ -244,7 +228,19 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     private void unifyComponentsStyle() {
-        final List<JLabel> collect = Arrays.stream(this.getClass().getDeclaredFields())
+        final List<JLabel> labels = Stream.of(getLabels(), pnlBasicPorts.getLabels(), pnlPorts.getLabels()).flatMap(List::stream).collect(Collectors.toList());
+        final int maxWidth = labels.stream().map(JLabel::getPreferredSize).map(Dimension::getWidth).max(Double::compare).map(Double::intValue).get();
+        final int maxHeight = labels.stream().map(JLabel::getPreferredSize).map(Dimension::getHeight).max(Double::compare).map(Double::intValue).get();
+        labels.forEach(field -> {
+            final Dimension dimension = new Dimension(maxWidth, Math.max(maxHeight, cbSecurityGroup.getPreferredSize().height));
+            field.setPreferredSize(dimension);
+            field.setMinimumSize(dimension);
+            field.setMaximumSize(dimension);
+        });
+    }
+
+    private List<JLabel> getLabels() {
+        return Arrays.stream(this.getClass().getDeclaredFields())
                 .map(field -> {
                     try {
                         return field.get(this);
@@ -255,14 +251,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 .filter(value -> value instanceof JLabel)
                 .map(value -> (JLabel) value)
                 .collect(Collectors.toList());
-        final int maxWidth = collect.stream().map(JLabel::getPreferredSize).map(Dimension::getWidth).max(Double::compare).map(Double::intValue).get();
-        final int maxHeight = collect.stream().map(JLabel::getPreferredSize).map(Dimension::getHeight).max(Double::compare).map(Double::intValue).get();
-        collect.forEach(field -> {
-            final Dimension dimension = new Dimension(maxWidth, Math.max(maxHeight, cbSecurityGroup.getPreferredSize().height));
-            field.setPreferredSize(dimension);
-            field.setMinimumSize(dimension);
-            field.setMaximumSize(dimension);
-        });
     }
 
     private void toggleAzureSpotInstance(boolean enableAzureSpotInstance) {
@@ -274,12 +262,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     private void toggleSecurityGroup(SecurityGroupPolicy policy) {
-        lblPublicInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
-        pnlPublicInboundsRadios.setVisible(policy == SecurityGroupPolicy.Basic);
-        rdoNoneInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
-        rdoAllowSelectedInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
-        lblSelectInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
-        pnlInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        titleInboundPortRules.setVisible(policy == SecurityGroupPolicy.Basic);
+        pnlPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        pnlBasicPorts.setVisible(policy == SecurityGroupPolicy.Basic);
         lblConfigureSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
         cbSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
     }
@@ -385,12 +370,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         } else if (rdoBasicSecurityGroup.isSelected()) {
             final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup(subscriptionId, resourceGroupName, vmName + "-sg");
             draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
-            final List<SecurityRule> policies = new ArrayList<>();
-            Optional.ofNullable(chkHTTP.isSelected() ? SecurityRule.HTTP_RULE : null).ifPresent(policies::add);
-            Optional.ofNullable(chkHTTPS.isSelected() ? SecurityRule.HTTPS_RULE : null).ifPresent(policies::add);
-            Optional.ofNullable(chkSSH.isSelected() ? SecurityRule.SSH_RULE : null).ifPresent(policies::add);
-            Optional.ofNullable(chkRDP.isSelected() ? SecurityRule.RDP_RULE : null).ifPresent(policies::add);
-            draftNetworkSecurityGroup.setSecurityRuleList(policies);
+            draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getData());
             draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
         }
         draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
@@ -436,15 +416,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             } else if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
                 rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
-                if (CollectionUtils.isEmpty(securityRuleList)) {
-                    rdoNoneInboundPorts.setSelected(true);
-                } else {
-                    rdoAllowSelectedInboundPorts.setSelected(true);
-                    chkHTTP.setSelected(securityRuleList.contains(SecurityRule.HTTP_RULE));
-                    chkHTTPS.setSelected(securityRuleList.contains(SecurityRule.HTTPS_RULE));
-                    chkSSH.setSelected(securityRuleList.contains(SecurityRule.SSH_RULE));
-                    chkRDP.setSelected(securityRuleList.contains(SecurityRule.RDP_RULE));
-                }
+                pnlPorts.setData(securityRuleList);
+                pnlBasicPorts.setData(securityRuleList);
             }
         });
         cbPublicIp.setDate(data.getIpAddress());
@@ -483,9 +456,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
 
     private AzureValidationInfo validateVirtualMachineName() {
         final String name = txtVisualMachineName.getText();
-        if (StringUtils.isEmpty(name) || name.length() > 15 || name.length() < 3) {
-            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must be between 3 and 15 "
-                    + "character long.").type(AzureValidationInfo.Type.ERROR).build();
+        if (StringUtils.isEmpty(name) || name.length() > 64) {
+            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must be between 1 and 64 "
+                    + "characters long.").type(AzureValidationInfo.Type.ERROR).build();
         }
         if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
             return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must start with a letter, " +
