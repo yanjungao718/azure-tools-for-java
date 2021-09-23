@@ -13,7 +13,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;

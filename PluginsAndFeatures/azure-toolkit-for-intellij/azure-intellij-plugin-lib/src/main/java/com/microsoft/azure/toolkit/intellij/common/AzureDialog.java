@@ -58,7 +58,7 @@ public abstract class AzureDialog<T> extends DialogWrapper {
         this.setOKActionEnabled(infos.stream().noneMatch(
                 i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
         final List<ValidationInfo> resultList = infos.stream()
-                .filter(i ->  i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
+                .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
                 .map(AzureDialog::toIntellijValidationInfo)
                 .collect(Collectors.toList());
         // this is in order to let ok action disable if only there is any uninitialized filed.

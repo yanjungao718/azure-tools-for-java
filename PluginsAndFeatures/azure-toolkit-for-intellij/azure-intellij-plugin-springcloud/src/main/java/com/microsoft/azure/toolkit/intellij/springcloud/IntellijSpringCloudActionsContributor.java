@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpring
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 

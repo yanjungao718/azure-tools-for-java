@@ -12,7 +12,6 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 
 import java.util.Objects;
 
