@@ -68,6 +68,9 @@
   <!-- uncomment to enable plugin in all products
   <depends>com.intellij.modules.lang</depends>
   -->
+  <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+    <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.LegacyIntellijActionsContributor"/>
+  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow
