@@ -25,16 +25,18 @@ import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudPersistentDisk;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudSku;
 import lombok.Getter;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -181,9 +183,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.useJava8.setSelected(!java11);
 
         this.txtJvmOptions.setText(deployment.getJvmOptions());
-        if (MapUtils.isNotEmpty(deployment.getEnvironment())) {
-            this.envTable.setEnvironmentVariables(deployment.getEnvironment());
-        }
+        final Map<String, String> env = deployment.getEnvironment();
+        this.envTable.setEnvironmentVariables(ObjectUtils.firstNonNull(env, Collections.emptyMap()));
 
         this.numCpu.setItem(Optional.ofNullable(deployment.getCpu()).orElse(1));
         this.numMemory.setItem(Optional.ofNullable(deployment.getMemoryInGB()).orElse(1));

@@ -62,11 +62,12 @@ public class AzureSdkEnforcer {
     private static String buildMessage(@Nonnull List<? extends AzureJavaSdkEntity> libs) {
         final String liPackages = libs.stream().map(l -> {
             if (StringUtils.isNotBlank(l.getReplace())) {
+                final String replacePackage = l.getReplace().trim();
                 return String.format("<li>%s" +
                         "   <ul style='margin-top:0;margin-bottom:0;padding:0'>" +
                         "       <li>Replaced by: <a href='%s'>%s</a></li>" +
                         "   </ul>" +
-                        "</li>", l.getPackageName(), l.getMavenArtifactUrl(), l.getReplace().trim());
+                        "</li>", l.getPackageName(), getMavenArtifactUrl(replacePackage), replacePackage);
             } else {
                 return String.format("<li>%s</li>", l.getPackageName());
             }
@@ -76,5 +77,9 @@ public class AzureSdkEnforcer {
                 "refer to <a href='https://azure.github.io/azure-sdk/releases/latest/java.html'>Azure SDK Releases</a> for the latest releases." +
                 "<ul style='margin-top:2px'>" + liPackages + "</ul>" +
                 "</html>";
+    }
+
+    public static String getMavenArtifactUrl(String pkgName) {
+        return String.format("https://search.maven.org/artifact/%s/", pkgName);
     }
 }
