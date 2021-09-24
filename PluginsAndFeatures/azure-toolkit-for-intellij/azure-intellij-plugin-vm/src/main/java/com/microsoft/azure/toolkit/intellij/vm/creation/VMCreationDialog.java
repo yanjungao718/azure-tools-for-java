@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.compute.network.Network;
 import com.microsoft.azure.toolkit.lib.compute.security.DraftNetworkSecurityGroup;
 import com.microsoft.azure.toolkit.lib.compute.security.model.SecurityRule;
@@ -43,6 +44,7 @@ import com.microsoft.azure.toolkit.lib.compute.vm.DraftVirtualMachine;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AuthenticationType;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AzureSpotConfig;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
+import io.jsonwebtoken.lang.Collections;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -119,6 +121,10 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private TitledSeparator titleInboundPortRules;
     private InboundPortRulesForm pnlBasicPorts;
     private InboundPortRulesForm pnlPorts;
+    private JLabel lblPublicInboundPorts;
+    private JPanel pnlPublicInboundsRadios;
+    private JRadioButton rdoAllowSelectedInboundPorts;
+    private JRadioButton rdoNoneInboundPorts;
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
@@ -155,6 +161,13 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         rdoAdvancedSecurityGroup.addItemListener(e -> toggleSecurityGroup(SecurityGroupPolicy.Advanced));
         rdoNoneSecurityGroup.setSelected(true);
 
+        final ButtonGroup inboundPortsGroup = new ButtonGroup();
+        inboundPortsGroup.add(rdoNoneInboundPorts);
+        inboundPortsGroup.add(rdoAllowSelectedInboundPorts);
+        rdoNoneInboundPorts.addItemListener(e -> toggleInboundPortsPolicy(false));
+        rdoAllowSelectedInboundPorts.addItemListener(e -> toggleInboundPortsPolicy(true));
+        rdoNoneInboundPorts.setSelected(true);
+
         chkAzureSpotInstance.addItemListener(e -> toggleAzureSpotInstance(chkAzureSpotInstance.isSelected()));
         chkAzureSpotInstance.setSelected(false);
 
@@ -171,6 +184,11 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
 
         unifyComponentsStyle();
+    }
+
+    private void toggleInboundPortsPolicy(boolean allowInboundPorts) {
+        pnlPorts.toggleInboundPortsPolicy(allowInboundPorts);
+        pnlBasicPorts.toggleInboundPortsPolicy(allowInboundPorts);
     }
 
     private void onImageChanged(ItemEvent e) {
@@ -265,8 +283,11 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         titleInboundPortRules.setVisible(policy == SecurityGroupPolicy.Basic);
         pnlPorts.setVisible(policy == SecurityGroupPolicy.Basic);
         pnlBasicPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        // lblPublicInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        // pnlPublicInboundsRadios.setVisible(policy == SecurityGroupPolicy.Basic);
         lblConfigureSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
         cbSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
+        cbSecurityGroup.setRequired(policy == SecurityGroupPolicy.Advanced);
     }
 
     private void toggleAuthenticationType(boolean isSSH) {
@@ -306,9 +327,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
 
         this.txtPassword = new JPasswordField();
-        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword);
+        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);
         this.txtConfirmPassword = new JPasswordField();
-        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
+        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword, true);
 
         this.cbSubscription.refreshItems();
     }
@@ -368,7 +389,10 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         if (rdoAdvancedSecurityGroup.isSelected()) {
             draftVirtualMachine.setSecurityGroup(cbSecurityGroup.getValue());
         } else if (rdoBasicSecurityGroup.isSelected()) {
-            final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup(subscriptionId, resourceGroupName, vmName + "-sg");
+            final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup();
+            draftNetworkSecurityGroup.setSubscriptionId(subscriptionId);
+            draftNetworkSecurityGroup.setResourceGroup(resourceGroupName);
+            draftNetworkSecurityGroup.setName(vmName + "-sg" + Utils.getTimestamp());
             draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
             draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getData());
             draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
@@ -410,14 +434,15 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         Optional.ofNullable(data.getSubnet()).ifPresent(subnet -> cbSubnet.setValue(subnet));
         rdoNoneSecurityGroup.setSelected(data.getSecurityGroup() == null);
         Optional.ofNullable(data.getSecurityGroup()).ifPresent(networkSecurityGroup -> {
-            if (networkSecurityGroup.exists()) {
-                rdoAdvancedSecurityGroup.setSelected(true);
-                cbSecurityGroup.setDate(networkSecurityGroup);
-            } else if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
+            if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
                 rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
+                rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
                 pnlPorts.setData(securityRuleList);
                 pnlBasicPorts.setData(securityRuleList);
+            } else if (networkSecurityGroup.exists()) {
+                rdoAdvancedSecurityGroup.setSelected(true);
+                cbSecurityGroup.setDate(networkSecurityGroup);
             }
         });
         cbPublicIp.setDate(data.getIpAddress());
@@ -427,8 +452,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             chkAzureSpotInstance.setSelected(false);
         } else {
             chkAzureSpotInstance.setSelected(true);
-            rdoStopAndDeallocate.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
-            rdoDelete.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.Delete);
+            rdoStopAndDeallocate.setSelected(azureSpotConfig.getPolicy() != AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
+            rdoDelete.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
             txtMaximumPrice.setText(String.valueOf(azureSpotConfig.getMaximumPrice()));
         }
     }
@@ -436,7 +461,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
-                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput);
+                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate);
     }
 
     @Override
