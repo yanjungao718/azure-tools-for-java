@@ -282,8 +282,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         titleInboundPortRules.setVisible(policy == SecurityGroupPolicy.Basic);
         pnlPorts.setVisible(policy == SecurityGroupPolicy.Basic);
         pnlBasicPorts.setVisible(policy == SecurityGroupPolicy.Basic);
-        lblPublicInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
-        pnlPublicInboundsRadios.setVisible(policy == SecurityGroupPolicy.Basic);
+        // lblPublicInboundPorts.setVisible(policy == SecurityGroupPolicy.Basic);
+        // pnlPublicInboundsRadios.setVisible(policy == SecurityGroupPolicy.Basic);
         lblConfigureSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
         cbSecurityGroup.setVisible(policy == SecurityGroupPolicy.Advanced);
         cbSecurityGroup.setRequired(policy == SecurityGroupPolicy.Advanced);
@@ -326,9 +326,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
 
         this.txtPassword = new JPasswordField();
-        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword);
+        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);
         this.txtConfirmPassword = new JPasswordField();
-        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
+        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword, true);
 
         this.cbSubscription.refreshItems();
     }
@@ -435,8 +435,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 cbSecurityGroup.setDate(networkSecurityGroup);
             } else if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
                 rdoBasicSecurityGroup.setSelected(true);
+                rdoNoneInboundPorts.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
-                rdoNoneInboundPorts.setSelected(Collections.isEmpty(securityRuleList));
                 rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
                 pnlPorts.setData(securityRuleList);
                 pnlBasicPorts.setData(securityRuleList);
@@ -449,8 +449,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             chkAzureSpotInstance.setSelected(false);
         } else {
             chkAzureSpotInstance.setSelected(true);
-            rdoStopAndDeallocate.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
-            rdoDelete.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.Delete);
+            rdoStopAndDeallocate.setSelected(azureSpotConfig.getPolicy() != AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
+            rdoDelete.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
             txtMaximumPrice.setText(String.valueOf(azureSpotConfig.getMaximumPrice()));
         }
     }
@@ -458,7 +458,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
-                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput);
+                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate);
     }
 
     @Override
