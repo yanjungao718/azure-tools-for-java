@@ -63,7 +63,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
 
     private void resetResourceDraft() {
         final Network value = getValue();
-        if (!(value instanceof DraftNetwork && StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT))) {
+        if (value != null && !StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT)) {
             draftNetwork = DraftNetwork.getDefaultNetworkDraft();
             draftNetwork.setRegion(region);
             draftNetwork.setResourceGroup(Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(null));
@@ -87,7 +87,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         }
     }
 
-    public void setDate(Network value) {
+    public void setData(Network value) {
         if (value instanceof DraftNetwork) {
             draftNetwork = StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT) ? (DraftNetwork) value : null;
         }
@@ -108,14 +108,6 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     protected List<? extends Network> loadItems() throws Exception {
         final List<Network> networks = subscription == null ? Collections.emptyList() : Azure.az(AzureNetwork.class).subscription(subscription.getId())
                 .list().stream().filter(network -> Objects.equals(network.getRegion(), region)).collect(Collectors.toList());
-        if (draftNetwork != null) {
-            // Clean draft reference if the resource has been created
-            // todo: update draft handling in AzureComboBox
-            networks.stream().filter(storageAccount -> StringUtils.equals(storageAccount.getName(), draftNetwork.getName()) &&
-                            StringUtils.equals(storageAccount.getResourceGroup(), draftNetwork.getResourceGroup()))
-                    .findFirst()
-                    .ifPresent(ignore -> this.draftNetwork = null);
-        }
         return draftNetwork == null ? networks : ListUtils.union(List.of(draftNetwork), networks);
     }
 }
