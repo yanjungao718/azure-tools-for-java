@@ -39,6 +39,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
         Optional.ofNullable(draftNetwork).ifPresent(draftNetwork -> draftNetwork.setSubscriptionId(subscription.getId()));
+        resetResourceDraft();
         this.refreshItems();
     }
 
@@ -50,6 +51,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     public void setRegion(Region region) {
         this.region = region;
         Optional.ofNullable(draftNetwork).ifPresent(draftNetwork -> draftNetwork.setRegion(region));
+        resetResourceDraft();
         this.refreshItems();
     }
 
@@ -57,6 +59,17 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(AllIcons.General.Add, "Create new virtual network", this::createVirtualNetwork);
+    }
+
+    private void resetResourceDraft() {
+        final Network value = getValue();
+        if (!(value instanceof DraftNetwork && StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT))) {
+            draftNetwork = DraftNetwork.getDefaultNetworkDraft();
+            draftNetwork.setRegion(region);
+            draftNetwork.setResourceGroup(Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(null));
+            draftNetwork.setSubscriptionId(Optional.ofNullable(subscription).map(Subscription::getId).orElse(null));
+            setValue(draftNetwork);
+        }
     }
 
     private void createVirtualNetwork() {

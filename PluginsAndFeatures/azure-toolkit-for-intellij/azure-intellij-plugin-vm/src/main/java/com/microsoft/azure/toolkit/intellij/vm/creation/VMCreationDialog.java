@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.compute.network.Network;
 import com.microsoft.azure.toolkit.lib.compute.security.DraftNetworkSecurityGroup;
 import com.microsoft.azure.toolkit.lib.compute.security.model.SecurityRule;
@@ -388,7 +389,10 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         if (rdoAdvancedSecurityGroup.isSelected()) {
             draftVirtualMachine.setSecurityGroup(cbSecurityGroup.getValue());
         } else if (rdoBasicSecurityGroup.isSelected()) {
-            final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup(subscriptionId, resourceGroupName, vmName + "-sg");
+            final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup();
+            draftNetworkSecurityGroup.setSubscriptionId(subscriptionId);
+            draftNetworkSecurityGroup.setResourceGroup(resourceGroupName);
+            draftNetworkSecurityGroup.setName(vmName + "-sg" + Utils.getTimestamp());
             draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
             draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getData());
             draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
@@ -430,16 +434,15 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         Optional.ofNullable(data.getSubnet()).ifPresent(subnet -> cbSubnet.setValue(subnet));
         rdoNoneSecurityGroup.setSelected(data.getSecurityGroup() == null);
         Optional.ofNullable(data.getSecurityGroup()).ifPresent(networkSecurityGroup -> {
-            if (networkSecurityGroup.exists()) {
-                rdoAdvancedSecurityGroup.setSelected(true);
-                cbSecurityGroup.setDate(networkSecurityGroup);
-            } else if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
+            if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
                 rdoBasicSecurityGroup.setSelected(true);
-                rdoNoneInboundPorts.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
                 rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
                 pnlPorts.setData(securityRuleList);
                 pnlBasicPorts.setData(securityRuleList);
+            } else if (networkSecurityGroup.exists()) {
+                rdoAdvancedSecurityGroup.setSelected(true);
+                cbSecurityGroup.setDate(networkSecurityGroup);
             }
         });
         cbPublicIp.setDate(data.getIpAddress());
