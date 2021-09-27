@@ -14,19 +14,24 @@ import com.microsoft.azure.toolkit.intellij.storage.component.AccountNameTextFie
 import com.microsoft.azure.toolkit.intellij.storage.component.KindComboBox;
 import com.microsoft.azure.toolkit.intellij.storage.component.PerformanceComboBox;
 import com.microsoft.azure.toolkit.intellij.storage.component.RedundancyComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
+import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccountConfig> implements AzureForm<StorageAccountConfig> {
@@ -145,5 +150,16 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
     @Override
     protected @Nullable JComponent createCenterPanel() {
         return rootPanel;
+    }
+
+    private void createUIComponents() {
+        this.regionComboBox = new RegionComboBox() {
+            protected List<? extends Region> loadItems() {
+                if (Objects.nonNull(this.subscription)) {
+                    return Azure.az(AzureStorageAccount.class).listSupportedRegions(subscription.getId());
+                }
+                return Collections.emptyList();
+            }
+        };
     }
 }
