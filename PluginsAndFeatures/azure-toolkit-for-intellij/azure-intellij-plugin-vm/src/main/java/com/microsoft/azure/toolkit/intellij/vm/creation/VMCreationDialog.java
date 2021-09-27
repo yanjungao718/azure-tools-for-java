@@ -430,7 +430,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         Optional.ofNullable(data.getUserName()).ifPresent(name -> txtUserName.setText(name));
         cbAvailabilityOptions.setValue(data.getAvailabilitySet());
         // skip set value for password/cert
-        Optional.ofNullable(data.getNetwork()).ifPresent(network -> cbVirtualNetwork.setDate(network));
+        Optional.ofNullable(data.getNetwork()).ifPresent(network -> cbVirtualNetwork.setData(network));
         Optional.ofNullable(data.getSubnet()).ifPresent(subnet -> cbSubnet.setValue(subnet));
         rdoNoneSecurityGroup.setSelected(data.getSecurityGroup() == null);
         Optional.ofNullable(data.getSecurityGroup()).ifPresent(networkSecurityGroup -> {
@@ -442,11 +442,11 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 pnlBasicPorts.setData(securityRuleList);
             } else if (networkSecurityGroup.exists()) {
                 rdoAdvancedSecurityGroup.setSelected(true);
-                cbSecurityGroup.setDate(networkSecurityGroup);
+                cbSecurityGroup.setData(networkSecurityGroup);
             }
         });
-        cbPublicIp.setDate(data.getIpAddress());
-        cbStorageAccount.setDate(data.getStorageAccount());
+        cbPublicIp.setData(data.getIpAddress());
+        cbStorageAccount.setData(data.getStorageAccount());
         final AzureSpotConfig azureSpotConfig = data.getAzureSpotConfig();
         if (azureSpotConfig == null) {
             chkAzureSpotInstance.setSelected(false);
