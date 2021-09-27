@@ -18,9 +18,11 @@ import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
+import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -69,6 +71,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
         regionComboBox.setValidateFunction(new MySQLRegionValidator());
+        regionComboBox.setLoader(sid -> Azure.az(AzureMySql.class).listSupportedRegions(sid));
         serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         serverNameTextField.setMinLength(3);
         serverNameTextField.setMaxLength(63);
