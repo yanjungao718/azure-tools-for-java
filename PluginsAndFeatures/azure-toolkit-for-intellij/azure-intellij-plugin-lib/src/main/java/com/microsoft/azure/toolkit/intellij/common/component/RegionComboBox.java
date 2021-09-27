@@ -20,7 +20,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class RegionComboBox extends AzureComboBox<Region> {
 
-    private Subscription subscription;
+    protected Subscription subscription;
 
     @Override
     protected String getItemText(final Object item) {

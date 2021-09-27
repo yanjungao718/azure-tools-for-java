@@ -79,7 +79,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         return result == NONE ? null : result;
     }
 
-    public void setDate(PublicIpAddress address) {
+    public void setData(PublicIpAddress address) {
         if (address == null) {
             super.setValue(NONE);
             return;
@@ -98,13 +98,6 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
                 .subscription(subscription.getId()).list().stream()
                 .filter(ip -> Objects.equals(ip.getRegion(), region) && !ip.hasAssignedNetworkInterface())
                 .collect(Collectors.toList());
-        if (draftPublicIpAddress != null) {
-            // Clean draft reference if the resource has been created
-            list.stream().filter(storageAccount -> StringUtils.equals(storageAccount.getName(), draftPublicIpAddress.getName()) &&
-                            StringUtils.equals(storageAccount.getResourceGroup(), draftPublicIpAddress.getResourceGroup()))
-                    .findFirst()
-                    .ifPresent(resource -> this.draftPublicIpAddress = null);
-        }
         final List<PublicIpAddress> additionalList = Stream.of(NONE, draftPublicIpAddress).distinct().filter(Objects::nonNull).collect(Collectors.toList());
         return ListUtils.union(additionalList, list);
     }
@@ -118,7 +111,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
 
     private void resetResourceDraft() {
         final PublicIpAddress value = getValue();
-        if (value != null && !(value instanceof DraftPublicIpAddress && StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT))) {
+        if (value != null && !StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT)) {
             draftPublicIpAddress = DraftPublicIpAddress.getDefaultPublicIpAddressDraft();
             draftPublicIpAddress.setRegion(region);
             draftPublicIpAddress.setResourceGroup(Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(null));
