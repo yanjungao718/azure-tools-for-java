@@ -556,14 +556,6 @@
                   <toolTipText value="Choose the maximum price per hour you are willing to pay for a single instance of the selected virtual machine size. While your selected price is greater than the platform price and Azure has excess capacity, you will be allocated capacity. Azure Spot prices are in USD ($) only."/>
                 </properties>
               </component>
-              <component id="2014c" class="javax.swing.JTextField" binding="txtMaximumPrice">
-                <constraints>
-                  <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties/>
-              </component>
               <component id="610a6" class="com.intellij.ui.TitledSeparator">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -591,6 +583,12 @@
               <component id="e081f" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.AzureStorageAccountComboBox" binding="cbStorageAccount" custom-create="true">
                 <constraints>
                   <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="3db52" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtMaximumPrice" custom-create="true">
+                <constraints>
+                  <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties/>
               </component>

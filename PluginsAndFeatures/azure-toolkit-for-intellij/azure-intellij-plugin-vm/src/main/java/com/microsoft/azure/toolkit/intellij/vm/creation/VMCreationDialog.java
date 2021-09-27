@@ -84,7 +84,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JCheckBox chkAzureSpotInstance;
     private JRadioButton rdoStopAndDeallocate;
     private JRadioButton rdoDelete;
-    private JTextField txtMaximumPrice;
+    private ValidationDebouncedTextInput txtMaximumPrice;
     private JLabel lblUserName;
     private JPasswordField txtPassword;
     private JPasswordField txtConfirmPassword;
@@ -277,6 +277,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         rdoDelete.setVisible(enableAzureSpotInstance);
         lblMaximumPrice.setVisible(enableAzureSpotInstance);
         txtMaximumPrice.setVisible(enableAzureSpotInstance);
+        txtMaximumPrice.setRequired(enableAzureSpotInstance);
+        txtMaximumPrice.setValidator(enableAzureSpotInstance ? this::validateMaximumPricing : null);
+        txtMaximumPrice.onDocumentChanged(); // trigger revalidate after reset validator
     }
 
     private void toggleSecurityGroup(SecurityGroupPolicy policy) {
@@ -325,6 +328,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.txtVisualMachineName = new ValidationDebouncedTextInput();
         this.txtVisualMachineName.setRequired(true);
         this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
+
+        this.txtMaximumPrice = new ValidationDebouncedTextInput();
 
         this.txtPassword = new JPasswordField();
         this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);
@@ -461,7 +466,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
-                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate);
+                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate, txtMaximumPrice);
     }
 
     @Override
@@ -491,6 +496,17 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         }
         return AzureValidationInfo.OK;
     }
+
+
+    private AzureValidationInfo validateMaximumPricing() {
+        try {
+            final Double number = Double.valueOf(txtMaximumPrice.getValue());
+        } catch (final NumberFormatException e) {
+            return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The value must be a valid number.").build();
+        }
+        return AzureValidationInfo.OK;
+    }
+
 
     enum SecurityGroupPolicy {
         None,
