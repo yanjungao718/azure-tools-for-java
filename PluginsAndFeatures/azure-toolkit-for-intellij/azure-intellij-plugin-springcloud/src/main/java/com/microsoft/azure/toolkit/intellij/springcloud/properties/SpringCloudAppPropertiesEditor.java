@@ -66,7 +66,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.lblSubscription.setText(this.app.subscription().getName());
             this.lblCluster.setText(this.app.getCluster().name());
             this.lblApp.setText(this.app.name());
-            AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
+            this.formConfig.updateForm(this.app);
             AzureTaskManager.getInstance().runOnPooledThread((() -> {
                 final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).orElse(null);
                 AzureTaskManager.getInstance().runLater(() -> this.resetToolbar(deployment));
