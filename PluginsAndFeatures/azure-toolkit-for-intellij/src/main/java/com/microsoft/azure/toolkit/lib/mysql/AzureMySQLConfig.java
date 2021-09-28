@@ -52,13 +52,9 @@ public class AzureMySQLConfig {
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
         config.setResourceGroup(resourceGroup);
         final AzureMySql azureMySql = az(AzureMySql.class).subscription(subscription.getId());
-        final List<Region> supportedRegions = azureMySql.listSupportedRegions();
-        if (CollectionUtils.isNotEmpty(supportedRegions)) {
-            config.setRegion(supportedRegions.get(0));
-        }
         config.setServerName("mysql-" + defaultNameSuffix);
         config.setAdminUsername(StringUtils.EMPTY);
-        config.setVersion("5.7"); // defeault to 5.7
+        config.setVersion("5.7"); // default to 5.7
         config.setPassword(StringUtils.EMPTY.toCharArray());
         config.setConfirmPassword(StringUtils.EMPTY.toCharArray());
 
