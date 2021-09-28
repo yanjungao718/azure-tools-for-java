@@ -113,7 +113,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     public synchronized void updateForm(@Nonnull SpringCloudApp app) {
-        AzureTaskManager.getInstance().runInBackground(AzureString.format("load properties of app (%s)", app.name()), () -> {
+        AzureTaskManager.getInstance().runInBackground(AzureString.format("load properties of app(%s)", app.name()), () -> {
             final String testUrl = app.entity().getTestUrl();
             final SpringCloudPersistentDisk disk = app.entity().getPersistentDisk();
             final String url = app.entity().getApplicationUrl();
@@ -134,31 +134,31 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
                     this.txtEndpoint.setIcon(null);
                     this.txtEndpoint.setText("---");
                 }
-                final SpringCloudSku sku = app.getCluster().entity().getSku();
-                final boolean basic = sku.getTier().toLowerCase().startsWith("b");
-                final Integer cpu = this.numCpu.getItem();
-                final Integer mem = this.numMemory.getItem();
-                final int maxCpu = basic ? 1 : 4;
-                final int maxMem = basic ? 2 : 8;
-                final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxCpu).boxed().toArray(Integer[]::new));
-                final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxMem).boxed().toArray(Integer[]::new));
-                numCpuModel.setSelectedItem(Objects.nonNull(cpu) && cpu > maxCpu ? null : cpu);
-                numMemoryModel.setSelectedItem(Objects.nonNull(mem) && mem > maxMem ? null : mem);
-                this.numCpu.setModel(numCpuModel);
-                this.numMemory.setModel(numMemoryModel);
-                this.numInstance.setMaximum(basic ? 25 : 500);
-                this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
-                this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
-                this.numInstance.setMinimum(0);
-                this.numInstance.updateLabels();
-                AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                    final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment())
-                            .map(SpringCloudDeployment::entity)
-                            .orElse(new SpringCloudDeploymentEntity("default", app.entity()));
-                    final List<SpringCloudDeploymentInstanceEntity> instances = deploymentEntity.getInstances();
-                    AzureTaskManager.getInstance().runLater(() -> this.numInstance.setRealMin(Math.min(instances.size(), 1)));
-                });
             });
+        });
+        final SpringCloudSku sku = app.getCluster().entity().getSku();
+        final boolean basic = sku.getTier().toLowerCase().startsWith("b");
+        final Integer cpu = this.numCpu.getItem();
+        final Integer mem = this.numMemory.getItem();
+        final int maxCpu = basic ? 1 : 4;
+        final int maxMem = basic ? 2 : 8;
+        final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxCpu).boxed().toArray(Integer[]::new));
+        final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxMem).boxed().toArray(Integer[]::new));
+        numCpuModel.setSelectedItem(Objects.nonNull(cpu) && cpu > maxCpu ? null : cpu);
+        numMemoryModel.setSelectedItem(Objects.nonNull(mem) && mem > maxMem ? null : mem);
+        this.numCpu.setModel(numCpuModel);
+        this.numMemory.setModel(numMemoryModel);
+        this.numInstance.setMaximum(basic ? 25 : 500);
+        this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
+        this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
+        this.numInstance.setMinimum(0);
+        this.numInstance.updateLabels();
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment())
+                    .map(SpringCloudDeployment::entity)
+                    .orElse(new SpringCloudDeploymentEntity("default", app.entity()));
+            final List<SpringCloudDeploymentInstanceEntity> instances = deploymentEntity.getInstances();
+            AzureTaskManager.getInstance().runLater(() -> this.numInstance.setRealMin(Math.min(instances.size(), 1)));
         });
     }
 
