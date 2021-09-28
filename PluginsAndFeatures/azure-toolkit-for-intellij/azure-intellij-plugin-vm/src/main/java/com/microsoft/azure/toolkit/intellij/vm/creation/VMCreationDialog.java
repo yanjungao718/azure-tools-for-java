@@ -9,7 +9,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -84,7 +83,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JCheckBox chkAzureSpotInstance;
     private JRadioButton rdoStopAndDeallocate;
     private JRadioButton rdoDelete;
-    private JTextField txtMaximumPrice;
+    private ValidationDebouncedTextInput txtMaximumPrice;
     private JLabel lblUserName;
     private JPasswordField txtPassword;
     private JPasswordField txtConfirmPassword;
@@ -277,6 +276,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         rdoDelete.setVisible(enableAzureSpotInstance);
         lblMaximumPrice.setVisible(enableAzureSpotInstance);
         txtMaximumPrice.setVisible(enableAzureSpotInstance);
+        txtMaximumPrice.setRequired(enableAzureSpotInstance);
+        txtMaximumPrice.setValidator(enableAzureSpotInstance ? this::validateMaximumPricing : null);
+        txtMaximumPrice.onDocumentChanged(); // trigger revalidate after reset validator
     }
 
     private void toggleSecurityGroup(SecurityGroupPolicy policy) {
@@ -293,13 +295,15 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private void toggleAuthenticationType(boolean isSSH) {
         lblPassword.setVisible(!isSSH);
         txtPassword.setVisible(!isSSH);
-        passwordFieldInput.setRequired(!isSSH);
         lblConfirmPassword.setVisible(!isSSH);
         txtConfirmPassword.setVisible(!isSSH);
-        confirmPasswordFieldInput.setRequired(!isSSH);
         lblCertificate.setVisible(isSSH);
         txtCertificate.setVisible(isSSH);
         txtCertificate.setRequired(isSSH);
+
+        passwordFieldInput.setRequired(!isSSH);
+        passwordFieldInput.setValidator(isSSH ? null : this::validatePassword);
+        confirmPasswordFieldInput.setRequired(!isSSH);
     }
 
     private void createUIComponents() {
@@ -325,6 +329,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.txtVisualMachineName = new ValidationDebouncedTextInput();
         this.txtVisualMachineName.setRequired(true);
         this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
+
+        this.txtMaximumPrice = new ValidationDebouncedTextInput();
 
         this.txtPassword = new JPasswordField();
         this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);
@@ -461,33 +467,51 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
-                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate);
+                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate, txtMaximumPrice);
     }
 
     @Override
-    protected List<ValidationInfo> doValidateAll() {
-        final List<ValidationInfo> result = super.doValidateAll();
-        // validate password
+    public List<AzureValidationInfo> validateData() {
+        final List<AzureValidationInfo> result = AzureForm.super.validateData();
         if (rdoPassword.isSelected()) {
             final String password = passwordFieldInput.getValue();
             final String confirmPassword = confirmPasswordFieldInput.getValue();
             if (!StringUtils.equals(password, confirmPassword)) {
-                result.add(new ValidationInfo("Password and confirm password must match.", txtConfirmPassword));
+                result.add(AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR)
+                        .message("Password and confirm password must match.").input(confirmPasswordFieldInput).build());
             }
         }
-
         return result;
     }
 
     private AzureValidationInfo validateVirtualMachineName() {
         final String name = txtVisualMachineName.getText();
         if (StringUtils.isEmpty(name) || name.length() > 64) {
-            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must be between 1 and 64 "
-                    + "characters long.").type(AzureValidationInfo.Type.ERROR).build();
+            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must be between 1 and 64 " +
+                    "characters long.").type(AzureValidationInfo.Type.ERROR).build();
         }
         if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
             return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must start with a letter, " +
                     "contain only letters, numbers, and hyphens, and end with a letter or number.").type(AzureValidationInfo.Type.ERROR).build();
+        }
+        return AzureValidationInfo.OK;
+    }
+
+    private AzureValidationInfo validateMaximumPricing() {
+        try {
+            final Double number = Double.valueOf(txtMaximumPrice.getValue());
+        } catch (final NumberFormatException e) {
+            return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The value must be a valid number.").build();
+        }
+        return AzureValidationInfo.OK;
+    }
+
+    private AzureValidationInfo validatePassword() {
+        final String password = passwordFieldInput.getValue();
+        if (!password.matches("(?=^.{8,72}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])" +
+                "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+            return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The password does not conform to complexity requirements. \n" +
+                    "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.").build();
         }
         return AzureValidationInfo.OK;
     }
