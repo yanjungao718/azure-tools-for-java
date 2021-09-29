@@ -103,14 +103,14 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> {
                     String name = r.getClass().getSimpleName();
-                    if (r instanceof IAzureResource) {
+                    if (r instanceof IAzureBaseResource) {
                         name = ((IAzureBaseResource<?, ?>) r).name();
                     } else if (r instanceof AzureService) {
                         name = ((AzureService<?>) r).name();
                     }
                     return title("common|resource.create", name);
                 }).orElse(null))
-                .enabled(s -> s instanceof IAzureResource || s instanceof AzureService);
+                .enabled(s -> s instanceof IAzureBaseResource || s instanceof AzureService);
         am.registerAction(CREATE, new Action<>(createView));
     }
 }
