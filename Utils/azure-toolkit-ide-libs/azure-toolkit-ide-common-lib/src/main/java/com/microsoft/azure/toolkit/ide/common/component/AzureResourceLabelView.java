@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
@@ -44,7 +43,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if (source instanceof IAzureResource && ((IAzureResource<?>) source).id().equals(this.resource.id())) {
+        if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.resource.id())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             if ("common|resource.refresh".equals(type)) {
                 if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
