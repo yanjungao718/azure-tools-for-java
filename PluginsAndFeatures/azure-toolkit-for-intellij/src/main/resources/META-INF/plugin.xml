@@ -40,6 +40,7 @@
         </ul>
         <h4>Fixed</h4>
         <ul>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5857">#5857</a> Fix bug: fail to load plugin error</li>
             <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5761">#5761</a> Fix bug: generated funciton
                 jar cannot be started</li>
             <li><a href="https://github.com/microsoft/azure-maven-plugins/pull/1781">#1781</a> Fix bug: blank Sql Server version

@@ -1,9 +1,13 @@
-<!-- Version: 3.56.0 -->
+<!-- Version: 3.57.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 ## 3.57.0
 ### Added
 - Support connect to Azure Storage account for spring boot project
+
+    <img src="https://user-images.githubusercontent.com/12445236/135217488-09cbbc7a-620d-4d4b-9c91-5cbcb649dd32.png" />
+
+    <img src="https://user-images.githubusercontent.com/12445236/135217769-4a411f20-ceee-4d44-9c16-33b80a1b19bd.png" />
 
 ### Changed
 - Redesign the creation UI of VM
@@ -13,6 +17,7 @@
 - Show intermediate status for login restore
 
 ### Fixed
+- [#5857](https://github.com/microsoft/azure-tools-for-java/pull/5857) Fix bug: fail to load plugin error
 - [#5761](https://github.com/microsoft/azure-tools-for-java/issues/5761) Fix bug: generated funciton jar cannot be started
 - [#1781](https://github.com/microsoft/azure-maven-plugins/pull/1781) Fix bug: blank Sql Server version in property view
 

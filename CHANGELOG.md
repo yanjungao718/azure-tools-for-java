@@ -84,6 +84,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Show intermediate status for login restore
 
 ### Fixed
+- [#5857](https://github.com/microsoft/azure-tools-for-java/pull/5857) Fix bug: fail to load plugin error
 - [#5761](https://github.com/microsoft/azure-tools-for-java/issues/5761) Fix bug: generated funciton jar cannot be started
 - [#1781](https://github.com/microsoft/azure-maven-plugins/pull/1781) Fix bug: blank Sql Server version in property view
 
