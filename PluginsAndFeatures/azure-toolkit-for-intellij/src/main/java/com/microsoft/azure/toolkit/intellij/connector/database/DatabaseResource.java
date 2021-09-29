@@ -82,10 +82,10 @@ public class DatabaseResource implements Resource<Database> {
         }
         final String defName = this.definition.getName();
         if (password.saveType() == Password.SaveType.FOREVER) {
-            PasswordStore.migratePassword(this.data.getId(), this.data.getUsername(),
-                    defName, this.data.getId(), this.data.getUsername());
+            PasswordStore.migratePassword(this.getDataId(), this.data.getUsername(),
+                    defName, this.getDataId(), this.data.getUsername());
         }
-        final String saved = PasswordStore.loadPassword(defName, this.data.getId(), this.data.getUsername(), password.saveType());
+        final String saved = PasswordStore.loadPassword(defName, this.getDataId(), this.data.getUsername(), password.saveType());
         if (password.saveType() == Password.SaveType.UNTIL_RESTART && StringUtils.isBlank(saved)) {
             return Optional.empty();
         }
@@ -108,7 +108,7 @@ public class DatabaseResource implements Resource<Database> {
                 final Password password = dialog.getData();
                 this.data.getPassword().saveType(password.saveType());
                 PasswordStore.savePassword(this.definition.getName(),
-                        this.data.getId(), this.data.getUsername(), password.password(), password.saveType());
+                        this.getDataId(), this.data.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
         });
@@ -167,9 +167,9 @@ public class DatabaseResource implements Resource<Database> {
             resourceEle.addContent(new Element("username").setText(database.getUsername()));
             resourceEle.addContent(new Element("passwordSave").setText(saveType.name()));
             final char[] password = database.getPassword().password();
-            final String storedPassword = PasswordStore.loadPassword(defName, resource.getId(), database.getUsername(), saveType);
+            final String storedPassword = PasswordStore.loadPassword(defName, resource.getDataId(), database.getUsername(), saveType);
             if (ArrayUtils.isNotEmpty(password) && !StringUtils.equals(String.valueOf(password), storedPassword)) {
-                PasswordStore.savePassword(defName, resource.getId(), database.getUsername(), database.getPassword().password(), saveType);
+                PasswordStore.savePassword(defName, resource.getDataId(), database.getUsername(), database.getPassword().password(), saveType);
             }
             return true;
         }
