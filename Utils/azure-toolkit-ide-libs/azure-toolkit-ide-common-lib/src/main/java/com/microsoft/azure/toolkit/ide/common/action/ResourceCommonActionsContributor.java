@@ -88,7 +88,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
         });
 
-        final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/action/connect.svg")
+        final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("common|resource.connect", ((IAzureResource<?>) r).name())).orElse(null));
         am.registerAction(CONNECT, new Action<>(connectView));
 
