@@ -83,7 +83,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         serverNameTextField.setValidateFunction(new SqlServerNameValidator());
     }
 
-    private static List<? extends Region> loadSupportedRegions(AzureService service, String subscriptionId) {
+    public static List<Region> loadSupportedRegions(AzureService service, String subscriptionId) {
         // this the sequence in listSupportedRegions is alphabetical order for mysql
         // we need to rearrange it according to: az account list-regions
         final List<Region> regions = Azure.az(AzureAccount.class).listRegions(subscriptionId);
