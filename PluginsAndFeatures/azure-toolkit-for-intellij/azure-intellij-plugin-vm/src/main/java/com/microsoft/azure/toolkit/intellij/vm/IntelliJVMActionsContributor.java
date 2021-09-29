@@ -27,17 +27,17 @@ public class IntelliJVMActionsContributor implements IActionsContributor {
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
         final BiPredicate<IAzureBaseResource<?, ?>, AnActionEvent> startCondition = (r, e) -> r instanceof VirtualMachine &&
-                StringUtils.equals(((VirtualMachine) r).status(), IAzureBaseResource.Status.STOPPED);
+                StringUtils.equals(r.status(), IAzureBaseResource.Status.STOPPED);
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> startHandler = (c, e) -> ((VirtualMachine) c).start();
         am.registerHandler(ResourceCommonActionsContributor.START, startCondition, startHandler);
 
         final BiPredicate<IAzureBaseResource<?, ?>, AnActionEvent> stopCondition = (r, e) -> r instanceof VirtualMachine &&
-                StringUtils.equals(((VirtualMachine) r).status(), IAzureBaseResource.Status.RUNNING);
+                StringUtils.equals(r.status(), IAzureBaseResource.Status.RUNNING);
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> stopHandler = (c, e) -> ((VirtualMachine) c).stop();
         am.registerHandler(ResourceCommonActionsContributor.STOP, stopCondition, stopHandler);
 
         final BiPredicate<IAzureBaseResource<?, ?>, AnActionEvent> restartCondition = (r, e) -> r instanceof VirtualMachine &&
-                StringUtils.equals(((VirtualMachine) r).status(), IAzureBaseResource.Status.RUNNING);
+                StringUtils.equals(r.status(), IAzureBaseResource.Status.RUNNING);
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> restartHandler = (c, e) -> ((VirtualMachine) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
     }

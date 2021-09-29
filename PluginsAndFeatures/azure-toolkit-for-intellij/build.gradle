@@ -97,8 +97,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.0'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.0'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
         }
     }
 
@@ -108,13 +108,13 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.12.0', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.12.1', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
         }
 
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.12.0', {
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.12.1', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -152,9 +152,6 @@ configurations {
     compile.exclude module:'log4j'
     compile.exclude module:'stax-api'
     compile.exclude module:'groovy-xml'
-    compile.exclude module:'azure-core-http-netty'
-    compile.exclude module:'netty-transport'
-    compile.exclude module:'netty-resolver'
     compile.exclude module:'groovy-templates'
     cucumberRuntime {
         extendsFrom testRuntime
@@ -163,8 +160,8 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.0'
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.0'
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
     }
 }
 
@@ -213,9 +210,6 @@ dependencies {
     }
 
     compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
-    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
 
     compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
     compile "com.github.akarnokd:rxjava3-interop:3.0.2"

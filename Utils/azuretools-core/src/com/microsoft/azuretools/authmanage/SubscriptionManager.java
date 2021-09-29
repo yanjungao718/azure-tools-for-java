@@ -89,10 +89,7 @@ public class SubscriptionManager {
     private static void saveSubscriptions(List<SubscriptionDetail> sdl)
             throws IOException {
         System.out.println("SubscriptionManager.saveSubscriptions()");
-        String sd = JsonHelper.serialize(sdl);
-        FileStorage subscriptionsDetailsFileStorage = new FileStorage(FILE_NAME_SUBSCRIPTIONS_DETAILS,
-                CommonSettings.getSettingsBaseDir());
-        subscriptionsDetailsFileStorage.write(sd.getBytes(StandardCharsets.UTF_8));
+        AzureStoreManager.getInstance().getIdeStore().setProperty(TelemetryConstants.ACCOUNT, "subscription_details", JsonHelper.serialize(sdl));
     }
 
     public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() {

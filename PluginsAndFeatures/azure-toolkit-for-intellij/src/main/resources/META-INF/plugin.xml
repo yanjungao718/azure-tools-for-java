@@ -25,20 +25,26 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.56.0</h3>
+        <h3>3.57.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>Support proxy with credential(username, password)</li>
-            <li>Add `Samples` link for SDK libs on Azure SDK reference book</li>
+            <li>Support connect to Azure Storage account for spring boot project</li>
         </ul>
         <h4>Changed</h4>
         <ul>
-            <li>Fix the high failure rate problem for SSH into Linux Webapp operation</li>
-            <li>List all local-installed function core tools for function core tools path setting</li>
-            <li>Synchronize status on storage account in different views</li>
-            <li>Synchronize status on Azure Database for MySQL in different views</li>
-            <li>Synchronize status on SQL Server in different views</li>
-            <li>Redesign the creation UI of storage account</li>
+            <li>Redesign the creation UI of VM</li>
+            <li>Redesign the creation UI of Redis</li>
+            <li>Show supported regions only for Redis/MySql/Sql Server/Storage account in creation dialog</li>
+            <li>Remove JBoss 7.2 from webapp since it is deprecated</li>
+            <li>Show intermediate status for login restore</li>
+        </ul>
+        <h4>Fixed</h4>
+        <ul>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5857">#5857</a> Fix bug: fail to load plugin error</li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5761">#5761</a> Fix bug: generated funciton
+                jar cannot be started</li>
+            <li><a href="https://github.com/microsoft/azure-maven-plugins/pull/1781">#1781</a> Fix bug: blank Sql Server version
+                in property view</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

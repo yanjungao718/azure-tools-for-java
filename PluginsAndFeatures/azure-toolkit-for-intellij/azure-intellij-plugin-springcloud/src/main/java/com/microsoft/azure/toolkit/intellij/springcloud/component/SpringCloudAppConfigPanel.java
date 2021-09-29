@@ -13,6 +13,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -112,25 +113,29 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     public synchronized void updateForm(@Nonnull SpringCloudApp app) {
-        final String testUrl = app.entity().getTestUrl();
-        if (testUrl != null) {
-            this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
-        } else {
-            this.txtTestEndpoint.setVisible(false);
-            this.lblTestEndpoint.setVisible(false);
-        }
-        this.txtTestEndpoint.setHyperlinkTarget(testUrl);
-        final SpringCloudPersistentDisk disk = app.entity().getPersistentDisk();
-        this.txtStorage.setText(Objects.nonNull(disk) ? disk.toString() : "---");
-        final String url = app.entity().getApplicationUrl();
-        this.txtEndpoint.setHyperlinkTarget(url);
-        this.txtEndpoint.setEnabled(Objects.nonNull(url));
-        if (Objects.nonNull(url)) {
-            this.txtEndpoint.setHyperlinkText(url);
-        } else {
-            this.txtEndpoint.setIcon(null);
-            this.txtEndpoint.setText("---");
-        }
+        AzureTaskManager.getInstance().runInBackground(AzureString.format("load properties of app(%s)", app.name()), () -> {
+            final String testUrl = app.entity().getTestUrl();
+            final SpringCloudPersistentDisk disk = app.entity().getPersistentDisk();
+            final String url = app.entity().getApplicationUrl();
+            AzureTaskManager.getInstance().runLater(() -> {
+                if (testUrl != null) {
+                    this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
+                } else {
+                    this.txtTestEndpoint.setVisible(false);
+                    this.lblTestEndpoint.setVisible(false);
+                }
+                this.txtTestEndpoint.setHyperlinkTarget(testUrl);
+                this.txtStorage.setText(Objects.nonNull(disk) ? disk.toString() : "---");
+                this.txtEndpoint.setHyperlinkTarget(url);
+                this.txtEndpoint.setEnabled(Objects.nonNull(url));
+                if (Objects.nonNull(url)) {
+                    this.txtEndpoint.setHyperlinkText(url);
+                } else {
+                    this.txtEndpoint.setIcon(null);
+                    this.txtEndpoint.setText("---");
+                }
+            });
+        });
         final SpringCloudSku sku = app.getCluster().entity().getSku();
         final boolean basic = sku.getTier().toLowerCase().startsWith("b");
         final Integer cpu = this.numCpu.getItem();
