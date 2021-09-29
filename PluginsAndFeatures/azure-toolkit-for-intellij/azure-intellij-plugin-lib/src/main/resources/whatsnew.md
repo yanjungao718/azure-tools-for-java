@@ -1,6 +1,21 @@
 <!-- Version: 3.56.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.57.0
+### Added
+- Support connect to Azure Storage account for spring boot project
+
+### Changed
+- Redesign the creation UI of VM
+- Redesign the creation UI of Redis
+- Show supported regions only for Redis/MySql/Sql Server/Storage account in creation dialog
+- Remove JBoss 7.2 from webapp since it is deprecated
+- Show intermediate status for login restore
+
+### Fixed
+- [#5761](https://github.com/microsoft/azure-tools-for-java/issues/5761) Fix bug: generated funciton jar cannot be started
+- [#1781](https://github.com/microsoft/azure-maven-plugins/pull/1781) Fix bug: blank Sql Server version in property view
+
 ## 3.56.0
 ### Added
 - Support proxy with credential(username, password)
