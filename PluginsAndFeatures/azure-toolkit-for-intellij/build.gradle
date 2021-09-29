@@ -151,9 +151,6 @@ configurations {
     compile.exclude module:'slf4j-api'
     compile.exclude module:'log4j'
     compile.exclude module:'stax-api'
-    compile.exclude module:'azure-core-http-netty'
-    compile.exclude module:'netty-transport'
-    compile.exclude module:'netty-resolver'
     compile.exclude module:'groovy-templates'
     cucumberRuntime {
         extendsFrom testRuntime
@@ -212,9 +209,6 @@ dependencies {
     }
 
     compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
-    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
 
     compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
     compile "com.github.akarnokd:rxjava3-interop:3.0.2"

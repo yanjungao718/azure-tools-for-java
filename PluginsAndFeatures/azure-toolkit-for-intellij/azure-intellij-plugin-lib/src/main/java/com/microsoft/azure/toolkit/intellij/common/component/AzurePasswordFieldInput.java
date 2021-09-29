@@ -20,6 +20,9 @@ public class AzurePasswordFieldInput implements AzureFormInputComponent<String> 
     private JPasswordField delegate;
     @Getter
     @Setter
+    private Validator validator;
+    @Getter
+    @Setter
     private boolean required;
     @Getter
     private boolean passwordInitialized;
