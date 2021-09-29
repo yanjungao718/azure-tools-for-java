@@ -152,11 +152,6 @@ configurations {
     compile.exclude module:'log4j'
     compile.exclude module:'stax-api'
     compile.exclude module:'groovy-templates'
-    compile.exclude module:'azure-core-http-okhttp'
-    compile.exclude module:'okhttp'
-    compile.exclude module:'okhttp-urlconnection'
-    compile.exclude module:'logging-interceptor'
-
     cucumberRuntime {
         extendsFrom testRuntime
     }
