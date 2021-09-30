@@ -3,7 +3,9 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
 }
-
+ext {
+    azureToolkitVersion = "0.13.0-SNAPSHOT"
+}
 group 'com.microsoft.azure.toolkit'
 apply plugin: 'java'
 
@@ -33,8 +35,8 @@ configurations {
 }
 
 dependencies {
-    compile 'com.microsoft.azure:azure-toolkit-auth-lib:0.13.0-SNAPSHOT'
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.13.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
     compile 'io.projectreactor:reactor-core:3.4.5'
 
     compile project(':azure-intellij-plugin-lib')
@@ -45,7 +47,7 @@ dependencies {
         compile project(':' + m)
     }
 
-    aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.13.0-SNAPSHOT', {
+    aspect 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -71,6 +73,9 @@ gradle.taskGraph.whenReady { graph ->
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
+    ext {
+        azureToolkitVersion = "0.13.0-SNAPSHOT"
+    }
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -91,8 +96,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.13.0-SNAPSHOT'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.13.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
         }
     }
 
@@ -102,13 +107,13 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.13.0-SNAPSHOT', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
         }
 
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.13.0-SNAPSHOT', {
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
