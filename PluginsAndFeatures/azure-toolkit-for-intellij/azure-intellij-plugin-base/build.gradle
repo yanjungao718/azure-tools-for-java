@@ -93,8 +93,8 @@ subprojects {
         imports {
             mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.13.0-SNAPSHOT'
             mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.13.0-SNAPSHOT'
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.13.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.13.0-SNAPSHOT'
         }
     }
 
