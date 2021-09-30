@@ -58,7 +58,7 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
         return result == NONE ? null : result;
     }
 
-    public void setDate(StorageAccountConfig value) {
+    public void setData(StorageAccountConfig value) {
         if (value == null) {
             super.setValue(NONE);
             return;

@@ -206,6 +206,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure</artifactId>
+            <version>${azure.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

@@ -39,6 +39,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
         Optional.ofNullable(draftNetwork).ifPresent(draftNetwork -> draftNetwork.setSubscriptionId(subscription.getId()));
+        resetResourceDraft();
         this.refreshItems();
     }
 
@@ -50,6 +51,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     public void setRegion(Region region) {
         this.region = region;
         Optional.ofNullable(draftNetwork).ifPresent(draftNetwork -> draftNetwork.setRegion(region));
+        resetResourceDraft();
         this.refreshItems();
     }
 
@@ -57,6 +59,17 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(AllIcons.General.Add, "Create new virtual network", this::createVirtualNetwork);
+    }
+
+    private void resetResourceDraft() {
+        final Network value = getValue();
+        if (value != null && !StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT)) {
+            draftNetwork = DraftNetwork.getDefaultNetworkDraft();
+            draftNetwork.setRegion(region);
+            draftNetwork.setResourceGroup(Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(null));
+            draftNetwork.setSubscriptionId(Optional.ofNullable(subscription).map(Subscription::getId).orElse(null));
+            setValue(draftNetwork);
+        }
     }
 
     private void createVirtualNetwork() {
@@ -74,7 +87,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         }
     }
 
-    public void setDate(Network value) {
+    public void setData(Network value) {
         if (value instanceof DraftNetwork) {
             draftNetwork = StringUtils.equals(value.status(), IAzureBaseResource.Status.DRAFT) ? (DraftNetwork) value : null;
         }
@@ -95,14 +108,6 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     protected List<? extends Network> loadItems() throws Exception {
         final List<Network> networks = subscription == null ? Collections.emptyList() : Azure.az(AzureNetwork.class).subscription(subscription.getId())
                 .list().stream().filter(network -> Objects.equals(network.getRegion(), region)).collect(Collectors.toList());
-        if (draftNetwork != null) {
-            // Clean draft reference if the resource has been created
-            // todo: update draft handling in AzureComboBox
-            networks.stream().filter(storageAccount -> StringUtils.equals(storageAccount.getName(), draftNetwork.getName()) &&
-                            StringUtils.equals(storageAccount.getResourceGroup(), draftNetwork.getResourceGroup()))
-                    .findFirst()
-                    .ifPresent(ignore -> this.draftNetwork = null);
-        }
         return draftNetwork == null ? networks : ListUtils.union(List.of(draftNetwork), networks);
     }
 }

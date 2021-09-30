@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.PricingTier;
@@ -28,12 +29,17 @@ import com.microsoft.azure.toolkit.redis.RedisConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class RedisCreationDialog extends AzureDialog<RedisConfig> implements AzureForm<RedisConfig> {
@@ -125,7 +131,14 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     private void createUIComponents() {
         this.subscriptionComboBox = new SubscriptionComboBox();
         this.resourceGroupComboBox = new ResourceGroupComboBox();
-        this.regionComboBox = new RegionComboBox();
+        this.regionComboBox = new RegionComboBox() {
+            protected List<? extends Region> loadItems() {
+                if (Objects.nonNull(this.subscription)) {
+                    return Azure.az(AzureRedis.class).listSupportedRegions(subscription.getId());
+                }
+                return Collections.emptyList();
+            }
+        };
         this.redisNameTextField = new ValidationDebouncedTextInput();
         this.pricingComboBox = new AzureComboBoxSimple<>(PricingTier::values);
     }
