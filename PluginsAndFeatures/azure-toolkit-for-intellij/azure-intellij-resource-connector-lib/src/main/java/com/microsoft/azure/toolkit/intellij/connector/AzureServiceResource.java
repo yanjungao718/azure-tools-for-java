@@ -51,7 +51,7 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
 
     @Override
     public Map<String, String> initEnv(Project project) {
-        return this.definition.initEnv(this.data, project);
+        return this.definition.initEnv(this.getData(), project);
     }
 
     @Override
