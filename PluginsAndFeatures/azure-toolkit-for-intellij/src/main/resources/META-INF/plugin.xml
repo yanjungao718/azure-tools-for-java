@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.57.0</version>
+  <version>3.57.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,26 +25,10 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.57.0</h3>
-        <h4>Added</h4>
-        <ul>
-            <li>Support connect to Azure Storage account for spring boot project</li>
-        </ul>
-        <h4>Changed</h4>
-        <ul>
-            <li>Redesign the creation UI of VM</li>
-            <li>Redesign the creation UI of Redis</li>
-            <li>Show supported regions only for Redis/MySql/Sql Server/Storage account in creation dialog</li>
-            <li>Remove JBoss 7.2 from webapp since it is deprecated</li>
-            <li>Show intermediate status for login restore</li>
-        </ul>
+        <h3>3.57.1</h3>
         <h4>Fixed</h4>
         <ul>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5857">#5857</a> Fix bug: fail to load plugin error</li>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5761">#5761</a> Fix bug: generated funciton
-                jar cannot be started</li>
-            <li><a href="https://github.com/microsoft/azure-maven-plugins/pull/1781">#1781</a> Fix bug: blank Sql Server version
-                in property view</li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5888">#5888</a> Fix bug: Conflicting component name 'RunManager'</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
