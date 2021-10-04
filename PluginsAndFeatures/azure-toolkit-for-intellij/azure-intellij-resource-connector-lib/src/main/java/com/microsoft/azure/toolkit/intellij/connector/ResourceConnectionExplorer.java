@@ -68,6 +68,14 @@ public class ResourceConnectionExplorer extends Tree {
         }
     }
 
+    public static void open(final Project project) {
+        final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
+        assert toolWindow != null;
+        if (!toolWindow.isVisible()) {
+            toolWindow.show();
+        }
+    }
+
     public static class ToolWindow extends SimpleToolWindowPanel {
         private final com.intellij.ui.treeStructure.Tree tree;
 
@@ -79,7 +87,7 @@ public class ResourceConnectionExplorer extends Tree {
             actionToolbar.setForceMinimumSize(true);
             this.setContent(this.tree);
             this.setToolbar(actionToolbar);
-            this.initShowToolWindowListener(project);
+            project.getMessageBus().connect().subscribe(CONNECTION_CHANGED, c -> ResourceConnectionExplorer.open(project));
         }
 
         private ActionToolbarImpl initToolbar() {
@@ -95,16 +103,6 @@ public class ResourceConnectionExplorer extends Tree {
             group.add(manager.createExpandAllAction(expander, this.tree));
             group.add(manager.createCollapseAllAction(expander, this.tree));
             return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, true);
-        }
-
-        private void initShowToolWindowListener(final Project project) {
-            project.getMessageBus().connect().subscribe(CONNECTION_CHANGED, connection -> {
-                final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
-                assert toolWindow != null;
-                if (!toolWindow.isVisible()) {
-                    toolWindow.show();
-                }
-            });
         }
     }
 
