@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.57.1](#3571)
   - [3.57.0](#3570)
   - [3.56.0](#3560)
   - [3.55.0](#3550)
@@ -71,6 +72,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.57.1
+### Fixed
+- [#5888](https://github.com/microsoft/azure-tools-for-java/pull/5888) Fix bug: Conflicting component name 'RunManager'
 
 ## 3.57.0
 ### Added

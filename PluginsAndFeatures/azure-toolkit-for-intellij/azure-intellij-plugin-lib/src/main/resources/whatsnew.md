@@ -1,5 +1,9 @@
-<!-- Version: 3.57.0 -->
+<!-- Version: 3.57.1 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.57.1
+### Fixed
+- [#5888](https://github.com/microsoft/azure-tools-for-java/pull/5888) Fix bug: Conflicting component name 'RunManager'
 
 ## 3.57.0
 ### Added
