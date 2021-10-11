@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.util.io.StreamUtil;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
  * Template for a single code file.
  * It manages placeholders {{...}} in the code template's content.
  */
+@RequiredArgsConstructor
 class ApplicationTemplate {
     @NotNull
     private final String resourcePath;
@@ -24,18 +26,6 @@ class ApplicationTemplate {
     private final String clientSecret;
     @NotNull
     private final String groupNames;
-
-    ApplicationTemplate(@NotNull String resourcePath,
-                        @NotNull String tenantID,
-                        @NotNull String clientID,
-                        @NotNull String clientSecret,
-                        @NotNull String groupNames) {
-        this.resourcePath = resourcePath;
-        this.tenantID = tenantID;
-        this.clientID = clientID;
-        this.clientSecret = clientSecret;
-        this.groupNames = groupNames;
-    }
 
     /**
      * @return The template's content with placeholders replaced with actual values.
