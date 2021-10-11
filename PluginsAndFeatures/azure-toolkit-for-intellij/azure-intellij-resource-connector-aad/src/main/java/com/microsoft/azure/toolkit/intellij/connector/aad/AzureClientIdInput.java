@@ -7,15 +7,15 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
  * Component for the client ID text input.
  */
 class AzureClientIdInput extends AzureTextInput {
-    @NotNull
+    @Nonnull
     @Override
     public AzureValidationInfo doValidate() {
         var value = this.getValue();
@@ -30,7 +30,7 @@ class AzureClientIdInput extends AzureTextInput {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    static boolean isValid(@NotNull String value) {
+    static boolean isValid(@Nonnull String value) {
         if (value.isBlank()) {
             return false;
         }

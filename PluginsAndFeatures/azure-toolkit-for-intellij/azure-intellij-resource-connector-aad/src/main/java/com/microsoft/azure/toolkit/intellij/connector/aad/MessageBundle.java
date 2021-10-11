@@ -6,8 +6,9 @@
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.AbstractBundle;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.PropertyKey;
+
+import javax.annotation.Nonnull;
 
 /**
  * Message bundle for the AAD features.
@@ -20,7 +21,7 @@ public final class MessageBundle extends AbstractBundle {
         super(BUNDLE);
     }
 
-    public static String message(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, @NotNull Object... params) {
+    public static String message(@Nonnull @PropertyKey(resourceBundle = BUNDLE) String key, @Nonnull Object... params) {
         return ourInstance.getMessage(key, params);
     }
 }

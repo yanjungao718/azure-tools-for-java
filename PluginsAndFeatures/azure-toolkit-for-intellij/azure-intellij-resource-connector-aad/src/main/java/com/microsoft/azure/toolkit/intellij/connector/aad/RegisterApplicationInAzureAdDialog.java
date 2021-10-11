@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 /**
@@ -19,7 +19,7 @@ import javax.swing.*;
 class RegisterApplicationInAzureAdDialog extends AzureDialog<ApplicationRegistrationModel> {
     private final RegisterAzureApplicationForm form = new RegisterAzureApplicationForm();
 
-    RegisterApplicationInAzureAdDialog(@NotNull Project project, @NotNull ApplicationRegistrationModel data) {
+    RegisterApplicationInAzureAdDialog(@Nonnull Project project, @Nonnull ApplicationRegistrationModel data) {
         super(project);
         form.setData(data);
         init();

@@ -1,26 +1,27 @@
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.util.PathUtil;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 enum ApplicationTemplateType {
     ApplicationProperties("/code-templates/application.properties"),
     ApplicationMain("/code-templates/application.java"),
     ApplicationController("/code-templates/spring-controller.java");
 
-    @NotNull
+    @Nonnull
     private final String resourcePath;
 
-    ApplicationTemplateType(@NotNull String resourcePath) {
+    ApplicationTemplateType(@Nonnull String resourcePath) {
         this.resourcePath = resourcePath;
     }
 
-    @NotNull
+    @Nonnull
     String getResourcePath() {
         return resourcePath;
     }
 
-    @NotNull
+    @Nonnull
     String getFilename() {
         return PathUtil.getFileName(resourcePath);
     }

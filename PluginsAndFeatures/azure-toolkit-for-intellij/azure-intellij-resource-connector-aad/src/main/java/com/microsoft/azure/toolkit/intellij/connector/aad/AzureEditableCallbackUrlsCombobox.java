@@ -9,8 +9,8 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.net.URI;
 import java.util.List;
@@ -44,7 +44,7 @@ class AzureEditableCallbackUrlsCombobox extends AzureComboBox<String> {
         return true;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public AzureValidationInfo doValidate() {
         var value = this.getValue();
@@ -87,11 +87,11 @@ class AzureEditableCallbackUrlsCombobox extends AzureComboBox<String> {
         }
     }
 
-    public void setUrls(@NotNull List<String> callbackUrls) {
+    public void setUrls(@Nonnull List<String> callbackUrls) {
         setItems(callbackUrls);
     }
 
-    private static boolean isValid(@NotNull String value) {
+    private static boolean isValid(@Nonnull String value) {
         try {
             var uri = URI.create(value);
             var scheme = uri.getScheme();

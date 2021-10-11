@@ -34,25 +34,25 @@ import com.intellij.openapi.ui.popup.PopupStep;
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
 class ChooseSubscriptionsTask implements Runnable {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
-    @NotNull
+    @Nonnull
     private final Project project;
-    @NotNull
+    @Nonnull
     private final List<Subscription> subscriptions;
-    @NotNull
+    @Nonnull
     private final Consumer<Subscription> callback;
 
-    public ChooseSubscriptionsTask(@NotNull Project project,
-                                   @NotNull List<Subscription> subscriptions,
-                                   @NotNull Consumer<Subscription> callback) {
+    public ChooseSubscriptionsTask(@Nonnull Project project,
+                                   @Nonnull List<Subscription> subscriptions,
+                                   @Nonnull Consumer<Subscription> callback) {
         this.project = project;
         this.subscriptions = subscriptions;
         this.callback = callback;
@@ -74,7 +74,7 @@ class ChooseSubscriptionsTask implements Runnable {
             }
 
             @Override
-            @NotNull
+            @Nonnull
             public String getTextFor(Subscription value) {
                 if (value != null) {
                     return String.format("%s (%s)", value.getName(), value.getId());

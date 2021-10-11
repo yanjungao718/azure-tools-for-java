@@ -22,9 +22,9 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.graph.models.Application;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
@@ -49,9 +49,9 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     private JBTabbedPane templatesPane;
     private JBLabel credentialsWarning;
 
-    ApplicationTemplateForm(@NotNull Project project,
-                            @NotNull Subscription subscription,
-                            @NotNull GraphServiceClient<Request> graphClient,
+    ApplicationTemplateForm(@Nonnull Project project,
+                            @Nonnull Subscription subscription,
+                            @Nonnull GraphServiceClient<Request> graphClient,
                             @Nullable List<Application> predefinedItems) {
         this.subscription = subscription;
         credentialsWarning.setForeground(JBColor.RED);
@@ -72,7 +72,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         applicationsBox.refreshItems();
     }
 
-    @NotNull
+    @Nonnull
     EditorTextField getCurrentEditor() {
         return (EditorTextField) templatesPane.getSelectedComponent();
     }
@@ -81,7 +81,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         applyTemplate(getData());
     }
 
-    private void applyTemplate(@NotNull Application app) {
+    private void applyTemplate(@Nonnull Application app) {
         var now = OffsetDateTime.now();
 
         // locate the first valid client secret
@@ -150,7 +150,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         return applicationsBox;
     }
 
-    private static EditorTextField createTextEditor(@NotNull final Project project, @NotNull String filename) {
+    private static EditorTextField createTextEditor(@Nonnull final Project project, @Nonnull String filename) {
         LanguageFileType fileType = PlainTextFileType.INSTANCE;
         var extension = PathUtil.getFileExtension(filename);
         if (extension != null) {

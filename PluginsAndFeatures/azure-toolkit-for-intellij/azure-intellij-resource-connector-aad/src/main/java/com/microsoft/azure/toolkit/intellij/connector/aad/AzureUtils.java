@@ -16,8 +16,8 @@ import com.microsoft.graph.models.Domain;
 import com.microsoft.graph.models.PasswordCredential;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +33,9 @@ final class AzureUtils {
      * @return The new credentials.
      * @throws com.microsoft.graph.core.ClientException If the credentials could not be created
      */
-    @NotNull
-    static PasswordCredential createApplicationClientSecret(@NotNull GraphServiceClient<Request> client,
-                                                            @NotNull Application application) {
+    @Nonnull
+    static PasswordCredential createApplicationClientSecret(@Nonnull GraphServiceClient<Request> client,
+                                                            @Nonnull Application application) {
         assert application.id != null;
 
         var credential = new PasswordCredential();
@@ -52,8 +52,8 @@ final class AzureUtils {
      * @param client The Graph client
      * @return The list of applications
      */
-    @NotNull
-    static List<Domain> loadDomains(@NotNull GraphServiceClient<Request> client) {
+    @Nonnull
+    static List<Domain> loadDomains(@Nonnull GraphServiceClient<Request> client) {
         var domains = new ArrayList<Domain>();
 
         var request = client.domains().buildRequest();
@@ -80,8 +80,8 @@ final class AzureUtils {
      * @param client The Graph client
      * @return The list of applications
      */
-    @NotNull
-    static List<Application> loadApplications(@NotNull GraphServiceClient<Request> client) {
+    @Nonnull
+    static List<Application> loadApplications(@Nonnull GraphServiceClient<Request> client) {
         var applications = new ArrayList<Application>();
 
         var request = client.applications().buildRequest();
@@ -102,7 +102,7 @@ final class AzureUtils {
         return applications;
     }
 
-    static GraphServiceClient<Request> createGraphClient(@NotNull Subscription subscription) {
+    static GraphServiceClient<Request> createGraphClient(@Nonnull Subscription subscription) {
         var account = Azure.az(AzureAccount.class).account();
         var credentials = account.getTokenCredential(subscription.getId());
         var authProvider = new TokenCredentialAuthProvider(credentials);

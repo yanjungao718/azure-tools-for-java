@@ -2,8 +2,8 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.util.io.StreamUtil;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
@@ -14,17 +14,17 @@ import java.util.regex.Pattern;
  */
 @RequiredArgsConstructor
 class ApplicationTemplate {
-    @NotNull
+    @Nonnull
     private final String resourcePath;
 
     // placeholder values
-    @NotNull
+    @Nonnull
     private final String tenantID;
-    @NotNull
+    @Nonnull
     private final String clientID;
-    @NotNull
+    @Nonnull
     private final String clientSecret;
-    @NotNull
+    @Nonnull
     private final String groupNames;
 
     /**

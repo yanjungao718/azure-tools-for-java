@@ -44,9 +44,9 @@ import com.microsoft.graph.models.ImplicitGrantSettings;
 import com.microsoft.graph.models.WebApplication;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
-import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -66,7 +66,7 @@ public class RegisterApplicationAction extends AnAction {
 
     @Override
     @AzureOperation(name = "connector|aad.register_application", type = AzureOperation.Type.ACTION)
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();
         assert project != null;
 
@@ -88,8 +88,8 @@ public class RegisterApplicationAction extends AnAction {
         }
     }
 
-    private static Observable<ApplicationRegistrationModel> buildRegistrationModel(@NotNull Project project,
-                                                                                   @NotNull GraphServiceClient<Request> client) {
+    private static Observable<ApplicationRegistrationModel> buildRegistrationModel(@Nonnull Project project,
+                                                                                   @Nonnull GraphServiceClient<Request> client) {
         var title = MessageBundle.message("action.azure.aad.registerApp.loadDefaultDomain");
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
@@ -114,7 +114,7 @@ public class RegisterApplicationAction extends AnAction {
      * @param project      The IntelliJ project
      * @param subscription The selected subscription
      */
-    private static void fetchDataAndShowDialog(@NotNull Project project, @NotNull Subscription subscription) {
+    private static void fetchDataAndShowDialog(@Nonnull Project project, @Nonnull Subscription subscription) {
         String tenantId = subscription.getTenantId();
         LOG.debug(String.format("Using subscription %s; tenant %s", subscription.getId(), tenantId));
         if (project.isDisposed()) {
@@ -139,16 +139,16 @@ public class RegisterApplicationAction extends AnAction {
 
     static class RegisterApplicationTask implements Runnable {
         private final Project project;
-        @NotNull
+        @Nonnull
         private final ApplicationRegistrationModel model;
-        @NotNull
+        @Nonnull
         private final GraphServiceClient<Request> graphClient;
         private final Subscription subscription;
 
-        RegisterApplicationTask(@NotNull Project project,
-                                @NotNull ApplicationRegistrationModel model,
-                                @NotNull GraphServiceClient<Request> graphClient,
-                                @NotNull Subscription subscription) {
+        RegisterApplicationTask(@Nonnull Project project,
+                                @Nonnull ApplicationRegistrationModel model,
+                                @Nonnull GraphServiceClient<Request> graphClient,
+                                @Nonnull Subscription subscription) {
             this.project = project;
             this.model = model;
             this.graphClient = graphClient;

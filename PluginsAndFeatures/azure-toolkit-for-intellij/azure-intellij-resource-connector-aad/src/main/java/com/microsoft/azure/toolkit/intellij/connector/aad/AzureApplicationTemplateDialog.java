@@ -18,9 +18,9 @@ import com.microsoft.graph.models.Application;
 import com.microsoft.graph.models.PasswordCredential;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -31,17 +31,17 @@ import java.util.Collections;
  * Dialog which displays code templates for a list of Azure AD applications.
  */
 class AzureApplicationTemplateDialog extends AzureDialog<Application> {
-    @NotNull
+    @Nonnull
     private final ApplicationTemplateForm form;
-    @NotNull
+    @Nonnull
     private final Project project;
-    @NotNull
+    @Nonnull
     private final GraphServiceClient<Request> graphClient;
     private final NewClientSecretAction clientSecretAction = new NewClientSecretAction();
 
-    AzureApplicationTemplateDialog(@NotNull Project project,
-                                   @NotNull GraphServiceClient<Request> graphClient,
-                                   @NotNull Subscription subscription,
+    AzureApplicationTemplateDialog(@Nonnull Project project,
+                                   @Nonnull GraphServiceClient<Request> graphClient,
+                                   @Nonnull Subscription subscription,
                                    @Nullable Application application) {
         super(project);
         this.project = project;
@@ -72,20 +72,20 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     }
 
     @Override
-    protected Action @NotNull [] createActions() {
+    @Nonnull
+    protected Action[] createActions() {
         return new Action[]{getOKAction()};
     }
 
     @Override
-    protected Action @NotNull [] createLeftSideActions() {
-        return new Action[]{
-                clientSecretAction,
-                new CopyEditorContentAction()
-        };
+    @Nonnull
+    protected Action[] createLeftSideActions() {
+        return new Action[]{clientSecretAction, new CopyEditorContentAction()};
     }
 
     @Override
-    public @Nullable JComponent getPreferredFocusedComponent() {
+    @Nullable
+    public JComponent getPreferredFocusedComponent() {
         return form.getPreferredFocusedComponent();
     }
 

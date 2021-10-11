@@ -36,7 +36,8 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 /**
  * Displays UI to display the code templates for the registered Azure AD applications.
@@ -51,7 +52,7 @@ public class ShowApplicationTemplatesAction extends AnAction {
 
     @Override
     @AzureOperation(name = "connector|aad.show_application_templates", type = AzureOperation.Type.ACTION)
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();
         assert project != null;
 
@@ -67,7 +68,7 @@ public class ShowApplicationTemplatesAction extends AnAction {
         }
     }
 
-    private void showDialog(@NotNull Project project, @NotNull Subscription subscription) {
+    private void showDialog(@Nonnull Project project, @Nonnull Subscription subscription) {
         var client = AzureUtils.createGraphClient(subscription);
         client.applications().buildRequest().getAsync().thenAccept(page -> {
             AzureTaskManager.getInstance().runLater(() -> {
