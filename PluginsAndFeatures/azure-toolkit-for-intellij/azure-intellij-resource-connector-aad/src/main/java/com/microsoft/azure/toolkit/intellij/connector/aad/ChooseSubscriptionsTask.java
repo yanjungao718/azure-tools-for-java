@@ -34,12 +34,14 @@ import com.intellij.openapi.ui.popup.PopupStep;
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
+@RequiredArgsConstructor
 class ChooseSubscriptionsTask implements Runnable {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
@@ -49,14 +51,6 @@ class ChooseSubscriptionsTask implements Runnable {
     private final List<Subscription> subscriptions;
     @Nonnull
     private final Consumer<Subscription> callback;
-
-    public ChooseSubscriptionsTask(@Nonnull Project project,
-                                   @Nonnull List<Subscription> subscriptions,
-                                   @Nonnull Consumer<Subscription> callback) {
-        this.project = project;
-        this.subscriptions = subscriptions;
-        this.callback = callback;
-    }
 
     @Override
     @AzureOperation(name = "connector|aad.choose_subscription", type = AzureOperation.Type.TASK)
