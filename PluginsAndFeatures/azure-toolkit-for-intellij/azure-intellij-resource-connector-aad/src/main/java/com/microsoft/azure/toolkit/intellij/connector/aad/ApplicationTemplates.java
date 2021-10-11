@@ -6,8 +6,8 @@ import javax.annotation.Nonnull;
 
 enum ApplicationTemplateType {
     ApplicationProperties("/code-templates/application.properties"),
-    ApplicationMain("/code-templates/application.java"),
-    ApplicationController("/code-templates/spring-controller.java");
+    ApplicationMain("/code-templates/Application.java"),
+    ApplicationController("/code-templates/SpringController.java");
 
     @Nonnull
     private final String resourcePath;
