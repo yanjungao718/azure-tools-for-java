@@ -44,7 +44,6 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
-import static com.intellij.ui.tree.ui.DefaultTreeUI.AUTO_EXPAND_ALLOWED;
 
 @Getter
 public class Tree extends SimpleTree implements DataProvider {
@@ -161,7 +160,9 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         protected synchronized void loadChildren() {
-            if (loaded != null) return; // return if loading/loaded
+            if (loaded != null) {
+                return; // return if loading/loaded
+            }
             this.loaded = false;
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             tm.runOnPooledThread(() -> {
