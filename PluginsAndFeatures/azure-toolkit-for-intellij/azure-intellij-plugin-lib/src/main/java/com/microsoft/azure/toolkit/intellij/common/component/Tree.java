@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
 import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.TreeUIHelper;
@@ -42,6 +43,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
+
 @Getter
 public class Tree extends SimpleTree implements DataProvider {
     protected Node<?> root;
@@ -57,6 +60,7 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     protected void init(@Nonnull Node<?> root) {
+        ComponentUtil.putClientProperty(this, ANIMATION_IN_RENDERER_ALLOWED, true);
         this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         TreeUtil.installActions(this);
         TreeUIHelper.getInstance().installTreeSpeedSearch(this);
@@ -156,7 +160,9 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         protected synchronized void loadChildren() {
-            if (loaded != null) return; // return if loading/loaded
+            if (loaded != null) {
+                return; // return if loading/loaded
+            }
             this.loaded = false;
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             tm.runOnPooledThread(() -> {
@@ -196,15 +202,13 @@ public class Tree extends SimpleTree implements DataProvider {
             Object value = node;
             if (node instanceof TreeNode) {
                 final IView.Label view = ((TreeNode<?>) node).inner.view();
-                if (StringUtils.isNotBlank(view.getIconPath())) {
-                    final Icon icon = AzureIcons.getIcon(view.getIconPath(), Tree.class);
-                    renderer.setIcon(icon);
+                if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {
+                    renderer.setIcon(AnimatedIcon.Default.INSTANCE);
+                } else if (StringUtils.isNotBlank(view.getIconPath())) {
+                    renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
                 }
                 value = view.getLabel();
                 renderer.setToolTipText(view.getDescription());
-                if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {
-                    renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-                }
             }
             return value;
         }

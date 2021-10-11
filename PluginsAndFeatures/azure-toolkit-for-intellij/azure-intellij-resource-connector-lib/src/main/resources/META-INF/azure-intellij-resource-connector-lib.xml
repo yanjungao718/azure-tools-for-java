@@ -5,7 +5,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Azure Resource Connector" anchor="right" icon="/icons/Common/AzureResourceConnector.svg"
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorConsumerDefinitionPreloadingActivity"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ModuleResource$RegisterActivity"/>
         <projectService
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
             serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager$Impl" />
