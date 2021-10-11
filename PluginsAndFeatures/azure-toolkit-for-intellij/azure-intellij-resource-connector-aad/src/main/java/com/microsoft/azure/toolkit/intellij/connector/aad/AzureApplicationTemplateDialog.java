@@ -113,6 +113,10 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
             AzureTaskManager.getInstance().runInModal(MessageBundle.message("templateDialog.applications.creatingClientSecret"), false, () -> {
                 try {
                     var application = form.getData();
+                    if (application == null) {
+                        return;
+                    }
+
                     var secret = AzureUtils.createApplicationClientSecret(graphClient, application);
 
                     // update UI with the updated application
