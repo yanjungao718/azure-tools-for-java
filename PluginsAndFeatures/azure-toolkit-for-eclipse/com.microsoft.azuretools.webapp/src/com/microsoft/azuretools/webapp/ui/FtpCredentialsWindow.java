@@ -59,7 +59,6 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         container.setLayout(new GridLayout(2, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-
         Label lblNewLabel = new Label(container, SWT.NONE);
         lblNewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblNewLabel.setText("Host:");
@@ -78,9 +77,9 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         textUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         textUsername.setText("Loading...");
 
-        Label lblNewLabel_1 = new Label(container, SWT.NONE);
-        lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblNewLabel_1.setText("Password:");
+        Label lblPassword = new Label(container, SWT.NONE);
+        lblPassword.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblPassword.setText("Password:");
 
         textPassword = new Text(container, SWT.BORDER);
         textPassword.setEditable(false);
@@ -109,13 +108,13 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         return new Point(520, 246);
     }
 
-	private void showFtpCredentials() {
-		Mono.fromCallable(webApp::getPublishingProfile).subscribeOn(Schedulers.boundedElastic()).subscribe(profile -> {
-			AzureTaskManager.getInstance().runLater(() -> {
-				textHost.setText(profile.getFtpUrl());
-				textUsername.setText(profile.getFtpUsername());
-				textPassword.setText(profile.getFtpPassword());
-			});
-		});
-	}
+    private void showFtpCredentials() {
+        Mono.fromCallable(webApp::getPublishingProfile).subscribeOn(Schedulers.boundedElastic()).subscribe(profile -> {
+            AzureTaskManager.getInstance().runLater(() -> {
+                textHost.setText(profile.getFtpUrl());
+                textUsername.setText(profile.getFtpUsername());
+                textPassword.setText(profile.getFtpPassword());
+            });
+        });
+    }
 }

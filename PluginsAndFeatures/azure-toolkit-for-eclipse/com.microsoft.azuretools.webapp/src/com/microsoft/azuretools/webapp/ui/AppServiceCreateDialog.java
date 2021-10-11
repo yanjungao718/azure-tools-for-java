@@ -113,8 +113,6 @@ import reactor.core.scheduler.Schedulers;
 public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     // validation error string constants
-    private static final String SELECT_WEB_CONTAINER = "Select a valid web container.";
-    private static final String SELECT_JAVA_VERSION = "Select Java version.";
     private static final String SELECT_RESOURCE_GROUP = "Select a valid resource group.";
     private static final String ENTER_RESOURCE_GROUP = "Enter a valid resource group name";
     private static final String SELECT_APP_SERVICE_PLAN = "Select a valid App Service Plan.";
@@ -122,14 +120,12 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private static final String SELECT_A_VALID_SUBSCRIPTION = "Select a valid subscription.";
     private static final String ENTER_APP_SERVICE_PLAN_NAME = "Enter a valid App Service Plan name.";
     private static final String NAME_ALREADY_TAKEN = "The name is already taken";
-    private static final String APP_SERVICE_PLAN_NAME_MUST_UNUQUE = "App service plan name must be unuque in each "
-            + "subscription.";
-    private static final String APP_SERVICE_PLAN_NAME_INVALID_MSG = "App Service Plan name can only include "
-            + "alphanumeric characters and hyphens.";
-    private static final String RESOURCE_GROUP_NAME_INVALID_MSG = "Resounce group name can only include alphanumeric "
-            + "characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
-    private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the"
-            + " first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
+    private static final String APP_SERVICE_PLAN_NAME_MUST_UNUQUE = "App service plan name must be unuque in each subscription.";
+    private static final String APP_SERVICE_PLAN_NAME_INVALID_MSG = "App Service Plan name can only include alphanumeric characters and hyphens.";
+    private static final String RESOURCE_GROUP_NAME_INVALID_MSG = "Resounce group name can only include alphanumeric characters, periods, underscores, " +
+            "hyphens, and parenthesis and can't end in a period.";
+    private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the first and last characters must be " +
+            "a letter or number. The length must be between 2 and 60 characters.";
     private static final String REFRESHING = "Refreshing...";
 
     // validation regex
@@ -183,8 +179,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private static final String DIALOG_MESSAGE = "Create Azure App Service";
 
     // tooltip
-    private static final String APPSETTINGS_TOOLTIP = "You can configure application setting here, such as "
-            + "\"JAVA_OPTS\"";
+    private static final String APPSETTINGS_TOOLTIP = "You can configure application setting here, such as \"JAVA_OPTS\"";
     private static ILog LOG = Activator.getDefault().getLog();
 
     private IProject project;
@@ -732,41 +727,41 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         final Text text = new Text(tblAppSettings, SWT.NONE);
         Listener textListener = e -> {
             switch (e.type) {
-            case SWT.FocusOut:
-                item.setText(column, text.getText());
-                text.dispose();
-                readTblAppSettings();
-                updateTableActionBtnStatus(true);
-                break;
-            case SWT.Traverse:
-                switch (e.detail) {
-                case SWT.TRAVERSE_RETURN:
+                case SWT.FocusOut:
                     item.setText(column, text.getText());
                     text.dispose();
-                    e.doit = false;
                     readTblAppSettings();
                     updateTableActionBtnStatus(true);
                     break;
-                case SWT.TRAVERSE_ESCAPE:
-                    text.dispose();
-                    e.doit = false;
-                    readTblAppSettings();
-                    updateTableActionBtnStatus(true);
-                    break;
-                case SWT.TRAVERSE_TAB_NEXT:
-                    if (column < tblAppSettings.getColumnCount()) {
-                        editingTableItem(item, column + 1);
-                    }
-                    break;
-                case SWT.TRAVERSE_TAB_PREVIOUS:
-                    if (column > 0) {
-                        editingTableItem(item, column - 1);
+                case SWT.Traverse:
+                    switch (e.detail) {
+                        case SWT.TRAVERSE_RETURN:
+                            item.setText(column, text.getText());
+                            text.dispose();
+                            e.doit = false;
+                            readTblAppSettings();
+                            updateTableActionBtnStatus(true);
+                            break;
+                        case SWT.TRAVERSE_ESCAPE:
+                            text.dispose();
+                            e.doit = false;
+                            readTblAppSettings();
+                            updateTableActionBtnStatus(true);
+                            break;
+                        case SWT.TRAVERSE_TAB_NEXT:
+                            if (column < tblAppSettings.getColumnCount()) {
+                                editingTableItem(item, column + 1);
+                            }
+                            break;
+                        case SWT.TRAVERSE_TAB_PREVIOUS:
+                            if (column > 0) {
+                                editingTableItem(item, column - 1);
+                            }
+                            break;
+                        default:
                     }
                     break;
                 default:
-                }
-                break;
-            default:
             }
         };
         text.addListener(SWT.FocusOut, textListener);
@@ -954,25 +949,25 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     .filter(asp -> asp.entity().getOperatingSystem() == null || asp.entity().getOperatingSystem() == os)
                     .collect(Collectors.toList());
         }).subscribeOn(Schedulers.boundedElastic())
-        .subscribe(appServicePlans -> {
-            appServicePlans.sort(Comparator.comparing(IAppServicePlan::name));
-            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                setComboRefreshingStatus(comboAppServicePlan, false);
-                comboAppServicePlan.setEnabled(btnAppServiceUseExisting.getSelection());
-                binderAppServicePlan = new ArrayList<>();
-                for (IAppServicePlan asp : appServicePlans) {
-                    binderAppServicePlan.add(asp);
-                    comboAppServicePlan.add(asp.name());
-                }
+            .subscribe(appServicePlans -> {
+                appServicePlans.sort(Comparator.comparing(IAppServicePlan::name));
+                DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    setComboRefreshingStatus(comboAppServicePlan, false);
+                    comboAppServicePlan.setEnabled(btnAppServiceUseExisting.getSelection());
+                    binderAppServicePlan = new ArrayList<>();
+                    for (IAppServicePlan asp : appServicePlans) {
+                        binderAppServicePlan.add(asp);
+                        comboAppServicePlan.add(asp.name());
+                    }
 
-                if (comboAppServicePlan.getItemCount() > 0) {
-                    comboAppServicePlan.select(0);
-                }
-                String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
-                CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
-                fillAppServicePlansDetails();
+                    if (comboAppServicePlan.getItemCount() > 0) {
+                        comboAppServicePlan.select(0);
+                    }
+                    String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
+                    CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
+                    fillAppServicePlansDetails();
+                });
             });
-        });
     }
 
     protected void fillAppServicePlansDetails() {
@@ -1009,8 +1004,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                                     comboAppServicePlanLocation.select(i);
                                 }
                             }
-                            if (comboAppServicePlanLocation.getSelectionIndex() < 0
-                                    && comboAppServicePlanLocation.getItemCount() > 0) {
+                            if (comboAppServicePlanLocation.getSelectionIndex() < 0 && comboAppServicePlanLocation.getItemCount() > 0) {
                                 comboAppServicePlanLocation.select(0);
                             }
                             String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
@@ -1035,8 +1029,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     comboAppServicePlanPricingTier.select(i);
                 }
             }
-            if (comboAppServicePlanPricingTier.getSelectionIndex() < 0
-                    && comboAppServicePlanPricingTier.getItemCount() > 0) {
+            if (comboAppServicePlanPricingTier.getSelectionIndex() < 0 && comboAppServicePlanPricingTier.getItemCount() > 0) {
                 comboAppServicePlanPricingTier.select(0);
             }
             String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
@@ -1091,17 +1084,16 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     private List<WebContainer> listWindowsWebContainersForWarFile(JavaVersion javaVersion) {
         return Runtime.WEBAPP_RUNTIME.stream().filter(runtime -> runtime.isWindows())
-                .filter(runtime -> !Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE)
-                        && Objects.equals(runtime.getJavaVersion(), javaVersion))
+                .filter(runtime -> !Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE) && Objects.equals(runtime.getJavaVersion(), javaVersion))
                 .map(Runtime::getWebContainer).distinct().collect(Collectors.toList());
     }
 
     protected void fillJavaVersion() {
         binderJavaVersions = new ArrayList<JavaVersion>();
         for (JavaVersion javaVersion : JavaVersion.values()) {
-        	if(javaVersion == JavaVersion.OFF) {
-        		continue;
-        	}
+            if (javaVersion == JavaVersion.OFF) {
+                continue;
+            }
             cbJavaVersion.add(javaVersion.toString());
             binderJavaVersions.add(javaVersion);
             if (Objects.equals(javaVersion, DEFAULT_JAVA_VERSION)) {
