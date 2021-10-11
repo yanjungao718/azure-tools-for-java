@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;

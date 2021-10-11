@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.NlsSafe;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -33,10 +33,10 @@ class AzureEditableCallbackUrlsCombobox extends AzureComboBox<String> {
         var textField = (ExtendableTextField) editor.getEditorComponent();
 
         var removeTooltip = MessageBundle.message("dialog.identity.ad.register_app.removeCallbackURL.tooltip");
-        textField.addExtension(ExtendableTextComponent.Extension.create(AllIcons.General.Remove, removeTooltip, this::removeSelectedItem));
+        textField.addExtension(Extension.create(AllIcons.General.Remove, removeTooltip, this::removeSelectedItem));
 
         var addTooltip = MessageBundle.message("dialog.identity.ad.register_app.addCallbackURL.tooltip");
-        textField.addExtension(ExtendableTextComponent.Extension.create(AllIcons.General.Add, addTooltip, this::showAddItemPopup));
+        textField.addExtension(Extension.create(AllIcons.General.Add, addTooltip, this::showAddItemPopup));
     }
 
     @Override

@@ -160,7 +160,8 @@ class ApplicationTemplateForm implements AzureForm<Application> {
             }
         }
         var language = fileType.getLanguage();
-        var editor = EditorTextFieldProvider.getInstance().getEditorField(language, project, Collections.singleton(editorEx -> {
+        var textFieldProvider = EditorTextFieldProvider.getInstance();
+        var editor = textFieldProvider.getEditorField(language, project, Collections.singleton(editorEx -> {
             editorEx.putUserData(IncrementalFindAction.SEARCH_DISABLED, Boolean.TRUE);
 
             var scheme = EditorColorsManager.getInstance().getSchemeForCurrentUITheme();
