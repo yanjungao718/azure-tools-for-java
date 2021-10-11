@@ -38,6 +38,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Displays UI to display the code templates for the registered Azure AD applications.
@@ -56,7 +57,8 @@ public class ShowApplicationTemplatesAction extends AnAction {
         var project = e.getProject();
         assert project != null;
 
-        var subscriptions = Azure.az(AzureAccount.class).getSubscriptions();
+        //noinspection unchecked
+        List<Subscription> subscriptions = Azure.az(AzureAccount.class).getSubscriptions();
         if (subscriptions.size() == 1) {
             // One subscription? No popup needed.
             AzureTaskManager.getInstance().runLater(() -> showDialog(project, subscriptions.get(0)));
