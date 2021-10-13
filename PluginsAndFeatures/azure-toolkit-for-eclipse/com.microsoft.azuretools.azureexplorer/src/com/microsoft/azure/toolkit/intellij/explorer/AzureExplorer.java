@@ -19,16 +19,16 @@ public class AzureExplorer {
     private static final String EXTENSION_POINT_ID = "com.microsoft.azure.toolkit.explorer";
 
     public static Node<?>[] getModules() {
-    	IConfigurationElement[] configurationElements = Platform.getExtensionRegistry()
+        IConfigurationElement[] configurationElements = Platform.getExtensionRegistry()
                 .getConfigurationElementsFor(EXTENSION_POINT_ID);
-		return Arrays.stream(configurationElements).map(element -> {
-			try {
-				return element.createExecutableExtension("implementation");
-			} catch (CoreException e) {
-				return null;
-			}
-		}).filter(object -> object instanceof IExplorerContributor)
-				.map(object -> ((IExplorerContributor) object).getModuleNode())
-				.toArray(Node<?>[]::new);
-	}
+        return Arrays.stream(configurationElements).map(element -> {
+            try {
+                return element.createExecutableExtension("implementation");
+            } catch (CoreException e) {
+                return null;
+            }
+        }).filter(object -> object instanceof IExplorerContributor)
+                .map(object -> ((IExplorerContributor) object).getModuleNode())
+                .toArray(Node<?>[]::new);
+    }
 }

@@ -37,7 +37,6 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.Gson;
 import com.microsoft.azure.toolkit.eclipse.common.action.EclipseAzureActionManager;
@@ -123,7 +122,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
                 com.microsoft.azuretools.core.utils.Messages.commonPluginID).toString();
         dataFile = Paths.get(pluginInstLoc, File.separator,
                 com.microsoft.azuretools.core.utils.Messages.dataFileName).toString();
-        AzureStoreManager.register(new DefaultMachineStore(Paths.get(pluginInstLoc, 
+        AzureStoreManager.register(new DefaultMachineStore(Paths.get(pluginInstLoc,
                 "azure.json").toString()),
                 new EclipseStore(), new EclipseSecureStore());
         AzureTaskManager.register(new EclipseAzureTaskManager());
@@ -143,7 +142,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             showException("Azure Core Plugin", "An error occurred while attempting to load settings for the Azure Core plugin.", e);
         }
         findObsoletePackages(context);
-        
+
         super.start(context);
     }
 
@@ -162,7 +161,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsSettings() {
         try {
-            CommonSettings.setUserAgent(String.format(USER_AGENT, 
+            CommonSettings.setUserAgent(String.format(USER_AGENT,
                     Azure.az().config().getVersion(),
                     Azure.az().config().getMachineId()));
             if (CommonSettings.getUiFactory() == null) {

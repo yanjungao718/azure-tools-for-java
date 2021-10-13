@@ -57,20 +57,19 @@ public class EclipseAzureActionManager extends AzureActionManager {
             }
         }
     }
-    
+
     @Override
     public <D> Action<D> getAction(Id<D> id) {
-    	final String actionId = ACTION_ID_PREFIX + id.getId();
+        final String actionId = ACTION_ID_PREFIX + id.getId();
         Command command = cmdService.getCommand(actionId);
-        if(!command.isDefined()) {
+        if (!command.isDefined()) {
             return null;
         }
-        return Optional.ofNullable((Action<D>)actions.get(actionId)).orElseGet(()->{
+        return Optional.ofNullable((Action<D>) actions.get(actionId)).orElseGet(() -> {
             return new Action<>((D d, ExecutionEvent event) -> {
                 try {
                     handlerService.executeCommand(actionId, null);
-                } catch (org.eclipse.core.commands.ExecutionException | NotDefinedException | NotEnabledException
-                        | NotHandledException error) {
+                } catch (org.eclipse.core.commands.ExecutionException | NotDefinedException | NotEnabledException | NotHandledException error) {
                     error.printStackTrace();
                 }
             }).authRequired(false);
@@ -84,22 +83,22 @@ public class EclipseAzureActionManager extends AzureActionManager {
 
     @Override
     public <D> void registerAction(Id<D> id, Action<D> action) {
-    	final String actionId = ACTION_ID_PREFIX + id.getId();
+        final String actionId = ACTION_ID_PREFIX + id.getId();
         Command command = cmdService.getCommand(actionId);
-        if(command.isDefined()) {
-			command.undefine();
-		}
-		command.define(actionId, actionId, getActionCategory());
-		handlerService.activateHandler(actionId, new AbstractHandler() {
-			@Override
-			public Object execute(ExecutionEvent event) throws org.eclipse.core.commands.ExecutionException {
-				action.handle((D) event.getApplicationContext(), event);
-				return null;
-			}
+        if (command.isDefined()) {
+            command.undefine();
+        }
+        command.define(actionId, actionId, getActionCategory());
+        handlerService.activateHandler(actionId, new AbstractHandler() {
+            @Override
+            public Object execute(ExecutionEvent event) throws org.eclipse.core.commands.ExecutionException {
+                action.handle((D) event.getApplicationContext(), event);
+                return null;
+            }
 
-		});
-		actions.put(actionId, action);
-	}
+        });
+        actions.put(actionId, action);
+    }
 
     @Override
     public void registerGroup(String id, ActionGroup group) {
@@ -108,7 +107,7 @@ public class EclipseAzureActionManager extends AzureActionManager {
 
     public Category getActionCategory() {
         final Category category = cmdService.getCategory(ACTIONS_CATEGORY);
-        if(!category.isDefined()) {
+        if (!category.isDefined()) {
             category.define("AzureToolkitForEclipse", "Actions for Azure Toolkit for Eclipse");
         }
         return category;
