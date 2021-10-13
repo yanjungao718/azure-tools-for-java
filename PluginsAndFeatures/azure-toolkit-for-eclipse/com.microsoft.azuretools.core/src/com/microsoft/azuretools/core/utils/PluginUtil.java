@@ -67,7 +67,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.Preferences;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 
 public class PluginUtil {
@@ -557,6 +559,15 @@ public class PluginUtil {
         }
 
         return true;
+    }
+    
+    public static void openLinkInBrowser(@NotNull String url) {
+        try {
+            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
+        } catch (Exception ex) {
+            DefaultLoader.getUIHelper().showException("Unexpected exception: " + ex.getMessage(), ex, "Browse Web App", true, false);
+            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
+        }
     }
 
     private static void forceInstallPluginUsingP2(String pluginGroupID) {

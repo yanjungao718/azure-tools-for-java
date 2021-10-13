@@ -40,6 +40,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.Gson;
+import com.microsoft.azure.toolkit.eclipse.common.action.EclipseAzureActionManager;
 import com.microsoft.azure.toolkit.eclipse.common.messager.EclipseAzureMessager;
 import com.microsoft.azure.toolkit.eclipse.common.task.EclipseAzureTaskManager;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
@@ -133,6 +134,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
         AzureConfigInitializer.initialize(InstallationIdUtils.getHashMac(), "Azure Toolkit for Eclipse", Activator.getDefault().getBundle().getVersion().toString());
         initAzureToolsCoreLibsSettings();
+        EclipseAzureActionManager.register();
 
         // load up the plugin settings
         try {
