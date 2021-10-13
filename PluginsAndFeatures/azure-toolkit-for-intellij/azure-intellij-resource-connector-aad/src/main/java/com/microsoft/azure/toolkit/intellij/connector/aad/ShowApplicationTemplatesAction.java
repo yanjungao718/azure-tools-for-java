@@ -29,16 +29,9 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * Displays UI to display the code templates for the registered Azure AD applications.
@@ -57,32 +50,6 @@ public class ShowApplicationTemplatesAction extends AnAction {
         var project = e.getProject();
         assert project != null;
 
-        //noinspection unchecked
-        List<Subscription> subscriptions = Azure.az(AzureAccount.class).getSubscriptions();
-        if (subscriptions.size() == 1) {
-            // One subscription? No popup needed.
-            AzureTaskManager.getInstance().runLater(() -> showDialog(project, subscriptions.get(0)));
-        } else {
-            // Multiple subscriptions? Popup.
-            AzureTaskManager.getInstance().runLater(new ChooseSubscriptionsTask(project, subscriptions, selected -> {
-                AzureTaskManager.getInstance().runLater(() -> showDialog(project, selected));
-            }));
-        }
-    }
-
-    private void showDialog(@Nonnull Project project, @Nonnull Subscription subscription) {
-        var client = AzureUtils.createGraphClient(subscription);
-        client.applications().buildRequest().getAsync().thenAccept(page -> {
-            AzureTaskManager.getInstance().runLater(() -> {
-                if (page.getCurrentPage().isEmpty()) {
-                    AzureMessager.getMessager().warning(
-                            MessageBundle.message("templateDialog.noApplicationsWarnings.title"),
-                            MessageBundle.message("templateDialog.noApplicationsWarnings.text"));
-                } else {
-                    var dialog = new AzureApplicationTemplateDialog(project, client, subscription, null);
-                    dialog.show();
-                }
-            });
-        });
+        new AzureApplicationTemplateDialog(project, null).show();
     }
 }

@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.http.GraphServiceException;
@@ -35,20 +34,14 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     private final ApplicationTemplateForm form;
     @Nonnull
     private final Project project;
-    @Nonnull
-    private final GraphServiceClient<Request> graphClient;
     private final NewClientSecretAction clientSecretAction = new NewClientSecretAction();
 
-    AzureApplicationTemplateDialog(@Nonnull Project project,
-                                   @Nonnull GraphServiceClient<Request> graphClient,
-                                   @Nonnull Subscription subscription,
-                                   @Nullable Application application) {
+    AzureApplicationTemplateDialog(@Nonnull Project project, @Nullable Application application) {
         super(project);
         this.project = project;
-        this.graphClient = graphClient;
 
         var predefinedItems = application == null ? null : Collections.singletonList(application);
-        form = new ApplicationTemplateForm(project, subscription, graphClient, predefinedItems);
+        form = new ApplicationTemplateForm(project, predefinedItems);
         init();
 
         // the predefined application may have no id if the user manually provided the appId
@@ -117,6 +110,12 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
                         return;
                     }
 
+                    var subscription = form.getSubscription();
+                    if (subscription == null) {
+                        return;
+                    }
+
+                    var graphClient = AzureUtils.createGraphClient(subscription);
                     var secret = AzureUtils.createApplicationClientSecret(graphClient, application);
 
                     // update UI with the updated application

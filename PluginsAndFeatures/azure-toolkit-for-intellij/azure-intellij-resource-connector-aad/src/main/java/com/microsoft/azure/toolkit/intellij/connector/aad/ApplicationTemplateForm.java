@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.editor.actions.IncrementalFindAction;
@@ -16,12 +21,11 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.PathUtil;
 import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.graph.models.Application;
-import com.microsoft.graph.requests.GraphServiceClient;
-import okhttp3.Request;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,8 +42,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 class ApplicationTemplateForm implements AzureForm<Application> {
-    private final Subscription subscription;
-
     // custom fields
     private final Map<ApplicationCodeTemplate, EditorTextField> templateEditors = new HashMap<>();
 
@@ -48,12 +50,10 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     private AzureApplicationComboBox applicationsBox;
     private JBTabbedPane templatesPane;
     private JBLabel credentialsWarning;
+    private SubscriptionComboBox subscriptionBox;
+    private JBLabel subscriptionLabel;
 
-    ApplicationTemplateForm(@Nonnull Project project,
-                            @Nonnull Subscription subscription,
-                            @Nonnull GraphServiceClient<Request> graphClient,
-                            @Nullable List<Application> predefinedItems) {
-        this.subscription = subscription;
+    ApplicationTemplateForm(@Nonnull Project project, @Nullable List<Application> predefinedItems) {
         credentialsWarning.setForeground(JBColor.RED);
         credentialsWarning.setAllowAutoWrapping(true);
 
@@ -64,11 +64,25 @@ class ApplicationTemplateForm implements AzureForm<Application> {
             templateEditors.put(type, editor);
         }
 
+        // only one static application is shown when predefined items are provided
+        if (predefinedItems != null && !predefinedItems.isEmpty()) {
+            subscriptionLabel.setVisible(false);
+            subscriptionBox.setVisible(false);
+        }
+
         applicationsBox.setItemsLoader(() -> Objects.requireNonNullElseGet(predefinedItems,
-                () -> AzureUtils.loadApplications(graphClient)
-                        .stream()
-                        .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
-                        .collect(Collectors.toList())));
+                () -> {
+                    var subscription = subscriptionBox.getValue();
+                    if (subscription == null) {
+                        return Collections.emptyList();
+                    }
+
+                    var graphClient = AzureUtils.createGraphClient(subscription);
+                    return AzureUtils.loadApplications(graphClient)
+                            .stream()
+                            .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
+                            .collect(Collectors.toList());
+                }));
         applicationsBox.refreshItems();
     }
 
@@ -101,12 +115,14 @@ class ApplicationTemplateForm implements AzureForm<Application> {
 
         credentialsWarning.setVisible(!clientSecret.isEmpty());
 
+        var subscription = subscriptionBox.getValue();
+
         for (var entry : templateEditors.entrySet()) {
             var templateType = entry.getKey();
             var editor = entry.getValue();
 
             try {
-                editor.setText(templateType.render(subscription.getTenantId(),
+                editor.setText(templateType.render(subscription != null ? subscription.getTenantId() : "",
                         app.appId != null ? app.appId : "",
                         clientSecret,
                         "group-names"));
@@ -117,7 +133,17 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     }
 
     private void createUIComponents() {
+        subscriptionBox = new SubscriptionComboBox();
+        subscriptionBox.setEditable(false);
+        subscriptionBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                applicationsBox.refreshItems();
+            }
+        });
+        subscriptionBox.setRequired(true);
+
         applicationsBox = new AzureApplicationComboBox();
+        applicationsBox.setRequired(true);
         applicationsBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 applyTemplate((Application) e.getItem());
@@ -125,6 +151,11 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         });
 
         templatesPane = new JBTabbedPane(JTabbedPane.SCROLL_TAB_LAYOUT);
+    }
+
+    @Nullable
+    public Subscription getSubscription() {
+        return subscriptionBox.getValue();
     }
 
     @Override
@@ -140,7 +171,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Collections.emptyList();
+        return List.of(subscriptionBox, applicationsBox);
     }
 
     public JPanel getContentPanel() {
@@ -148,7 +179,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     }
 
     JComponent getPreferredFocusedComponent() {
-        return applicationsBox;
+        return subscriptionBox;
     }
 
     private static EditorTextField createTextEditor(@Nonnull final Project project, @Nonnull String filename) {

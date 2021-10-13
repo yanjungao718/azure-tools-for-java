@@ -29,22 +29,15 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.models.Application;
 import com.microsoft.graph.models.ImplicitGrantSettings;
 import com.microsoft.graph.models.WebApplication;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
-import rx.Observable;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -58,8 +51,6 @@ import java.util.UUID;
  */
 @SuppressWarnings("ComponentNotRegistered")
 public class RegisterApplicationAction extends AnAction {
-    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
-
     public RegisterApplicationAction() {
         super(MessageBundle.message("action.AzureToolkit.AD.AzureRegisterApp.text"));
     }
@@ -68,91 +59,42 @@ public class RegisterApplicationAction extends AnAction {
     @AzureOperation(name = "connector|aad.register_application", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();
-        assert project != null;
-
-        doActionPerformed(project);
-    }
-
-    private void doActionPerformed(Project project) {
-        var subscriptions = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions();
-        if (subscriptions.size() == 1) {
-            // One subscription? No popup needed.
-            AzureTaskManager.getInstance().runLater(() -> fetchDataAndShowDialog(project, subscriptions.get(0)));
-        } else {
-            // Multiple subscriptions? Popup.
-            AzureTaskManager.getInstance().runLater(
-                    new ChooseSubscriptionsTask(project, subscriptions, selected -> {
-                        AzureTaskManager.getInstance().runLater(() -> fetchDataAndShowDialog(project, selected));
-                    })
-            );
-        }
-    }
-
-    private static Observable<ApplicationRegistrationModel> buildRegistrationModel(@Nonnull Project project,
-                                                                                   @Nonnull GraphServiceClient<Request> client) {
-        var title = MessageBundle.message("action.azure.aad.registerApp.loadDefaultDomain");
-        return AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>(project, title, false, () -> {
-            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-
-            var domain = AzureUtils.loadDomains(client)
-                    .stream()
-                    .filter(d -> d.isDefault)
-                    .map(d -> d.id)
-                    .findFirst()
-                    .orElse("");
-
-            var model = new ApplicationRegistrationModel();
-            model.setDomain(domain);
-            model.setCallbackUrls(List.of(ApplicationRegistrationModel.DEFAULT_CALLBACK_URL));
-            return model;
-        }));
-    }
-
-    /**
-     * Displays the dialog to enter the details for the new application.
-     *
-     * @param project      The IntelliJ project
-     * @param subscription The selected subscription
-     */
-    private static void fetchDataAndShowDialog(@Nonnull Project project, @Nonnull Subscription subscription) {
-        String tenantId = subscription.getTenantId();
-        LOG.debug(String.format("Using subscription %s; tenant %s", subscription.getId(), tenantId));
-        if (project.isDisposed()) {
+        if (project == null || project.isDisposed()) {
             return;
         }
 
-        var client = AzureUtils.createGraphClient(subscription);
-
         // Show dialog to enter the application data, then create in background after user confirmed
-        buildRegistrationModel(project, client).subscribe(model -> {
-            AzureTaskManager.getInstance().runLater(() -> {
-                var dialog = new RegisterApplicationInAzureAdDialog(project, model);
-                if (dialog.showAndGet()) {
-                    var title = MessageBundle.message("action.azure.aad.registerApp.registeringApplication");
-                    var task = new RegisterApplicationTask(project, dialog.getForm().getData(), client, subscription);
+        var dialog = new RegisterApplicationInAzureAdDialog(project);
+        if (dialog.showAndGet()) {
+            var subscription = dialog.getSubscription();
+            if (subscription == null) {
+                return;
+            }
 
-                    AzureTaskManager.getInstance().runInBackground(title, task);
-                }
-            });
-        });
+            var graphClient = AzureUtils.createGraphClient(subscription);
+            var task = new RegisterApplicationTask(project, dialog.getForm().getData(), graphClient);
+            var title = MessageBundle.message("action.azure.aad.registerApp.registeringApplication");
+
+            AzureTaskManager.getInstance().runInBackground(title, task);
+        }
     }
 
+    /**
+     * Task, which creates a new Azure AD application based on the data entered into the form.
+     */
     static class RegisterApplicationTask implements Runnable {
         private final Project project;
         @Nonnull
         private final ApplicationRegistrationModel model;
         @Nonnull
         private final GraphServiceClient<Request> graphClient;
-        private final Subscription subscription;
 
         RegisterApplicationTask(@Nonnull Project project,
                                 @Nonnull ApplicationRegistrationModel model,
-                                @Nonnull GraphServiceClient<Request> graphClient,
-                                @Nonnull Subscription subscription) {
+                                @Nonnull GraphServiceClient<Request> graphClient) {
             this.project = project;
             this.model = model;
             this.graphClient = graphClient;
-            this.subscription = subscription;
         }
 
         @Override
@@ -204,7 +146,7 @@ public class RegisterApplicationAction extends AnAction {
         @AzureOperation(name = "connector|aad.show_aad_template", type = AzureOperation.Type.TASK)
         private void showApplicationTemplateDialog(Application application) {
             AzureTaskManager.getInstance().runLater(() -> {
-                new AzureApplicationTemplateDialog(project, graphClient, subscription, application).show();
+                new AzureApplicationTemplateDialog(project, application).show();
             });
         }
     }
