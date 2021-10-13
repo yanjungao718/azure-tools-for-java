@@ -61,7 +61,7 @@ public class RegisterApplicationAction extends AnAction {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
     public RegisterApplicationAction() {
-        super(MessageBundle.message("action.AzureToolkit.AzureRegisterApp.text"));
+        super(MessageBundle.message("action.AzureToolkit.AD.AzureRegisterApp.text"));
     }
 
     @Override

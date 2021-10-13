@@ -48,7 +48,7 @@ import java.util.List;
 @SuppressWarnings("ComponentNotRegistered")
 public class ShowApplicationTemplatesAction extends AnAction {
     public ShowApplicationTemplatesAction() {
-        super(MessageBundle.message("action.AzureToolkit.AzureAppTemplates.text"));
+        super(MessageBundle.message("action.AzureToolkit.AD.AzureAppTemplates.text"));
     }
 
     @Override
