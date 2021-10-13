@@ -1,11 +1,11 @@
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.intellij.openapi.util.io.StreamUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /**
@@ -36,7 +36,7 @@ class ApplicationTemplate {
                 throw new IOException("unable to locate code template " + resourcePath);
             }
 
-            var code = StreamUtil.readText(new InputStreamReader(stream));
+            var code = IOUtils.toString(stream, StandardCharsets.UTF_8);
             code = code.replaceAll(Pattern.quote("{{tenantID}}"), tenantID);
             code = code.replaceAll(Pattern.quote("{{clientID}}"), clientID);
             code = code.replaceAll(Pattern.quote("{{clientSecret}}"), clientSecret);
