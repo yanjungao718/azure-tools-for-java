@@ -5,8 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.intellij.util.PathUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
@@ -25,7 +25,7 @@ enum ApplicationCodeTemplate {
 
     @Nonnull
     String getFilename() {
-        return PathUtil.getFileName(resourcePath);
+        return FilenameUtils.getName(resourcePath);
     }
 
     /**
