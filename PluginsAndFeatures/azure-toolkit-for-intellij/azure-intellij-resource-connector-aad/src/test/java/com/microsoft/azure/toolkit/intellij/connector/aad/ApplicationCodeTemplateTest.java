@@ -10,16 +10,13 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class ApplicationTemplateTest {
+public class ApplicationCodeTemplateTest {
     @Test
     public void applicationPropertiesTemplate() throws IOException {
-        var template = new ApplicationTemplate("/code-templates/application.properties",
-                "actual-tenant-id",
+        var replaced = ApplicationCodeTemplate.ApplicationProperties.render("actual-tenant-id",
                 "actual-client-id",
                 "actual-client-secret",
                 "actual-group-names");
-
-        var replaced = template.content();
         Assert.assertTrue(replaced.contains("azure.activedirectory.tenant-id=actual-tenant-id"));
         Assert.assertTrue(replaced.contains("azure.activedirectory.client-id=actual-client-id"));
         Assert.assertTrue(replaced.contains("azure.activedirectory.client-secret=actual-client-secret"));

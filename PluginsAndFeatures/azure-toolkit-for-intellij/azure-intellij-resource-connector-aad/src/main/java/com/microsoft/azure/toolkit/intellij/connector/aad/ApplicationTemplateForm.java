@@ -41,7 +41,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     private final Subscription subscription;
 
     // custom fields
-    private final Map<ApplicationTemplateType, EditorTextField> templateEditors = new HashMap<>();
+    private final Map<ApplicationCodeTemplate, EditorTextField> templateEditors = new HashMap<>();
 
     // UI designer
     private JPanel contentPanel;
@@ -58,7 +58,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         credentialsWarning.setAllowAutoWrapping(true);
 
         // init after createUIComponents, which is called as first in the generated constructor
-        for (var type : ApplicationTemplateType.values()) {
+        for (var type : ApplicationCodeTemplate.values()) {
             var editor = createTextEditor(project, type.getFilename());
             templatesPane.add(type.getFilename(), editor);
             templateEditors.put(type, editor);
@@ -106,13 +106,10 @@ class ApplicationTemplateForm implements AzureForm<Application> {
             var editor = entry.getValue();
 
             try {
-                var template = new ApplicationTemplate(
-                        templateType.getResourcePath(),
-                        subscription.getTenantId(),
+                editor.setText(templateType.render(subscription.getTenantId(),
                         app.appId != null ? app.appId : "",
                         clientSecret,
-                        "group-names");
-                editor.setText(template.content());
+                        "group-names"));
             } catch (IOException e) {
                 editor.setText(MessageBundle.message("templateDialog.editorInitFailed.text", e.getMessage()));
             }

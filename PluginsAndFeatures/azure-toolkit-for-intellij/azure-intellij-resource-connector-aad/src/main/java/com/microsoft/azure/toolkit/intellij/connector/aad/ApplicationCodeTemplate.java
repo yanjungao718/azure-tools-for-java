@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
+import com.intellij.util.PathUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 
@@ -8,29 +9,24 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-/**
- * Template for a single code file.
- * It manages placeholders {{...}} in the code template's content.
- */
 @RequiredArgsConstructor
-class ApplicationTemplate {
+enum ApplicationCodeTemplate {
+    ApplicationProperties("/code-templates/application.properties"),
+    ApplicationMain("/code-templates/Application.java"),
+    ApplicationController("/code-templates/SpringController.java");
+
     @Nonnull
     private final String resourcePath;
 
-    // placeholder values
     @Nonnull
-    private final String tenantID;
-    @Nonnull
-    private final String clientID;
-    @Nonnull
-    private final String clientSecret;
-    @Nonnull
-    private final String groupNames;
+    String getFilename() {
+        return PathUtil.getFileName(resourcePath);
+    }
 
     /**
      * @return The template's content with placeholders replaced with actual values.
      */
-    String content() throws IOException {
+    String render(@Nonnull String tenantID, @Nonnull String clientID, @Nonnull String clientSecret, @Nonnull String groupNames) throws IOException {
         try (var stream = getClass().getResourceAsStream(resourcePath)) {
             if (stream == null) {
                 throw new IOException("unable to locate code template " + resourcePath);
