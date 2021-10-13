@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -45,7 +46,10 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
+import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
+import com.microsoft.azure.toolkit.intellij.explorer.AzureTreeNode;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -61,6 +65,7 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import com.nimbusds.jose.util.ArrayUtils;
 
 public class ServiceExplorerView extends ViewPart implements PropertyChangeListener {
 
@@ -69,9 +74,10 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
      */
     public static final String ID = "com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView";
     private static final List<String> UNSUPPORTED_NODE_LIST = Arrays.asList(
-        "com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule",
         "com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule",
-        "com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule");
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule",
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule",
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule");
 
     private TreeViewer viewer;
     private Action refreshAction;
@@ -91,7 +97,14 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
      * (like Task List, for example).
      */
     class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-        private TreeNode invisibleRoot;
+        private TreeViewer viewer;
+        private TreeNode azureNode;
+        private AzureTreeNode[] azureModules;
+        
+        public ViewContentProvider(TreeViewer viewer) {
+            super();
+            this.viewer = viewer;
+        }
 
         @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -104,10 +117,10 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         @Override
         public Object[] getElements(Object parent) {
             if (parent.equals(getViewSite())) {
-                if (invisibleRoot == null) {
+                if (azureNode == null) {
                     initialize();
                 }
-                return getChildren(invisibleRoot);
+                return new Object[] {azureNode};
             }
             return getChildren(parent);
         }
@@ -116,14 +129,20 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         public Object getParent(Object child) {
             if (child instanceof TreeNode) {
                 return (((TreeNode) child).node).getParent().getViewData();
+            } else if (child instanceof AzureTreeNode) {
+                return ((AzureTreeNode) child).getParent();
             }
             return null;
         }
 
         @Override
         public Object[] getChildren(Object parent) {
-            if (parent instanceof TreeNode) {
+            if (parent == azureNode) {
+                return getServiceNodes();
+            } else if (parent instanceof TreeNode) {
                 return ((TreeNode) parent).getChildNodes().toArray();
+            } else if (parent instanceof AzureTreeNode) {
+                return ((AzureTreeNode) parent).getChildren().toArray();
             }
             return new Object[0];
         }
@@ -132,6 +151,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         public boolean hasChildren(Object parent) {
             if (parent instanceof TreeNode) {
                 return ((TreeNode) parent).getChildNodes().size() > 0;
+            }  else if (parent instanceof AzureTreeNode) {
+                return ((AzureTreeNode) parent).hasChildren();
             }
             return false;
         }
@@ -145,14 +166,19 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     com.microsoft.azure.hdinsight.common.CommonConst.ENABLE_HDINSIGHT_NEW_SDK, "true");
 
         }
+        
+        private Object[] getServiceNodes() {
+            return ArrayUtils.concat(azureNode.getChildNodes().toArray(), azureModules);
+        }
 
         private void initialize() {
             azureModule = new AzureModuleImpl();
 
             setHDInsightRootModule(azureModule);
-            invisibleRoot = new TreeNode(null);
-            invisibleRoot.add(createTreeNode(azureModule));
+            azureNode = createTreeNode(azureModule);
 
+            azureModules = Arrays.stream(AzureExplorer.getModules())
+                    .map(node -> new AzureTreeNode(viewer, null, node)).toArray(AzureTreeNode[]::new);
             azureModule.load(false);
         }
     }
@@ -260,6 +286,9 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     // unregister all event handlers recursively and remove
                     // child nodes from the tree
                     for (Node childNode : (Collection<Node>) e.getOldItems()) {
+                        if (UNSUPPORTED_NODE_LIST.contains(childNode.getClass().getName())) {
+                            continue;
+                        }
                         removeEventHandlers(childNode);
                         // remove this node from the tree
                         treeNode.remove((TreeNode) childNode.getViewData());
@@ -281,17 +310,25 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
 
         @Override
         public String getText(Object obj) {
+            if(obj instanceof AzureTreeNode) {
+                return ((AzureTreeNode)obj).getText();
+            }
             return obj.toString();
         }
 
         @Override
         public Image getImage(Object obj) {
+            String iconPath = null; 
             if (obj instanceof TreeNode) {
-                String iconPath = ((TreeNode) obj).node.getIconPath();
-                if (iconPath != null) {
-                    return Optional.ofNullable(Activator.getImageDescriptor("icons/" + iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
-                    // Activator.getDefault().getImageRegistry().get((((Node) obj).getIconPath()));
-                }
+                final Node node = ((TreeNode) obj).node;
+                iconPath = Optional.ofNullable(node.getIconPath()).map(path -> "icons/" + path)
+                        .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getPath())
+                                .map(value -> StringUtils.replace(value, ".svg", ".png")).orElse(null));
+            } else if (obj instanceof AzureTreeNode) {
+                iconPath =  ((AzureTreeNode) obj).getIconPath();
+            }
+            if (StringUtils.isNotEmpty(iconPath)) {
+                return Optional.ofNullable(Activator.getImageDescriptor(iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
             }
             return super.getImage(obj);
         }
@@ -313,7 +350,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
     @Override
     public void createPartControl(Composite parent) {
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-        viewer.setContentProvider(new ViewContentProvider());
+        viewer.setContentProvider(new ViewContentProvider(viewer));
         viewer.setLabelProvider(new ViewLabelProvider());
         viewer.setSorter(new NameSorter());
         viewer.setInput(getViewSite());
@@ -338,20 +375,25 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 }
                 if (viewer.getSelection() instanceof IStructuredSelection) {
                     IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                    Node node = ((TreeNode) selection.getFirstElement()).node;
-                    if (node.hasNodeActions()) {
-                        for (final NodeAction nodeAction : node.getNodeActions()) {
-                            ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ?
-                                Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
-                            Action action = new Action(nodeAction.getName(), imageDescriptor) {
-                                @Override
-                                public void run() {
-                                    nodeAction.fireNodeActionEvent();
-                                }
-                            };
-                            action.setEnabled(nodeAction.isEnabled());
-                            manager.add(action);
+                    Object firstElement = selection.getFirstElement();
+                    if(firstElement instanceof TreeNode) {
+                        Node node = ((TreeNode) selection.getFirstElement()).node;
+                        if (node.hasNodeActions()) {
+                            for (final NodeAction nodeAction : node.getNodeActions()) {
+                                ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ?
+                                    Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
+                                Action action = new Action(nodeAction.getName(), imageDescriptor) {
+                                    @Override
+                                    public void run() {
+                                        nodeAction.fireNodeActionEvent();
+                                    }
+                                };
+                                action.setEnabled(nodeAction.isEnabled());
+                                manager.add(action);
+                            }
                         }
+                    }else if(firstElement instanceof AzureTreeNode) {
+                        ((AzureTreeNode) firstElement).installActionsMenu(manager);
                     }
                 }
             }
@@ -462,12 +504,16 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 if (e.button == 1) { // left button
                     TreeItem[] selection = ((Tree) e.widget).getSelection();
                     if (selection.length > 0) {
-                        TreeItem item = ((Tree) e.widget).getSelection()[0];
-                        Node node = ((TreeNode) item.getData()).node;
-                        // if the node in question is in a "loading" state then
-                        // we do not propagate the click event to it
-                        if (!node.isLoading()) {
-                            node.getClickAction().fireNodeActionEvent();
+                        final Object data = selection[0].getData();
+                        if (data instanceof TreeNode) {
+                            Node node = ((TreeNode) data).node;
+                            // if the node in question is in a "loading" state then
+                            // we do not propagate the click event to it
+                            if (!node.isLoading()) {
+                                node.getClickAction().fireNodeActionEvent();
+                            }
+                        } else if (data instanceof AzureTreeNode) {
+                            ((AzureTreeNode) data).onNodeClick();
                         }
                     }
                 }
@@ -480,12 +526,16 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         tree.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent event) {
                 if (event.keyCode == SWT.CR && tree.getSelectionCount() > 0) {
-                    final TreeItem item = tree.getSelection()[0];
-                    Node node = ((TreeNode) item.getData()).node;
-                    // if the node in question is in a "loading" state then
-                    // we do not propagate the click event to it
-                    if (!node.isLoading()) {
-                        node.getClickAction().fireNodeActionEvent();
+                    final Object data = tree.getSelection()[0].getData();
+                    if (data instanceof TreeNode) {
+                        Node node = ((TreeNode) data).node;
+                        // if the node in question is in a "loading" state then
+                        // we do not propagate the click event to it
+                        if (!node.isLoading()) {
+                            node.getClickAction().fireNodeActionEvent();
+                        }
+                    } else if (data instanceof AzureTreeNode) {
+                        ((AzureTreeNode) data).onNodeClick();
                     }
                 }
             }
