@@ -46,8 +46,8 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
         final String suffix = Azure.az(AzureCloud.class).get().getStorageEndpointSuffix();
         properties.add(Pair.of("azure.storage.accountName", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
         properties.add(Pair.of("azure.storage.accountKey", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
-        final String blobEndpoint = "https://${%s_ACCOUNT_NAME}.%s/<your-container-name>/<your-blob-name>";
-        final String fileEndpoint = "https://${%s_ACCOUNT_NAME}.%s/<your-fileshare-name>/<your-file-name>";
+        final String blobEndpoint = "https://${%s_ACCOUNT_NAME}.blob%s/<your-container-name>/<your-blob-name>";
+        final String fileEndpoint = "https://${%s_ACCOUNT_NAME}.file%s/<your-fileshare-name>/<your-file-name>";
         properties.add(Pair.of("# azure.storage.blob-endpoint", String.format(blobEndpoint, Connection.ENV_PREFIX, suffix)));
         properties.add(Pair.of("# azure.storage.file-endpoint", String.format(fileEndpoint, Connection.ENV_PREFIX, suffix)));
         return properties;
