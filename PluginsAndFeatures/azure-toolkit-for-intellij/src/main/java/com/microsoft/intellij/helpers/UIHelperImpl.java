@@ -71,7 +71,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionA
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -93,8 +93,8 @@ import static com.microsoft.azure.toolkit.intellij.springcloud.properties.Spring
 
 
 public class UIHelperImpl implements UIHelper {
-    public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
-    public static Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
+    public static final Key<StorageAccount> STORAGE_KEY = new Key<>("storageAccount");
+    public static final Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<>("clientStorageAccount");
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
@@ -555,10 +555,10 @@ public class UIHelperImpl implements UIHelper {
             T editedItem = editedFile.getUserData((Key<T>) name2Key.get(item.getClass()));
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
             ClientStorageAccount editedClientStorageAccount = editedFile.getUserData(CLIENT_STORAGE_KEY);
-            if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName))
-                || (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
-                && editedItem != null
-                && editedItem.getName().equals(item.getName())) {
+            if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName)) ||
+                    (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName))) &&
+                    editedItem != null &&
+                    editedItem.getName().equals(item.getName())) {
                 return editedFile;
             }
         }
