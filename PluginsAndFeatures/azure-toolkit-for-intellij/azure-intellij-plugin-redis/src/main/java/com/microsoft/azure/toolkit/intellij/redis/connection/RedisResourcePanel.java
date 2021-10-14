@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.storage.connection;
+package com.microsoft.azure.toolkit.intellij.redis.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
@@ -13,8 +13,8 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.redis.AzureRedis;
+import com.microsoft.azure.toolkit.redis.RedisCache;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,58 +26,58 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccount> {
+public class RedisResourcePanel implements AzureFormJPanel<RedisCache> {
     protected SubscriptionComboBox subscriptionComboBox;
-    protected AzureComboBox<StorageAccount> accountComboBox;
+    protected AzureComboBox<RedisCache> redisComboBox;
     @Getter
     protected JPanel contentPanel;
 
-    public StorageAccountResourcePanel() {
+    public RedisResourcePanel() {
         this.init();
     }
 
     private void init() {
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                this.accountComboBox.refreshItems();
+                this.redisComboBox.refreshItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                this.accountComboBox.clear();
+                this.redisComboBox.clear();
             }
         });
     }
 
     @Override
-    public void setData(StorageAccount account) {
+    public void setData(RedisCache account) {
         Optional.ofNullable(account).ifPresent((a -> {
             this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId));
-            this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name));
+            this.redisComboBox.setValue(new ItemReference<>(a.name(), RedisCache::name));
         }));
     }
 
     @Override
-    public StorageAccount getData() {
-        return this.accountComboBox.getValue();
+    public RedisCache getData() {
+        return this.redisComboBox.getValue();
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(
                 this.subscriptionComboBox,
-                this.accountComboBox
+                this.redisComboBox
         );
     }
 
     protected void createUIComponents() {
-        final Supplier<List<? extends StorageAccount>> loader = () -> Optional
+        final Supplier<List<? extends RedisCache>> loader = () -> Optional
                 .ofNullable(this.subscriptionComboBox)
                 .map(AzureComboBox::getValue)
                 .map(Subscription::getId)
-                .map(id -> Azure.az(AzureStorageAccount.class).list(id))
+                .map(id -> Azure.az(AzureRedis.class).list(id))
                 .orElse(Collections.emptyList());
-        this.accountComboBox = new AzureComboBoxSimple<>(loader) {
+        this.redisComboBox = new AzureComboBoxSimple<>(loader) {
             @Override
             protected String getItemText(Object item) {
-                return Optional.ofNullable(item).map(i -> ((StorageAccount) i).name()).orElse(StringUtils.EMPTY);
+                return Optional.ofNullable(item).map(i -> ((RedisCache) i).name()).orElse(StringUtils.EMPTY);
             }
         };
     }
