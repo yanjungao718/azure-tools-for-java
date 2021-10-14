@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConf
 
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -42,5 +43,10 @@ public class PushImageRunConfigurationFactory extends ConfigurationFactory {
     @Override
     public Icon getIcon() {
         return AzureIconLoader.loadIcon(AzureIconSymbol.DockerSupport.PUSH_IMAGE);
+    }
+
+    @Override
+    public @NotNull @NonNls String getId() {
+        return FACTORY_NAME;
     }
 }
