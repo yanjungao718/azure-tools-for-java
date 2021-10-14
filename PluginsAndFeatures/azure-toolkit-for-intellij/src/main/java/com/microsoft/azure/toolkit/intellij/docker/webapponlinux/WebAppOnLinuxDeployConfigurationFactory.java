@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.docker.AzureDockerSupportConfigurati
 
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -43,5 +44,10 @@ public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactor
     @Override
     public Icon getIcon() {
         return AzureIconLoader.loadIcon(AzureIconSymbol.DockerSupport.RUN_ON_WEB_APP);
+    }
+
+    @Override
+    public @NotNull @NonNls String getId() {
+        return FACTORY_NAME;
     }
 }
