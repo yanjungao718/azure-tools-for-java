@@ -35,6 +35,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-service-explorer" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-springcloud" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-storage" />
+            <option value="$PROJECT_DIR$/azure-intellij-resource-connector-lib" />
           </set>
         </option>
       </GradleProjectSettings>
