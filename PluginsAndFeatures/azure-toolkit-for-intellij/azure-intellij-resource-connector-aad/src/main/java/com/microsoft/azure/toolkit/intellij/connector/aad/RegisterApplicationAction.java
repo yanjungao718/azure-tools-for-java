@@ -29,8 +29,11 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.models.Application;
@@ -44,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
 /**
  * Displays UI to create a new Azure AD application.
  * <p>
@@ -51,8 +56,21 @@ import java.util.UUID;
  */
 @SuppressWarnings("ComponentNotRegistered")
 public class RegisterApplicationAction extends AnAction {
+    private static final Logger LOG = Logger.getInstance(RegisterApplicationAction.class);
+
     public RegisterApplicationAction() {
         super(MessageBundle.message("action.AzureToolkit.AD.AzureRegisterApp.text"));
+    }
+
+    @Override
+    public void update(@Nonnull AnActionEvent e) {
+        try {
+            // throws an exception if user is not signed in
+            az(AzureAccount.class).account();
+        } catch (AzureToolkitAuthenticationException ex) {
+            LOG.debug("user is not signed in", ex);
+            e.getPresentation().setEnabled(false);
+        }
     }
 
     @Override
