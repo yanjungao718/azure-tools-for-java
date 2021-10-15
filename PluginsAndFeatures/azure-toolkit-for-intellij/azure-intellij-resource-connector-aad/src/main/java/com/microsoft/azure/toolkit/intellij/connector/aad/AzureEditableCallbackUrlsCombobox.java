@@ -66,7 +66,13 @@ class AzureEditableCallbackUrlsCombobox extends AzureComboBox<String> {
     private void removeSelectedItem() {
         var selected = this.getSelectedItem();
         if (selected != null) {
-            this.removeItem(selected);
+            removeItem(selected);
+            // force a refresh of the text shown in the text input field
+            if (getItemCount() == 0) {
+                clear();
+            } else {
+                setSelectedItem(getItemAt(0));
+            }
         }
     }
 
