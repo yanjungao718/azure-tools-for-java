@@ -87,7 +87,9 @@ class AzureEditableCallbackUrlsCombobox extends AzureComboBox<String> {
         });
 
         if (url != null) {
-            addItem(url);
+            if (!getItems().contains(url)) {
+                addItem(url);
+            }
             setSelectedItem(url);
         }
     }
