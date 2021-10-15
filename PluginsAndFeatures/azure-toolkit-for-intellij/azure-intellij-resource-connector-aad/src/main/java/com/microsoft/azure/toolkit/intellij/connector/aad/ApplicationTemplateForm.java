@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.actions.IncrementalFindAction;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -34,14 +35,13 @@ import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 class ApplicationTemplateForm implements AzureForm<Application> {
+    private static final Logger LOG = Logger.getInstance(ApplicationTemplateForm.class);
+
     // custom fields
     private final Map<ApplicationCodeTemplate, EditorTextField> templateEditors = new HashMap<>();
 
@@ -53,37 +53,38 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     private SubscriptionComboBox subscriptionBox;
     private JBLabel subscriptionLabel;
 
-    ApplicationTemplateForm(@Nonnull Project project, @Nullable List<Application> predefinedItems) {
+    ApplicationTemplateForm(@Nonnull Project project, @Nullable Application predefinedApplication) {
         credentialsWarning.setForeground(JBColor.RED);
         credentialsWarning.setAllowAutoWrapping(true);
 
-        // init after createUIComponents, which is called as first in the generated constructor
+        // init after createUIComponents, which is called first in the generated constructor
         for (var type : ApplicationCodeTemplate.values()) {
             var editor = createTextEditor(project, type.getFilename());
             templatesPane.add(type.getFilename(), editor);
             templateEditors.put(type, editor);
         }
 
-        // only one static application is shown when predefined items are provided
-        if (predefinedItems != null && !predefinedItems.isEmpty()) {
+        if (predefinedApplication != null) {
             subscriptionLabel.setVisible(false);
+            subscriptionBox.setEnabled(false);
             subscriptionBox.setVisible(false);
+
+            applicationsBox.setPredefinedItems(Collections.singletonList(predefinedApplication));
+        } else {
+            // the subscription box does a refresh and update of selected item in its constructor
+            var selected = subscriptionBox.getValue();
+            if (selected != null) {
+                LOG.debug("Setting initially selected subscription to refresh applications");
+                applicationsBox.setSubscription(selected);
+            }
+
+            subscriptionBox.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    LOG.debug("Subscription changed, updating applications");
+                    applicationsBox.setSubscription((Subscription) e.getItem());
+                }
+            });
         }
-
-        applicationsBox.setItemsLoader(() -> Objects.requireNonNullElseGet(predefinedItems,
-                () -> {
-                    var subscription = subscriptionBox.getValue();
-                    if (subscription == null) {
-                        return Collections.emptyList();
-                    }
-
-                    var graphClient = AzureUtils.createGraphClient(subscription);
-                    return AzureUtils.loadApplications(graphClient)
-                            .stream()
-                            .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
-                            .collect(Collectors.toList());
-                }));
-        applicationsBox.refreshItems();
     }
 
     @Nonnull
@@ -135,15 +136,8 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     private void createUIComponents() {
         subscriptionBox = new SubscriptionComboBox();
         subscriptionBox.setEditable(false);
-        subscriptionBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                applicationsBox.refreshItems();
-            }
-        });
-        subscriptionBox.setRequired(true);
 
         applicationsBox = new AzureApplicationComboBox();
-        applicationsBox.setRequired(true);
         applicationsBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 applyTemplate((Application) e.getItem());

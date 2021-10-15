@@ -34,13 +34,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.models.Application;
 import com.microsoft.graph.models.ImplicitGrantSettings;
 import com.microsoft.graph.models.WebApplication;
-import com.microsoft.graph.requests.GraphServiceClient;
-import okhttp3.Request;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -89,8 +89,7 @@ public class RegisterApplicationAction extends AnAction {
                 return;
             }
 
-            var graphClient = AzureUtils.createGraphClient(subscription);
-            var task = new RegisterApplicationTask(project, dialog.getForm().getData(), graphClient);
+            var task = new RegisterApplicationTask(project, dialog.getForm().getData(), subscription);
             var title = MessageBundle.message("action.azure.aad.registerApp.registeringApplication");
 
             AzureTaskManager.getInstance().runInBackground(title, task);
@@ -100,20 +99,13 @@ public class RegisterApplicationAction extends AnAction {
     /**
      * Task, which creates a new Azure AD application based on the data entered into the form.
      */
+    @RequiredArgsConstructor
     static class RegisterApplicationTask implements Runnable {
         private final Project project;
         @Nonnull
         private final ApplicationRegistrationModel model;
         @Nonnull
-        private final GraphServiceClient<Request> graphClient;
-
-        RegisterApplicationTask(@Nonnull Project project,
-                                @Nonnull ApplicationRegistrationModel model,
-                                @Nonnull GraphServiceClient<Request> graphClient) {
-            this.project = project;
-            this.model = model;
-            this.graphClient = graphClient;
-        }
+        private final Subscription subscription;
 
         @Override
         @AzureOperation(name = "connector|aad.create_aad_application", type = AzureOperation.Type.TASK)
@@ -143,10 +135,11 @@ public class RegisterApplicationAction extends AnAction {
             var clientID = model.getClientId();
             if (StringUtil.isNotEmpty(clientID)) {
                 params.appId = model.getClientId();
-                showApplicationTemplateDialog(params);
+                showApplicationTemplateDialog(subscription, params);
                 return;
             }
 
+            var graphClient = AzureUtils.createGraphClient(subscription);
             var application = graphClient.applications().buildRequest().post(params);
             assert application.id != null;
 
@@ -158,13 +151,13 @@ public class RegisterApplicationAction extends AnAction {
             }
 
             // now display the new application in the "Application templates dialog"
-            showApplicationTemplateDialog(application);
+            showApplicationTemplateDialog(subscription, application);
         }
 
         @AzureOperation(name = "connector|aad.show_aad_template", type = AzureOperation.Type.TASK)
-        private void showApplicationTemplateDialog(Application application) {
+        private void showApplicationTemplateDialog(@Nonnull Subscription subscription, @Nonnull Application application) {
             AzureTaskManager.getInstance().runLater(() -> {
-                new AzureApplicationTemplateDialog(project, application).show();
+                new AzureApplicationTemplateDialog(project, new SubscriptionApplicationPair(subscription, application)).show();
             });
         }
     }

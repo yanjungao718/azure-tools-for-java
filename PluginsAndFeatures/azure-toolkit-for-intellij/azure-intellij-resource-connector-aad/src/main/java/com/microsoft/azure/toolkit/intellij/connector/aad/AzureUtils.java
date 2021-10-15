@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class AzureUtils {
+    private static final Logger LOG = Logger.getInstance(AzureUtils.class);
+
     private AzureUtils() {
     }
 
@@ -53,6 +56,8 @@ final class AzureUtils {
      */
     @Nonnull
     static List<Domain> loadDomains(@Nonnull GraphServiceClient<Request> client) {
+        LOG.debug("loading list of domains");
+
         var domains = new ArrayList<Domain>();
 
         var request = client.domains().buildRequest();
@@ -67,9 +72,12 @@ final class AzureUtils {
             if (nextPage == null) {
                 break;
             }
+
+            LOG.debug("requesting next page of domains");
             request = nextPage.buildRequest();
         }
 
+        LOG.debug("Found domains: " + domains.size());
         return domains;
     }
 
@@ -81,6 +89,8 @@ final class AzureUtils {
      */
     @Nonnull
     static List<Application> loadApplications(@Nonnull GraphServiceClient<Request> client) {
+        LOG.debug("loading list of applications");
+
         var applications = new ArrayList<Application>();
 
         var request = client.applications().buildRequest();
@@ -95,13 +105,18 @@ final class AzureUtils {
             if (nextPage == null) {
                 break;
             }
+
+            LOG.debug("requesting next page of applications");
             request = nextPage.buildRequest();
         }
 
+        LOG.debug("Found applications: " + applications.size());
         return applications;
     }
 
     static GraphServiceClient<Request> createGraphClient(@Nonnull Subscription subscription) {
+        LOG.debug("Creating new graph client for subscription " + subscription.getName());
+
         var account = Azure.az(AzureAccount.class).account();
         var credentials = account.getTokenCredential(subscription.getId());
         var authProvider = new TokenCredentialAuthProvider(credentials);

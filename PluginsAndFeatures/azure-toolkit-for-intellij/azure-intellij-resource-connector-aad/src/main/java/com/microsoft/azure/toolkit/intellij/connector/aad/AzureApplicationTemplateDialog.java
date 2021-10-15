@@ -15,8 +15,6 @@ import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Application;
 import com.microsoft.graph.models.PasswordCredential;
-import com.microsoft.graph.requests.GraphServiceClient;
-import okhttp3.Request;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,28 +22,37 @@ import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Dialog which displays code templates for a list of Azure AD applications.
+ * <p>
+ * There are two modes:
+ * 1. A predefined application is displayed
+ * 2. The user can choose subscription and application to update the templates.
  */
 class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     @Nonnull
     private final ApplicationTemplateForm form;
     @Nonnull
     private final Project project;
+    @Nullable
+    private final SubscriptionApplicationPair predefinedData;
     private final NewClientSecretAction clientSecretAction = new NewClientSecretAction();
 
-    AzureApplicationTemplateDialog(@Nonnull Project project, @Nullable Application application) {
+    /**
+     * @param project        The current project
+     * @param predefinedData If only predefined data should be shown, then this is the matching pair of subscription and application.
+     */
+    AzureApplicationTemplateDialog(@Nonnull Project project, @Nullable SubscriptionApplicationPair predefinedData) {
         super(project);
         this.project = project;
+        this.predefinedData = predefinedData;
 
-        var predefinedItems = application == null ? null : Collections.singletonList(application);
-        form = new ApplicationTemplateForm(project, predefinedItems);
+        form = new ApplicationTemplateForm(project, predefinedData == null ? null : predefinedData.getApplication());
         init();
 
         // the predefined application may have no id if the user manually provided the appId
-        clientSecretAction.setEnabled(application == null || application.id != null);
+        clientSecretAction.setEnabled(predefinedData == null || predefinedData.getApplication().id != null);
     }
 
     @Override
@@ -105,13 +112,11 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
         public void actionPerformed(ActionEvent e) {
             AzureTaskManager.getInstance().runInModal(MessageBundle.message("templateDialog.applications.creatingClientSecret"), false, () -> {
                 try {
-                    var application = form.getData();
-                    if (application == null) {
-                        return;
-                    }
-
-                    var subscription = form.getSubscription();
-                    if (subscription == null) {
+                    // prefer the pair of predefined data, if available.
+                    // In this case the form isn't necessarily referencing the same subscription as its UI box hidden
+                    var application = predefinedData != null ? predefinedData.getApplication() : form.getData();
+                    var subscription = predefinedData != null ? predefinedData.getSubscription() : form.getSubscription();
+                    if (application == null || subscription == null) {
                         return;
                     }
 
