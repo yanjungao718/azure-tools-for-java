@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
 import com.intellij.execution.RunConfigurationExtension;
-import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
@@ -68,7 +67,6 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
 
         protected MyBeforeRunTask() {
             super(ID);
-            setEnabled(true);
         }
 
         public boolean execute(@Nonnull DataContext dataContext, @Nonnull RunConfiguration configuration) {
@@ -89,20 +87,29 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         }
 
         @Override
-        @SuppressWarnings("rawtypes")
         public boolean isApplicableFor(@Nonnull RunConfigurationBase<?> configuration) {
             final boolean applicable = configuration.getProject().getService(ConnectionManager.class)
                     .getConnections().stream().anyMatch(c -> c.isApplicableFor(configuration));
-            final List<BeforeRunTask> tasks = new ArrayList<>(configuration.getBeforeRunTasks());
-            final List<BeforeRunTask> myTasks = tasks.stream().filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
+            final List<BeforeRunTask<?>> tasks = configuration.getBeforeRunTasks();
+            final List<BeforeRunTask<?>> myTasks = tasks.stream().filter(t -> t instanceof MyBeforeRunTask).collect(Collectors.toList());
             if (applicable && myTasks.isEmpty()) {
-                tasks.add(new MyBeforeRunTask());
-                RunManagerEx.getInstanceEx(configuration.getProject()).setBeforeRunTasks(configuration, tasks);
+                final MyBeforeRunTask task = new MyBeforeRunTask();
+                task.setEnabled(true);
+                this.addTask(configuration, task);
             } else if (!applicable && !myTasks.isEmpty()) {
                 tasks.removeAll(myTasks);
-                RunManagerEx.getInstanceEx(configuration.getProject()).setBeforeRunTasks(configuration, tasks);
             }
             return applicable;
+        }
+
+        private void addTask(RunConfigurationBase<?> configuration, MyBeforeRunTask task) {
+            try {
+                configuration.getBeforeRunTasks().add(task);
+            } catch (final UnsupportedOperationException e) { // EmptyList doesn't support `add`
+                final ArrayList<BeforeRunTask<?>> newTasks = new ArrayList<>(configuration.getBeforeRunTasks());
+                newTasks.add(task);
+                configuration.setBeforeRunTasks(newTasks);
+            }
         }
     }
 }
