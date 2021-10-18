@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.eclipse.common.component;
 import com.microsoft.azure.toolkit.lib.common.DataStore;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.Validatable;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.swt.widgets.Control;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +41,7 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T>, DataStore {
     }
 
     default void fireValueChangedEvent(T val) {
-        this.getValueChangedListeners().forEach(l -> l.accept(val));
+        AzureTaskManager.getInstance().runLater(() -> this.getValueChangedListeners().forEach(l -> l.accept(val)));
     }
 
     @Nullable
