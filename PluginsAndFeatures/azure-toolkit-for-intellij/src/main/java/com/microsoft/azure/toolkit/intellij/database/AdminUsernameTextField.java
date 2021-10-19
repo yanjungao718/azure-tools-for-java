@@ -31,6 +31,11 @@ public class AdminUsernameTextField extends AzureTextInput {
     @Setter
     private boolean valueInitialized;
 
+    public AdminUsernameTextField() {
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
+    }
+
     /**
      * Admin username must be at least 1 characters and at most 16 characters.
      * Admin username must only contain characters and numbers.
@@ -40,10 +45,6 @@ public class AdminUsernameTextField extends AzureTextInput {
     public AzureValidationInfo doValidateValue() {
         if (!isValueInitialized()) {
             return AzureValidationInfo.UNINITIALIZED;
-        }
-        final AzureValidationInfo info = super.doValidateValue();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
         }
         final String value = this.getValue();
         // validate length
@@ -68,10 +69,4 @@ public class AdminUsernameTextField extends AzureTextInput {
         }
         return AzureValidationInfo.OK;
     }
-
-    @Override
-    public boolean isRequired() {
-        return true;
-    }
-
 }

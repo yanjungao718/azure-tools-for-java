@@ -6,11 +6,11 @@ package com.microsoft.azure.toolkit.intellij.database;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -22,26 +22,21 @@ public class ServerNameTextField extends AzureTextInput {
     private int minLength = 3;
     @Setter
     private int maxLength = 63;
+    @Setter
     @Getter
     private String subscriptionId;
     @Setter
     private Function<ServerNameTextField, AzureValidationInfo> validateFunction;
 
-    public void setSubscriptionId(String subscriptionId) {
-        if (!StringUtils.equals(subscriptionId, this.subscriptionId)) {
-            this.subscriptionId = subscriptionId;
-        }
+    public ServerNameTextField() {
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
     }
 
-    @Override
-    @NotNull
+    @Nonnull
     public AzureValidationInfo doValidateValue() {
         if (StringUtils.isBlank(subscriptionId)) {
             return AzureValidationInfo.UNINITIALIZED;
-        }
-        final AzureValidationInfo info = super.doValidateValue();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
         }
         final String value = this.getValue();
         // validate length
@@ -62,10 +57,4 @@ public class ServerNameTextField extends AzureTextInput {
         }
         return AzureValidationInfo.OK;
     }
-
-    @Override
-    public boolean isRequired() {
-        return true;
-    }
-
 }

@@ -25,23 +25,18 @@ public class AccountNameTextField extends AzureTextInput {
     @Setter
     private int maxLength = 24;
     @Getter
+    @Setter
     private String subscriptionId;
 
-    public void setSubscriptionId(String subscriptionId) {
-        if (!StringUtils.equals(subscriptionId, this.subscriptionId)) {
-            this.subscriptionId = subscriptionId;
-        }
+    public AccountNameTextField() {
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
     }
 
-    @Override
     @Nonnull
     public AzureValidationInfo doValidateValue() {
         if (StringUtils.isBlank(subscriptionId)) {
             return AzureValidationInfo.UNINITIALIZED;
-        }
-        final AzureValidationInfo info = super.doValidateValue();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
         }
         final String value = this.getValue();
         // validate length
@@ -72,10 +67,4 @@ public class AccountNameTextField extends AzureTextInput {
         }
         return AzureValidationInfo.OK;
     }
-
-    @Override
-    public boolean isRequired() {
-        return true;
-    }
-
 }
