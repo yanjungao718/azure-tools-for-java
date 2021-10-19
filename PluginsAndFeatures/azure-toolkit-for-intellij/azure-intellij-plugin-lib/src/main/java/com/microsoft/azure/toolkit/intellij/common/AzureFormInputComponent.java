@@ -10,5 +10,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import javax.swing.*;
 
 public interface AzureFormInputComponent<T> extends AzureFormInput<T> {
-    JComponent getInputComponent();
+    default JComponent getInputComponent() {
+        return (JComponent) this;
+    }
 }

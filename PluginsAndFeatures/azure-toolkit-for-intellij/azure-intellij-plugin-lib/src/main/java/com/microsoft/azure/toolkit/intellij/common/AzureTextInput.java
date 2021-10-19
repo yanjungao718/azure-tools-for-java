@@ -6,19 +6,9 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.ui.components.fields.ExtendableTextField;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.swing.*;
 
 public class AzureTextInput extends ExtendableTextField
     implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
-    @Getter
-    @Setter
-    private boolean required;
-    @Getter
-    @Setter
-    private Validator validator;
 
     public AzureTextInput() {
         super();
@@ -33,10 +23,5 @@ public class AzureTextInput extends ExtendableTextField
     @Override
     public void setValue(final String val) {
         this.setText(val);
-    }
-
-    @Override
-    public JComponent getInputComponent() {
-        return this;
     }
 }

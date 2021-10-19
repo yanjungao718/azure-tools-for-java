@@ -18,8 +18,6 @@ import javax.swing.*;
 public class IntegerTextField extends JBTextField implements AzureFormInputComponent<Integer> {
 
     @Setter
-    private boolean isRequired;
-    @Setter
     @Getter
     private Integer minValue;
     @Getter
@@ -61,15 +59,5 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
         } else {
             return AzureValidationInfo.OK;
         }
-    }
-
-    @Override
-    public boolean isRequired() {
-        return isRequired;
-    }
-
-    @Override
-    public JComponent getInputComponent() {
-        return this;
     }
 }

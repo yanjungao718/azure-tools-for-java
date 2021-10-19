@@ -55,9 +55,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
     private AzureComboBoxEditor inputEditor;
-    @Getter
-    @Setter
-    private boolean required;
     private Object value;
     private boolean valueNotSet = true;
     protected boolean enabled = true;
@@ -85,11 +82,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     public AzureComboBox(@Nonnull Supplier<? extends List<? extends T>> itemsLoader, boolean refresh) {
         this(refresh);
         this.itemsLoader = itemsLoader;
-    }
-
-    @Override
-    public JComponent getInputComponent() {
-        return this;
     }
 
     protected void init() {

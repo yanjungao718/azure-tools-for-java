@@ -15,9 +15,6 @@ import java.util.function.Supplier;
 @Setter
 @Getter
 public class AzureComboBoxSimple<T> extends AzureComboBox<T> {
-
-    private Validator validator;
-
     public AzureComboBoxSimple(@Nonnull final Supplier<? extends List<? extends T>> supplier) {
         super(supplier, true);
     }
