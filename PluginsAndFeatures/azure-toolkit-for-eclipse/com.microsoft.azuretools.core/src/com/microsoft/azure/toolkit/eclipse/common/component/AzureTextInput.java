@@ -14,6 +14,8 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
+import javax.annotation.Nonnull;
+
 public class AzureTextInput extends Text implements AzureFormInputControl<String>, ModifyListener {
     protected static final int DEBOUNCE_DELAY = 300;
     private final Debouncer debouncer;
@@ -21,27 +23,15 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     public AzureTextInput(Composite parent, int style) {
         super(parent, style);
+        this.debouncer = new TailingDebouncer(() -> {
+            this.fireValueChangedEvent(this.value);
+            this.doValidate();
+        }, DEBOUNCE_DELAY);
         this.addModifyListener(this);
-        this.debouncer = new TailingDebouncer(() -> fireValueChangedEvent(this.value), DEBOUNCE_DELAY);
     }
 
     public AzureTextInput(Composite parent) {
         this(parent, SWT.NONE);
-    }
-
-    protected AzureValidationInfo doValidateValue() {
-        return AzureFormInputControl.super.doValidate();
-    }
-
-    @Override
-    public AzureValidationInfo doValidate() {
-        return this.debouncer.isPending() ? AzureValidationInfo.PENDING : this.doValidateValue();
-    }
-
-    @Override
-    public void modifyText(ModifyEvent modifyEvent) {
-        this.value = this.getText();
-        this.debouncer.debounce();
     }
 
     @Override
@@ -52,6 +42,28 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
     @Override
     public void setValue(final String val) {
         this.setText(val);
+    }
+
+    @Nonnull
+    @Override
+    public final AzureValidationInfo doValidate() {
+        final AzureValidationInfo validationInfo = AzureFormInputControl.super.doValidate();
+        this.setValidationInfo(validationInfo);
+        return validationInfo;
+    }
+
+    public void revalidateValue() {
+        this.setValidationInfo(AzureValidationInfo.PENDING);
+        this.debouncer.debounce();
+    }
+
+    public void setValidationInfo(AzureValidationInfo info) {
+    }
+
+    @Override
+    public void modifyText(ModifyEvent modifyEvent) {
+        this.value = this.getText();
+        this.revalidateValue();
     }
 
     @Override
