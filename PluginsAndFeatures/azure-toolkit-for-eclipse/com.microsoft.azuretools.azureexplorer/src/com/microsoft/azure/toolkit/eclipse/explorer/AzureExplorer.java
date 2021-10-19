@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.explorer;
+package com.microsoft.azure.toolkit.eclipse.explorer;
 
 import java.util.Arrays;
 
