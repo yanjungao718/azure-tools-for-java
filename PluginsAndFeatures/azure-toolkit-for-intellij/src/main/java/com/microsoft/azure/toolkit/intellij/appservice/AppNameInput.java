@@ -4,7 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -12,7 +12,7 @@ import com.microsoft.intellij.util.ValidationUtils;
 
 import java.util.Objects;
 
-public class AppNameInput extends ValidationDebouncedTextInput {
+public class AppNameInput extends AzureTextInput {
     private Subscription subscription;
 
     public void setSubscription(Subscription subscription) {

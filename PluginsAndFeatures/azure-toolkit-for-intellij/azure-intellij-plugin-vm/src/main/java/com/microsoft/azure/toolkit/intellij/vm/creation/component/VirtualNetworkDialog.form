@@ -29,25 +29,25 @@
           <text value=""/>
         </properties>
       </component>
-      <component id="8dabd" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtName" custom-create="true">
+      <component id="8dabd" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtName" custom-create="true">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
-      <component id="6b39e" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtAddressSpace" custom-create="true">
+      <component id="6b39e" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtAddressSpace" custom-create="true">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
-      <component id="d08a6" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtSubnetName" custom-create="true">
+      <component id="d08a6" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtSubnetName" custom-create="true">
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
-      <component id="1c203" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtSubnetAddressRange" custom-create="true">
+      <component id="1c203" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtSubnetAddressRange" custom-create="true">
         <constraints>
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

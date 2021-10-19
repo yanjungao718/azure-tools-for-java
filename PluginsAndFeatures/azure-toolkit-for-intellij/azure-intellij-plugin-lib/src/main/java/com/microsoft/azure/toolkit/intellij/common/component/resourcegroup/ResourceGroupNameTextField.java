@@ -5,7 +5,7 @@
 package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
 import com.microsoft.azure.CloudException;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ResourceGroupNameTextField extends ValidationDebouncedTextInput {
+public class ResourceGroupNameTextField extends AzureTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("[a-z0-9._()-]+[a-z0-9_()-]$");
     private Subscription subscription;

@@ -5,7 +5,7 @@
 package com.microsoft.azure.toolkit.intellij.storage.component;
 
 import com.azure.core.management.exception.ManagementException;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.regex.Pattern;
 
-public class AccountNameTextField extends ValidationDebouncedTextInput {
+public class AccountNameTextField extends AzureTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("[a-z0-9]{3,24}");
     @Setter

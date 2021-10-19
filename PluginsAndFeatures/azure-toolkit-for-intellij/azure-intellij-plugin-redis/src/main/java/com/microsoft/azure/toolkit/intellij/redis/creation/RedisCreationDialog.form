@@ -72,7 +72,7 @@
           <text value="DNS name:"/>
         </properties>
       </component>
-      <component id="de68e" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="redisNameTextField" custom-create="true">
+      <component id="de68e" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="redisNameTextField" custom-create="true">
         <constraints>
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>

@@ -4,7 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.database;
 
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Pattern;
 
-public class AdminUsernameTextField extends ValidationDebouncedTextInput {
+public class AdminUsernameTextField extends AzureTextInput {
 
     private static final int MIN_LENGTH = 1;
     private static final int MAX_LENGTH = 16;

@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -23,7 +23,7 @@ public class SpringCloudAppInfoBasicPanel extends AbstractSpringCloudAppInfoPane
     private JPanel contentPanel;
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
-    private ValidationDebouncedTextInput textName;
+    private AzureTextInput textName;
 
     public SpringCloudAppInfoBasicPanel(@Nullable final SpringCloudCluster cluster) {
         super(cluster);

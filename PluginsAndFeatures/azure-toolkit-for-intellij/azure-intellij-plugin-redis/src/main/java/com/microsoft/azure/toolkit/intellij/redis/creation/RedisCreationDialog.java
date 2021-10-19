@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
@@ -47,7 +47,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     private SubscriptionComboBox subscriptionComboBox;
     private AzureComboBox<PricingTier> pricingComboBox;
     private ResourceGroupComboBox resourceGroupComboBox;
-    private ValidationDebouncedTextInput redisNameTextField;
+    private AzureTextInput redisNameTextField;
     private RegionComboBox regionComboBox;
     private JCheckBox enableNonSSLCheckBox;
     private JLabel lblPricing;
@@ -137,7 +137,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
                 return Collections.emptyList();
             }
         };
-        this.redisNameTextField = new ValidationDebouncedTextInput();
+        this.redisNameTextField = new AzureTextInput();
         this.pricingComboBox = new AzureComboBoxSimple<>(PricingTier::values);
     }
 

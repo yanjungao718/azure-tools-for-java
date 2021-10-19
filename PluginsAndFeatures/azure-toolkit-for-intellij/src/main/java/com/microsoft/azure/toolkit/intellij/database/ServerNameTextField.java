@@ -4,7 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.database;
 
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-public class ServerNameTextField extends ValidationDebouncedTextInput {
+public class ServerNameTextField extends AzureTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
     @Setter
