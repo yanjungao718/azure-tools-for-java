@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.Activator;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
@@ -28,7 +27,7 @@ public class EclipseAzureMessager implements IAzureMessager {
         switch (raw.getType()) {
             case ALERT:
             case CONFIRM:
-                final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
+                final String title = Optional.ofNullable(raw.getTitle()).orElse(DEFAULT_TITLE);
                 MessageDialog.openConfirm(null, title, title);
                 return true;
             default:

@@ -5,18 +5,38 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_REDIS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
+import com.microsoft.azure.toolkit.redis.AzureRedis;
+import com.microsoft.azure.toolkit.redis.RedisCache;
+import com.microsoft.azure.toolkit.redis.model.PricingTier;
+import com.microsoft.azure.toolkit.redis.model.RedisConfig;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
+import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azureexplorer.forms.common.Draft;
+import com.microsoft.azuretools.azureexplorer.forms.common.DraftResourceGroup;
+import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -42,42 +62,21 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
-import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
-import com.microsoft.azure.toolkit.redis.AzureRedis;
-import com.microsoft.azure.toolkit.redis.PricingTier;
-import com.microsoft.azure.toolkit.redis.RedisCache;
-import com.microsoft.azure.toolkit.redis.RedisConfig;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
-import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azureexplorer.forms.common.Draft;
-import com.microsoft.azuretools.azureexplorer.forms.common.DraftResourceGroup;
-import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
-import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
 
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
-    private static Activator LOG = Activator.getDefault();
+    private static final Activator LOG = Activator.getDefault();
     protected final AzureManager azureManager;
     private List<Subscription> selectedSubscriptions;
     private List<Region> sortedLocations;
@@ -512,8 +511,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     }
 
     private void validateFields() {
-        boolean dnsValid = !Utils.isEmptyString(dnsNameValue) && dnsNameValue.length() <= REDIS_CACHE_MAX_NAME_LENGTH
-                && dnsNameValue.matches(DNS_NAME_REGEX);
+        boolean dnsValid = !Utils.isEmptyString(dnsNameValue) &&
+            dnsNameValue.length() <= REDIS_CACHE_MAX_NAME_LENGTH &&
+            dnsNameValue.matches(DNS_NAME_REGEX);
         if (dnsValid) {
             decoratorDnsName.hide();
         } else {
@@ -527,8 +527,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             decoratorResGrpName.show();
         }
 
-        boolean allFieldsCompleted = loaded && dnsValid && resGrpValid && !Utils.isEmptyString(selectedLocationValue)
-                && !Utils.isEmptyString(selectedPriceTierValue);
+        boolean allFieldsCompleted = loaded && dnsValid && resGrpValid &&
+            !Utils.isEmptyString(selectedLocationValue) &&
+            !Utils.isEmptyString(selectedPriceTierValue);
         btnOK.setEnabled(allFieldsCompleted);
     }
 
@@ -536,10 +537,12 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         if (currentSub != null) {
-            if (currentSub.getName() != null)
+            if (currentSub.getName() != null) {
                 properties.put("SubscriptionName", currentSub.getName());
-            if (currentSub.getId() != null)
+            }
+            if (currentSub.getId() != null) {
                 properties.put("SubscriptionId", currentSub.getId());
+            }
         }
         return properties;
     }
@@ -551,7 +554,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     static class CreateRedisTask extends AzureTask<RedisCache> {
 
         private RedisConfig config;
-        
+
         CreateRedisTask(RedisConfig config) {
             this.config = config;
         }
