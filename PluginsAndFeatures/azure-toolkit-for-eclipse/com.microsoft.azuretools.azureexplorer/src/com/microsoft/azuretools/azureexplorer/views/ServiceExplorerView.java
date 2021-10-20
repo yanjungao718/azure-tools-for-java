@@ -46,7 +46,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureTreeNode;
@@ -100,7 +99,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         private TreeViewer viewer;
         private TreeNode azureNode;
         private AzureTreeNode[] azureModules;
-        
+
         public ViewContentProvider(TreeViewer viewer) {
             super();
             this.viewer = viewer;
@@ -151,7 +150,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         public boolean hasChildren(Object parent) {
             if (parent instanceof TreeNode) {
                 return ((TreeNode) parent).getChildNodes().size() > 0;
-            }  else if (parent instanceof AzureTreeNode) {
+            } else if (parent instanceof AzureTreeNode) {
                 return ((AzureTreeNode) parent).hasChildren();
             }
             return false;
@@ -166,7 +165,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     com.microsoft.azure.hdinsight.common.CommonConst.ENABLE_HDINSIGHT_NEW_SDK, "true");
 
         }
-        
+
         private Object[] getServiceNodes() {
             return ArrayUtils.concat(azureNode.getChildNodes().toArray(), azureModules);
         }
@@ -310,22 +309,22 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
 
         @Override
         public String getText(Object obj) {
-            if(obj instanceof AzureTreeNode) {
-                return ((AzureTreeNode)obj).getText();
+            if (obj instanceof AzureTreeNode) {
+                return ((AzureTreeNode) obj).getText();
             }
             return obj.toString();
         }
 
         @Override
         public Image getImage(Object obj) {
-            String iconPath = null; 
+            String iconPath = null;
             if (obj instanceof TreeNode) {
                 final Node node = ((TreeNode) obj).node;
                 iconPath = Optional.ofNullable(node.getIconPath()).map(path -> "icons/" + path)
                         .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getPath())
                                 .map(value -> StringUtils.replace(value, ".svg", ".png")).orElse(null));
             } else if (obj instanceof AzureTreeNode) {
-                iconPath =  ((AzureTreeNode) obj).getIconPath();
+                iconPath = ((AzureTreeNode) obj).getIconPath();
             }
             if (StringUtils.isNotEmpty(iconPath)) {
                 return Optional.ofNullable(Activator.getImageDescriptor(iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
@@ -376,12 +375,12 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 if (viewer.getSelection() instanceof IStructuredSelection) {
                     IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                     Object firstElement = selection.getFirstElement();
-                    if(firstElement instanceof TreeNode) {
+                    if (firstElement instanceof TreeNode) {
                         Node node = ((TreeNode) selection.getFirstElement()).node;
                         if (node.hasNodeActions()) {
                             for (final NodeAction nodeAction : node.getNodeActions()) {
                                 ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ?
-                                    Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
+                                        Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
                                 Action action = new Action(nodeAction.getName(), imageDescriptor) {
                                     @Override
                                     public void run() {
@@ -392,7 +391,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                                 manager.add(action);
                             }
                         }
-                    }else if(firstElement instanceof AzureTreeNode) {
+                    } else if (firstElement instanceof AzureTreeNode) {
                         ((AzureTreeNode) firstElement).installActionsMenu(manager);
                     }
                 }
