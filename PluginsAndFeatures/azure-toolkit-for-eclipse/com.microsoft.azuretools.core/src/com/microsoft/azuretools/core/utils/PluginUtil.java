@@ -10,9 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -42,7 +40,6 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 import org.eclipse.equinox.p2.ui.ProvisioningUI;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -67,7 +64,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.Preferences;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 
 public class PluginUtil {
@@ -139,7 +138,7 @@ public class PluginUtil {
      * @param title       the text or title of the window.
      * @param message     the message which is to be displayed
      */
-    public static void displayInfoDialog(Shell shell , String title , String message ){
+    public static void displayInfoDialog(Shell shell, String title, String message) {
         MessageDialog.openInformation(shell, title, message);
     }
 
@@ -154,7 +153,7 @@ public class PluginUtil {
      * @param title       the text or title of the window.
      * @param message     the message which is to be displayed
      */
-    public static void displayErrorDialog(Shell shell , String title , String message ){
+    public static void displayErrorDialog(Shell shell, String title, String message) {
         MessageDialog.openError(shell, title, message);
     }
 
@@ -225,7 +224,7 @@ public class PluginUtil {
                 throw new WACommonException(Messages.SDKLocErrMsg);
             } else {
                 //locate sdk jar in bundle
-                URL url = FileLocator.find(bundle,new Path(Messages.sdkLibBaseJar), null);
+                URL url = FileLocator.find(bundle, new Path(Messages.sdkLibBaseJar), null);
                 if (url == null) {
                     throw new WACommonException(Messages.SDKLocErrMsg);
                 } else {
@@ -269,8 +268,8 @@ public class PluginUtil {
         String pluginFolderPath = "";
         try {
             @SuppressWarnings("deprecation")
-            URL resolvedURL = Platform.resolve (url);
-            File file = new File (resolvedURL.getFile());
+            URL resolvedURL = Platform.resolve(url);
+            File file = new File(resolvedURL.getFile());
             String path = file.getParentFile().getAbsolutePath();
 
             // Default values for Linux
@@ -373,11 +372,9 @@ public class PluginUtil {
      * false : Normal arrow cursor
      */
     public static void showBusy(final boolean busy) {
-        Display.getDefault().syncExec(new Runnable()
-        {
+        Display.getDefault().syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 Shell shell = Display.getDefault().getActiveShell();
                 if (busy) { //show Busy Cursor
                     Cursor cursor = Display.getDefault().getSystemCursor(SWT.CURSOR_WAIT);
@@ -395,11 +392,9 @@ public class PluginUtil {
      * @param shell
      */
     public static void showBusy(final boolean busy, final Shell shell) {
-        Display.getDefault().syncExec(new Runnable()
-        {
+        Display.getDefault().syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 if (busy) { //show Busy Cursor
                     Cursor cursor = Display.getDefault().getSystemCursor(SWT.CURSOR_WAIT);
                     shell.setCursor(cursor);
@@ -496,7 +491,8 @@ public class PluginUtil {
 
         boolean isMarketplacePluginInstalled = checkPlugInInstallation(marketplacePluginSymbolicName);
         if (!isMarketplacePluginInstalled) {
-            PluginUtil.displayInfoDialogWithLink(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")! Click OK to start.", manualInstallMessage);
+            PluginUtil.displayInfoDialogWithLink(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin " +
+                    "which is required to install other missing plugin (" + pluginSymbolicName + ")! Click OK to start.", manualInstallMessage);
             forceInstallPluginUsingP2(marketplacePluginID);
         }
 
@@ -545,8 +541,7 @@ public class PluginUtil {
 
                 if (toParse.length >= 2) {
                     version = Float.valueOf(toParse[0] + "." + toParse[1]);
-
-                     return version.floatValue() >= targetVersion;
+                    return version.floatValue() >= targetVersion;
                 }
             } else {
                 version = Float.valueOf(javaVersion);
@@ -559,6 +554,15 @@ public class PluginUtil {
         return true;
     }
 
+    public static void openLinkInBrowser(@NotNull String url) {
+        try {
+            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
+        } catch (Exception ex) {
+            DefaultLoader.getUIHelper().showException("Unexpected exception: " + ex.getMessage(), ex, "Browse Web App", true, false);
+            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
+        }
+    }
+
     private static void forceInstallPluginUsingP2(String pluginGroupID) {
         URI repoURI = getEclipseP2Repository();
         ProvisioningUI provisioningUI = ProvisioningUI.getDefaultUI();
@@ -567,7 +571,7 @@ public class PluginUtil {
             ProvisioningSession provisioningSession = provisioningUI.getSession();
             IProvisioningAgent provisioningAgent = null;
             if (provisioningSession != null && (provisioningAgent = provisioningSession.getProvisioningAgent()) != null) {
-                IMetadataRepositoryManager manager = (IMetadataRepositoryManager)provisioningAgent.getService(IMetadataRepositoryManager.SERVICE_NAME);
+                IMetadataRepositoryManager manager = (IMetadataRepositoryManager) provisioningAgent.getService(IMetadataRepositoryManager.SERVICE_NAME);
                 if (manager != null) {
                     try {
                         IMetadataRepository repository = manager.loadRepository(repoURI, null);
