@@ -103,7 +103,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         });
         this.viewer.addPostSelectionChangedListener((e) -> {
             if (!e.getSelection().isEmpty()) {
-                this.refreshValue();
+                this.setValue(this.getValue());
             }
         });
     }
@@ -152,7 +152,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         }
         if (this.valueNotSet) {
             if (this.viewer.getItemCount() > 0 && this.viewer.getSelectedIndex() != 0) {
-                this.viewer.setSelectedIndex(0);
+                this.viewer.setSelectedItem(this.viewer.getItems().get(0));
             }
         } else {
             final Object selected = this.viewer.getSelectedItem();

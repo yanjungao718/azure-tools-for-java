@@ -68,7 +68,5 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     @Override
     protected void checkSubclass() {
-        //  allow subclass
-        System.out.println("info   : checking menu subclass");
     }
 }
