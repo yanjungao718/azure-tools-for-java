@@ -23,9 +23,8 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.accessibility.AccessibleRelation;
 import javax.annotation.Nonnull;
@@ -337,7 +336,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             };
             new DumbAwareAction() {
                 @Override
-                public void actionPerformed(@NotNull AnActionEvent e) {
+                public void actionPerformed(@Nonnull AnActionEvent e) {
                     action.run();
                 }
             }.registerCustomShortcutSet(new CustomShortcutSet(keyStroke), AzureComboBox.this);

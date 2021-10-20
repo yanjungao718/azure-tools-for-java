@@ -9,11 +9,10 @@ import com.intellij.ui.components.JBTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.*;
 
 public class IntegerTextField extends JBTextField implements AzureFormInputComponent<Integer> {
 

@@ -29,7 +29,7 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
             name = "account|subscription.list.selected",
             type = AzureOperation.Type.SERVICE
     )
-    protected List<Subscription> loadItems()  {
+    protected List<Subscription> loadItems() {
         try {
             return az(AzureAccount.class).account().getSelectedSubscriptions();
         } catch (Exception ex) {

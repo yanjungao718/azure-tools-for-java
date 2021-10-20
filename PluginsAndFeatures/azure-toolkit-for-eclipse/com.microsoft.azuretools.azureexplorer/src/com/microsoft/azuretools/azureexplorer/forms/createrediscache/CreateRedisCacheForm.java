@@ -77,7 +77,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
-    private static Activator LOG = Activator.getDefault();
+    private static final Activator LOG = Activator.getDefault();
     protected final AzureManager azureManager;
     private List<Subscription> selectedSubscriptions;
     private List<Region> sortedLocations;
@@ -512,8 +512,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     }
 
     private void validateFields() {
-        boolean dnsValid = !Utils.isEmptyString(dnsNameValue) && dnsNameValue.length() <= REDIS_CACHE_MAX_NAME_LENGTH
-                && dnsNameValue.matches(DNS_NAME_REGEX);
+        boolean dnsValid = !Utils.isEmptyString(dnsNameValue) &&
+            dnsNameValue.length() <= REDIS_CACHE_MAX_NAME_LENGTH &&
+            dnsNameValue.matches(DNS_NAME_REGEX);
         if (dnsValid) {
             decoratorDnsName.hide();
         } else {
@@ -527,8 +528,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             decoratorResGrpName.show();
         }
 
-        boolean allFieldsCompleted = loaded && dnsValid && resGrpValid && !Utils.isEmptyString(selectedLocationValue)
-                && !Utils.isEmptyString(selectedPriceTierValue);
+        boolean allFieldsCompleted = loaded && dnsValid && resGrpValid &&
+            !Utils.isEmptyString(selectedLocationValue) &&
+            !Utils.isEmptyString(selectedPriceTierValue);
         btnOK.setEnabled(allFieldsCompleted);
     }
 
@@ -536,10 +538,12 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         if (currentSub != null) {
-            if (currentSub.getName() != null)
+            if (currentSub.getName() != null){
                 properties.put("SubscriptionName", currentSub.getName());
-            if (currentSub.getId() != null)
+            }
+            if (currentSub.getId() != null){
                 properties.put("SubscriptionId", currentSub.getId());
+            }
         }
         return properties;
     }
@@ -551,7 +555,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     static class CreateRedisTask extends AzureTask<RedisCache> {
 
         private RedisConfig config;
-        
+
         CreateRedisTask(RedisConfig config) {
             this.config = config;
         }

@@ -28,7 +28,7 @@ public class EclipseAzureMessager implements IAzureMessager {
         switch (raw.getType()) {
             case ALERT:
             case CONFIRM:
-                final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
+                final String title = Optional.ofNullable(raw.getTitle()).orElse(DEFAULT_TITLE);
                 MessageDialog.openConfirm(null, title, title);
                 return true;
             default:
