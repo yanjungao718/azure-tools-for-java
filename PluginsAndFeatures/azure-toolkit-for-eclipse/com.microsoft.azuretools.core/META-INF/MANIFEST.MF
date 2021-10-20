@@ -120,4 +120,11 @@ Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.tooling.msservices.serviceexplorer.azure.webapp,
  com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base,
  com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot
-Import-Package: org.eclipse.core.expressions
+Import-Package: org.eclipse.core.expressions,
+ org.eclipse.jface,
+ org.eclipse.swt,
+ javax.annotation,
+ reactor.core,
+ org.apache.commons.lang3,
+ org.eclipse.core.databinding,
+ org.eclipse.core.runtime
