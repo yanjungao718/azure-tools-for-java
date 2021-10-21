@@ -24,7 +24,7 @@ public abstract class AzureDialog<T> extends AzDialogWrapper<T> {
     public void doOkAction() {
         try {
             if (Objects.nonNull(this.okActionListener)) {
-                final T data = this.getForm().getData();
+                final T data = this.getForm().getFormData();
                 this.okActionListener.onOk(data);
             } else {
                 super.doOkAction();
@@ -37,10 +37,10 @@ public abstract class AzureDialog<T> extends AzDialogWrapper<T> {
     protected List<AzureValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().validateData();
         this.setOkButtonEnabled(infos.stream().noneMatch(
-                i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
+            i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
         List<AzureValidationInfo> errors = infos.stream()
-                .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
-                .collect(Collectors.toList());
+            .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
+            .collect(Collectors.toList());
         if (infos.stream().anyMatch(AzureValidationInfo.UNINITIALIZED::equals)) {
             setErrorInfoAll(errors);
         }
