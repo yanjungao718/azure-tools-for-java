@@ -19,7 +19,7 @@ public class EclipseConsoleMessager implements IAzureMessager {
     private MessageConsoleStream outputStream;
     private MessageConsoleStream successStream;
 
-    public void setJobConsole(JobConsole console) {
+    public EclipseConsoleMessager(JobConsole console) {
         this.console = console;
         outputStream = this.console.newMessageStream();
         outputStream.setColor(DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CONSOLE_SYS_OUT_COLOR));
