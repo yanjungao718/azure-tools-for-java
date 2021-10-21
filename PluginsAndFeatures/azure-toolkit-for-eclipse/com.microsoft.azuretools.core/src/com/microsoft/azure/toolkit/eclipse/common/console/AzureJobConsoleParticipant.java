@@ -20,8 +20,6 @@ import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.part.IPageBookViewPage;
 
-
-
 public class AzureJobConsoleParticipant implements IConsolePageParticipant {
     private Action terminateAction;
     private Action closeAction;
