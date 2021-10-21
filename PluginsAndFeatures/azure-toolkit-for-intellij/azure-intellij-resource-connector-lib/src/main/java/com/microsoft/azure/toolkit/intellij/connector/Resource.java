@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jdom.Element;
@@ -41,7 +42,7 @@ public interface Resource<T> {
         return this.getDefinition().write(resourceEle, this);
     }
 
-    default void navigate(Project project) {
+    default void navigate(AnActionEvent event) {
     }
 
     default Map<String, String> initEnv(Project project) {

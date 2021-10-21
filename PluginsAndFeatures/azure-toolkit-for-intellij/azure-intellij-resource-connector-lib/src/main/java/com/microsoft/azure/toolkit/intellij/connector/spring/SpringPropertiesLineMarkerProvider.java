@@ -8,7 +8,11 @@ package com.microsoft.azure.toolkit.intellij.connector.spring;
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
+import com.intellij.ide.DataManager;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -64,7 +68,9 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
 
         @Override
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
-            this.resource.navigate(psiElement.getProject());
+            final DataContext context = DataManager.getInstance().getDataContext(mouseEvent.getComponent());
+            final AnActionEvent event = AnActionEvent.createFromInputEvent(mouseEvent, ActionPlaces.EDITOR_GUTTER, null, context);
+            this.resource.navigate(event);
         }
     }
 }

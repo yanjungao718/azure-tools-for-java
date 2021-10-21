@@ -125,6 +125,5 @@ Import-Package: org.eclipse.core.expressions,
  org.eclipse.swt,
  javax.annotation,
  reactor.core,
- org.apache.commons.lang3,
  org.eclipse.core.databinding,
  org.eclipse.core.runtime
