@@ -46,12 +46,12 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     private AzureComboBoxViewer<T> viewer;
     private Control extension;
 
-    public AzureComboBox(Composite parent, boolean refresh) {
-        this(parent, null, refresh);
-    }
-
     public AzureComboBox(Composite parent) {
         this(parent, null, true);
+    }
+
+    public AzureComboBox(Composite parent, boolean refresh) {
+        this(parent, null, refresh);
     }
 
     public AzureComboBox(Composite parent, @Nonnull Supplier<? extends List<? extends T>> itemsLoader) {
@@ -175,9 +175,9 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     @AzureOperation(
-            name = "common|combobox.load_items",
-            params = {"this.getLabel()"},
-            type = AzureOperation.Type.ACTION
+        name = "common|combobox.load_items",
+        params = {"this.getLabel()"},
+        type = AzureOperation.Type.ACTION
     )
     private void doRefreshItems() {
         this.setLoading(true);
@@ -314,5 +314,13 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
             }
             return this.predicate.test((T) obj);
         }
+    }
+
+    public Supplier<? extends List<? extends T>> getItemsLoader() {
+        return itemsLoader;
+    }
+
+    public void setItemsLoader(Supplier<? extends List<? extends T>> itemsLoader) {
+        this.itemsLoader = itemsLoader;
     }
 }
