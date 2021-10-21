@@ -29,7 +29,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.registry,
  org.eclipse.mylyn.commons.core,
  org.eclipse.mylyn.commons.ui,
- org.eclipse.equinox.security
+ org.eclipse.equinox.security,
+ org.apache.commons.collections,
+ org.eclipse.jface.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
@@ -128,6 +130,7 @@ Import-Package: org.eclipse.core.expressions,
  org.eclipse.jface,
  javax.annotation,
  reactor.core,
+ org.apache.commons.lang3,
  org.eclipse.core.databinding,
  org.eclipse.core.runtime,
  org.eclipse.ui,
