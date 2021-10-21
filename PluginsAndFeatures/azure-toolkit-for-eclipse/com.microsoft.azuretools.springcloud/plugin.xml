@@ -12,5 +12,8 @@
       <actionContributor
             implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor">
       </actionContributor>
+      <actionContributor
+            implementation="com.microsoft.azure.toolkit.eclipse.springcloud.EclipseSpringCloudActionsContributor">
+      </actionContributor>
    </extension>
 </plugin>
