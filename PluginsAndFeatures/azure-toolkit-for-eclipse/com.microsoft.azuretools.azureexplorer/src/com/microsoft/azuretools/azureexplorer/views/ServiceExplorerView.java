@@ -77,7 +77,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         "com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule",
         "com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule",
         "com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule",
-        "com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule");
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule",
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule");
 
     private TreeViewer viewer;
     private Action refreshAction;
