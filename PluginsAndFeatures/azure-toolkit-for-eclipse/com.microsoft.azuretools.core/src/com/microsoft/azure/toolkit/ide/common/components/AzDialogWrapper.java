@@ -40,7 +40,8 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
     @Override
     public void setTitle(String newTitle) {
         super.setTitle(newTitle);
-        getShell().setText(newTitle);
+        this.setMessage(newTitle);
+        this.getShell().setText(newTitle);
     }
 
     protected void doOkAction() {
@@ -69,7 +70,7 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
         super.create();
         final List<AzureFormInput<?>> inputs = this.getForm().getInputs();
         for (AzureFormInput<?> input : inputs) {
-            ((AzureFormInputControl<?>) input).addValueChangedListener((v) -> {
+            input.addValueChangedListener((v) -> {
                 this.revalidate();
             });
         }
@@ -89,17 +90,19 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
         if (!errors.isEmpty() && hasPending.test(errors)) {
             if (Objects.isNull(this.subscription) || this.subscription.isDisposed()) {
                 this.subscription = Flux.interval(Duration.ofMillis(300))
-                        .onBackpressureDrop()
-                        .publishOn(Schedulers.fromExecutor(command -> AzureTaskManager.getInstance().runLater(command)))
-                        .flatMap((i) -> Mono.fromCallable(this::revalidate))
-                        .takeUntil(e -> !hasPending.test(e))
-                        .subscribe();
+                    .onBackpressureDrop()
+                    .publishOn(Schedulers.fromExecutor(command -> AzureTaskManager.getInstance().runLater(command)))
+                    .flatMap((i) -> Mono.fromCallable(this::revalidate))
+                    .takeUntil(e -> !hasPending.test(e))
+                    .subscribe();
             }
         }
         return errors;
     }
 
     protected final void setErrorInfoAll(List<AzureValidationInfo> infos) {
+        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
+        this.setErrorMessage(titleErrorMessage);
         for (AzureValidationInfo info : infos) {
             final Control input = ((AzureFormInputControl<?>) info.getInput()).getInputControl();
             ControlDecoration deco = (ControlDecoration) input.getData(CONTROL_DECORATOR);

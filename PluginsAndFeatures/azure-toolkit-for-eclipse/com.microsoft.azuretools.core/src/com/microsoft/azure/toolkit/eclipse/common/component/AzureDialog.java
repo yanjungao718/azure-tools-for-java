@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.eclipse.common.component;
 import com.microsoft.azure.toolkit.ide.common.components.AzDialogWrapper;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 import java.util.List;
@@ -19,6 +21,12 @@ public abstract class AzureDialog<T> extends AzDialogWrapper<T> {
 
     public AzureDialog(Shell parentShell) {
         super(parentShell);
+    }
+
+    @Override
+    protected Control createDialogArea(Composite parent) {
+        this.setTitle(this.getDialogTitle());
+        return super.createDialogArea(parent);
     }
 
     public void doOkAction() {
