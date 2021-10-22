@@ -12,18 +12,18 @@ import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.S
 import com.microsoft.azuretools.azureexplorer.Activator;
 
 public class AzureIcons {
-	public static final String FILE_EXTENSION_ICON_PREFIX = "file-";
+    public static final String FILE_EXTENSION_ICON_PREFIX = "file-";
 
-	public static ImageDescriptor getIcon(String input) {
-		if (StringUtils.startsWith(input, FILE_EXTENSION_ICON_PREFIX)) {
-			final String fileExtension = StringUtils.removeStart(input, FILE_EXTENSION_ICON_PREFIX);
-			return ImageDescriptor
-					.createFromImageData(org.eclipse.swt.program.Program.findProgram(fileExtension).getImageData());
-		}
-		final String extension = FilenameUtils.getExtension(input);
-		final String iconPath = StringUtils.equals(extension, "svg")
-				? FilenameUtils.removeExtension(input) + FilenameUtils.EXTENSION_SEPARATOR + "png"
-				: input;
-		return Activator.getImageDescriptor(iconPath);
-	}
+    public static ImageDescriptor getIcon(String input) {
+        if (StringUtils.startsWith(input, FILE_EXTENSION_ICON_PREFIX)) {
+            final String fileExtension = StringUtils.removeStart(input, FILE_EXTENSION_ICON_PREFIX);
+            return ImageDescriptor
+                    .createFromImageData(org.eclipse.swt.program.Program.findProgram(fileExtension).getImageData());
+        }
+        final String extension = FilenameUtils.getExtension(input);
+        final String iconPath = StringUtils.equals(extension, "svg")
+                ? FilenameUtils.removeExtension(input) + FilenameUtils.EXTENSION_SEPARATOR + "png"
+                : input;
+        return Activator.getImageDescriptor(iconPath);
+    }
 }

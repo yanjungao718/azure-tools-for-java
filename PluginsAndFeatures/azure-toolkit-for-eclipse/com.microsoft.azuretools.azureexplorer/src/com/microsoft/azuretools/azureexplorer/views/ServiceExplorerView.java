@@ -339,7 +339,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
             // TODO Auto-generated method stub
-            if(e1 instanceof AzureTreeNode && e2 instanceof AzureTreeNode) {
+            if (e1 instanceof AzureTreeNode && e2 instanceof AzureTreeNode) {
                 return 0; // Skip AzureTreeNode which order was controlled by node
             }
             return super.compare(viewer, e1, e2);

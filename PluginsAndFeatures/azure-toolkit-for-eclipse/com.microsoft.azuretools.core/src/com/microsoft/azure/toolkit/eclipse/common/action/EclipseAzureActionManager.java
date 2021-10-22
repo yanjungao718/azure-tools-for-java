@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.eclipse.common.action;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +61,7 @@ public class EclipseAzureActionManager extends AzureActionManager {
                     contributor.registerGroups(am);
                 });
     }
-    
+
     @Override
     public <D> Action<D> getAction(Id<D> id) {
         final String actionId = ACTION_ID_PREFIX + id.getId();

@@ -50,11 +50,11 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class EclipseWebAppActionsContributor implements IActionsContributor {
     private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open explorer";
-    
+
     @Override
     public void registerActions(AzureActionManager am) {
         final BiConsumer<AppServiceFile, Object> downloadHandler = (file, e) -> AzureTaskManager
-                .getInstance().runLater(()->{
+                .getInstance().runLater(() -> {
                     final File destFile = DefaultLoader.getUIHelper().showFileChooser(String.format("Download %s", file.getName()));
                     if (destFile == null) {
                         return;
