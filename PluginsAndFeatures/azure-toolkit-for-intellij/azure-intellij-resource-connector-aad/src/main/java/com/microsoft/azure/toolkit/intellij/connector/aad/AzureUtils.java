@@ -18,6 +18,7 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
 
 import javax.annotation.Nonnull;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,5 +123,15 @@ final class AzureUtils {
         var authProvider = new TokenCredentialAuthProvider(credentials);
 
         return GraphServiceClient.builder().authenticationProvider(authProvider).buildClient();
+    }
+
+    static boolean isValidCallbackURL(@Nonnull String value) {
+        try {
+            var uri = URI.create(value);
+            var scheme = uri.getScheme();
+            return ("https".equals(scheme) || "http".equals(scheme)) && !uri.getHost().isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

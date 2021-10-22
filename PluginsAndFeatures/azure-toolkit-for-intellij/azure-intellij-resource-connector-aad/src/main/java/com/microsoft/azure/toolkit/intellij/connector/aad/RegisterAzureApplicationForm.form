@@ -25,10 +25,9 @@
       </vspacer>
       <component id="ed34f" class="com.intellij.ui.components.JBLabel">
         <constraints>
-          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <labelFor value="5e012"/>
           <text resource-bundle="messages/aadBundle" key="dialog.identity.ad.register_app.callback_url"/>
         </properties>
       </component>
@@ -111,12 +110,6 @@
           <required value="true"/>
         </properties>
       </component>
-      <component id="5e012" class="com.microsoft.azure.toolkit.intellij.connector.aad.AzureEditableCallbackUrlsCombobox" binding="callbackUrlsInput" custom-create="true" default-binding="true">
-        <constraints>
-          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties/>
-      </component>
       <component id="b004f" class="com.intellij.ui.components.JBLabel">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -128,6 +121,11 @@
       <component id="80671" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="subscriptionBox" custom-create="true">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </component>
+      <component id="19cd1" class="javax.swing.JComponent" binding="callbackUrls" custom-create="true">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
       </component>
     </children>

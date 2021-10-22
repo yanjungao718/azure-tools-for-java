@@ -25,8 +25,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistrationModel> {
     private JPanel contentPanel;
@@ -39,8 +41,11 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     private TitledSeparator advancedSettingsSeparator;
     private JComponent noteComponent;
     private JBLabel clientIdNote;
-    private AzureEditableCallbackUrlsCombobox callbackUrlsInput;
     private SubscriptionComboBox subscriptionBox;
+    private JComponent callbackUrls;
+
+    // initialized in createUIComponents
+    private AzureCallbackUrlTable callbackUrlsTable;
 
     RegisterAzureApplicationForm(@Nonnull Project project) {
         var separator = (AzureHideableTitledSeparator) advancedSettingsSeparator;
@@ -67,9 +72,16 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
 
     @Override
     public ApplicationRegistrationModel getData() {
+        var urls = callbackUrlsTable.getTableView().getItems()
+                .stream()
+                .map(StringBuilder::toString)
+                .filter(s -> !s.isBlank())
+                .distinct()
+                .collect(Collectors.toCollection(ArrayList::new));
+
         var data = new ApplicationRegistrationModel();
         data.setDisplayName(displayNameInput.getText());
-        data.setCallbackUrls(callbackUrlsInput.getItems());
+        data.setCallbackUrls(urls);
         data.setDomain(domainInput.getText());
         data.setMultiTenant(multiTenantInput.isSelected());
         data.setClientId(clientIdInput.getText());
@@ -78,7 +90,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(subscriptionBox, displayNameInput, callbackUrlsInput, domainInput, clientIdInput);
+        return Arrays.asList(subscriptionBox, displayNameInput, callbackUrlsTable, domainInput, clientIdInput);
     }
 
     @Override
@@ -86,7 +98,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
         var callbackUrls = data.getCallbackUrls();
 
         displayNameInput.setText(data.getDisplayName());
-        callbackUrlsInput.setUrls(callbackUrls);
+        callbackUrlsTable.setValues(callbackUrls.stream().map(StringBuilder::new).collect(Collectors.toList()));
         domainInput.setText(data.getDomain());
         multiTenantInput.setSelected(data.isMultiTenant());
         clientIdInput.setText(data.getClientId());
@@ -100,7 +112,11 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
         subscriptionBox.setEditable(false);
         subscriptionBox.setRequired(true);
 
-        callbackUrlsInput = new AzureEditableCallbackUrlsCombobox();
+        callbackUrlsTable = new AzureCallbackUrlTable();
+        callbackUrlsTable.getTableView().setTableHeader(null);
+        callbackUrls = callbackUrlsTable.getComponent();
+        callbackUrls.setBorder(JBUI.Borders.merge(callbackUrls.getBorder(), JBUI.Borders.empty(0, 4), true));
+
         clientIdInput = new AzureClientIdInput();
         advancedSettingsSeparator = new AzureHideableTitledSeparator();
     }
