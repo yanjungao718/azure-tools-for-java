@@ -61,5 +61,23 @@
    <extension point="org.eclipse.ui.commandImages">
      <image commandId="com.microsoft.azuretools.webapp.commands.deployToAzure" icon="icons/PublishWebApp_16.png"></image>
    </extension>
+      <extension
+         point="com.microsoft.azure.toolkit.explorer">
+      <explorerContributor
+            implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor">
+      </explorerContributor>
+   </extension>
+   <extension
+         point="com.microsoft.azure.toolkit.actions">
+      <actionContributor
+            implementation="com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor">
+      </actionContributor>
+      <actionContributor
+            implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor">
+      </actionContributor>
+      <actionContributor
+            implementation="com.microsoft.azure.toolkit.intellij.webapp.EclipseWebAppActionsContributor">
+      </actionContributor>
+   </extension>
 
 </plugin>
