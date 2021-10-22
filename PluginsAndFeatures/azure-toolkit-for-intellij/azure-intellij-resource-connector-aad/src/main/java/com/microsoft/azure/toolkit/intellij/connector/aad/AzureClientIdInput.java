@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
@@ -19,13 +20,13 @@ class AzureClientIdInput extends AzureTextInput {
     public AzureClientIdInput() {
         super();
         this.setValidator(this::doValidateValue);
-        this.setRequired(true);
+        this.setRequired(false);
     }
 
     @Nonnull
     public AzureValidationInfo doValidateValue() {
         final var value = this.getValue();
-        if (!isValid(value)) {
+        if (!StringUtils.isBlank(value) && !isValid(value)) {
             return AzureValidationInfo.builder()
                     .input(this)
                     .message(MessageBundle.message("action.azure.aad.registerApp.clientIdInvalid"))

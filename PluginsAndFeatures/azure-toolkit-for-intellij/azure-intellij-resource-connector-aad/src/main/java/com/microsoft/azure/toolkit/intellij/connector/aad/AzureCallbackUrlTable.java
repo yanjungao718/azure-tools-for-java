@@ -10,16 +10,19 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.util.ui.ListTableModel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> implements AzureFormInput<List<StringBuilder>> {
+
     public AzureCallbackUrlTable() {
+        super();
         getTableView().getEmptyText().setText(MessageBundle.message("dialog.identity.ad.register_app.callback_url.emptyText"));
+        this.setValidator(this::doValidateValue);
     }
 
     @Override
@@ -57,14 +60,9 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
         this.setValues(val);
     }
 
-    @NotNull
-    @Override
-    public AzureValidationInfo doValidate() {
+    @Nonnull
+    public AzureValidationInfo doValidateValue() {
         final var urls = this.getValue();
-        if (urls == null || urls.isEmpty()) {
-            return AzureFormInput.super.doValidate();
-        }
-
         for (final var url : urls) {
             if (!AzureUtils.isValidCallbackURL(url.toString())) {
                 return AzureValidationInfo.builder()
@@ -98,12 +96,14 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
         }
 
         @Override
-        protected @Nullable String getDescription(StringBuilder stringBuilder) {
+        protected @Nullable
+        String getDescription(StringBuilder stringBuilder) {
             return null;
         }
 
         @Override
-        public @Nullable String valueOf(StringBuilder stringBuilder) {
+        public @Nullable
+        String valueOf(StringBuilder stringBuilder) {
             return stringBuilder.toString();
         }
 
