@@ -21,12 +21,12 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.TreeViewer;
 
+import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView.Label;
-import com.microsoft.azuretools.azureexplorer.Activator;
 
 public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.component.NodeView.Refresher {
     private TreeViewer treeView;
@@ -108,12 +108,19 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
     }
 
     public String getIconPath() {
-        return StringUtils.replace(node.view().getIconPath(), ".svg", ".png");
+        return node.view().getIconPath();
     }
 
     public void installActionsMenu(@Nonnull IMenuManager manager) {
         Optional.ofNullable(node.actions())
                 .ifPresent(group -> applyActionGroupToMenu(node.actions(), manager, node.data()));
+    }
+
+    public void clearNode() {
+        Optional.ofNullable(childs).ifPresent(childs -> childs.forEach(AzureTreeNode::clearNode));
+        this.childs = Collections.emptyList();
+        treeView.refresh(this);
+        this.loaded = null;
     }
 
     private void applyActionGroupToMenu(@Nonnull ActionGroup actionGroup, @Nonnull IMenuManager manager,
@@ -155,10 +162,8 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
         if (view == null) {
             return null;
         }
-        final String iconPath = Optional.ofNullable(view.getIconPath())
-                .map(path -> StringUtils.replace(path, ".svg", ".png")).orElse(null);
-        final ImageDescriptor imageDescriptor = StringUtils.isEmpty(iconPath) ? null
-                : Activator.getImageDescriptor(iconPath);
+        final ImageDescriptor imageDescriptor = StringUtils.isEmpty(view.getIconPath()) ? null
+                : AzureIcons.getIcon(view.getIconPath());
         final Action eclipseAction = new Action(view.getLabel(), imageDescriptor) {
             @Override
             public void run() {
