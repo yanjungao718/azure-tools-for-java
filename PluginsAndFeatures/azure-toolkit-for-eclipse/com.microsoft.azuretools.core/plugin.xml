@@ -272,4 +272,31 @@
              implementation="com.microsoft.azure.toolkit.eclipse.common.action.EclipseActionsContributor">
        </actionContributor>
     </extension>
+    <extension point="org.eclipse.ui.console.consolePageParticipants">
+    <consolePageParticipant
+        class="com.microsoft.azure.toolkit.eclipse.common.console.AzureJobConsoleParticipant"
+        id="com.microsoft.azure.toolkit.eclipse.common.console.azureJobConsoleParticipant">
+      <enablement>
+        <test
+            property="org.eclipse.ui.console.consoleTypeTest"
+            value="com.microsoft.azure.toolkit.eclipse.job.consoleType">
+        </test>
+      </enablement>
+    </consolePageParticipant>
+
+     <extension
+    point="org.eclipse.ui.console.consolePatternMatchListeners">
+    <consolePatternMatchListener
+        class="com.microsoft.azure.toolkit.eclipse.common.console.AzureHyperlinkTracker"
+        id="com.microsoft.azure.toolkit.eclipse.common.console.consoleAzureHyperlinkTracker"
+        regex="https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&amp;//=]*)">
+      <enablement>
+        <test
+            property="org.eclipse.ui.console.consoleTypeTest"
+            value="com.microsoft.azure.toolkit.eclipse.job.consoleType">
+        </test>
+      </enablement>
+    </consolePatternMatchListener>
+  </extension>
+  </extension>
 </plugin>
