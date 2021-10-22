@@ -24,9 +24,7 @@ public interface AzureFormPanel<T> extends AzureForm<T> {
 
     @Override
     default List<AzureFormInput<?>> getInputs() {
-        Collections.emptyList().addAll(new ArrayList<>());
         return new ArrayList<>();
     }
-
 }
 

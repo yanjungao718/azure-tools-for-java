@@ -118,6 +118,7 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         // Disable the check that prevents subclassing of SWT components
     }
 
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
         setLayout(new GridLayout(2, false));
 

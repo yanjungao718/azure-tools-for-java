@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.eclipse.springcloud.creation;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
@@ -41,6 +46,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         this.textName.setRequired(true);
     }
 
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
         setLayout(new GridLayout(1, false));
 
