@@ -6,10 +6,10 @@
 
 package com.microsoft.azure.toolkit.eclipse.springcloud.deployment;
 
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.eclipse.common.artifact.AzureArtifactManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -37,7 +37,6 @@ public class DeploySpringCloudAppAction {
     private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
 
     public static void deployToApp(@Nullable SpringCloudApp app) {
-        Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final SpringCloudDeploymentDialog dialog = new SpringCloudDeploymentDialog(Display.getCurrent().getActiveShell());
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
@@ -47,8 +46,14 @@ public class DeploySpringCloudAppAction {
                 }
             });
             dialog.setOkActionListener((config) -> {
+                final boolean buildArtifact = dialog.getBuildArtifact();
                 dialog.close();
-                deployToApp(config);
+                final IArtifact artifact = config.getDeployment().getArtifact();
+                if (buildArtifact && Objects.nonNull(artifact)) {
+                    AzureArtifactManager.buildArtifact(((WrappedAzureArtifact) artifact).getArtifact())
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .subscribe((r) -> deployToApp(config), e -> AzureMessager.getMessager().error(e));
+                }
             });
             dialog.open();
         });

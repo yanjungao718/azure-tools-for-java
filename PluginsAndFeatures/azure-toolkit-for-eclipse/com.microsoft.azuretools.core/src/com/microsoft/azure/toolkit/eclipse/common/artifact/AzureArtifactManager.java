@@ -7,21 +7,28 @@ package com.microsoft.azure.toolkit.eclipse.common.artifact;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
+import reactor.core.publisher.Mono;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,8 +44,9 @@ import java.util.stream.Collectors;
 
 public class AzureArtifactManager {
     private static final String ARTIFACT_NOT_SUPPORTED = "Target file does not exist or is not executable, please " +
-            "check the files under folder `%s`.";
+        "check the files under folder `%s`.";
     private static final String MULTI_ARTIFACT = "Multiple deployable artifacts(%s) are found at folder `%s`, deploy terminates.";
+    private static final String MAVEN_GOALS = "package";
 
     private static class AzureArtifactManagerHolder {
         private static final AzureArtifactManager instance = new AzureArtifactManager();
@@ -51,10 +59,29 @@ public class AzureArtifactManager {
     private AzureArtifactManager() {
     }
 
+    public static Mono<IStatus> buildArtifact(@Nonnull AzureArtifact artifact) {
+        return Mono.create((sink) -> {
+            final Object ref = artifact.getReferencedObject();
+            if (ref instanceof MavenProject) {
+                Path path = new Path(((MavenProject) ref).getBasedir().getAbsolutePath());
+                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+                IContainer container = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(path);
+                try {
+                    action.launch(container, () -> {
+                        sink.success(Status.OK_STATUS);
+                        return null;
+                    });
+                } catch (CoreException e) {
+                    sink.error(e);
+                }
+            }
+        });
+    }
+
     public AzureArtifact getAzureArtifactById(AzureArtifactType type, String artifactId) {
         return type == AzureArtifactType.File ? AzureArtifact.createFromFile(artifactId) :
-                getAllSupportedAzureArtifacts().stream().filter(artifact -> StringUtils.equals(artifact.getArtifactIdentifier()
-                        , artifactId)).findFirst().orElse(null);
+            getAllSupportedAzureArtifacts().stream().filter(artifact -> StringUtils.equals(artifact.getArtifactIdentifier()
+                , artifactId)).findFirst().orElse(null);
     }
 
     public List<AzureArtifact> getAllSupportedAzureArtifacts() {
@@ -76,7 +103,7 @@ public class AzureArtifactManager {
 
     public static List<MavenProject> listMavenProjects() {
         return listJavaProjects().stream().filter(MavenUtils::isMavenProject)
-                .map(AzureArtifactManager::toMavenProject).filter(Objects::nonNull).collect(Collectors.toList());
+            .map(AzureArtifactManager::toMavenProject).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private static MavenProject toMavenProject(IProject project) {
@@ -124,9 +151,9 @@ public class AzureArtifactManager {
     }
 
     @AzureOperation(
-            name = "common|artifact.get_file",
-            params = {"artifact.getName()"},
-            type = AzureOperation.Type.TASK
+        name = "common|artifact.get_file",
+        params = {"artifact.getName()"},
+        type = AzureOperation.Type.TASK
     )
     public File getFileForDeployment(AzureArtifact artifact) {
         switch (artifact.getType()) {
@@ -150,7 +177,7 @@ public class AzureArtifactManager {
         }
         if (files.size() > 1) {
             final String artifactNameLists = files.stream()
-                    .map(File::getName).collect(Collectors.joining(","));
+                .map(File::getName).collect(Collectors.joining(","));
             throw new AzureToolkitRuntimeException(String.format(MULTI_ARTIFACT, artifactNameLists, dir.getAbsolutePath()));
         }
         return files.iterator().next();
@@ -168,7 +195,7 @@ public class AzureArtifactManager {
         // Throw exception when there are multi runnable artifacts
         if (executableJars.size() > 1) {
             final String artifactNameLists = executableJars.stream()
-                    .map(File::getName).collect(Collectors.joining(","));
+                .map(File::getName).collect(Collectors.joining(","));
             throw new AzureToolkitRuntimeException(String.format(MULTI_ARTIFACT, artifactNameLists, dir.getAbsolutePath()));
         }
         return executableJars.get(0);
