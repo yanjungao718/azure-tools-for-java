@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.eclipse.springcloud.creation;
 
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -26,7 +24,6 @@ public class CreateSpringCloudAppAction {
     private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
 
     public static void createApp(@Nonnull SpringCloudCluster cluster) {
-        Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(cluster, Display.getCurrent().getActiveShell());
             dialog.setOkActionListener((config) -> {

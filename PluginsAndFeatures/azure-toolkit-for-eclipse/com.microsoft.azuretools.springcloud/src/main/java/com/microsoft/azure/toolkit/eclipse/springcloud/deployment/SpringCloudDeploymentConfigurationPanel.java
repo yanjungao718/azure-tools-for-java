@@ -5,7 +5,6 @@
 package com.microsoft.azure.toolkit.eclipse.springcloud.deployment;
 
 import com.microsoft.azure.toolkit.eclipse.common.artifact.AzureArtifact;
-import com.microsoft.azure.toolkit.eclipse.common.artifact.AzureArtifactManager;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
@@ -14,7 +13,6 @@ import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudAppC
 import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -22,17 +20,12 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -43,8 +36,6 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
     private SpringCloudAppComboBox selectorApp;
-    private Label lblBeforeDeploy;
-    private Button btnBuildMavenProject;
 
     public SpringCloudDeploymentConfigurationPanel(Composite parent) {
         super(parent, SWT.NONE);
@@ -122,24 +113,6 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         );
     }
 
-    private static class WrappedAzureArtifact implements IArtifact {
-        private final AzureArtifact artifact;
-
-        public WrappedAzureArtifact(@Nonnull final AzureArtifact artifact) {
-            this.artifact = artifact;
-        }
-
-        @Override
-        public File getFile() {
-            return AzureArtifactManager.getInstance().getFileForDeployment(artifact);
-        }
-
-        public AzureArtifact getArtifact() {
-            return artifact;
-        }
-
-    }
-
     @Override
     protected void checkSubclass() {
         // Disable the check that prevents subclassing of SWT components
@@ -149,6 +122,9 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         setLayout(new GridLayout(2, false));
 
         Label lblArtifact = new Label(this, SWT.NONE);
+        GridData gd_lblArtifact = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gd_lblArtifact.widthHint = 88;
+        lblArtifact.setLayoutData(gd_lblArtifact);
         lblArtifact.setText("Artifact:");
         selectorArtifact = new AzureArtifactComboBox(this);
         selectorArtifact.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -171,15 +147,5 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         selectorApp = new SpringCloudAppComboBox(this);
         selectorApp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         selectorApp.setLabeledBy(lblApp);
-
-        lblBeforeDeploy = new Label(this, SWT.NONE);
-        lblBeforeDeploy.setText("Before deploy:");
-        btnBuildMavenProject = new Button(this, SWT.CHECK);
-        btnBuildMavenProject.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-            }
-        });
-        btnBuildMavenProject.setText("Build Maven project");
     }
 }
