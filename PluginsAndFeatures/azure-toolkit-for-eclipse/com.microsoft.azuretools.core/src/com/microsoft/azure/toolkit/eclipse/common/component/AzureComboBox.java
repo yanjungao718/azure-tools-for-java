@@ -288,10 +288,6 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         AzureMessager.getMessager().error(e);
     }
 
-    public String getLabel() {
-        return this.getClass().getSimpleName();
-    }
-
     @Override
     public Control getInputControl() {
         return this.viewer.getControl();

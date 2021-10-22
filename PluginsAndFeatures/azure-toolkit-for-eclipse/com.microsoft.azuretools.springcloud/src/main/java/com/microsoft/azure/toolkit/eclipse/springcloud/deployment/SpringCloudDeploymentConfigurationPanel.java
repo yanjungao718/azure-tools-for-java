@@ -150,36 +150,35 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
 
         Label lblArtifact = new Label(this, SWT.NONE);
         lblArtifact.setText("Artifact:");
-
         selectorArtifact = new AzureArtifactComboBox(this);
         selectorArtifact.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        selectorArtifact.setLabeledBy(lblArtifact);
 
         Label lblSubscription = new Label(this, SWT.NONE);
         lblSubscription.setText("Subscription:");
-
         selectorSubscription = new SubscriptionComboBox(this);
         selectorSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        selectorSubscription.setLabeledBy(lblSubscription);
 
         Label lblService = new Label(this, SWT.NONE);
         lblService.setText("Service:");
-
         selectorCluster = new SpringCloudClusterComboBox(this);
         selectorCluster.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        selectorCluster.setLabeledBy(lblService);
 
         Label lblApp = new Label(this, SWT.NONE);
         lblApp.setText("App:");
-
         selectorApp = new SpringCloudAppComboBox(this);
         selectorApp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        selectorApp.setLabeledBy(lblApp);
 
         lblBeforeDeploy = new Label(this, SWT.NONE);
         lblBeforeDeploy.setText("Before deploy:");
-
         btnBuildMavenProject = new Button(this, SWT.CHECK);
         btnBuildMavenProject.addSelectionListener(new SelectionAdapter() {
-        	@Override
-        	public void widgetSelected(SelectionEvent e) {
-        	}
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            }
         });
         btnBuildMavenProject.setText("Build Maven project");
     }

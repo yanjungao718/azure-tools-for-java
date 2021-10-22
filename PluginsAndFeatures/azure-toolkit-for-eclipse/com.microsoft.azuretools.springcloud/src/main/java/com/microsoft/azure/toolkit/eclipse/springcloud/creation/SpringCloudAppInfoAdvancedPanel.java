@@ -31,7 +31,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
 
     public SpringCloudAppInfoAdvancedPanel(Composite parent, @Nullable final SpringCloudCluster cluster) {
         super(parent, cluster);
-        setupUI();
+        $$$setupUI$$$();
         this.init();
     }
 
@@ -41,7 +41,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         this.textName.setRequired(true);
     }
 
-    private void setupUI() {
+    private void $$$setupUI$$$() {
         setLayout(new GridLayout(1, false));
 
         Group grpTests = new Group(this, SWT.NONE);
@@ -57,21 +57,21 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         gd_lblSubscription.widthHint = 100;
         lblSubscription.setLayoutData(gd_lblSubscription);
         lblSubscription.setText("Subscription:");
-
         this.selectorSubscription = new SubscriptionComboBox(grpTests);
         this.selectorSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.selectorSubscription.setLabeledBy(lblSubscription);
 
         Label lblService = new Label(grpTests, SWT.NONE);
         lblService.setText("Service:");
-
         this.selectorCluster = new SpringCloudClusterComboBox(grpTests);
         this.selectorCluster.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.selectorCluster.setLabeledBy(lblService);
 
         Label lblAppName = new Label(grpTests, SWT.NONE);
         lblAppName.setText("App name:");
-
         this.textName = new AzureTextInput(grpTests);
         this.textName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.textName.setLabeledBy(lblAppName);
 
         this.formConfig = new SpringCloudAppConfigPanel(this);
         GridLayout gridLayout = (GridLayout) this.formConfig.getLayout();

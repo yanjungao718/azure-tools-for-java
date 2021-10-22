@@ -229,12 +229,14 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 
         this.txtJvmOptions = new AzureTextInput(grpConfiguration, SWT.BORDER);
         this.txtJvmOptions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        this.txtJvmOptions.setLabeledBy(lblJvmOptions);
 
         Label lblEnvVariable = new Label(grpConfiguration, SWT.NONE);
         lblEnvVariable.setText("Env variables:");
 
         this.envTable = new AzureTextInput(grpConfiguration, SWT.BORDER);
         this.envTable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        this.envTable.setLabeledBy(lblEnvVariable);
 
         Group grpScalingUpout = new Group(this, SWT.NONE);
         grpScalingUpout.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -252,17 +254,18 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
         this.numCpu.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblNewLabel_1 = new Label(grpScalingUpout, SWT.NONE);
-        lblNewLabel_1.setText("Memory/GB");
+        lblNewLabel_1.setText("Memory/GB:");
 
         this.numMemory = new Spinner(grpScalingUpout, SWT.BORDER);
         numMemory.setSelection(1);
         this.numMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblNewLabel_2 = new Label(grpScalingUpout, SWT.NONE);
-        lblNewLabel_2.setText("Instances");
+        lblNewLabel_2.setText("Instances:");
 
         this.numInstance = new AzureSlider(grpScalingUpout, SWT.NONE);
         this.numInstance.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.numInstance.setLabeledBy(lblNewLabel_2);
     }
 
     @Override
