@@ -19,7 +19,6 @@ public class EclipseActionsContributor implements IActionsContributor {
 
     @Override
     public int getOrder() {
-        // TODO Auto-generated method stub
         return 2; //after azure resource common actions registered
     }
 

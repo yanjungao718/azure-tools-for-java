@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.action;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -44,18 +46,20 @@ public class EclipseAzureActionManager extends AzureActionManager {
         register(am);
         IConfigurationElement[] configurationElements = Platform.getExtensionRegistry()
                 .getConfigurationElementsFor(EXTENSION_POINT_ID);
-        for (IConfigurationElement element : configurationElements) {
+        Arrays.stream(configurationElements).map(element -> {
             try {
-                Object extension = element.createExecutableExtension("implementation");
-                if (extension instanceof IActionsContributor) {
-                    ((IActionsContributor) extension).registerActions(am);
-                    ((IActionsContributor) extension).registerHandlers(am);
-                    ((IActionsContributor) extension).registerGroups(am);
-                }
-            } catch (CoreException e) {
+                return element.createExecutableExtension("implementation");
+            } catch (CoreException e1) {
                 // swallow exception during register
+                return null;
             }
-        }
+        }).filter(ext -> ext instanceof IActionsContributor).map(ext -> (IActionsContributor) ext)
+                .sorted(Comparator.comparing(IActionsContributor::getOrder))
+                .forEachOrdered(contributor -> {
+                    contributor.registerActions(am);
+                    contributor.registerHandlers(am);
+                    contributor.registerGroups(am);
+                });
     }
 
     @Override

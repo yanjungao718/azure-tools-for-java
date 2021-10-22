@@ -47,8 +47,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
-import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
-import com.microsoft.azure.toolkit.intellij.explorer.AzureTreeNode;
+import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
+import com.microsoft.azure.toolkit.eclipse.explorer.AzureExplorer;
+import com.microsoft.azure.toolkit.eclipse.explorer.AzureTreeNode;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -76,7 +77,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         "com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule",
         "com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule",
         "com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule",
-        "com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule");
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule",
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule");
 
     private TreeViewer viewer;
     private Action refreshAction;
@@ -321,19 +323,27 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             if (obj instanceof TreeNode) {
                 final Node node = ((TreeNode) obj).node;
                 iconPath = Optional.ofNullable(node.getIconPath()).map(path -> "icons/" + path)
-                        .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getPath())
-                                .map(value -> StringUtils.replace(value, ".svg", ".png")).orElse(null));
+                        .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getPath()).orElse(null));
             } else if (obj instanceof AzureTreeNode) {
                 iconPath = ((AzureTreeNode) obj).getIconPath();
             }
             if (StringUtils.isNotEmpty(iconPath)) {
-                return Optional.ofNullable(Activator.getImageDescriptor(iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
+                return Optional.ofNullable(AzureIcons.getIcon(iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
             }
             return super.getImage(obj);
         }
     }
 
     class NameSorter extends ViewerSorter {
+
+        @Override
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            // TODO Auto-generated method stub
+            if (e1 instanceof AzureTreeNode && e2 instanceof AzureTreeNode) {
+                return 0; // Skip AzureTreeNode which order was controlled by node
+            }
+            return super.compare(viewer, e1, e2);
+        }
     }
 
     /**

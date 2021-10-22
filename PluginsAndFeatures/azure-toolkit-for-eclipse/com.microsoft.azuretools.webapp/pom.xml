@@ -11,13 +11,43 @@
   </parent>
   <artifactId>com.microsoft.azuretools.webapp</artifactId>
   <packaging>eclipse-plugin</packaging>
+    <dependencies>
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
+      <version>0.13.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
-      <plugin>
+    <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <skip>true</skip>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <!-- copy the jar dependencies -->
+          <execution>
+            <id>copy</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.microsoft.azure</groupId>
+                  <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

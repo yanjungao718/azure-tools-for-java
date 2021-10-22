@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.explorer;
+package com.microsoft.azure.toolkit.eclipse.explorer;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView.Label;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -63,11 +64,13 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
             try {
                 childs = AzureTreeNode.this.node.getChildren().stream()
                         .map(node -> new AzureTreeNode(treeView, this, node)).collect(Collectors.toList());
-                AzureTaskManager.getInstance().runLater(() -> refreshView());
             } catch (Exception e) {
+                AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager().warning(e.getMessage()));
+                e.printStackTrace();
                 childs = Collections.emptyList();
             } finally {
                 loaded = true;
+                AzureTaskManager.getInstance().runLater(() -> refreshView());
             }
         });
     }
@@ -109,7 +112,8 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
     }
 
     public void installActionsMenu(@Nonnull IMenuManager manager) {
-        applyActionGroupToMenu(node.actions(), manager, node.data());
+        Optional.ofNullable(node.actions())
+                .ifPresent(group -> applyActionGroupToMenu(node.actions(), manager, node.data()));
     }
 
     private void applyActionGroupToMenu(@Nonnull ActionGroup actionGroup, @Nonnull IMenuManager manager,
@@ -147,7 +151,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
 
     private <T> Action toEclipseAction(com.microsoft.azure.toolkit.lib.common.action.Action<T> action,
             @Nullable T source) {
-        final Label view = action.view(source);
+        final Label view = Optional.ofNullable(action).map(act -> act.view(source)).orElse(null);
         if (view == null) {
             return null;
         }
