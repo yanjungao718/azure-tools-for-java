@@ -29,7 +29,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.registry,
  org.eclipse.mylyn.commons.core,
  org.eclipse.mylyn.commons.ui,
- org.eclipse.equinox.security
+ org.eclipse.equinox.security,
+ org.apache.commons.collections,
+ org.eclipse.jface.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
@@ -54,6 +56,11 @@ Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.azure.hdinsight.spark.jobs,
  com.microsoft.azure.hdinsight.spark.jobs.framework,
  com.microsoft.azure.hdinsight.spark.jobs.livy,
+ com.microsoft.azure.toolkit.eclipse.common.artifact,
+ com.microsoft.azure.toolkit.eclipse.common.component,
+ com.microsoft.azure.toolkit.eclipse.common.console,
+ com.microsoft.azure.toolkit.eclipse.common.form,
+ com.microsoft.azure.toolkit.eclipse.common.task,
  com.microsoft.azuretools,
  com.microsoft.azuretools.adauth,
  com.microsoft.azuretools.authmanage,
@@ -120,4 +127,17 @@ Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.tooling.msservices.serviceexplorer.azure.webapp,
  com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base,
  com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot
-Import-Package: org.eclipse.core.expressions
+Import-Package: org.eclipse.core.expressions,
+ org.eclipse.jface,
+ javax.annotation,
+ reactor.core,
+ org.eclipse.core.databinding,
+ org.eclipse.core.runtime,
+ org.eclipse.ui,
+ org.eclipse.jdt.ui,
+ org.eclipse.core.resources,
+ org.eclipse.m2e.core,
+ org.eclipse.jdt.core,
+ org.apache.commons.compress,
+ org.apache.commons.io,
+ org.eclipse.swt

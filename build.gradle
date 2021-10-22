@@ -109,7 +109,8 @@ task buildIntelliJ {
     doLast {
         logger.info('Building IntelliJ plugin ...')
 
-        def ijBuildArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) + [
+        def ijBuildArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) +
+                (skipTest.toBoolean() ? [] : [ 'test' ]) + [
                 'buildPlugin',
                 'spotbugsMain',
                 'bundleBuildIdeaZip',

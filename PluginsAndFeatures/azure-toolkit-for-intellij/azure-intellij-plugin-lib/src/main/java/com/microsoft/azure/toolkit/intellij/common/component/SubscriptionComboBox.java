@@ -18,12 +18,6 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SubscriptionComboBox extends AzureComboBox<Subscription> {
 
-    public SubscriptionComboBox() {
-        super();
-        final List<Subscription> items = az(AzureAccount.class).account().getSelectedSubscriptions();
-        this.setValue(items.get(0)); // select the first subscription
-    }
-
     @Nonnull
     @Override
     @AzureOperation(

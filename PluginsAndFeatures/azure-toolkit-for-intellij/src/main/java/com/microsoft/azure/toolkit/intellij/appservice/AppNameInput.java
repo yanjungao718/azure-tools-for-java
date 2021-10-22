@@ -4,16 +4,20 @@
  */
 package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.ValidationUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
-public class AppNameInput extends ValidationDebouncedTextInput {
+public class AppNameInput extends AzureTextInput {
     private Subscription subscription;
+
+    public AppNameInput() {
+        this.setValidator(this::doValidateValue);
+    }
 
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
@@ -22,17 +26,14 @@ public class AppNameInput extends ValidationDebouncedTextInput {
         }
     }
 
-    @NotNull
+    @Nonnull
     public AzureValidationInfo doValidateValue() {
-        final AzureValidationInfo info = super.doValidateValue();
-        if (info == AzureValidationInfo.OK) {
-            try {
-                ValidationUtils.validateAppServiceName(subscription != null ? subscription.getId() : null, this.getValue());
-            } catch (final IllegalArgumentException e) {
-                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
-            }
+        try {
+            ValidationUtils.validateAppServiceName(subscription != null ? subscription.getId() : null, this.getValue());
+        } catch (final IllegalArgumentException e) {
+            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return info;
+        return AzureValidationInfo.OK;
     }
 }

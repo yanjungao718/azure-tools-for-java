@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
@@ -51,7 +51,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     protected void init() {
         final SubscriptionComboBox selectorSubscription = this.getSelectorSubscription();
         final SpringCloudClusterComboBox selectorCluster = this.getSelectorCluster();
-        final ValidationDebouncedTextInput textName = this.getTextName();
+        final AzureTextInput textName = this.getTextName();
         selectorSubscription.setRequired(true);
         selectorSubscription.addItemListener(this::onSubscriptionChanged);
         selectorCluster.setRequired(true);
@@ -132,7 +132,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     }
 
     public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
-        if (org.apache.commons.lang.StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.empty").toString());
         } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
             throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.invalid").toString());
@@ -145,7 +145,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
 
     protected abstract SpringCloudClusterComboBox getSelectorCluster();
 
-    protected abstract ValidationDebouncedTextInput getTextName();
+    protected abstract AzureTextInput getTextName();
 
     protected abstract JPanel getContentPanel();
 }
