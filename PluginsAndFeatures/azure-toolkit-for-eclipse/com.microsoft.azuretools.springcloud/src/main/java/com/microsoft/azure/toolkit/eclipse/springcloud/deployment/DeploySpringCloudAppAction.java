@@ -7,10 +7,15 @@
 package com.microsoft.azure.toolkit.eclipse.springcloud.deployment;
 
 import com.microsoft.azure.toolkit.eclipse.common.artifact.AzureArtifactManager;
+import com.microsoft.azure.toolkit.eclipse.common.console.AzureAsyncConsoleJob;
+import com.microsoft.azure.toolkit.eclipse.common.console.EclipseConsoleMessager;
+import com.microsoft.azure.toolkit.eclipse.common.console.JobConsole;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -19,10 +24,10 @@ import com.microsoft.azure.toolkit.lib.springcloud.Utils;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.console.ConsolePlugin;
 import org.jetbrains.annotations.Nullable;
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
@@ -61,10 +66,25 @@ public class DeploySpringCloudAppAction {
 
     @AzureOperation(name = "springcloud.deploy", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void deployToApp(@Nonnull SpringCloudAppConfig config) {
-        final IAzureMessager messager = AzureMessager.getMessager();
-        final Disposable subscribe = Mono.fromCallable(() -> execute(config, messager))
-            .subscribeOn(Schedulers.boundedElastic())
-            .subscribe((res) -> messager.success("Deploy succeed!"), messager::error);
+        AzureTaskManager.getInstance().runLater(() -> {
+            final AzureAsyncConsoleJob job = new AzureAsyncConsoleJob("JOB NAME");
+            JobConsole myConsole = new JobConsole("Deploy to webapp:", job);
+            EclipseConsoleMessager messager = new EclipseConsoleMessager(myConsole);
+
+            myConsole.activate();
+            ConsolePlugin.getDefault().getConsoleManager().addConsoles(new JobConsole[]{myConsole});
+            ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
+
+            job.setMessager(messager);
+            job.setSupplier(() -> {
+                final AzureString title = AzureOperationBundle.title("springcloud|app.create_update", config.getAppName());
+                final AzureTask<Void> task = new AzureTask<Void>(title, () -> execute(config, messager));
+                task.setType(AzureOperation.Type.ACTION.name());
+                AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toBlocking().single();
+                return Status.OK_STATUS;
+            });
+            job.schedule();
+        });
     }
 
     @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
