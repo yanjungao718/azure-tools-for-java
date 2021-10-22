@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.ide.common.components;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
-import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
