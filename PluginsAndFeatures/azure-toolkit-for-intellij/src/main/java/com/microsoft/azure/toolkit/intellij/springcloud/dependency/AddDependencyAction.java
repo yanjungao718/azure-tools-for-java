@@ -231,8 +231,6 @@ public class AddDependencyAction extends AzureAnAction {
         dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID,
                 "spring-cloud-starter-netflix-eureka-client",
                 versionMaps));
-        dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
-        dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
 
         return SpringCloudDependencyManager.getCompatibleVersions(dep, springBootVer);
     }
