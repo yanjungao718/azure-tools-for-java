@@ -10,10 +10,12 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.util.ui.ListTableModel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> implements AzureFormInput<List<StringBuilder>> {
     public AzureCallbackUrlTable() {
@@ -47,7 +49,7 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
 
     @Override
     public List<StringBuilder> getValue() {
-        return getElements();
+        return getElements().stream().filter(e -> StringUtils.isNotBlank(e.toString())).collect(Collectors.toList());
     }
 
     @Override
@@ -58,12 +60,12 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        var urls = this.getValue();
+        final var urls = this.getValue();
         if (urls == null || urls.isEmpty()) {
             return AzureFormInput.super.doValidate();
         }
 
-        for (var url : urls) {
+        for (final var url : urls) {
             if (!AzureUtils.isValidCallbackURL(url.toString())) {
                 return AzureValidationInfo.builder()
                         .input(this)
