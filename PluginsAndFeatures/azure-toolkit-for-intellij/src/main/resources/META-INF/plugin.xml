@@ -65,7 +65,6 @@
   <xi:include href="/META-INF/azure-intellij-plugin-service-explorer.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-resource-connector-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
-  <xi:include href="/META-INF/azure-intellij-resource-connector-aad.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-springcloud.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-storage.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-vm.xml" xpointer="xpointer(/idea-plugin/*)"/>
@@ -417,4 +416,7 @@
   </actions>
 
   <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
+
+  <!-- Last, because it references action group "AzureToolkit.AzureActionGroup" -->
+  <xi:include href="/META-INF/azure-intellij-resource-connector-aad.xml" xpointer="xpointer(/idea-plugin/*)"/>
 </idea-plugin>
