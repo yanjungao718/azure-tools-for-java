@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.eclipse.appservice.serviceplan;
 
 import com.microsoft.azure.toolkit.eclipse.appservice.PricingTierCombobox;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -18,7 +19,7 @@ import org.eclipse.swt.widgets.*;
 import java.util.List;
 
 public class ServicePlanCreationDialog extends Dialog {
-    private Text text;
+    private AzureTextInput text;
     private PricingTierCombobox pricingTierCombobox;
     private DraftServicePlan data;
 
@@ -45,33 +46,24 @@ public class ServicePlanCreationDialog extends Dialog {
         lblNewLabel.setLayoutData(gd_lblNewLabel);
         lblNewLabel.setText("App Service plan pricing tier determines the location, features, cost and compute resources associated with your app.");
 
-        Label lblNewLabel_1 = new Label(container, SWT.NONE);
-        lblNewLabel_1.setText("Name:");
+        Label lblName = new Label(container, SWT.NONE);
+        lblName.setText("Name:");
 
-        text = new Text(container, SWT.BORDER);
+        text = new AzureTextInput(container, SWT.BORDER);
+        text.setRequired(true);
         GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gd_text.widthHint = 257;
+        text.setLabeledBy(lblName);
         text.setLayoutData(gd_text);
 
-        Label lblNewLabel_1_1 = new Label(container, SWT.NONE);
-        lblNewLabel_1_1.setText("Pricing tier:");
+        Label lblPricingTier = new Label(container, SWT.NONE);
+        lblPricingTier.setText("Pricing tier:");
 
         pricingTierCombobox = new PricingTierCombobox(container, this.pricingTiers);
         pricingTierCombobox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        pricingTierCombobox.setLabeledBy(lblPricingTier);
 
         return container;
-    }
-
-
-    /**
-     * Create contents of the button bar.
-     *
-     * @param parent
-     */
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     /**
@@ -105,7 +97,6 @@ public class ServicePlanCreationDialog extends Dialog {
 
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.OK_ID) {
-
             this.data = new DraftServicePlan(text.getText(), pricingTierCombobox.getValue());
         }
         super.buttonPressed(buttonId);

@@ -14,10 +14,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 
 public class ResourceGroupCreationDialog extends Dialog {
-    private Text textName;
+    private AzureTextInput textName;
 
     /**
      * Create the dialog.
@@ -49,7 +50,9 @@ public class ResourceGroupCreationDialog extends Dialog {
         lblName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblName.setText("Name:");
 
-        textName = new Text(container, SWT.BORDER);
+        textName = new AzureTextInput(container, SWT.BORDER);
+        textName.setRequired(true);
+        textName.setLabeledBy(lblName);
         textName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         return container;

@@ -33,7 +33,6 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
     private final RegionComboBox cbRegion;
     private AzureTextInput text;
     private Subscription subscription;
-    private Label text_1;
 
     public RegionComboBox getRegionComboBox() {
         return cbRegion;
@@ -66,17 +65,20 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
 
         text = new AzureTextInput(this, SWT.BORDER);
         text.setRequired(true);
+        text.setLabeledBy(lblNewLabel);
+        text.setValidator(this::validateAppName);
         text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        text_1 = new Label(this, SWT.NONE);
-        text_1.setText(".azurewebsites.net");
-        text_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        Label azureSuffixLabel = new Label(this, SWT.NONE);
+        azureSuffixLabel.setText(".azurewebsites.net");
+        azureSuffixLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 
         Label lblPlatform = new Label(this, SWT.NONE);
         lblPlatform.setText("Platform:");
 
         cbRuntime = new RuntimeComboBox(this);
         cbRuntime.setRequired(true);
+        cbRuntime.setLabeledBy(lblPlatform);
         cbRuntime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         Label lblRegion = new Label(this, SWT.NONE);
@@ -84,6 +86,7 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
 
         cbRegion = new RegionComboBox(this);
         cbRegion.setRequired(true);
+        cbRegion.setLabeledBy(lblRegion);
         cbRegion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
     }

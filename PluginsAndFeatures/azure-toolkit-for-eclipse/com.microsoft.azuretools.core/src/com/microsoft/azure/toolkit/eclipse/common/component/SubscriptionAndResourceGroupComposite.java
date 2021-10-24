@@ -27,10 +27,12 @@ public class SubscriptionAndResourceGroupComposite extends Composite {
         super(parent, style);
         setLayout(new GridLayout(2, false));
 
-        Label lblNewLabel = new Label(this, SWT.NONE);
-        lblNewLabel.setText("Subscription:");
+        Label lblSubscription = new Label(this, SWT.NONE);
+        lblSubscription.setText("Subscription:");
 
         cbSubs = new SubscriptionComboBox(this);
+        cbSubs.setRequired(true);
+        cbSubs.setLabeledBy(lblSubscription);
         cbSubs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblResourceGroup = new Label(this, SWT.NONE);
@@ -41,6 +43,8 @@ public class SubscriptionAndResourceGroupComposite extends Composite {
         lblResourceGroup.setText("Resource Group:");
 
         cbResourceGroup = new ResourceGroupComboBox(this);
+        cbResourceGroup.setRequired(true);
+        cbResourceGroup.setLabeledBy(lblResourceGroup);
         cbResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         cbSubs.addValueChangedListener(cbResourceGroup::setSubscription);
@@ -65,5 +69,9 @@ public class SubscriptionAndResourceGroupComposite extends Composite {
 
     public SubscriptionComboBox getSubscriptionComboBox() {
         return cbSubs;
+    }
+    
+    public ResourceGroupComboBox getResourceGroupComboBox() {
+        return cbResourceGroup;
     }
 }

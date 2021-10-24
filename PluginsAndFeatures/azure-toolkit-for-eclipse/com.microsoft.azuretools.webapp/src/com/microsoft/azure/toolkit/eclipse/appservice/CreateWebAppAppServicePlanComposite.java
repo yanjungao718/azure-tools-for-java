@@ -46,6 +46,7 @@ public class CreateWebAppAppServicePlanComposite extends Composite {
         cbServicePlan = new ServicePlanCombobox(this);
         cbServicePlan.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         cbServicePlan.setRequired(true);
+        cbServicePlan.setLabeledBy(lblNewLabel);
 
         Label lblSkuAndSize = new Label(this, SWT.NONE);
         GridData gridData = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
