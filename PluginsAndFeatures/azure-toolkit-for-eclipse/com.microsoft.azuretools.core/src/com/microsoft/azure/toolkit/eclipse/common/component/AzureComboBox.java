@@ -164,6 +164,10 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
                 items.stream().filter(i -> ((AzureComboBox.ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
             } else if (items.contains(this.value)) {
                 this.viewer.setSelectedItem(this.value);
+            } else if (this.value instanceof Draft) {
+                // todo: unify model for custom created resource
+                this.viewer.add((T) this.value);
+                this.viewer.setSelectedItem(this.value);
             } else {
                 this.viewer.setSelectedItem(null);
             }

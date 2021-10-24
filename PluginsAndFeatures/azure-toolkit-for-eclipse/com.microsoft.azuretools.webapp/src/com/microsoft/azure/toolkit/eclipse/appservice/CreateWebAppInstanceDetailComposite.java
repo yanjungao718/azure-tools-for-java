@@ -42,6 +42,10 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
         return cbRuntime;
     }
 
+    public AzureTextInput getWebAppNameInput() {
+        return text;
+    }
+
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
     }

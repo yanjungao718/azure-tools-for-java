@@ -70,7 +70,7 @@ public class SubscriptionAndResourceGroupComposite extends Composite {
     public SubscriptionComboBox getSubscriptionComboBox() {
         return cbSubs;
     }
-    
+
     public ResourceGroupComboBox getResourceGroupComboBox() {
         return cbResourceGroup;
     }

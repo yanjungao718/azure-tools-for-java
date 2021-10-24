@@ -4,7 +4,10 @@
  */
 package com.microsoft.azure.toolkit.eclipse.common.component.resourcegroup;
 
-import org.eclipse.jface.dialogs.Dialog;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -14,10 +17,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
+import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
-public class ResourceGroupCreationDialog extends Dialog {
+public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup> implements AzureForm<DraftResourceGroup> {
     private AzureTextInput textName;
 
     /**
@@ -89,4 +94,29 @@ public class ResourceGroupCreationDialog extends Dialog {
     }
 
     private DraftResourceGroup data;
+
+    @Override
+    protected String getDialogTitle() {
+        return "New Resource Group";
+    }
+
+    @Override
+    public AzureForm<DraftResourceGroup> getForm() {
+        return this;
+    }
+
+    @Override
+    public DraftResourceGroup getFormData() {
+        return data;
+    }
+
+    @Override
+    public void setFormData(DraftResourceGroup draft) {
+        Optional.ofNullable(draft).ifPresent(draftGroup -> textName.setValue(draft.getName()));
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return Arrays.asList(textName);
+    }
 }

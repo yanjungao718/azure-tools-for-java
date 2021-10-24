@@ -7,8 +7,10 @@ package com.microsoft.azure.toolkit.eclipse.appservice.serviceplan;
 
 import com.microsoft.azure.toolkit.eclipse.appservice.PricingTierCombobox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
+import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import org.eclipse.jface.dialogs.Dialog;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -16,9 +18,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-public class ServicePlanCreationDialog extends Dialog {
+public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> implements AzureForm<DraftServicePlan> {
     private AzureTextInput text;
     private PricingTierCombobox pricingTierCombobox;
     private DraftServicePlan data;
@@ -27,7 +31,6 @@ public class ServicePlanCreationDialog extends Dialog {
         super(parentShell);
         setShellStyle(SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE);
     }
-
 
     /**
      * Create contents of the dialog.
@@ -41,9 +44,9 @@ public class ServicePlanCreationDialog extends Dialog {
         gridLayout.numColumns = 2;
 
         Label lblNewLabel = new Label(container, SWT.WRAP);
-        GridData gd_lblNewLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-        gd_lblNewLabel.widthHint = 160;
-        lblNewLabel.setLayoutData(gd_lblNewLabel);
+        GridData lblNewLabelGrid = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        lblNewLabelGrid.widthHint = 160;
+        lblNewLabel.setLayoutData(lblNewLabelGrid);
         lblNewLabel.setText("App Service plan pricing tier determines the location, features, cost and compute resources associated with your app.");
 
         Label lblName = new Label(container, SWT.NONE);
@@ -51,10 +54,10 @@ public class ServicePlanCreationDialog extends Dialog {
 
         text = new AzureTextInput(container, SWT.BORDER);
         text.setRequired(true);
-        GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gd_text.widthHint = 257;
+        GridData textGrid = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        textGrid.widthHint = 257;
         text.setLabeledBy(lblName);
-        text.setLayoutData(gd_text);
+        text.setLayoutData(textGrid);
 
         Label lblPricingTier = new Label(container, SWT.NONE);
         lblPricingTier.setText("Pricing tier:");
@@ -100,5 +103,33 @@ public class ServicePlanCreationDialog extends Dialog {
             this.data = new DraftServicePlan(text.getText(), pricingTierCombobox.getValue());
         }
         super.buttonPressed(buttonId);
+    }
+
+    @Override
+    protected String getDialogTitle() {
+        return "New App Service Plan";
+    }
+
+    @Override
+    public AzureForm<DraftServicePlan> getForm() {
+        return this;
+    }
+
+    @Override
+    public DraftServicePlan getFormData() {
+        return data;
+    }
+
+    @Override
+    public void setFormData(DraftServicePlan draft) {
+        Optional.ofNullable(draft).ifPresent(value -> {
+            text.setValue(value.getName());
+            pricingTierCombobox.setValue(value.getPricingTier());
+        });
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return Arrays.asList(text, pricingTierCombobox);
     }
 }
