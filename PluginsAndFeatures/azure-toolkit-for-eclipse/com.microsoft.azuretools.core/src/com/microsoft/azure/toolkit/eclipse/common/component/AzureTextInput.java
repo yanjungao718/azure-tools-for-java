@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 public class AzureTextInput extends Text implements AzureFormInputControl<String>, ModifyListener {
     protected static final int DEBOUNCE_DELAY = 300;
     private final Debouncer debouncer;
+	private String value;
 
     public AzureTextInput(Composite parent, int style) {
         super(parent, style);
@@ -36,12 +37,7 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     @Override
     public String getValue() {
-        if (this.isDisposed()) {
-            return null;
-        }
-        return AzureTaskManager.getInstance()
-            .runAndWaitAsObservable(new AzureTask<>((Supplier<String>) this::getText))
-            .toBlocking().first();
+		return this.value;
     }
 
     @Override
@@ -49,11 +45,12 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
         if (this.isDisposed()) {
             return;
         }
-        AzureTaskManager.getInstance().runAndWait(() -> this.setText(val));
+        this.setText(val);
     }
 
     @Override
     public void modifyText(ModifyEvent modifyEvent) {
+    	this.value = this.getText();
         this.debouncer.debounce();
     }
 
