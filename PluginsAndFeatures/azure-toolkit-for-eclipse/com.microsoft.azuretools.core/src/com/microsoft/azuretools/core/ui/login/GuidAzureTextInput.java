@@ -22,7 +22,7 @@ public class GuidAzureTextInput extends AzureTextInput {
 
     public AzureValidationInfo doValidateValue() {
         final String value = this.getValue();
-        // validate length
+        // validate regex
         if (!GUID_PATTERN.matcher(value).matches()) {
             return AzureValidationInfo.builder().input(this)
                     .message("Guid must match regex:" + GUID_REGEX)
