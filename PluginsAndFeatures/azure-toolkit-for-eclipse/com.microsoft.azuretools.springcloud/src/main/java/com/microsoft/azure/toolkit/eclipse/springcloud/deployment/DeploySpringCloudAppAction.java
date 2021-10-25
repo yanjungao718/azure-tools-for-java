@@ -66,8 +66,8 @@ public class DeploySpringCloudAppAction {
     @AzureOperation(name = "springcloud.deploy", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void deployToApp(@Nonnull SpringCloudAppConfig config) {
         AzureTaskManager.getInstance().runLater(() -> {
-            final AzureAsyncConsoleJob job = new AzureAsyncConsoleJob("JOB NAME");
-            JobConsole myConsole = new JobConsole("Deploy to webapp:", job);
+            final AzureAsyncConsoleJob job = new AzureAsyncConsoleJob("Deploy to Azure Spring Cloud");
+            JobConsole myConsole = new JobConsole("Deploy to Azure Spring Cloud", job);
             EclipseConsoleMessager messager = new EclipseConsoleMessager(myConsole);
 
             myConsole.activate();

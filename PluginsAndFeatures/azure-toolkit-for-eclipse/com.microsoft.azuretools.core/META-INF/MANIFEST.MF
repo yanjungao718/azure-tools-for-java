@@ -134,4 +134,5 @@ Import-Package: org.eclipse.core.expressions,
  org.eclipse.jdt.core,
  org.apache.commons.compress,
  org.apache.commons.io,
- org.eclipse.swt
+ org.eclipse.swt,
+ rx

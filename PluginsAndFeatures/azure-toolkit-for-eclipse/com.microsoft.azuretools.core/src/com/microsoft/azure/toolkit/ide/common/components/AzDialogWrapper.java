@@ -7,16 +7,11 @@ package com.microsoft.azure.toolkit.ide.common.components;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import reactor.core.Disposable;
 
@@ -55,71 +50,27 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
 
     @Override
     protected final void okPressed() {
-        if (revalidate().isEmpty()) {
-            doOkAction();
-        }
-    }
-
-    public final List<AzureValidationInfo> revalidate() {
-        AzureTaskManager.getInstance().runLater(() -> {
-            for (AzureFormInput<?> input : this.getForm().getInputs()) {
-                final Control control = ((AzureFormInputControl<?>) input).getInputControl();
-                if (!control.isDisposed()) {
-                    ControlDecoration deco = (ControlDecoration) control.getData(CONTROL_DECORATOR);
-                    if (Objects.nonNull(deco)) {
-                        deco.hide();
-                    }
-                }
+        final AzureTask<Void> task = new AzureTask<>(AzureString.fromString("validating..."), () -> {
+            if (doValidateAll().isEmpty()) {
+                AzureTaskManager.getInstance().runLater(this::doOkAction);
             }
         });
-        final List<AzureValidationInfo> errors = this.doValidateAll();
-        AzureTaskManager.getInstance().runLater(() -> this.setErrorInfoAll(errors));
-        return errors;
+        task.setBackgroundable(false);
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     protected final void setErrorInfoAll(List<AzureValidationInfo> infos) {
-        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
-        this.setErrorMessage(titleErrorMessage);
+        //        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
+        //        this.setErrorMessage(titleErrorMessage);
         for (AzureValidationInfo info : infos) {
-            final Control input = ((AzureFormInputControl<?>) info.getInput()).getInputControl();
-            if (!input.isDisposed()) {
-                ControlDecoration deco = (ControlDecoration) input.getData(CONTROL_DECORATOR);
-                if (Objects.isNull(deco)) {
-                    deco = new ControlDecoration(input, SWT.TOP | SWT.LEAD);
-                    input.setData(CONTROL_DECORATOR, deco);
-                }
-                deco.setImage(getValidationInfoIcon(info.getType()));
-                deco.setDescriptionText(info.getMessage());
-                deco.show();
-            }
+            final AzureFormInputControl<?> input = (AzureFormInputControl<?>) info.getInput();
+            input.setValidationInfo(info);
         }
     }
 
     public abstract AzureForm<T> getForm();
 
     protected abstract List<AzureValidationInfo> doValidateAll();
-
-    public static Image getValidationInfoIcon(AzureValidationInfo.Type type) {
-        if (type == null) {
-            return null;
-        } else {
-            String id = null;
-            switch (type) {
-                case INFO:
-                    id = "DEC_INFORMATION";
-                    break;
-                case WARNING:
-                    id = "DEC_WARNING";
-                    break;
-                case PENDING:
-                case ERROR:
-                    id = "DEC_ERROR";
-                    break;
-            }
-            FieldDecoration decoration = FieldDecorationRegistry.getDefault().getFieldDecoration(id);
-            return decoration == null ? null : decoration.getImage();
-        }
-    }
 
     public void setOkButtonEnabled(boolean enabled) {
         this.getButton(0).setEnabled(enabled);
