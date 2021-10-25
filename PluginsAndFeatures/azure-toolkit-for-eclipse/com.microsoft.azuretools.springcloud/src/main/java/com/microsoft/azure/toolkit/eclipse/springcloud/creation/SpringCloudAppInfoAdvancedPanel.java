@@ -22,7 +22,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -53,7 +52,6 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         setLayout(new GridLayout(1, false));
 
         Group grpTests = new Group(this, SWT.NONE);
-        grpTests.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
         grpTests.setLayout(new GridLayout(2, false));
         GridData gd_grpTests = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gd_grpTests.minimumHeight = 86;
