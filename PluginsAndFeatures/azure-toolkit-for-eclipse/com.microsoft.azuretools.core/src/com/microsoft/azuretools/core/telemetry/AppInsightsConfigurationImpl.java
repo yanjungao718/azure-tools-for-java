@@ -5,23 +5,28 @@
 
 package com.microsoft.azuretools.core.telemetry;
 
-import java.io.File;
-import java.util.UUID;
-
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.telemetry.AppInsightsConfiguration;
+import org.apache.commons.lang3.BooleanUtils;
 
-public class AppInsightsConfigurationImpl implements AppInsightsConfiguration{
+import java.io.File;
+import java.util.UUID;
+
+public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     static final String EVENT_NAME_PREFIX = "AzurePlugin.Eclipse.";
     // event name used for new telemetry
     static final String EVENT_NAME = "AzurePlugin.Eclipse";
     static String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
-            Messages.commonPluginID);
+        Messages.commonPluginID);
     static String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
     static String sessionId = UUID.randomUUID().toString();
     static String buildId = "Eclipse " + System.getProperty("eclipse.buildId");
+    private static String version;
+    private static String instId;
+    private static String prefVal;
+    private static Boolean validated = null;
 
     @Override
     public String sessionId() {
@@ -30,22 +35,34 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration{
 
     @Override
     public String pluginVersion() {
-        return DataOperations.getProperty(dataFile, Messages.version);
+        if (version == null) {
+            version = DataOperations.getProperty(dataFile, Messages.version);
+        }
+        return version;
     }
 
     @Override
     public String installationId() {
-        return DataOperations.getProperty(dataFile, Messages.instID);
+        if (instId == null) {
+            instId = DataOperations.getProperty(dataFile, Messages.instID);
+        }
+        return instId;
     }
 
     @Override
     public String preferenceVal() {
-        return DataOperations.getProperty(dataFile, Messages.prefVal);
+        if (prefVal == null) {
+            prefVal = DataOperations.getProperty(dataFile, Messages.prefVal);
+        }
+        return prefVal;
     }
 
     @Override
     public boolean validated() {
-        return new File(pluginInstLoc).exists() && new File(dataFile).exists();
+        if (validated == null) {
+            validated = new File(pluginInstLoc).exists() && new File(dataFile).exists();
+        }
+        return BooleanUtils.isTrue(validated);
     }
 
     @Override
@@ -54,7 +71,7 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration{
     }
 
     @Override
-    public String ide(){
+    public String ide() {
         return buildId;
     }
 

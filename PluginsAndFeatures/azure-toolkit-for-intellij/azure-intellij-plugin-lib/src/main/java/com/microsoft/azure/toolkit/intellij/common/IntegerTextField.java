@@ -9,16 +9,13 @@ import com.intellij.ui.components.JBTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.*;
 
 public class IntegerTextField extends JBTextField implements AzureFormInputComponent<Integer> {
 
-    @Setter
-    private boolean isRequired;
     @Setter
     @Getter
     private Integer minValue;
@@ -61,15 +58,5 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
         } else {
             return AzureValidationInfo.OK;
         }
-    }
-
-    @Override
-    public boolean isRequired() {
-        return isRequired;
-    }
-
-    @Override
-    public JComponent getInputComponent() {
-        return this;
     }
 }

@@ -17,9 +17,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.microsoft.azure.toolkit.lib.appservice.model.PublishingProfile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
 
@@ -38,6 +41,7 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         setHelpAvailable(false);
         this.webApp = webApp;
+        showFtpCredentials();
     }
 
     /**
@@ -55,8 +59,6 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         container.setLayout(new GridLayout(2, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        PublishingProfile pp = webApp.getPublishingProfile();
-
         Label lblNewLabel = new Label(container, SWT.NONE);
         lblNewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblNewLabel.setText("Host:");
@@ -64,7 +66,7 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         textHost = new Text(container, SWT.BORDER);
         textHost.setEditable(false);
         textHost.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textHost.setText(pp.getFtpUrl());
+        textHost.setText("Loading...");
 
         Label lblUserName = new Label(container, SWT.NONE);
         lblUserName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -73,16 +75,16 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         textUsername = new Text(container, SWT.BORDER);
         textUsername.setEditable(false);
         textUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textUsername.setText(pp.getFtpUsername());
+        textUsername.setText("Loading...");
 
-        Label lblNewLabel_1 = new Label(container, SWT.NONE);
-        lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblNewLabel_1.setText("Password:");
+        Label lblPassword = new Label(container, SWT.NONE);
+        lblPassword.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblPassword.setText("Password:");
 
         textPassword = new Text(container, SWT.BORDER);
         textPassword.setEditable(false);
         textPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textPassword.setText(pp.getFtpPassword());
+        textPassword.setText("Loading...");
 
         return area;
     }
@@ -106,4 +108,13 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         return new Point(520, 246);
     }
 
+    private void showFtpCredentials() {
+        Mono.fromCallable(webApp::getPublishingProfile).subscribeOn(Schedulers.boundedElastic()).subscribe(profile -> {
+            AzureTaskManager.getInstance().runLater(() -> {
+                textHost.setText(profile.getFtpUrl());
+                textUsername.setText(profile.getFtpUsername());
+                textPassword.setText(profile.getFtpPassword());
+            });
+        });
+    }
 }

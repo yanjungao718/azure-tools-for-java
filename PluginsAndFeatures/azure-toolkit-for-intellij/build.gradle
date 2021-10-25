@@ -9,6 +9,10 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
+ext {
+    azureToolkitVersion = "0.13.0"
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = javaVersion
     ajc {
@@ -77,6 +81,9 @@ gradle.taskGraph.whenReady { graph ->
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
+    ext {
+        azureToolkitVersion = "0.13.0"
+    }
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -97,8 +104,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
         }
     }
 
@@ -108,13 +115,13 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.12.1', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
         }
 
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.12.1', {
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -154,14 +161,14 @@ configurations {
     compile.exclude module:'groovy-xml'
     compile.exclude module:'groovy-templates'
     cucumberRuntime {
-        extendsFrom testRuntime
+        extendsFrom testImplementation
     }
 }
 
 dependencyManagement {
     imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
     }
 }
 
@@ -173,6 +180,7 @@ dependencies {
     compile project(':azure-intellij-plugin-vm')
     compile project(':azure-intellij-plugin-springcloud')
     compile project(':azure-intellij-plugin-storage')
+    compile project(':azure-intellij-plugin-redis')
     compile project(':azure-intellij-plugin-service-explorer')
 
     compile 'com.microsoft.azure:azure-client-authentication'
@@ -193,17 +201,17 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.57.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.58.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.57.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.58.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.57.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.58.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
@@ -239,8 +247,8 @@ dependencies {
     compile group: 'org.apache.maven', name: 'maven-archiver', version: '3.5.1'
 
     testCompile 'junit:junit:4.13'
-    testCompile 'info.cukes:cucumber-junit:1.2.6'
-    testCompile 'info.cukes:cucumber-java:1.2.6'
+    testImplementation 'io.cucumber:cucumber-java:7.0.0'
+    testImplementation 'io.cucumber:cucumber-junit:7.0.0'
     testCompile 'org.mockito:mockito-core:2.7.22'
     testCompile 'org.assertj:assertj-swing-junit:3.17.1'
 
@@ -278,10 +286,10 @@ task cucumberPackJar(type: Jar) {
 buildSearchableOptions.onlyIf {false}
 
 task cucumber() {
-    dependsOn compileTestJava, cucumberPackJar
+    dependsOn assemble, testClasses, compileTestJava, cucumberPackJar
     doLast {
         javaexec {
-            main = "cucumber.api.cli.Main"
+            main = "io.cucumber.core.cli.Main"
             classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
             args = [
                 '--plugin', 'progress',

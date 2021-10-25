@@ -6,10 +6,9 @@
 package com.microsoft.intellij.util;
 
 import com.azure.core.management.exception.ManagementException;
-import com.azure.resourcemanager.appservice.fluent.models.ResourceNameAvailabilityInner;
-import com.azure.resourcemanager.appservice.models.CheckNameResourceTypes;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -73,10 +72,9 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
         }
-        final ResourceNameAvailabilityInner result = Azure.az(AzureAppService.class).getAppServiceManager(subscriptionId).webApps().manager().serviceClient()
-                .getResourceProviders().checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEB_SITES);
-        if (!result.nameAvailable()) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
+        final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).checkNameAvailability(subscriptionId, appServiceName);
+        if (!result.isAvailable()) {
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, result.getUnavailabilityMessage());
         }
         appServiceNameValidationCache.put(cacheKey, null);
     }
@@ -137,11 +135,11 @@ public class ValidationUtils {
 
     public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
         if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.empty"));
+            throw new IllegalArgumentException(message("springcloud.app.name.validate.empty"));
         } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.invalid"));
+            throw new IllegalArgumentException(message("springcloud.app.name.validate.invalid"));
         } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.exist", name));
+            throw new IllegalArgumentException(message("springcloud.app.name.validate.exist", name));
         }
     }
 

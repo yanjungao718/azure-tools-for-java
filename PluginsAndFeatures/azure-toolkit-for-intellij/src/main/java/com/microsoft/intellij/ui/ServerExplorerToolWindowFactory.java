@@ -17,6 +17,7 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
@@ -46,6 +47,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import org.apache.commons.lang3.StringUtils;
@@ -75,6 +77,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
+
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
 
@@ -97,6 +101,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // initialize tree
         final JTree tree = new Tree(treeModel);
+        ComponentUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
         tree.setRootVisible(false);
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -491,6 +496,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private boolean isOutdatedModule(Node node) {
-        return node instanceof StorageModule || node instanceof VMArmModule;
+        return node instanceof StorageModule || node instanceof VMArmModule || node instanceof RedisCacheModule;
     }
 }

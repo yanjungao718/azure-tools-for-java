@@ -26,12 +26,14 @@
     <module>com.microsoft.azuretools.webapp.feature</module>
     <module>com.microsoft.azuretools.container</module>
     <module>com.microsoft.azuretools.container.feature</module>
+    <module>com.microsoft.azuretools.springcloud</module>
+    <module>com.microsoft.azuretools.springcloud.feature</module>
     <module>WindowsAzurePlugin4EJ</module>
   </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho-version>2.4.0</tycho-version>
-    <azuretool.eclipse.version>3.27.0-SNAPSHOT</azuretool.eclipse.version>
+    <azuretool.eclipse.version>3.28.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 
   <repositories>

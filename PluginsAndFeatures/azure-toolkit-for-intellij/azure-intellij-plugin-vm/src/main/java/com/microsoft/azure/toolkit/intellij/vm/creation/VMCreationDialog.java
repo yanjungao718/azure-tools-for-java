@@ -12,7 +12,7 @@ import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
@@ -72,18 +72,18 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JLabel lblResourceGroup;
     private JLabel lblSubscription;
     private JLabel lblVirtualMachineName;
-    private ValidationDebouncedTextInput txtVisualMachineName;
+    private AzureTextInput txtVisualMachineName;
     private JLabel lblRegion;
     private JRadioButton rdoSshPublicKey;
     private JRadioButton rdoPassword;
-    private ValidationDebouncedTextInput txtUserName;
+    private AzureTextInput txtUserName;
     private JRadioButton rdoNoneSecurityGroup;
     private JRadioButton rdoBasicSecurityGroup;
     private JRadioButton rdoAdvancedSecurityGroup;
     private JCheckBox chkAzureSpotInstance;
     private JRadioButton rdoStopAndDeallocate;
     private JRadioButton rdoDelete;
-    private ValidationDebouncedTextInput txtMaximumPrice;
+    private AzureTextInput txtMaximumPrice;
     private JLabel lblUserName;
     private JPasswordField txtPassword;
     private JPasswordField txtConfirmPassword;
@@ -323,14 +323,14 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.cbPublicIp = new PublicIPAddressComboBox();
         this.cbPublicIp.setRequired(true);
         this.cbStorageAccount = new AzureStorageAccountComboBox();
-        this.txtUserName = new ValidationDebouncedTextInput();
+        this.txtUserName = new AzureTextInput();
         this.txtUserName.setRequired(true);
 
-        this.txtVisualMachineName = new ValidationDebouncedTextInput();
+        this.txtVisualMachineName = new AzureTextInput();
         this.txtVisualMachineName.setRequired(true);
         this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
 
-        this.txtMaximumPrice = new ValidationDebouncedTextInput();
+        this.txtMaximumPrice = new AzureTextInput();
 
         this.txtPassword = new JPasswordField();
         this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);

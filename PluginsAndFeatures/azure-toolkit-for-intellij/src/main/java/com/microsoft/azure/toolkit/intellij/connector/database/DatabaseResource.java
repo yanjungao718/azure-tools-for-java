@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -116,11 +117,11 @@ public class DatabaseResource implements Resource<Database> {
     }
 
     @Override
-    public void navigate(Project project) {
+    public void navigate(AnActionEvent event) {
         if (Definition.AZURE_MYSQL == this.getDefinition()) {
-            DefaultLoader.getUIHelper().openMySQLPropertyView(this.getData().getServerId().id(), project);
+            DefaultLoader.getUIHelper().openMySQLPropertyView(this.getData().getServerId().id(), Objects.requireNonNull(event.getProject()));
         } else if (Definition.SQL_SERVER == this.getDefinition()) {
-            DefaultLoader.getUIHelper().openSqlServerPropertyView(this.getData().getServerId().id(), project);
+            DefaultLoader.getUIHelper().openSqlServerPropertyView(this.getData().getServerId().id(), Objects.requireNonNull(event.getProject()));
         }
     }
 

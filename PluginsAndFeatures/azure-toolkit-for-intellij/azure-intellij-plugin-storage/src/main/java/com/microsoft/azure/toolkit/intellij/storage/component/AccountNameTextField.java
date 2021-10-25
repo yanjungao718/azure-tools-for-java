@@ -5,7 +5,7 @@
 package com.microsoft.azure.toolkit.intellij.storage.component;
 
 import com.azure.core.management.exception.ManagementException;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.regex.Pattern;
 
-public class AccountNameTextField extends ValidationDebouncedTextInput {
+public class AccountNameTextField extends AzureTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("[a-z0-9]{3,24}");
     @Setter
@@ -25,23 +25,18 @@ public class AccountNameTextField extends ValidationDebouncedTextInput {
     @Setter
     private int maxLength = 24;
     @Getter
+    @Setter
     private String subscriptionId;
 
-    public void setSubscriptionId(String subscriptionId) {
-        if (!StringUtils.equals(subscriptionId, this.subscriptionId)) {
-            this.subscriptionId = subscriptionId;
-        }
+    public AccountNameTextField() {
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
     }
 
-    @Override
     @Nonnull
     public AzureValidationInfo doValidateValue() {
         if (StringUtils.isBlank(subscriptionId)) {
             return AzureValidationInfo.UNINITIALIZED;
-        }
-        final AzureValidationInfo info = super.doValidateValue();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
         }
         final String value = this.getValue();
         // validate length
@@ -72,10 +67,4 @@ public class AccountNameTextField extends ValidationDebouncedTextInput {
         }
         return AzureValidationInfo.OK;
     }
-
-    @Override
-    public boolean isRequired() {
-        return true;
-    }
-
 }
