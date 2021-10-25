@@ -60,8 +60,8 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
     }
 
     protected final void setErrorInfoAll(List<AzureValidationInfo> infos) {
-        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
-        this.setErrorMessage(titleErrorMessage);
+        //        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
+        //        this.setErrorMessage(titleErrorMessage);
         for (AzureValidationInfo info : infos) {
             final AzureFormInputControl<?> input = (AzureFormInputControl<?>) info.getInput();
             input.setValidationInfo(info);

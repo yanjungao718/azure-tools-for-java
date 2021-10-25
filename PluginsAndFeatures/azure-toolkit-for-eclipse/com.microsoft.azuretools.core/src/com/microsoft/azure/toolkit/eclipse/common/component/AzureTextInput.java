@@ -36,6 +36,9 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     @Override
     public String getValue() {
+        if (this.isDisposed()) {
+            return null;
+        }
         return AzureTaskManager.getInstance()
             .runAndWaitAsObservable(new AzureTask<>((Supplier<String>) this::getText))
             .toBlocking().first();
@@ -43,6 +46,9 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     @Override
     public void setValue(final String val) {
+        if (this.isDisposed()) {
+            return;
+        }
         AzureTaskManager.getInstance().runAndWait(() -> this.setText(val));
     }
 

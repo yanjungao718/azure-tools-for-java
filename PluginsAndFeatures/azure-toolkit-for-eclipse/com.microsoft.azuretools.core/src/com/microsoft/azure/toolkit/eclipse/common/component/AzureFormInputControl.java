@@ -64,8 +64,11 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T> {
 
     default AzureValidationInfo revalidateAndDecorate() {
         AzureTaskManager.getInstance().runLater(() -> this.setValidationInfo(AzureValidationInfo.PENDING));
+        final T value = this.getValue();
         final AzureValidationInfo validationInfo = AzureFormInput.super.doValidate();
-        AzureTaskManager.getInstance().runLater(() -> this.setValidationInfo(validationInfo));
+        if (Objects.equals(value, this.getValue())) {
+            AzureTaskManager.getInstance().runLater(() -> this.setValidationInfo(validationInfo));
+        }
         return validationInfo;
     }
 
