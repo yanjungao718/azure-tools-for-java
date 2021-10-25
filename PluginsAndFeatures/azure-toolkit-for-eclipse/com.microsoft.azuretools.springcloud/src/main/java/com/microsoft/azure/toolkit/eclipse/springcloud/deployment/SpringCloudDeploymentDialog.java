@@ -29,6 +29,8 @@ public class SpringCloudDeploymentDialog extends AzureDialog<SpringCloudAppConfi
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite container = (Composite) super.createDialogArea(parent);
+        GridLayout gridLayout = (GridLayout) container.getLayout();
+        gridLayout.marginWidth = 5;
         deploymentPanel = new SpringCloudDeploymentConfigurationPanel(container);
         deploymentPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
@@ -38,7 +40,7 @@ public class SpringCloudDeploymentDialog extends AzureDialog<SpringCloudAppConfi
 
         Label lblNewLabel = new Label(composite, SWT.NONE);
         GridData gd_lblNewLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblNewLabel.widthHint = 88;
+        gd_lblNewLabel.widthHint = 100;
         lblNewLabel.setLayoutData(gd_lblNewLabel);
         lblNewLabel.setText("Before deploy:");
 

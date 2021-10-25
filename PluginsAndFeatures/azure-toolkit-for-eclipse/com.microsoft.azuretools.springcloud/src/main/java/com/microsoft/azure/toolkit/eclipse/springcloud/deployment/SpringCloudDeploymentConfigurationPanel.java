@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudClus
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -51,6 +52,7 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         this.selectorCluster.setRequired(true);
         this.selectorApp.setRequired(true);
         this.selectorArtifact.setRequired(true);
+        this.selectorSubscription.refreshItems();
     }
 
     private void onArtifactChanged(AzureArtifact azureArtifact) {
@@ -66,10 +68,14 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
     }
 
     public synchronized void setFormData(SpringCloudAppConfig appConfig) {
-        final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
-        if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
-            this.selectorApp.addLocalItem(cluster.app(appConfig));
-        }
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
+            if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
+                AzureTaskManager.getInstance().runLater(() -> {
+                    this.selectorApp.addLocalItem(cluster.app(appConfig));
+                });
+            }
+        });
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         Optional.ofNullable(deploymentConfig.getArtifact()).map(a -> ((WrappedAzureArtifact) a))
             .ifPresent((a -> this.selectorArtifact.setValue(a.getArtifact())));
@@ -124,7 +130,7 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
 
         Label lblArtifact = new Label(this, SWT.NONE);
         GridData gd_lblArtifact = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblArtifact.widthHint = 88;
+        gd_lblArtifact.widthHint = 100;
         lblArtifact.setLayoutData(gd_lblArtifact);
         lblArtifact.setText("Artifact:");
         selectorArtifact = new AzureArtifactComboBox(this);

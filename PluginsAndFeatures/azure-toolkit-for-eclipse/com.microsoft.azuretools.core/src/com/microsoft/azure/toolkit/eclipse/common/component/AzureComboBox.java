@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 
 public class AzureComboBox<T> extends Composite implements AzureFormInputControl<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
-    private static final int DEBOUNCE_DELAY = 500;
+    private static final int DEBOUNCE_DELAY = 300;
     private final TailingDebouncer refresher;
     private Object value;
     private boolean valueNotSet = true;
@@ -110,7 +110,9 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
 
     @Override
     public T getValue() {
-        return ((T) this.viewer.getStructuredSelection().getFirstElement());
+        final Object[] value = new Object[]{null};
+        AzureTaskManager.getInstance().runAndWait(() -> value[0] = this.viewer.getStructuredSelection().getFirstElement());
+        return (T) value[0];
     }
 
     @Override
@@ -212,7 +214,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     protected synchronized void setItems(final List<? extends T> items) {
-        AzureTaskManager.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runAndWait(() -> {
             if (this.isDisposed()) {
                 return;
             }

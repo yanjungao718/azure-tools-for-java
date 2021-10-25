@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 public class SpringCloudAppConfigPanel extends Composite implements AzureFormPanel<SpringCloudAppConfig> {
     private Button useJava8;
@@ -196,6 +197,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
         setLayout(new GridLayout(1, false));
 
         Group grpConfiguration = new Group(this, SWT.NONE);
+        grpConfiguration.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
         grpConfiguration.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpConfiguration.setText("Configuration");
         grpConfiguration.setLayout(new GridLayout(3, false));
@@ -244,6 +246,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
         this.envTable.setLabeledBy(lblEnvVariable);
 
         Group grpScalingUpout = new Group(this, SWT.NONE);
+        grpScalingUpout.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
         grpScalingUpout.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpScalingUpout.setText("Scaling Up/Out");
         grpScalingUpout.setLayout(new GridLayout(2, false));

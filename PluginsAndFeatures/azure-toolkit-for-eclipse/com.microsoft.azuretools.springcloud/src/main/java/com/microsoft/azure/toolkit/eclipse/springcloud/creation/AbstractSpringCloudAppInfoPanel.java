@@ -59,11 +59,10 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
         textName.setRequired(true);
         textName.setValue(this.defaultAppName);
         textName.setValidator(() -> {
-            try {
-                validateSpringCloudAppName(textName.getValue(), this.cluster);
-            } catch (final IllegalArgumentException e) {
-                final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                return builder.input(textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
+            final String name = textName.getValue();
+            final AzureValidationInfoBuilder builder = AzureValidationInfo.builder().input(textName).type(AzureValidationInfo.Type.ERROR);
+            if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
+                return builder.message(AzureMessageBundle.message("springCloud.app.name.validate.invalid").toString()).build();
             }
             return AzureValidationInfo.OK;
         });
@@ -101,7 +100,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
 
     public SpringCloudAppConfig getFormData() {
         final SpringCloudAppConfig config = Optional.ofNullable(this.originalConfig)
-            .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
+                .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
         return getFormData(config);
     }
 
@@ -122,16 +121,6 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
     @Override
     public void setVisible(final boolean visible) {
         super.setVisible(visible);
-    }
-
-    public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.empty").toString());
-        } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-            throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.invalid").toString());
-        } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
-            throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.exist", name).toString());
-        }
     }
 
     protected abstract SubscriptionComboBox getSelectorSubscription();

@@ -23,7 +23,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
     private Subscription subscription;
 
     public SpringCloudClusterComboBox(Composite parent) {
-        super(parent);
+        super(parent, false);
     }
 
     @Override

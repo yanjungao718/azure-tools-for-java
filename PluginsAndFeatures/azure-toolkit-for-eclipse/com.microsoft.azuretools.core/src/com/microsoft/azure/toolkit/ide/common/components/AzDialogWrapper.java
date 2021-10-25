@@ -19,14 +19,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 
 public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
 
@@ -65,38 +60,20 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
         }
     }
 
-    @Override
-    public void create() {
-        super.create();
-        final List<AzureFormInput<?>> inputs = this.getForm().getInputs();
-        for (AzureFormInput<?> input : inputs) {
-            input.addValueChangedListener((v) -> {
-                this.revalidate();
-            });
-        }
-    }
-
     public final List<AzureValidationInfo> revalidate() {
-        for (AzureFormInput<?> input : this.getForm().getInputs()) {
-            final Control control = ((AzureFormInputControl<?>) input).getInputControl();
-            ControlDecoration deco = (ControlDecoration) control.getData(CONTROL_DECORATOR);
-            if (Objects.nonNull(deco)) {
-                deco.hide();
+        AzureTaskManager.getInstance().runLater(() -> {
+            for (AzureFormInput<?> input : this.getForm().getInputs()) {
+                final Control control = ((AzureFormInputControl<?>) input).getInputControl();
+                if (!control.isDisposed()) {
+                    ControlDecoration deco = (ControlDecoration) control.getData(CONTROL_DECORATOR);
+                    if (Objects.nonNull(deco)) {
+                        deco.hide();
+                    }
+                }
             }
-        }
+        });
         final List<AzureValidationInfo> errors = this.doValidateAll();
-        this.setErrorInfoAll(errors);
-        Predicate<List<AzureValidationInfo>> hasPending = (es) -> es.stream().anyMatch(e -> e.getType().equals(AzureValidationInfo.Type.PENDING));
-        if (!errors.isEmpty() && hasPending.test(errors)) {
-            if (Objects.isNull(this.subscription) || this.subscription.isDisposed()) {
-                this.subscription = Flux.interval(Duration.ofMillis(300))
-                    .onBackpressureDrop()
-                    .publishOn(Schedulers.fromExecutor(command -> AzureTaskManager.getInstance().runLater(command)))
-                    .flatMap((i) -> Mono.fromCallable(this::revalidate))
-                    .takeUntil(e -> !hasPending.test(e))
-                    .subscribe();
-            }
-        }
+        AzureTaskManager.getInstance().runLater(() -> this.setErrorInfoAll(errors));
         return errors;
     }
 
@@ -105,14 +82,16 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
         this.setErrorMessage(titleErrorMessage);
         for (AzureValidationInfo info : infos) {
             final Control input = ((AzureFormInputControl<?>) info.getInput()).getInputControl();
-            ControlDecoration deco = (ControlDecoration) input.getData(CONTROL_DECORATOR);
-            if (Objects.isNull(deco)) {
-                deco = new ControlDecoration(input, SWT.TOP | SWT.LEAD);
-                input.setData(CONTROL_DECORATOR, deco);
+            if (!input.isDisposed()) {
+                ControlDecoration deco = (ControlDecoration) input.getData(CONTROL_DECORATOR);
+                if (Objects.isNull(deco)) {
+                    deco = new ControlDecoration(input, SWT.TOP | SWT.LEAD);
+                    input.setData(CONTROL_DECORATOR, deco);
+                }
+                deco.setImage(getValidationInfoIcon(info.getType()));
+                deco.setDescriptionText(info.getMessage());
+                deco.show();
             }
-            deco.setImage(getValidationInfoIcon(info.getType()));
-            deco.setDescriptionText(info.getMessage());
-            deco.show();
         }
     }
 
