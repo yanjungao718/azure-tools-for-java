@@ -5,8 +5,11 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.component;
 
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
@@ -36,7 +39,6 @@ import java.util.function.Supplier;
 public class AzureComboBox<T> extends Composite implements AzureFormInputControl<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
     private static final int DEBOUNCE_DELAY = 300;
-    private final TailingDebouncer refresher;
     private Object value;
     private boolean valueNotSet = true;
     protected boolean enabled = true;
@@ -45,6 +47,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     private Supplier<? extends List<? extends T>> itemsLoader;
     private AzureComboBoxViewer<T> viewer;
     private Control extension;
+    private final TailingDebouncer valueDebouncer;
 
     public AzureComboBox(Composite parent) {
         this(parent, null, true);
@@ -60,24 +63,36 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
 
     public AzureComboBox(Composite parent, @Nullable Supplier<? extends List<? extends T>> itemsLoader, boolean refresh) {
         super(parent, SWT.NONE);
-        this.init();
         this.itemsLoader = itemsLoader;
-        this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
+        this.valueDebouncer = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(() -> {
+            this.fireValueChangedEvent(this.getValue());
+            AzureTaskManager.getInstance().runInBackground("validating " + this.getLabel(), this::revalidateAndDecorate);
+        }), DEBOUNCE_DELAY);
+        this.setupUI();
+        this.init();
         if (refresh) {
             this.refreshItems();
         }
-        GridLayout gridLayout = (GridLayout) getLayout();
+    }
+
+    private void init() {
+        this.viewer.addPostSelectionChangedListener((e) -> {
+            if (!e.getSelection().isEmpty()) {
+                this.setValue(this.getValue());
+            }
+        });
+    }
+
+    protected void setupUI() {
+        this.viewer = new AzureComboBoxViewer<>(this);
+        this.extension = this.getExtension();
+        final int columns = Objects.nonNull(extension) ? 2 : 1;
+        final GridLayout gridLayout = new GridLayout(columns, false);
         gridLayout.marginHeight = 0;
         gridLayout.horizontalSpacing = 0;
         gridLayout.verticalSpacing = 0;
         gridLayout.marginWidth = 0;
-    }
-
-    protected void init() {
-        this.viewer = new AzureComboBoxViewer<>(this);
-        this.extension = this.getExtension();
-        final int columns = Objects.nonNull(extension) ? 2 : 1;
-        this.setLayout(new GridLayout(columns, false));
+        this.setLayout(gridLayout);
         Optional.ofNullable(extension).ifPresent(e -> {
             e.setParent(this);
             final GridData grid = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
@@ -101,18 +116,13 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
                 return AzureComboBox.this.getItemText(element);
             }
         });
-        this.viewer.addPostSelectionChangedListener((e) -> {
-            if (!e.getSelection().isEmpty()) {
-                this.setValue(this.getValue());
-            }
-        });
     }
 
     @Override
     public T getValue() {
-        final Object[] value = new Object[]{null};
-        AzureTaskManager.getInstance().runAndWait(() -> value[0] = this.viewer.getStructuredSelection().getFirstElement());
-        return (T) value[0];
+        return AzureTaskManager.getInstance()
+            .runAndWaitAsObservable(new AzureTask<>(() -> (T) this.viewer.getStructuredSelection().getFirstElement()))
+            .toBlocking().first();
     }
 
     @Override
@@ -130,7 +140,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         this.value = val;
         this.refreshValue();
         if (!Objects.equals(oldVal, val)) {
-            fireValueChangedEvent(val);
+            this.valueDebouncer.debounce();
         }
     }
 
@@ -177,7 +187,8 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     public void refreshItems() {
-        this.refresher.debounce();
+        final AzureString title = AzureOperationBundle.title("common|combobox.load_items", this.getLabel());
+        AzureTaskManager.getInstance().runInBackground(title, this::doRefreshItems);
     }
 
     @AzureOperation(

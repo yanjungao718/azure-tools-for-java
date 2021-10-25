@@ -48,6 +48,7 @@ public class SubscriptionAndResourceGroupComposite extends Composite {
         cbResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         cbSubs.addValueChangedListener(cbResourceGroup::setSubscription);
+        cbSubs.refreshItems();
     }
 
     public Subscription getSubscription() {

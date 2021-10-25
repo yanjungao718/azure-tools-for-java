@@ -62,7 +62,9 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
             final String name = textName.getValue();
             final AzureValidationInfoBuilder builder = AzureValidationInfo.builder().input(textName).type(AzureValidationInfo.Type.ERROR);
             if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-                return builder.message(AzureMessageBundle.message("springCloud.app.name.validate.invalid").toString()).build();
+                return builder.message(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString()).build();
+            } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
+                return builder.message(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString()).build();
             }
             return AzureValidationInfo.OK;
         });

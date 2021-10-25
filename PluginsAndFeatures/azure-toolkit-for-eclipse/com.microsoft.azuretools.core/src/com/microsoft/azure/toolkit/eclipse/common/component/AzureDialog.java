@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.eclipse.common.component;
 import com.microsoft.azure.toolkit.ide.common.components.AzDialogWrapper;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -47,9 +49,7 @@ public abstract class AzureDialog<T> extends AzDialogWrapper<T> {
         List<AzureValidationInfo> errors = infos.stream()
             .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
             .collect(Collectors.toList());
-        if (infos.stream().anyMatch(AzureValidationInfo.UNINITIALIZED::equals)) {
-            setErrorInfoAll(errors);
-        }
+        AzureTaskManager.getInstance().runLater(() -> setErrorInfoAll(errors));
         return errors;
     }
 

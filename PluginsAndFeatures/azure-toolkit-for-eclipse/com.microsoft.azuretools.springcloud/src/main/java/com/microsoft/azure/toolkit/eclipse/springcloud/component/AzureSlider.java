@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.eclipse.springcloud.component;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -62,7 +63,7 @@ public class AzureSlider extends Composite implements AzureFormInputControl<Inte
             this.numValue.setSelection(val);
         }
         if (changed) {
-            this.fireValueChangedEvent(val);
+            AzureTaskManager.getInstance().runLater(() -> this.fireValueChangedEvent(val));
         }
     }
 
