@@ -5,7 +5,6 @@
 package com.microsoft.azuretools.core.ui.login;
 
 import com.google.gson.JsonSyntaxException;
-import com.microsoft.azure.toolkit.eclipse.common.component.AzureRadioButton;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
@@ -35,8 +34,8 @@ public class ServicePrincipalLoginPanel extends Composite implements AzureForm<A
     private AzureTextInput txtPassword;
     private AzureTextInput txtCertificate;
     private Text txtJson;
-    private AzureRadioButton radioPassword;
-    private AzureRadioButton radioCertificate;
+    private Button radioPassword;
+    private Button radioCertificate;
 
     /**
      * Create the composite.
@@ -82,14 +81,14 @@ public class ServicePrincipalLoginPanel extends Composite implements AzureForm<A
         glComposite.marginWidth = 0;
         composite.setLayout(glComposite);
 
-        radioPassword = new AzureRadioButton(composite);
+        radioPassword = new Button(composite, SWT.RADIO);
         radioPassword.setSelection(true);
         radioPassword.setText("Password:");
 
         txtPassword = new AzureTextInput(composite, SWT.BORDER | SWT.PASSWORD);
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtPassword.setLabeledBy(lblSecret);
-        radioCertificate = new AzureRadioButton(composite);
+        radioCertificate = new Button(composite, SWT.RADIO);
         radioCertificate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         radioCertificate.setText("Certificate:");
 
@@ -293,15 +292,15 @@ public class ServicePrincipalLoginPanel extends Composite implements AzureForm<A
 
     private AzureValidationInfo validateRequiredTemporarily(AzureFormInput input) {
         try {
-            this.txtPassword.setRequired(true);
-            return this.txtPassword.doValidate();
+            input.setRequired(true);
+            return input.doValidate();
         } finally {
-            txtPassword.setRequired(false);
+            input.setRequired(false);
         }
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(this.txtClientId, this.txtTenantId, this.radioPassword, this.radioCertificate, this.txtPassword, this.txtCertificate);
+        return Arrays.asList(this.txtClientId, this.txtTenantId, this.txtPassword, this.txtCertificate);
     }
 }

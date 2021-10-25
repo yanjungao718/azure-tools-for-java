@@ -25,7 +25,7 @@ public class GuidAzureTextInput extends AzureTextInput {
         // validate length
         if (!GUID_PATTERN.matcher(value).matches()) {
             return AzureValidationInfo.builder().input(this)
-                    .message("Guid must match regex:^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+                    .message("Guid must match regex:" + GUID_REGEX)
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;
