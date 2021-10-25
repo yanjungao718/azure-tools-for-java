@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -42,6 +41,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
         Composite container = (Composite) super.createDialogArea(parent);
         GridLayout gridLayout = (GridLayout) container.getLayout();
         gridLayout.numColumns = 2;
+        gridLayout.marginWidth = 5;
 
         Label lblNewLabel = new Label(container, SWT.WRAP);
         GridData lblNewLabelGrid = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
@@ -67,21 +67,6 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
         pricingTierCombobox.setLabeledBy(lblPricingTier);
 
         return container;
-    }
-
-    /**
-     * Return the initial size of the dialog.
-     */
-    @Override
-    protected Point getInitialSize() {
-        return new Point(420, 158);
-    }
-
-    @Override
-    protected void configureShell(Shell newShell) {
-        newShell.setMinimumSize(new Point(360, 220));
-        super.configureShell(newShell);
-        newShell.setText("New App Service plan");
     }
 
     public void setPricingTier(List<PricingTier> pricingTiers) {

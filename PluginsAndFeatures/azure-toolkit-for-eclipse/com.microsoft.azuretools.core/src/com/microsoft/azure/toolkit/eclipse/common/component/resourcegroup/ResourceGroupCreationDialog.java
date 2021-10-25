@@ -10,7 +10,6 @@ import java.util.Optional;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -32,6 +31,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
      */
     public ResourceGroupCreationDialog(Shell parentShell) {
         super(parentShell);
+        setShellStyle(SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE);
     }
 
     /**
@@ -44,6 +44,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         Composite container = (Composite) super.createDialogArea(parent);
         GridLayout gridLayout = (GridLayout) container.getLayout();
         gridLayout.numColumns = 2;
+        gridLayout.marginWidth = 5;
 
         Label lblNewLabel = new Label(container, SWT.WRAP);
         GridData gd_lblNewLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
@@ -52,34 +53,16 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         lblNewLabel.setText("A resource group is a container that holds related resources for an Azure solution.");
 
         Label lblName = new Label(container, SWT.NONE);
-        lblName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblName.setText("Name:");
 
         textName = new AzureTextInput(container, SWT.BORDER);
         textName.setRequired(true);
         textName.setLabeledBy(lblName);
-        textName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        GridData textGrid = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        textGrid.widthHint = 257;
+        textName.setLayoutData(textGrid);
 
         return container;
-    }
-
-    /**
-     * Create contents of the button bar.
-     *
-     * @param parent
-     */
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-    }
-
-    /**
-     * Return the initial size of the dialog.
-     */
-    @Override
-    protected Point getInitialSize() {
-        return new Point(450, 174);
     }
 
     public DraftResourceGroup getData() {
