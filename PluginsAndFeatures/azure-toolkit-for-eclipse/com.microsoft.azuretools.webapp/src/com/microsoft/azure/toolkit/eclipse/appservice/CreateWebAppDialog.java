@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -78,7 +77,7 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
         appServicePlanPanel = new CreateWebAppAppServicePlanComposite(grpAppServicePlan, SWT.NONE);
 
         SubscriptionComboBox subscriptionComboBox = subsAndResourceGroupPanel.getSubscriptionComboBox();
-
+        subscriptionComboBox.refreshItems();
         subscriptionComboBox.addValueChangedListener(event -> {
             Subscription subs = subscriptionComboBox.getValue();
             instanceDetailPanel.getRegionComboBox().setSubscription(subs);
@@ -97,20 +96,6 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
 
         });
         return container;
-    }
-
-    /**
-     * Return the initial size of the dialog.
-     */
-    @Override
-    protected Point getInitialSize() {
-        return new Point(548, 408);
-    }
-
-    @Override
-    protected void configureShell(Shell newShell) {
-        newShell.setMinimumSize(new Point(400, 380));
-        super.configureShell(newShell);
     }
 
     @Override
