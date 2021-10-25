@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.13.0"
+    azureToolkitVersion = "0.14.0-SNAPSHOT"
 }
 
 compileKotlin {
@@ -82,7 +82,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     ext {
-        azureToolkitVersion = "0.13.0"
+        azureToolkitVersion = "0.14.0-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
