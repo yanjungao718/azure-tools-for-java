@@ -44,6 +44,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     protected void init() {
         super.init();
         this.textName.setRequired(true);
+        this.selectorSubscription.refreshItems();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
@@ -53,7 +54,6 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         Group grpTests = new Group(this, SWT.NONE);
         grpTests.setLayout(new GridLayout(2, false));
         GridData gd_grpTests = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gd_grpTests.heightHint = 86;
         gd_grpTests.minimumHeight = 86;
         grpTests.setLayoutData(gd_grpTests);
         grpTests.setText("App Basics");
@@ -64,7 +64,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         lblSubscription.setLayoutData(gd_lblSubscription);
         lblSubscription.setText("Subscription:");
         this.selectorSubscription = new SubscriptionComboBox(grpTests);
-        this.selectorSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.selectorSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         this.selectorSubscription.setLabeledBy(lblSubscription);
 
         Label lblService = new Label(grpTests, SWT.NONE);
@@ -106,11 +106,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final List<AzureFormInput<?>> inputs = this.formConfig.getInputs();
-        inputs.addAll(Arrays.asList(
-            this.getSelectorSubscription(),
-            this.getSelectorCluster(),
-            this.getTextName()
-        ));
+        inputs.addAll(Arrays.asList(this.getSelectorSubscription(), this.getSelectorCluster(), this.getTextName()));
         return inputs;
     }
 
@@ -120,27 +116,15 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     }
 
     public SubscriptionComboBox getSelectorSubscription() {
-        return selectorSubscription;
-    }
-
-    public void setSelectorSubscription(SubscriptionComboBox selectorSubscription) {
-        this.selectorSubscription = selectorSubscription;
+        return this.selectorSubscription;
     }
 
     public SpringCloudClusterComboBox getSelectorCluster() {
         return selectorCluster;
     }
 
-    public void setSelectorCluster(SpringCloudClusterComboBox selectorCluster) {
-        this.selectorCluster = selectorCluster;
-    }
-
     public AzureTextInput getTextName() {
         return textName;
-    }
-
-    public void setTextName(AzureTextInput textName) {
-        this.textName = textName;
     }
 
     public SpringCloudAppConfigPanel getFormConfig() {

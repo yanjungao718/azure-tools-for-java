@@ -44,8 +44,6 @@ public abstract class AzureDialog<T> extends AzDialogWrapper<T> {
 
     protected List<AzureValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().validateData();
-        this.setOkButtonEnabled(infos.stream().noneMatch(
-            i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
         List<AzureValidationInfo> errors = infos.stream()
             .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
             .collect(Collectors.toList());

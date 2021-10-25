@@ -28,7 +28,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private final Map<String, SpringCloudApp> localItems = new HashMap<>();
 
     public SpringCloudAppComboBox(Composite parent) {
-        super(parent);
+        super(parent, false);
     }
 
     @Override

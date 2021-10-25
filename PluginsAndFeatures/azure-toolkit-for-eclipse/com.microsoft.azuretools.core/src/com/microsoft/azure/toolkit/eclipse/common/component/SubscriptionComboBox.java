@@ -20,7 +20,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class SubscriptionComboBox extends AzureComboBox<Subscription> {
 
     public SubscriptionComboBox(Composite parent) {
-        super(parent);
+        super(parent, false);
     }
 
     @Nonnull

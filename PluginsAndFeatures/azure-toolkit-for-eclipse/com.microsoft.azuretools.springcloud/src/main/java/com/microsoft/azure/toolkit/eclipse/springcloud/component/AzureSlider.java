@@ -48,6 +48,9 @@ public class AzureSlider extends Composite implements AzureFormInputControl<Inte
     }
 
     public void setValue(Integer value) {
+        if (this.isDisposed()) {
+            return;
+        }
         boolean changed = false;
         final int val = Math.max(this.realMin, value);
         if (val != this.numSlider.getSelection()) {
@@ -64,6 +67,9 @@ public class AzureSlider extends Composite implements AzureFormInputControl<Inte
     }
 
     public Integer getValue() {
+        if (this.isDisposed()) {
+            return 0;
+        }
         return this.numValue.getSelection();
     }
 
