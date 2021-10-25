@@ -133,11 +133,11 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
 
     public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
         if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.empty").toString());
+            throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.empty").toString());
         } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-            throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.invalid").toString());
+            throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString());
         } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
-            throw new IllegalArgumentException(AzureMessageBundle.message("springCloud.app.name.validate.exist", name).toString());
+            throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString());
         }
     }
 

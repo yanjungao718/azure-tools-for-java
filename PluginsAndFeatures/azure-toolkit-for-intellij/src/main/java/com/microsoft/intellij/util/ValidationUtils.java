@@ -135,11 +135,11 @@ public class ValidationUtils {
 
     public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
         if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.empty"));
+            throw new IllegalArgumentException(message("springcloud.app.name.validate.empty"));
         } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.invalid"));
+            throw new IllegalArgumentException(message("springcloud.app.name.validate.invalid"));
         } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.exist", name));
+            throw new IllegalArgumentException(message("springcloud.app.name.validate.exist", name));
         }
     }
 
