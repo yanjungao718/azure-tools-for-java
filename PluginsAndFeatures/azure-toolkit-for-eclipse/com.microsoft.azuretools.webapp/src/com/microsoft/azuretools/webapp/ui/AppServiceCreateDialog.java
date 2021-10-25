@@ -397,8 +397,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         });
         comboAppServicePlan.setBounds(0, 0, 26, 22);
         dec_comboAppServicePlan = decorateContorolAndRegister(comboAppServicePlan);
-        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
 
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
         lblAppServiceUseExictingLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExictingLocation.setEnabled(true);
         GridData gdLblAppServiceUseExictingLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -920,6 +920,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(groupList -> {
             binderResourceGroup = new ArrayList<>();
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (comboResourceGroup.isDisposed()) {
+                    return;
+                }
                 setComboRefreshingStatus(comboResourceGroup, false);
                 comboResourceGroup.setEnabled(btnResourceGroupUseExisting.getSelection());
                 comboResourceGroup.removeAll();
@@ -952,6 +955,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             .subscribe(appServicePlans -> {
                 appServicePlans.sort(Comparator.comparing(IAppServicePlan::name));
                 DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (comboAppServicePlan.isDisposed()) {
+                        return;
+                    }
                     setComboRefreshingStatus(comboAppServicePlan, false);
                     comboAppServicePlan.setEnabled(btnAppServiceUseExisting.getSelection());
                     binderAppServicePlan = new ArrayList<>();
@@ -994,6 +1000,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     if (locl != null) {
                         binderAppServicePlanLocation = new ArrayList<>();
                         DefaultLoader.getIdeHelper().invokeLater(() -> {
+                            if (comboAppServicePlanLocation.isDisposed()) {
+                                return;
+                            }
                             setComboRefreshingStatus(comboAppServicePlanLocation, false);
                             comboAppServicePlanLocation.setEnabled(btnAppServiceCreateNew.getSelection());
                             for (int i = 0; i < locl.size(); i++) {
