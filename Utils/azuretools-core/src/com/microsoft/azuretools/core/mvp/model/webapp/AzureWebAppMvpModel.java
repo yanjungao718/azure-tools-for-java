@@ -197,7 +197,7 @@ public class AzureWebAppMvpModel {
         if (StringUtils.equalsIgnoreCase(configurationSource, DO_NOT_CLONE_SLOT_CONFIGURATION)) {
             configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_NEW;
         }
-        return webApp.deploymentSlot(model.getSlotName()).create()
+        return webApp.deploymentSlot(model.getNewSlotName()).create()
                 .withName(model.getNewSlotName())
                 .withConfigurationSource(configurationSource).commit();
     }
