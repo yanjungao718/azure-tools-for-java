@@ -270,19 +270,12 @@
             text="SparkJobRun"/>
     <action id="SparkJobDebug" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobDebugAction"
             text="SparkJobDebug"/>
-    <action id="Actions.AddAzureDependencyAction" class="com.microsoft.azure.toolkit.intellij.springcloud.dependency.AddDependencyAction" text="Add Azure Spring Cloud dependency" icon="/icons/SpringCloud/AddDependency.svg">
-    </action>
-    <action id="Actions.AddAzureDependencyContextAction" class="com.microsoft.azure.toolkit.intellij.springcloud.dependency.AddDependencyContextAction" text="Add Azure Spring Cloud dependency" icon="/icons/SpringCloud/AddDependency.svg">
-      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
-    </action>
-
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/Common/Azure.svg" popup="true" class="com.microsoft.intellij.actions.AzurePopupGroup">
       <reference ref="AzureToolkit.ConnectToAzureResource"/>
       <separator/>
       <reference ref="Actions.RunFunction"/>
       <reference ref="Actions.DeployFunction"/>
       <separator/>
-      <reference ref="Actions.AddAzureDependencyAction"/>
       <reference ref="Actions.DeploySpringCloud"/>
       <separator/>
       <reference ref="Actions.WebDeployAction"/>

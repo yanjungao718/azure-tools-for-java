@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.eclipse.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
@@ -43,23 +42,21 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T> {
     }
 
     default void setLabel(String text) {
-        AzureTaskManager.getInstance().runAndWait(() -> {
-            final Control control = this.getInputControl();
-            control.setData(ACCESSIBLE_LABEL, text);
-            control.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-                @Override
-                public void getName(AccessibleEvent e) {
-                    e.result = getLabel();
-                }
-            });
+        String label = text.trim();
+        label = label.endsWith(":") ? label.substring(0, label.length() - 1) : label;
+        this.set(ACCESSIBLE_LABEL, label);
+        final Control control = this.getInputControl();
+        control.setData(ACCESSIBLE_LABEL, label);
+        control.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(AccessibleEvent e) {
+                e.result = getLabel();
+            }
         });
     }
 
     default String getLabel() {
-        return AzureTaskManager.getInstance().runAndWaitAsObservable(new AzureTask<>(() ->
-            Optional.ofNullable((String) this.getInputControl().getData(ACCESSIBLE_LABEL))
-                .map(t -> t.endsWith(":") ? t.substring(0, t.length() - 1) : t)
-                .orElse(AzureFormInput.super.getLabel()))).toBlocking().first();
+        return Optional.ofNullable((String) this.get(ACCESSIBLE_LABEL)).orElse(AzureFormInput.super.getLabel());
     }
 
     default AzureValidationInfo revalidateAndDecorate() {
