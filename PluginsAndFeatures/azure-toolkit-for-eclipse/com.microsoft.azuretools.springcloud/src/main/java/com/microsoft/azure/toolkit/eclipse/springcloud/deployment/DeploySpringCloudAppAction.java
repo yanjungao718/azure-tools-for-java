@@ -86,7 +86,7 @@ public class DeploySpringCloudAppAction {
         });
     }
 
-    @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig.getAppName()"}, type = AzureOperation.Type.ACTION)
     private static SpringCloudDeployment execute(SpringCloudAppConfig appConfig, IAzureMessager messager) {
         AzureMessager.getContext().setMessager(messager);
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
