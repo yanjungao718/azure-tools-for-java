@@ -63,6 +63,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.lang.containsInvisibleChars
 import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
+import com.microsoft.intellij.ui.AccessibleExpandableTextField
 import com.microsoft.intellij.ui.ErrorLabel
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
@@ -293,61 +294,59 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed on the java classpath. Multiple paths should be split by space."
     }
 
-    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField().apply {
-        toolTipText = "Artifact from remote storage account."
-    }).apply {
-        textField.name = "referencedJarsTextFieldText"
-        button.name = "referencedJarsTextFieldButton"
-        textField.document.addDocumentListener(documentValidationListener)
-        button.addActionListener {
-            val root = viewModel.prepareVFSRoot()
-            val listChildrenErrorMessage = root?.listChildrenErrorMessage
-            if (root == null) {
-               StorageChooser.handleInvalidUploadInfo()
-            } else if (listChildrenErrorMessage != null) {
-                StorageChooser.handleListChildrenFailureInfo(listChildrenErrorMessage)
-            } else {
-                val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
-                val chooseFiles = chooser.chooseFile()
-                // Only override reference jar text field when jar file is selected and ok button is clicked
-                if (chooseFiles.isNotEmpty()) {
-                    // Warning: We have overridden toString method in class AdlsGen2VirtualFile
-                    // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
-                    // for those virtual file class later.
-                    text = chooseFiles.joinToString(" ") { vf -> vf.toString() }
-                }
+    private val referencedJarsTextField: AccessibleExpandableTextField = AccessibleExpandableTextField {
+        var newText: String? = null
+        val root = viewModel.prepareVFSRoot()
+        val listChildrenErrorMessage = root?.listChildrenErrorMessage
+        if (root == null) {
+            StorageChooser.handleInvalidUploadInfo()
+        } else if (listChildrenErrorMessage != null) {
+            StorageChooser.handleListChildrenFailureInfo(listChildrenErrorMessage)
+        } else {
+            val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
+            val chooseFiles = chooser.chooseFile()
+            // Only override reference jar text field when jar file is selected and ok button is clicked
+            if (chooseFiles.isNotEmpty()) {
+                // Warning: We have overridden toString method in class AdlsGen2VirtualFile
+                // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
+                // for those virtual file class later.
+                newText = chooseFiles.joinToString(" ") { vf -> vf.toString() }
             }
         }
+        newText
+    }.apply {
+        toolTipText = refJarsPrompt.toolTipText
+        name = "referencedJarsTextFieldText"
+        document.addDocumentListener(documentValidationListener)
     }
 
     private val refFilesPrompt: JLabel = JLabel("Referenced Files(spark.files)").apply {
         toolTipText = "Files to be placed in executor working directory. Multiple paths should be split by space."
     }
 
-    private val referencedFilesTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField().apply {
-        toolTipText = refFilesPrompt.toolTipText
-    }).apply {
-        textField.name = "referencedFilesTextFieldText"
-        button.name = "referencedFilesTextFieldButton"
-        textField.document.addDocumentListener(documentValidationListener)
-        button.addActionListener {
-            val root = viewModel.prepareVFSRoot()
-            val listChildrenErrorMessage = root?.listChildrenErrorMessage
-            if (root == null) {
-                StorageChooser.handleInvalidUploadInfo()
-            } else if (listChildrenErrorMessage != null) {
-                StorageChooser.handleListChildrenFailureInfo(listChildrenErrorMessage)
-            }  else {
-                val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
-                val chooseFiles = chooser.chooseFile()
-                if (chooseFiles.isNotEmpty()) {
-                    // Warning: We have overridden toString method in class AdlsGen2VirtualFile
-                    // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
-                    // for those virtual file class later.
-                    text = chooseFiles.joinToString(" ") { vf -> vf.toString() }
-                }
+    private val referencedFilesTextField: AccessibleExpandableTextField = AccessibleExpandableTextField {
+        var newText: String? = null
+        val root = viewModel.prepareVFSRoot()
+        val listChildrenErrorMessage = root?.listChildrenErrorMessage
+        if (root == null) {
+            StorageChooser.handleInvalidUploadInfo()
+        } else if (listChildrenErrorMessage != null) {
+            StorageChooser.handleListChildrenFailureInfo(listChildrenErrorMessage)
+        } else {
+            val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
+            val chooseFiles = chooser.chooseFile()
+            if (chooseFiles.isNotEmpty()) {
+                // Warning: We have overridden toString method in class AdlsGen2VirtualFile
+                // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
+                // for those virtual file class later.
+                newText = chooseFiles.joinToString(" ") { vf -> vf.toString() }
             }
         }
+        newText
+    }.apply {
+        toolTipText = refFilesPrompt.toolTipText
+        name = "referencedFilesTextFieldText"
+        document.addDocumentListener(documentValidationListener)
     }
 
     private val storageWithUploadPathPanel: SparkSubmissionJobUploadStorageWithUploadPathPanel =
