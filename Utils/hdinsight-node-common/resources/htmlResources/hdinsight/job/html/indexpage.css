@@ -1,6 +1,21 @@
+:root,
+:root.dark-theme-mode {
+    --text-color: white;
+    --bg-color: #2b2b2b;
+}
+:root.light-theme-mode {
+    --text-color: black;
+    --bg-color: white;
+}
+:root.highcontrast-theme-mode {
+    --text-color: white;
+    --bg-color: black;
+}
 
 body {
     visibility: visible;
+    color: var(--text-color);
+    background-color: var(--bg-color);
 }
 
 #htitle {
@@ -160,7 +175,8 @@ body {
     height:100%;
     line-height:normal;
     resize: none;
-    background-color: #FFFFFF;
+    color: var(--text-color);
+    background-color: var(--bg-color);
     font-size: 11px;
     font-family: consolas,"courier new",monospace;
     padding: 8px;
@@ -168,21 +184,32 @@ body {
 
 .table-striped#myTable tbody {
     font-size: 11px;
+    background-color: var(--bg-color);
 }
 
 .table-striped#myTable tbody > tr.selected-hight > td,
 .table-striped tbody > tr.selected-hight > th {
     background-color: #FECA40;
+    color: black;
+    font-weight: bold;
+    font-size: 13px;
 }
 
 .table-striped#myTable thead >tr > td,
 .table-striped#myTable thead > tr> th {
     text-align: center;
+    background-color: var(--bg-color);
 }
 
 .table-striped#myTable tbody > tr> td:first-child,
 .table-striped.table-striped#myTable tbody > tr > th:first-child {
     text-align: center;
+    background-color: var(--bg-color);
+}
+
+.table-striped > tbody > tr:nth-child(odd),
+.table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: var(--bg-color);
 }
 
 .rightPanelhr {
@@ -224,7 +251,7 @@ input[type=text] {
     border: 2px solid #ccc;
     border-radius: 4px;
     font-size: 12px;
-    background-color: white;
+    background-color: var(--bg-color);
     background-image: url('resources/icons/searchicon.png');
     background-position: 10px 10px;
     background-repeat: no-repeat;

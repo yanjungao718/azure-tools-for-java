@@ -43,7 +43,7 @@ public class JobViewEditor implements FileEditor {
         myProvider = provider;
         myVirtualFile = file;
         uuid = file.getUserData(JobViewEditorProvider.JOB_VIEW_UUID);
-        myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory(), uuid).getComponent();
+        myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory() + "/com.microsoft.hdinsight", uuid).getComponent();
         AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobview"), null);
         EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
             HDInsightBundle.message("HDInsightSparkJobview"), null);
