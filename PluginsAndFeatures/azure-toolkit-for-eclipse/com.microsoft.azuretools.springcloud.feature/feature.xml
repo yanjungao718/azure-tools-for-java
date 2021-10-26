@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.springcloud.feature"
       label="Spring Cloud Plugin for Eclipse"
-      version="3.28.0.qualifier"
+      version="3.29.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>
