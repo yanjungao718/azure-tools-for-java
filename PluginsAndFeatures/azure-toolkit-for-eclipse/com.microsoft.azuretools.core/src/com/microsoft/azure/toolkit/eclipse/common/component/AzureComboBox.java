@@ -5,10 +5,8 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.component;
 
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -187,7 +185,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     public void refreshItems() {
-        final AzureString title = AzureOperationBundle.title("common|combobox.load_items", this.getLabel());
+        final String title = String.format("load/refresh %s items in combo box", this.getLabel());
         AzureTaskManager.getInstance().runInBackground(title, this::doRefreshItems);
     }
 
