@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.component;
 
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -15,12 +14,10 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-import java.util.function.Supplier;
-
 public class AzureTextInput extends Text implements AzureFormInputControl<String>, ModifyListener {
     protected static final int DEBOUNCE_DELAY = 300;
     private final Debouncer debouncer;
-	private String value;
+    private String value;
 
     public AzureTextInput(Composite parent, int style) {
         super(parent, style);
@@ -37,7 +34,7 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     @Override
     public String getValue() {
-		return this.value;
+        return this.value;
     }
 
     @Override
@@ -50,7 +47,7 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
 
     @Override
     public void modifyText(ModifyEvent modifyEvent) {
-    	this.value = this.getText();
+        this.value = this.getText();
         this.debouncer.debounce();
     }
 
