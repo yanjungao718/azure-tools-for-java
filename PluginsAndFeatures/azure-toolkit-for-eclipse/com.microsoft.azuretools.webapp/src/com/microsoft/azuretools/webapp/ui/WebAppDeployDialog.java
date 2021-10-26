@@ -19,7 +19,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -621,23 +620,42 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         if (selectedRow < 0) {
             return;
         }
+        refreshComboBox(comboSlot);
+        refreshComboBox(comboSlotConf);
         String appServiceName = table.getItems()[selectedRow].getText(0);
         IWebApp webApp = webAppDetailsMap.get(appServiceName);
         if (webApp == null) {
             return;
         }
-        List<IWebAppDeploymentSlot> deploymentSlots = webApp.deploymentSlots(false);
+        Mono.fromCallable(() -> webApp.deploymentSlots(false)).subscribeOn(Schedulers.boundedElastic())
+                .subscribe(slots -> {
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        if (comboSlot.isDisposed()) {
+                            return;
+                        }
+                        comboSlot.removeAll();
+                        comboSlot.setEnabled(btnSlotUseExisting.getSelection());
+                        comboSlotConf.removeAll();
+                        comboSlotConf.setEnabled(btnSlotCreateNew.getSelection());
+                        for (IWebAppDeploymentSlot deploymentSlot : slots) {
+                            comboSlot.add(deploymentSlot.name());
+                            comboSlotConf.add(deploymentSlot.name());
+                        }
+                        if (comboSlot.getItemCount() > 0) {
+                            comboSlot.select(0);
+                        }
+                        comboSlotConf.add(webApp.name());
+                        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
+                        comboSlotConf.select(0);
+                    });
+                });
+    }
 
-        for (IWebAppDeploymentSlot deploymentSlot : deploymentSlots) {
-            comboSlot.add(deploymentSlot.name());
-            comboSlotConf.add(deploymentSlot.name());
-        }
-        if (comboSlot.getItemCount() > 0) {
-            comboSlot.select(0);
-        }
-        comboSlotConf.add(webApp.name());
-        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
-        comboSlotConf.select(0);
+    private void refreshComboBox(Combo target) {
+        target.setEnabled(false);
+        target.removeAll();
+        target.add(REFRESHING);
+        target.select(0);
     }
 
     private void fillUserSettings() {
