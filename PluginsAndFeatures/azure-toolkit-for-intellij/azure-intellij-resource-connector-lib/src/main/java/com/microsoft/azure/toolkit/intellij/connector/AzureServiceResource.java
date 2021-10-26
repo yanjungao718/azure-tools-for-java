@@ -6,7 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,6 +66,11 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
     @Override
     public String getName() {
         return this.id.name();
+    }
+
+    @Override
+    public void navigate(AnActionEvent event) {
+        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SHOW_PROPERTIES).handle(this.getData(), event);
     }
 
     @Getter

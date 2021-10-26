@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.openapi.application.PreloadingActivity;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -77,6 +79,14 @@ public final class ModuleResource implements Resource<String> {
         @Override
         public String toString() {
             return this.getTitle();
+        }
+    }
+
+    public static class RegisterActivity extends PreloadingActivity {
+
+        @Override
+        public void preload(@Nonnull ProgressIndicator progressIndicator) {
+            ResourceManager.registerDefinition(Definition.IJ_MODULE);
         }
     }
 }

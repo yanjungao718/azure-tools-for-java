@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -25,16 +25,16 @@ import java.util.List;
 
 public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements AzureForm<DraftNetwork> {
     private JPanel contentPane;
-    private ValidationDebouncedTextInput txtName;
+    private AzureTextInput txtName;
     private JLabel lblName;
     private JLabel lblAddressSpace;
     private JLabel lblAddressSpaceDetails;
     private JLabel lblSubnetName;
     private JLabel lblSubNetAddress;
     private JLabel lblSubnetAddressDetails;
-    private ValidationDebouncedTextInput txtAddressSpace;
-    private ValidationDebouncedTextInput txtSubnetName;
-    private ValidationDebouncedTextInput txtSubnetAddressRange;
+    private AzureTextInput txtAddressSpace;
+    private AzureTextInput txtSubnetName;
+    private AzureTextInput txtSubnetAddressRange;
 
     private final String subscriptionId;
     private final String resourceGroup;
@@ -90,12 +90,12 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
 
     private void createUIComponents() {
         // todo: add name validator
-        txtName = new ValidationDebouncedTextInput();
+        txtName = new AzureTextInput();
         txtName.setRequired(true);
-        txtSubnetName = new ValidationDebouncedTextInput();
+        txtSubnetName = new AzureTextInput();
         txtSubnetName.setRequired(true);
 
-        txtAddressSpace = new ValidationDebouncedTextInput();
+        txtAddressSpace = new AzureTextInput();
         txtAddressSpace.setRequired(true);
         txtAddressSpace.setValidator(() -> validateSubnet(txtAddressSpace.getValue()));
         txtAddressSpace.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -105,7 +105,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
             }
         });
 
-        txtSubnetAddressRange = new ValidationDebouncedTextInput();
+        txtSubnetAddressRange = new AzureTextInput();
         txtSubnetAddressRange.setRequired(true);
         txtSubnetAddressRange.setValidator(() -> validateSubnet(txtSubnetAddressRange.getValue()));
         txtSubnetAddressRange.getDocument().addDocumentListener(new DocumentAdapter() {

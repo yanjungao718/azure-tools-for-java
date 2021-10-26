@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.core.ui;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -93,7 +94,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         this.btnOAuth = createRadioButton(group, "OAuth2", AuthType.OAUTH2);
         this.lblOAuth = createDescriptionLabel(group, "You will need to open an external browser and sign in.");
 
-
         btnDeviceCode = createRadioButton(group, "Device Login", AuthType.DEVICE_CODE);
         lblDeviceInfo = createDescriptionLabel(group, "You will need to open an external browser and sign in with a generated device code.");
 
@@ -111,6 +111,9 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             .flatMap(ac -> Mono.zip(Mono.just(ac), ac.checkAvailable().onErrorResume(e -> Mono.just(false))))
             .filter(Tuple2::getT2).map(Tuple2::getT1).collectList().subscribe(accounts -> {
                 AzureTaskManager.getInstance().runLater(() -> {
+                    if (Optional.ofNullable(getShell()).map(Shell::isDisposed).orElse(true)) {
+                        return;
+                    }
                     if (accounts.stream().anyMatch(ac -> ac.getAuthType() == AuthType.AZURE_CLI)) {
                         enableAzureCliLogin();
                     } else {
@@ -206,10 +209,10 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         } else if (btnDeviceCode.getSelection()) {
             data.setType(AuthType.DEVICE_CODE);
         } else if (btnSPRadio.getSelection()) {
-           data.setType(AuthType.SERVICE_PRINCIPAL);
+            data.setType(AuthType.SERVICE_PRINCIPAL);
         } else if (btnOAuth.getSelection()) {
             data.setType(AuthType.OAUTH2);
-         }
+        }
         super.okPressed();
     }
 
