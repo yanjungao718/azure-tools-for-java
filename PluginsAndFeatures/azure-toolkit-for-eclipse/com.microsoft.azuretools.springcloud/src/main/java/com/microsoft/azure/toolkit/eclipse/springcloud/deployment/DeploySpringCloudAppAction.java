@@ -57,6 +57,10 @@ public class DeploySpringCloudAppAction {
                     AzureArtifactManager.buildArtifact(((WrappedAzureArtifact) artifact).getArtifact())
                         .subscribeOn(Schedulers.boundedElastic())
                         .subscribe((r) -> deployToApp(config), e -> AzureMessager.getMessager().error(e));
+                } else {
+                    if (Objects.nonNull(artifact)) {
+                        deployToApp(config);
+                    }
                 }
             });
             dialog.open();
