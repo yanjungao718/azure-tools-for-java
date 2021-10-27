@@ -35,11 +35,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -244,7 +240,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             try {
                 AuthConfiguration newData = getFormData();
                 Map<String, String> map = new LinkedHashMap<>();
-                if (StringUtils.isNotBlank(newData.getCertificate())) {
+                if (newData.getKey() == null) {
                     map.put("fileWithCertAndPrivateKey", newData.getCertificate());
                 } else {
                     String password = StringUtils.isNotBlank(newData.getKey()) ? "<hidden>" : "<empty>";
@@ -340,12 +336,15 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         }
 
         public java.util.List<AzureValidationInfo> validateData() {
-            java.util.List<AzureValidationInfo> list = this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
-            if (this.radioPassword.getSelection()) {
-                list.add(validateRequiredTemporarily(this.txtPassword));
-            } else {
-                list.add(validateRequiredTemporarily(this.txtCertificate));
-            }
+            List<AzureValidationInfo> list = new ArrayList<>();
+            AzureTaskManager.getInstance().runAndWait(() -> {
+                list.addAll(this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList()));
+                if (this.radioPassword.getSelection()) {
+                    list.add(validateRequiredTemporarily(this.txtPassword));
+                } else {
+                    list.add(validateRequiredTemporarily(this.txtCertificate));
+                }
+            });
             return list;
         }
 
