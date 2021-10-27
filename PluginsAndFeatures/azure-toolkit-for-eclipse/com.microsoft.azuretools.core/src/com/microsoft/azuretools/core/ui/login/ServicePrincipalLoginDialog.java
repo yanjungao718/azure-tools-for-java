@@ -20,8 +20,20 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -222,7 +234,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             btnOpenFileButton.setEnabled(selection);
             txtCertificate.setEnabled(selection);
             txtPassword.setEnabled(!selection);
-            AzureTaskManager.getInstance().runLater(ServicePrincipalLoginDialog.this::revalidate);
+            AzureTaskManager.getInstance().runLater(() -> setErrorInfoAll(doValidateAll()));
         }
 
         private void updateToJsonEditor() {
