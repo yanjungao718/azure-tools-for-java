@@ -57,7 +57,6 @@ public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
     protected void init() {
         super.init();
         advanced.setVisible(false);
-        this.startTrackingValidation();
     }
 
     @Override

@@ -51,7 +51,6 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
     protected void init() {
         super.init();
         advanced.setVisible(false);
-        this.startTrackingValidation();
     }
 
     @Override
