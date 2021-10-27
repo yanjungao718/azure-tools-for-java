@@ -6,6 +6,7 @@ package com.microsoft.azuretools.core.ui.login;
 
 import com.google.gson.JsonSyntaxException;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
@@ -230,7 +231,11 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             btnOpenFileButton.setEnabled(selection);
             txtCertificate.setEnabled(selection);
             txtPassword.setEnabled(!selection);
-            AzureTaskManager.getInstance().runLater(() -> setErrorInfoAll(doValidateAll()));
+            List<AzureValidationInfo> infos = ServicePrincipalLoginDialog.this.doValidateAll();
+            // workaround: clear validation information
+            getInputs().forEach(ctrl -> ((AzureFormInputControl) ctrl).setValidationInfo(AzureValidationInfo.OK));
+            setErrorInfoAll(infos);
+            setOkButtonEnabled(infos.isEmpty());
         }
 
         private void updateToJsonEditor() {
@@ -335,7 +340,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             }
         }
 
-        public java.util.List<AzureValidationInfo> validateData() {
+        public List<AzureValidationInfo> validateData() {
             List<AzureValidationInfo> list = new ArrayList<>();
             AzureTaskManager.getInstance().runAndWait(() -> {
                 list.addAll(this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList()));
