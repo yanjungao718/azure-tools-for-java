@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 public class EclipseProjectComboBox extends AzureComboBox<IProject> {
 
     public EclipseProjectComboBox(Composite parent) {
-        super(parent);
+        super(parent, false);
     }
 
     @Override

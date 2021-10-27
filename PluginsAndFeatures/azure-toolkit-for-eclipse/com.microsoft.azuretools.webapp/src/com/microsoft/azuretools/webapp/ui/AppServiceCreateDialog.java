@@ -270,6 +270,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         super(parentShell);
         setHelpAvailable(false);
         this.project = project;
+        updatePacking();
         setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.APPLICATION_MODAL);
     }
 
@@ -1066,13 +1067,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     }
 
     protected void fillWebContainers() {
-        try {
-            if (MavenUtils.isMavenProject(project)) {
-                packaging = MavenUtils.getPackaging(project);
-            }
-        } catch (Exception e) {
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
-        }
         final boolean isJarPacking = packaging.equals("jar");
         final JavaVersion jdkModel = getSelectedJavaVersion();
         final List<WebContainer> webContainers = isJarPacking ? Arrays.asList(WebContainer.JAVA_SE)
@@ -1091,9 +1085,20 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         CommonUtils.selectComboIndex(comboWebContainer, webContainer);
     }
 
+    private void updatePacking() {
+        try {
+            if (MavenUtils.isMavenProject(project)) {
+                packaging = MavenUtils.getPackaging(project);
+            }
+        } catch (Exception e) {
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
+        }
+    }
+
     private List<WebContainer> listWindowsWebContainersForWarFile(JavaVersion javaVersion) {
         return Runtime.WEBAPP_RUNTIME.stream().filter(runtime -> runtime.isWindows())
-                .filter(runtime -> !Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE) && Objects.equals(runtime.getJavaVersion(), javaVersion))
+                .filter(runtime -> !Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE))
+                .distinct()
                 .map(Runtime::getWebContainer).distinct().collect(Collectors.toList());
     }
 

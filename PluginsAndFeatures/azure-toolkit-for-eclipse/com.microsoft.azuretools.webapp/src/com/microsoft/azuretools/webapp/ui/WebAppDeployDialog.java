@@ -72,6 +72,7 @@ import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.eclipse.common.component.EclipseProjectComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
@@ -242,13 +243,15 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         projectCombo = new EclipseProjectComboBox(composite);
         projectCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        Optional.ofNullable(project).ifPresent(value -> {
+        projectCombo.addValueChangedListener(value -> {
             this.project = value;
-            if (this.buildBeforeDeploy != null) {
+            if (!projectCombo.isDisposed()) {
                 this.buildBeforeDeploy.setVisible(MavenUtils.isMavenProject(value));
             }
         });
-        projectCombo.addValueChangedListener(value -> this.project = value);
+        Optional.ofNullable(project)
+                .ifPresent(value -> projectCombo.setValue(new ItemReference<>(item -> Objects.equals(value, item))));
+        projectCombo.refreshItems();
         decProjectCombo = decorateContorolAndRegister(projectCombo);
     }
 
