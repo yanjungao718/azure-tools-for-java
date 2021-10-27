@@ -6,6 +6,7 @@ package com.microsoft.azuretools.core.ui.login;
 
 import com.google.gson.JsonSyntaxException;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
@@ -20,14 +21,22 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -222,7 +231,11 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             btnOpenFileButton.setEnabled(selection);
             txtCertificate.setEnabled(selection);
             txtPassword.setEnabled(!selection);
-            AzureTaskManager.getInstance().runLater(ServicePrincipalLoginDialog.this::revalidate);
+            List<AzureValidationInfo> infos = ServicePrincipalLoginDialog.this.doValidateAll();
+            // workaround: clear validation information
+            getInputs().forEach(ctrl -> ((AzureFormInputControl) ctrl).setValidationInfo(AzureValidationInfo.OK));
+            setErrorInfoAll(infos);
+            setOkButtonEnabled(infos.isEmpty());
         }
 
         private void updateToJsonEditor() {
@@ -232,7 +245,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             try {
                 AuthConfiguration newData = getFormData();
                 Map<String, String> map = new LinkedHashMap<>();
-                if (StringUtils.isNotBlank(newData.getCertificate())) {
+                if (newData.getKey() == null) {
                     map.put("fileWithCertAndPrivateKey", newData.getCertificate());
                 } else {
                     String password = StringUtils.isNotBlank(newData.getKey()) ? "<hidden>" : "<empty>";
@@ -327,13 +340,16 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             }
         }
 
-        public java.util.List<AzureValidationInfo> validateData() {
-            java.util.List<AzureValidationInfo> list = this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
-            if (this.radioPassword.getSelection()) {
-                list.add(validateRequiredTemporarily(this.txtPassword));
-            } else {
-                list.add(validateRequiredTemporarily(this.txtCertificate));
-            }
+        public List<AzureValidationInfo> validateData() {
+            List<AzureValidationInfo> list = new ArrayList<>();
+            AzureTaskManager.getInstance().runAndWait(() -> {
+                list.addAll(this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList()));
+                if (this.radioPassword.getSelection()) {
+                    list.add(validateRequiredTemporarily(this.txtPassword));
+                } else {
+                    list.add(validateRequiredTemporarily(this.txtCertificate));
+                }
+            });
             return list;
         }
 
