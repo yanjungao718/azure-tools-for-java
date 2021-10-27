@@ -321,7 +321,6 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.cbSubnet.setRequired(true);
         this.cbSecurityGroup = new SecurityGroupComboBox();
         this.cbPublicIp = new PublicIPAddressComboBox();
-        this.cbPublicIp.setRequired(true);
         this.cbStorageAccount = new AzureStorageAccountComboBox();
         this.txtUserName = new AzureTextInput();
         this.txtUserName.setRequired(true);
