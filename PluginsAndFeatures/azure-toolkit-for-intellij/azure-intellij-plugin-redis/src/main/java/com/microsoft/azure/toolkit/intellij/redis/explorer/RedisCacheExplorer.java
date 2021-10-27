@@ -7,18 +7,16 @@ package com.microsoft.azure.toolkit.intellij.redis.explorer;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -80,13 +78,9 @@ public class RedisCacheExplorer extends BaseEditor {
     private JSplitPane splitPane;
     private JPanel pnlProgressBar;
 
-    /**
-     * @param sid String, subscription id.
-     * @param id  String, resource id.
-     */
-    public RedisCacheExplorer(String sid, String id, @NotNull final VirtualFile virtualFile) {
+    public RedisCacheExplorer(RedisCache redis, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
-        this.redis = Azure.az(AzureRedis.class).subscription(sid).get(id);
+        this.redis = redis;
         final AzureTaskManager manager = AzureTaskManager.getInstance();
 
         currentCursor = SCAN_POINTER_START;
@@ -158,13 +152,13 @@ public class RedisCacheExplorer extends BaseEditor {
         });
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public JComponent getComponent() {
         return pnlMain;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return ID;
