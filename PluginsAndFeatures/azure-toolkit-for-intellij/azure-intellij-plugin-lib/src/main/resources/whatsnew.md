@@ -18,6 +18,8 @@ We are pround to annouce the support for Azure AD in Azure Toolkit for IntelliJ!
 - Remove outdated spring cloud dependency management
 
 ### Fixed
+- [#5923](https://github.com/microsoft/azure-tools-for-java/pull/5923) Fix bug: ADLA accounts can't be listed in Spark on Cosmos subscription issue
+- [#5968](https://github.com/microsoft/azure-tools-for-java/pull/5968) Fix bug: HDInsight project wizard accessibility issue
 - [#5996](https://github.com/microsoft/azure-tools-for-java/pull/5996) Fix bug: Config not applied when starting livy interactive console
 
 ## 3.57.1
