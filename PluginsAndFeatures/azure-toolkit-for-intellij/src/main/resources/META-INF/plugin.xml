@@ -25,10 +25,26 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.57.1</h3>
+        <h3>3.58.0</h3>
+        <h4>Added</h4>
+        <ul>
+            <li>Add support for Azure AD (Preview)
+                <ul>
+                    <li>Register Azure AD application</li>
+                    <li>View Azure AD application templates</li>
+                </ul>
+            </li>
+            <li>Support connect to Azure Redis for spring boot project</li>
+        </ul>
+        <h4>Changed</h4>
+        <ul>
+            <li>Remove outdated spring cloud dependency management</li>
+        </ul>
         <h4>Fixed</h4>
         <ul>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5888">#5888</a> Fix bug: Conflicting component name 'RunManager'</li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5923">#5923</a> Fix bug: ADLA accounts can't be listed in Spark on Cosmos subscription issue</li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5968">#5968</a> Fix bug: HDInsight project wizard accessibility issue</li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5996">#5996</a> Fix bug: Config not applied when starting livy interactive console</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

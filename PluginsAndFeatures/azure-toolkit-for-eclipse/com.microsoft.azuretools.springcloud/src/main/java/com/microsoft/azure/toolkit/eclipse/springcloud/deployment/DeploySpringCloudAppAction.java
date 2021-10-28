@@ -53,10 +53,14 @@ public class DeploySpringCloudAppAction {
                 final boolean buildArtifact = dialog.getBuildArtifact();
                 dialog.close();
                 final IArtifact artifact = config.getDeployment().getArtifact();
-                if (buildArtifact && Objects.nonNull(artifact)) {
-                    AzureArtifactManager.buildArtifact(((WrappedAzureArtifact) artifact).getArtifact())
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .subscribe((r) -> deployToApp(config), e -> AzureMessager.getMessager().error(e));
+                if (Objects.nonNull(artifact)) {
+                    if (buildArtifact) {
+                        AzureArtifactManager.buildArtifact(((WrappedAzureArtifact) artifact).getArtifact())
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .subscribe((r) -> deployToApp(config), e -> AzureMessager.getMessager().error(e));
+                    } else {
+                        deployToApp(config);
+                    }
                 }
             });
             dialog.open();

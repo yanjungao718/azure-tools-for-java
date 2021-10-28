@@ -7,12 +7,30 @@ package com.microsoft.azure.toolkit.ide.redis;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.redis.RedisCache;
+
+import java.util.Optional;
+
+import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class RedisActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
+    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_EXPLORER = Action.Id.of("action.redis.open_explorer");
+
+    @Override
+    public void registerActions(AzureActionManager am) {
+        final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
+            .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_explorer", ((IAzureResource<?>) r).name())).orElse(null))
+            .enabled(s -> s instanceof RedisCache);
+        am.registerAction(OPEN_EXPLORER, new Action<>(showExplorerView));
+    }
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -22,8 +40,9 @@ public class RedisActionsContributor implements IActionsContributor {
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
-        final ActionGroup accountActionGroup = new ActionGroup(
+        final ActionGroup redisActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                RedisActionsContributor.OPEN_EXPLORER,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 "---",
                 ResourceCommonActionsContributor.CONNECT,
@@ -31,6 +50,6 @@ public class RedisActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.REFRESH
         );
-        am.registerGroup(REDIS_ACTIONS, accountActionGroup);
+        am.registerGroup(REDIS_ACTIONS, redisActionGroup);
     }
 }

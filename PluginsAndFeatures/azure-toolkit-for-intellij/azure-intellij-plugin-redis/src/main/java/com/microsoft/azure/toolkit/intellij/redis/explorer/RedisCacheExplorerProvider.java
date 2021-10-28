@@ -10,8 +10,9 @@ import com.intellij.openapi.fileEditor.FileEditorPolicy;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
+import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -20,8 +21,6 @@ import org.jetbrains.annotations.NotNull;
 public class RedisCacheExplorerProvider implements FileEditorProvider, DumbAware {
 
     public static final String TYPE = "REDIS_EXPLORER";
-    public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
-    public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
@@ -31,9 +30,8 @@ public class RedisCacheExplorerProvider implements FileEditorProvider, DumbAware
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        final String sid = virtualFile.getUserData(SUBSCRIPTION_ID);
-        final String id = virtualFile.getUserData(RESOURCE_ID);
-        return new RedisCacheExplorer(sid, id, virtualFile);
+        final RedisCache redis = (RedisCache) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
+        return new RedisCacheExplorer(redis, virtualFile);
     }
 
     @NotNull
