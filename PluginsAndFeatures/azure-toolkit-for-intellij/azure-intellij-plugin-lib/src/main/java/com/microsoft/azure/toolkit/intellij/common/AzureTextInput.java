@@ -30,12 +30,15 @@ public class AzureTextInput extends ExtendableTextField
         AzureValidationInfo.Type.ERROR, (i) -> Extension.create(AllIcons.General.BalloonError, i.getMessage(), null),
         AzureValidationInfo.Type.WARNING, (i) -> Extension.create(AllIcons.General.BalloonWarning, i.getMessage(), null)
     );
+    private boolean valueChanged;
 
     public AzureTextInput() {
         super();
         this.debouncer = new TailingDebouncer(() -> {
             this.fireValueChangedEvent(this.getValue());
+            this.valueChanged = true;
             this.doValidate();
+            this.valueChanged = false;
         }, DEBOUNCE_DELAY);
         this.getDocument().addDocumentListener(this);
     }
@@ -53,9 +56,14 @@ public class AzureTextInput extends ExtendableTextField
     @Nonnull
     @Override
     public final AzureValidationInfo doValidate() {
-        final AzureValidationInfo validationInfo = AzureFormInputComponent.super.doValidate();
-        this.setValidationInfo(validationInfo);
-        return validationInfo;
+        final AzureValidationInfo info = this.getValidationInfo();
+        if (info == null || this.valueChanged) {
+            this.setValidationInfo(AzureValidationInfo.PENDING);
+            final AzureValidationInfo validationInfo = AzureFormInputComponent.super.doValidate();
+            this.setValidationInfo(validationInfo);
+            return validationInfo;
+        }
+        return info;
     }
 
     public void revalidateValue() {
@@ -64,6 +72,7 @@ public class AzureTextInput extends ExtendableTextField
     }
 
     public void setValidationInfo(AzureValidationInfo info) {
+        AzureFormInputComponent.super.setValidationInfo(info);
         final Extension ex = extensions.getOrDefault(info.getType(), (i) -> SUCCESS).apply(info);
         this.setExtensions(ex);
     }
