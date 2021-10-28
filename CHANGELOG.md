@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.58.0](#3580)
   - [3.57.1](#3571)
   - [3.57.0](#3570)
   - [3.56.0](#3560)
@@ -73,9 +74,24 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.58.0
+### Added
+- Add support for Azure AD (Preview)
+  - Register Azure AD application
+  - View Azure AD application templates
+- Support connect to Azure Redis for spring boot project
+
+### Changed
+- Remove outdated spring cloud dependency management
+
+### Fixed
+- [#5923](https://github.com/microsoft/azure-tools-for-java/pull/5923) Fix bug: ADLA accounts can't be listed in Spark on Cosmos subscription issue
+- [#5968](https://github.com/microsoft/azure-tools-for-java/pull/5968) Fix bug: HDInsight project wizard accessibility issue
+- [#5996](https://github.com/microsoft/azure-tools-for-java/pull/5996) Fix bug: Config not applied when starting livy interactive console
+
 ## 3.57.1
 ### Fixed
-- [#5888](https://github.com/microsoft/azure-tools-for-java/pull/5888) Fix bug: Conflicting component name 'RunManager'
+- [#5888](https://github.com/microsoft/azure-tools-for-java/issues/5888) Fix bug: Conflicting component name 'RunManager'
 
 ## 3.57.0
 ### Added

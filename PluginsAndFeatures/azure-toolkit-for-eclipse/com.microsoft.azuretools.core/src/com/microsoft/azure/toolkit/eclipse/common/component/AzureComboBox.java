@@ -78,6 +78,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
             if (!e.getSelection().isEmpty()) {
                 this.setValue(this.getValue());
             }
+            this.valueDebouncer.debounce();
         });
     }
 
@@ -137,9 +138,6 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         Object oldVal = this.value;
         this.value = val;
         this.refreshValue();
-        if (!Objects.equals(oldVal, val)) {
-            this.valueDebouncer.debounce();
-        }
     }
 
     public void setValue(final AzureComboBox.ItemReference<T> val) {
