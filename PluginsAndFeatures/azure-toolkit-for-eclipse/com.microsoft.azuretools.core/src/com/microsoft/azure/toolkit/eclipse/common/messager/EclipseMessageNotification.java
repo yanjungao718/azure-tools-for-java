@@ -41,8 +41,8 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         browser.setText(this.getMessage().getContent());
         browser.setBackgroundMode(SWT.INHERIT_FORCE);
-        int height = clientArea.height / 10;
-        browser.setSize((int) (height * 2.5), height);
+        int height = clientArea.height / 15;
+        browser.setSize((int) (height * 3.5), height);
         Composite buttonBar = new Composite(container, SWT.NONE);
         buttonBar.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false, 1, 1));
         buttonBar.setLayout(new GridLayout(2, false));
