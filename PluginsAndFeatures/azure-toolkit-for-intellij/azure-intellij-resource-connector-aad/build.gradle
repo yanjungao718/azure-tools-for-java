@@ -1,3 +1,5 @@
+apply plugin: "io.freefair.aspectj.post-compile-weaving"
+
 dependencies {
     implementation project(":azure-intellij-plugin-lib")
 
