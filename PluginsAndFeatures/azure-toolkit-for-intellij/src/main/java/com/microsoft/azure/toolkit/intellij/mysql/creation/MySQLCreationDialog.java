@@ -26,7 +26,6 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
 
     public MySQLCreationDialog(@Nullable Project project) {
         super(project);
-        setOKActionEnabled(false);
         init();
     }
 

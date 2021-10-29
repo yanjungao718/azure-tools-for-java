@@ -32,7 +32,6 @@ public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
 
     public SqlServerCreationDialog(@Nullable Project project) {
         super(project);
-        setOKActionEnabled(false);
         init();
     }
 
