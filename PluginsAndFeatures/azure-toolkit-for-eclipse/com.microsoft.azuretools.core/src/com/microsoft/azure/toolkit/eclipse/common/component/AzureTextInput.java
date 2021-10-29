@@ -29,7 +29,7 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
     }
 
     public AzureTextInput(Composite parent) {
-        this(parent, SWT.NONE);
+        this(parent, SWT.BORDER);
     }
 
     @Override

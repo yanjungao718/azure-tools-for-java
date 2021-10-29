@@ -22,7 +22,8 @@ import java.util.Optional;
 public interface EclipseMessageView {
 
     default void addActionButton(Action<?> action, Composite container) {
-        final Button btn = new Button(container, SWT.PUSH);
+        final Button btn = new Button(container, SWT.NONE);
+        btn.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         final String title = Optional.ofNullable(action.view(null)).map(IView.Label::getLabel).orElse(action.toString());
         btn.setText(title);
         btn.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
