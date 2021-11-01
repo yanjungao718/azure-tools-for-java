@@ -2,9 +2,8 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.ide.appservice.model;
 
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -28,9 +27,9 @@ public class ApplicationInsightsConfig {
         this.name = name;
     }
 
-    public ApplicationInsightsConfig(ApplicationInsightsComponent component) {
+    public ApplicationInsightsConfig(final String name, final String  instrumentationKey) {
         this.newCreate = false;
-        this.name = component.name();
-        this.instrumentationKey = component.instrumentationKey();
+        this.name = name;
+        this.instrumentationKey = instrumentationKey;
     }
 }

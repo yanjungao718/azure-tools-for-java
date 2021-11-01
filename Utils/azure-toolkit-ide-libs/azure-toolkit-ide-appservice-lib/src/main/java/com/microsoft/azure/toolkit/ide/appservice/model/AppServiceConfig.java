@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.ide.appservice.model;
 
 import com.azure.core.management.AzureEnvironment;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -47,6 +47,7 @@ public class AppServiceConfig {
     private PricingTier pricingTier;
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
+    private DeploymentSlotConfig deploymentSlot;
 
     protected Runtime runtime;
 
