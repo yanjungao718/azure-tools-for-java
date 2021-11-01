@@ -5,23 +5,41 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.google.common.collect.ImmutableMap;
+import com.intellij.icons.AllIcons;
+import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.components.fields.ExtendableTextField;
-import lombok.Getter;
-import lombok.Setter;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 
-import javax.swing.*;
+import javax.annotation.Nonnull;
+import java.util.Map;
+import java.util.function.Function;
 
 public class AzureTextInput extends ExtendableTextField
     implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
-    @Getter
-    @Setter
-    private boolean required;
-    @Getter
-    @Setter
-    private Validator validator;
+    protected static final int DEBOUNCE_DELAY = 500;
+    private final Debouncer debouncer;
+
+    private static final Extension VALIDATING = Extension.create(AnimatedIcon.Default.INSTANCE, "Validating", null);
+    private static final Extension SUCCESS = Extension.create(AllIcons.General.InspectionsOK, "Valid", null);
+    private static final Map<AzureValidationInfo.Type, Function<AzureValidationInfo, Extension>> extensions = ImmutableMap.of(
+        AzureValidationInfo.Type.PENDING, (i) -> VALIDATING,
+        AzureValidationInfo.Type.INFO, (i) -> SUCCESS,
+        AzureValidationInfo.Type.ERROR, (i) -> Extension.create(AllIcons.General.BalloonError, i.getMessage(), null),
+        AzureValidationInfo.Type.WARNING, (i) -> Extension.create(AllIcons.General.BalloonWarning, i.getMessage(), null)
+    );
+    private boolean valueChanged;
 
     public AzureTextInput() {
         super();
+        this.debouncer = new TailingDebouncer(() -> {
+            this.fireValueChangedEvent(this.getValue());
+            this.valueChanged = true;
+            this.doValidate();
+            this.valueChanged = false;
+        }, DEBOUNCE_DELAY);
         this.getDocument().addDocumentListener(this);
     }
 
@@ -35,8 +53,31 @@ public class AzureTextInput extends ExtendableTextField
         this.setText(val);
     }
 
+    @Nonnull
     @Override
-    public JComponent getInputComponent() {
-        return this;
+    public final AzureValidationInfo doValidate() {
+        final AzureValidationInfo info = this.getValidationInfo();
+        if (info == null || this.valueChanged) {
+            this.setValidationInfo(AzureValidationInfo.PENDING);
+            final AzureValidationInfo validationInfo = AzureFormInputComponent.super.doValidate();
+            this.setValidationInfo(validationInfo);
+            return validationInfo;
+        }
+        return info;
+    }
+
+    public void revalidateValue() {
+        this.setValidationInfo(AzureValidationInfo.PENDING);
+        this.debouncer.debounce();
+    }
+
+    public void setValidationInfo(AzureValidationInfo info) {
+        AzureFormInputComponent.super.setValidationInfo(info);
+        final Extension ex = extensions.getOrDefault(info.getType(), (i) -> SUCCESS).apply(info);
+        this.setExtensions(ex);
+    }
+
+    public void onDocumentChanged() {
+        this.revalidateValue();
     }
 }

@@ -17,7 +17,7 @@ public class RedisScanResult {
 
     public RedisScanResult(ScanResult<String> result) {
         this.keys = result.getResult();
-        this.nextCursor = result.getStringCursor();
+        this.nextCursor = result.getCursor();
     }
 
     public String getNextCursor() {

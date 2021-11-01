@@ -19,7 +19,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,6 +71,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
+import com.microsoft.azure.toolkit.eclipse.common.component.EclipseProjectComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
@@ -84,7 +86,9 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
@@ -103,7 +107,6 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -126,6 +129,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private Button btnSlotCreateNew;
     private Text textSlotName;
     private Label lblSlotConf;
+    private Button buildBeforeDeploy;
+
+    private EclipseProjectComboBox projectCombo;
+    private ControlDecoration decProjectCombo;
     private ControlDecoration decComboSlotConf;
     private ControlDecoration decComboSlot;
     private ControlDecoration decTextSlotName;
@@ -159,16 +166,20 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
      *
      * @param parentShell
      */
-    private WebAppDeployDialog(Shell parentShell, IProject project) {
+    private WebAppDeployDialog(Shell parentShell, IProject project, String id) {
         super(parentShell);
         setHelpAvailable(false);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         this.project = project;
         this.parentShell = parentShell;
+
+        // workaround to select web app by default
+        Optional.ofNullable(id).map(resourceId -> ResourceId.fromString(resourceId).name())
+                .ifPresent(name -> CommonUtils.setPreference(CommonUtils.WEBAPP_NAME, name));
     }
 
-    public static WebAppDeployDialog go(Shell parentShell, IProject project) {
-        WebAppDeployDialog d = new WebAppDeployDialog(parentShell, project);
+    public static WebAppDeployDialog go(Shell parentShell, IProject project, String id) {
+        WebAppDeployDialog d = new WebAppDeployDialog(parentShell, project, id);
         if (d.open() == Window.OK) {
             return d;
         }
@@ -205,6 +216,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         gdContainer.heightHint = 1000;
         container.setLayoutData(gdContainer);
 
+        createProjectComposite(container);
+        new Label(container, SWT.NONE);
         createAppGroup(container);
         createButton(container);
         createAppDetailGroup(container);
@@ -216,6 +229,30 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         return scrolledComposite;
+    }
+
+    private void createProjectComposite(Composite container) {
+        Composite composite = new Composite(container, SWT.NONE);
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        composite.setLayout(new GridLayout(2, false));
+
+        Label projectLabel = new Label(composite, SWT.NONE);
+        projectLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        projectLabel.setText("Project: ");
+        projectLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        projectCombo = new EclipseProjectComboBox(composite);
+        projectCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        projectCombo.addValueChangedListener(value -> {
+            this.project = value;
+            if (!projectCombo.isDisposed()) {
+                this.buildBeforeDeploy.setVisible(MavenUtils.isMavenProject(value));
+            }
+        });
+        Optional.ofNullable(project)
+                .ifPresent(value -> projectCombo.setValue(new ItemReference<>(item -> Objects.equals(value, item))));
+        projectCombo.refreshItems();
+        decProjectCombo = decorateContorolAndRegister(projectCombo);
     }
 
     private void createAppGroup(Composite container) {
@@ -296,10 +333,15 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDeployToRoot.setSelection(true);
         btnDeployToRoot.setText("Deploy to root");
 
+        buildBeforeDeploy = new Button(composite, SWT.CHECK);
+        buildBeforeDeploy.setText("Build project");
+        buildBeforeDeploy.setSelection(true);
+
         int size = btnDeployToRoot.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         btnCreate.setLayoutData(new RowData(size, SWT.DEFAULT));
         btnDelete.setLayoutData(new RowData(size, SWT.DEFAULT));
         btnRefresh.setLayoutData(new RowData(size, SWT.DEFAULT));
+        buildBeforeDeploy.setLayoutData(new RowData(size, SWT.DEFAULT));
         btnDeployToRoot.setLayoutData(new RowData(size, SWT.DEFAULT));
     }
 
@@ -505,22 +547,30 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         }
 
         btnDelete.setEnabled(true);
-        String appServiceName = table.getItems()[selectedRow].getText(0);
+        browserAppServiceDetails.setText("Fetching app service information");
 
-        IWebApp webApp = webAppDetailsMap.get(appServiceName);
-        IAppServicePlan asp = webApp.plan();
-        Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(webApp.subscriptionId());
+        final String appServiceName = table.getItems()[selectedRow].getText(0);
+        final IWebApp webApp = webAppDetailsMap.get(appServiceName);
+        Mono.fromCallable(() -> {
+            IAppServicePlan asp = webApp.plan();
+            Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(webApp.subscriptionId());
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("App Service name: %s \n", appServiceName));
-        sb.append(String.format("Subscription name: %s ; id: %s \n", subscription.getName(), subscription.getId()));
-        String aspName = asp == null ? "N/A" : asp.name();
-        String aspPricingTier = asp == null ? "N/A" : asp.entity().getPricingTier().toString();
-        sb.append(String.format("App Service Plan name: %s ; Pricing tier: %s \n", aspName, aspPricingTier));
-        String link = buildSiteLink(webApp, null);
-        sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
-        sb.append(String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials"));
-        browserAppServiceDetails.setText(sb.toString());
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("App Service name: %s \n", webApp.name()));
+            sb.append(String.format("Subscription name: %s ; id: %s \n", subscription.getName(), subscription.getId()));
+            String aspName = asp == null ? "N/A" : asp.name();
+            String aspPricingTier = asp == null ? "N/A" : asp.entity().getPricingTier().toString();
+            sb.append(String.format("App Service Plan name: %s ; Pricing tier: %s \n", aspName, aspPricingTier));
+            String link = buildSiteLink(webApp, null);
+            sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
+            sb.append(String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials"));
+            return sb.toString();
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe(content -> AzureTaskManager.getInstance().runLater(() -> {
+            if (browserAppServiceDetails.isDisposed()) {
+                return;
+            }
+            browserAppServiceDetails.setText(content);
+        }));
     }
 
     private static String buildSiteLink(IWebAppBase<? extends AppServiceBaseEntity> webApp, String artifactName) {
@@ -539,12 +589,15 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             TableItem refreshingItem = new TableItem(table, SWT.NULL);
             refreshingItem.setText(REFRESHING);
             Mono.fromCallable(() -> {
-                return Azure.az(AzureAppService.class).webapps(forceRefresh).stream()
+                return Azure.az(AzureAppService.class).webapps(forceRefresh).stream().parallel()
                         .filter(webApp -> !webApp.getRuntime().isDocker()
                                 && !Objects.equals(webApp.getRuntime().getJavaVersion(), JavaVersion.OFF))
                         .sorted((o1, o2) -> o1.name().compareTo(o2.name())).collect(Collectors.toList());
             }).subscribeOn(Schedulers.boundedElastic()).subscribe(webAppDetailsList -> {
-                DefaultLoader.getIdeHelper().invokeLater(() -> {
+                AzureTaskManager.getInstance().runLater(() -> {
+                    if (table.isDisposed()) {
+                        return;
+                    }
                     table.removeAll();
                     for (IWebApp webApp : webAppDetailsList) {
                         TableItem item = new TableItem(table, SWT.NULL);
@@ -570,23 +623,42 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         if (selectedRow < 0) {
             return;
         }
+        refreshComboBox(comboSlot);
+        refreshComboBox(comboSlotConf);
         String appServiceName = table.getItems()[selectedRow].getText(0);
         IWebApp webApp = webAppDetailsMap.get(appServiceName);
         if (webApp == null) {
             return;
         }
-        List<IWebAppDeploymentSlot> deploymentSlots = webApp.deploymentSlots(false);
+        Mono.fromCallable(() -> webApp.deploymentSlots(false)).subscribeOn(Schedulers.boundedElastic())
+                .subscribe(slots -> {
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        if (comboSlot.isDisposed()) {
+                            return;
+                        }
+                        comboSlot.removeAll();
+                        comboSlot.setEnabled(btnSlotUseExisting.getSelection());
+                        comboSlotConf.removeAll();
+                        comboSlotConf.setEnabled(btnSlotCreateNew.getSelection());
+                        for (IWebAppDeploymentSlot deploymentSlot : slots) {
+                            comboSlot.add(deploymentSlot.name());
+                            comboSlotConf.add(deploymentSlot.name());
+                        }
+                        if (comboSlot.getItemCount() > 0) {
+                            comboSlot.select(0);
+                        }
+                        comboSlotConf.add(webApp.name());
+                        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
+                        comboSlotConf.select(0);
+                    });
+                });
+    }
 
-        for (IWebAppDeploymentSlot deploymentSlot : deploymentSlots) {
-            comboSlot.add(deploymentSlot.name());
-            comboSlotConf.add(deploymentSlot.name());
-        }
-        if (comboSlot.getItemCount() > 0) {
-            comboSlot.select(0);
-        }
-        comboSlotConf.add(webApp.name());
-        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
-        comboSlotConf.select(0);
+    private void refreshComboBox(Combo target) {
+        target.setEnabled(false);
+        target.removeAll();
+        target.add(REFRESHING);
+        target.select(0);
     }
 
     private void fillUserSettings() {
@@ -622,6 +694,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
     private boolean validate() {
         cleanError();
+        if (project == null) {
+            setError(decProjectCombo, "Please select target project to deploy");
+            return false;
+        }
         if (!isDeployToSlot) {
             return true;
         }
@@ -676,10 +752,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             // something went wrong - report an error!
             return;
         }
-        IWebApp wa = d.getWebApp();
+        IWebApp webApp = d.getWebApp();
+        CommonUtils.setPreference(CommonUtils.WEBAPP_NAME, webApp.name());
         doFillTable(true);
-        selectTableRowWithWebAppName(wa.name());
-        fillAppServiceDetails();
     }
 
     private boolean validated() {
@@ -762,6 +837,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         String deploymentName = UUID.randomUUID().toString();
         AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(deploymentName, jobDescription);
         boolean isDeployToRoot = btnDeployToRoot.getSelection();
+        boolean isBuildBeforeDeploy = buildBeforeDeploy.getSelection();
 
         Job job = new Job(jobDescription) {
             @Override
@@ -802,6 +878,14 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 5, message);
                     if (!MavenUtils.isMavenProject(project)) {
                         export(artifactName, artifactPath);
+                    } else if (isBuildBeforeDeploy) {
+                        MavenExecuteAction action = new MavenExecuteAction("package");
+                        CountDownLatch countDownLatch = new CountDownLatch(1);
+                        action.launch(MavenUtils.getPomFile(project).getParent(), () -> {
+                            countDownLatch.countDown();
+                            return null;
+                        });
+                        countDownLatch.await();
                     }
                     message = "Deploying Web App...";
                     if (isDeployToSlot) {

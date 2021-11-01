@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -34,7 +34,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     private Region region;
     private JPanel contentPanel;
     private JBLabel labelDescription;
-    private ValidationDebouncedTextInput textName;
+    private AzureTextInput textName;
     private PricingTierComboBox comboBoxPricingTier;
 
     public ServicePlanCreationDialog(final Subscription subscription,

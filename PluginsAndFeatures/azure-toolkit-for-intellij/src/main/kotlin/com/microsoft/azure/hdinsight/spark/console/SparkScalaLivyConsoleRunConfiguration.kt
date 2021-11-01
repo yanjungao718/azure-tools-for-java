@@ -147,28 +147,32 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
                 .referJars(*batchSubmitModel.referenceJars.map { url -> transformToGen2Uri(url) }.toTypedArray())
                 .referFiles(*batchSubmitModel.referenceFiles.map { url -> transformToGen2Uri(url) }.toTypedArray())
 
-        if (batchSubmitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
-            try {
+        try {
+            val jobConfig = batchSubmitModel.jobConfigs.map { SimpleImmutableEntry(it[0], it[1]) }.toMutableList()
+
+            if (batchSubmitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
                 val fsRoot = WasbUri.parse(batchSubmitModel.jobUploadStorageModel.uploadPath)
                 val storageKey = batchSubmitModel.jobUploadStorageModel.storageKey
-                val updatedStorageConfig = batchSubmitModel.jobConfigs.map { SimpleImmutableEntry(it[0], it[1]) }.toMutableList().apply {
+                val jobWithStorageConfig = jobConfig.apply {
                     // We need the following config to fix issue https://github.com/microsoft/azure-tools-for-java/issues/5002
                     add(SimpleImmutableEntry("spark.hadoop." + fsRoot.hadoopBlobFsPropertyKey, storageKey))
                     add(SimpleImmutableEntry("spark.hadoop." + fsRoot.keyProviderPropertyKey, fsRoot.defaultKeyProviderPropertyValue))
                 }
-                session.createParameters.conf(updatedStorageConfig)
-            } catch (error: UnknownFormatConversionException) {
-                val errorHint = "Azure blob storage uploading path is not in correct format"
-                log().warn(String.format("%s. Uploading Path: %s. Error message: %s. Stacktrace:\n%s",
-                        errorHint, batchSubmitModel.jobUploadStorageModel.uploadPath, error.message,
-                        ExceptionUtils.getStackTrace(error)))
-                throw RuntimeConfigurationError(errorHint)
-            } catch (error: Exception) {
-                val errorHint = "Failed to update config for linked Azure Blob storage"
-                log().warn(String.format("%s. Error message: %s. Stacktrace:\n%s",
-                        errorHint, error.message, ExceptionUtils.getStackTrace(error)))
-                throw RuntimeConfigurationError(errorHint)
+                session.createParameters.conf(jobWithStorageConfig)
+            } else {
+                session.createParameters.conf(jobConfig)
             }
+        } catch (error: UnknownFormatConversionException) {
+            val errorHint = "Azure blob storage uploading path is not in correct format"
+            log().warn(String.format("%s. Uploading Path: %s. Error message: %s. Stacktrace:\n%s",
+                    errorHint, batchSubmitModel.jobUploadStorageModel.uploadPath, error.message,
+                    ExceptionUtils.getStackTrace(error)))
+            throw RuntimeConfigurationError(errorHint)
+        } catch (error: Exception) {
+            val errorHint = "Failed to update config for linked Azure Blob storage"
+            log().warn(String.format("%s. Error message: %s. Stacktrace:\n%s",
+                    errorHint, error.message, ExceptionUtils.getStackTrace(error)))
+            throw RuntimeConfigurationError(errorHint)
         }
 
         batchSubmitModel.artifactPath.ifPresent {

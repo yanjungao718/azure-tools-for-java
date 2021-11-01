@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClu
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -99,10 +100,14 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     public synchronized void setData(SpringCloudAppConfig appConfig) {
-        final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
-        if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
-            this.selectorApp.addLocalItem(cluster.app(appConfig));
-        }
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
+            if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
+                AzureTaskManager.getInstance().runLater(() -> {
+                    this.selectorApp.addLocalItem(cluster.app(appConfig));
+                });
+            }
+        });
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
         Optional.ofNullable(deploymentConfig.getArtifact()).map(a -> ((WrappedAzureArtifact) a))

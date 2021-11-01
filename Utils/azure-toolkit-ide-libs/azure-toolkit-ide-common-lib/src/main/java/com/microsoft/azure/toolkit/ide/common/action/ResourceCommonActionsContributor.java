@@ -113,4 +113,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof IAzureBaseResource || s instanceof AzureService);
         am.registerAction(CREATE, new Action<>(createView));
     }
+
+    public int getOrder() {
+        return 1; //after azure resource common actions registered
+    }
 }

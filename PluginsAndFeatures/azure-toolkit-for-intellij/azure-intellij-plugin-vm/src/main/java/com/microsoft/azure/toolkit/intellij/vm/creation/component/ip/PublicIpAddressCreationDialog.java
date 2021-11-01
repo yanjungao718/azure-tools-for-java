@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component.ip;
 
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
@@ -30,7 +30,7 @@ public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddr
     private Region region;
     private JBLabel labelDescription;
     private JPanel contentPanel;
-    private ValidationDebouncedTextInput txtName;
+    private AzureTextInput txtName;
 
     public PublicIpAddressCreationDialog(@Nonnull Subscription subscription, @Nonnull ResourceGroup resourceGroup, @Nonnull Region region) {
         super();
@@ -78,7 +78,7 @@ public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddr
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        txtName = new ValidationDebouncedTextInput();
+        txtName = new AzureTextInput();
         txtName.setRequired(true);
     }
 }

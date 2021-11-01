@@ -5,33 +5,28 @@
 package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
 import com.microsoft.azure.CloudException;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ResourceGroupNameTextField extends ValidationDebouncedTextInput {
+public class ResourceGroupNameTextField extends AzureTextInput {
 
     private static final Pattern PATTERN = Pattern.compile("[a-z0-9._()-]+[a-z0-9_()-]$");
+    @Setter
     private Subscription subscription;
 
-    public void setSubscription(Subscription subscription) {
-        if (!Objects.equals(subscription, this.subscription)) {
-            this.subscription = subscription;
-        }
+    public ResourceGroupNameTextField() {
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
     }
 
-    @Override
     public AzureValidationInfo doValidateValue() {
-        final AzureValidationInfo info = super.doValidateValue();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
-        }
         final String value = this.getValue();
         // validate length
         int minLength = 1;
@@ -61,10 +56,4 @@ public class ResourceGroupNameTextField extends ValidationDebouncedTextInput {
         }
         return AzureValidationInfo.OK;
     }
-
-    @Override
-    public boolean isRequired() {
-        return true;
-    }
-
 }

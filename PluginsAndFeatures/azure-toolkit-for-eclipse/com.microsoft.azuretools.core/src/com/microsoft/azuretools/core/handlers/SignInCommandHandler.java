@@ -30,8 +30,8 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.core.ui.DeviceLoginWindow;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
-import com.microsoft.azuretools.core.ui.ServicePrincipalLoginDialog;
 import com.microsoft.azuretools.core.ui.SignInDialog;
+import com.microsoft.azuretools.core.ui.login.ServicePrincipalLoginDialog;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
@@ -67,12 +67,11 @@ import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
-
 public class SignInCommandHandler extends AzureAbstractHandler {
     private static final String SIGN_IN_ERROR = "Sign In Error";
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
-    private static final String NO_SUBSCRIPTION = "No subscription in current account, you may get a free one from "
-            + "https://azure.microsoft.com/en-us/free/";
+    private static final String NO_SUBSCRIPTION = "No subscription in current account, you may get a free one from " +
+            "https://azure.microsoft.com/en-us/free/";
     public static final String MUST_SELECT_SUBSCRIPTION =
             "Please select at least one subscription first (Tools -> Azure -> Select Subscriptions)";
 
@@ -85,7 +84,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
     }
 
     public static void doSignIn(Shell shell) {
-        requireSignedIn(shell, ()-> { });
+        requireSignedIn(shell, () -> { });
     }
 
     private static boolean showYesNoDialog(Shell shell, String title, String message) {
@@ -136,11 +135,10 @@ public class SignInCommandHandler extends AzureAbstractHandler {
             if (servicePrincipalLoginDialog.open() == Window.CANCEL) {
                 throw new InterruptedException("user cancel");
             }
-            auth = servicePrincipalLoginDialog.getModel();
+            auth = servicePrincipalLoginDialog.getForm().getFormData();
         }
         return auth;
     }
-
 
     private static Mono<Boolean> signInIfNotSignedInInternal(Shell projectShell) {
         final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
@@ -270,7 +268,6 @@ public class SignInCommandHandler extends AzureAbstractHandler {
         AuthMethodManager.getInstance().notifySignInEventListener();
     }
 
-
     private static <T> T checkCanceled(AzureTask.Monitor monitor, Mono<? extends T> mono, Supplier<T> supplier) {
         if (monitor == null) {
             return mono.block();
@@ -313,6 +310,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
         }
 
     }
+
     @AzureOperation(name = "account.sign_in", type = AzureOperation.Type.SERVICE)
     private static Mono<Boolean> signInIfNotSignedIn(Shell shell) {
         if (AuthMethodManager.getInstance().isSignedIn()) {
@@ -322,7 +320,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
             if (isLoggedIn) {
                 persistAuthMethodDetails();
                 // from rxjava1 single to mono
-                AzureTaskManager.getInstance().runLater(() ->
+                AzureTaskManager.getInstance().runAndWait(() ->
                         SelectSubsriptionsCommandHandler.onSelectSubscriptions(shell));
                 return true;
             }

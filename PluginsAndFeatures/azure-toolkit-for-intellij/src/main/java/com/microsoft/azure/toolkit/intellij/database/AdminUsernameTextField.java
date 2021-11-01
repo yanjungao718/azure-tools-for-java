@@ -4,7 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.database;
 
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Pattern;
 
-public class AdminUsernameTextField extends ValidationDebouncedTextInput {
+public class AdminUsernameTextField extends AzureTextInput {
 
     private static final int MIN_LENGTH = 1;
     private static final int MAX_LENGTH = 16;
@@ -31,6 +31,11 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
     @Setter
     private boolean valueInitialized;
 
+    public AdminUsernameTextField() {
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
+    }
+
     /**
      * Admin username must be at least 1 characters and at most 16 characters.
      * Admin username must only contain characters and numbers.
@@ -40,10 +45,6 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
     public AzureValidationInfo doValidateValue() {
         if (!isValueInitialized()) {
             return AzureValidationInfo.UNINITIALIZED;
-        }
-        final AzureValidationInfo info = super.doValidateValue();
-        if (!AzureValidationInfo.OK.equals(info)) {
-            return info;
         }
         final String value = this.getValue();
         // validate length
@@ -68,10 +69,4 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
         }
         return AzureValidationInfo.OK;
     }
-
-    @Override
-    public boolean isRequired() {
-        return true;
-    }
-
 }
