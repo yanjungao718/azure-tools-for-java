@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -19,18 +20,20 @@ import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class WebAppDeploymentSlotsNode extends Node<IWebApp> {
-    private IWebApp webApp;
-    private NodeView nodeView;
+    private final IWebApp webApp;
+    private final NodeView nodeView;
 
     public WebAppDeploymentSlotsNode(@Nonnull IWebApp data) {
         super(data);
         this.webApp = data;
         this.nodeView = new WebAppDeploymentSlotsNodeView(data);
         this.actions(WebAppActionsContributor.DEPLOYMENT_SLOTS_ACTIONS);
-        this.addChildren(ignore -> webApp.deploymentSlots(), (slot, slotsNode) ->
-                new Node<>(slot).view(new AzureResourceLabelView<>(slot)).actions(WebAppActionsContributor.DEPLOYMENT_SLOT_ACTIONS));
+        this.addChildren(ignore -> webApp.deploymentSlots().stream().sorted(Comparator.comparing(IWebAppDeploymentSlot::name)).collect(Collectors.toList()),
+                (slot, slotsNode) -> new Node<>(slot).view(new AzureResourceLabelView<>(slot)).actions(WebAppActionsContributor.DEPLOYMENT_SLOT_ACTIONS));
     }
 
     @Nonnull
@@ -80,7 +83,6 @@ public class WebAppDeploymentSlotsNode extends Node<IWebApp> {
         }
 
         public void onEvent(AzureEvent<Object> event) {
-            final String type = event.getType();
             final Object source = event.getSource();
             if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.webApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);

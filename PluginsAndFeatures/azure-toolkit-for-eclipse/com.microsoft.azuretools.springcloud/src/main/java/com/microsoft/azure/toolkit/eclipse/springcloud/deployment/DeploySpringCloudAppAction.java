@@ -53,10 +53,14 @@ public class DeploySpringCloudAppAction {
                 final boolean buildArtifact = dialog.getBuildArtifact();
                 dialog.close();
                 final IArtifact artifact = config.getDeployment().getArtifact();
-                if (buildArtifact && Objects.nonNull(artifact)) {
-                    AzureArtifactManager.buildArtifact(((WrappedAzureArtifact) artifact).getArtifact())
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .subscribe((r) -> deployToApp(config), e -> AzureMessager.getMessager().error(e));
+                if (Objects.nonNull(artifact)) {
+                    if (buildArtifact) {
+                        AzureArtifactManager.buildArtifact(((WrappedAzureArtifact) artifact).getArtifact())
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .subscribe((r) -> deployToApp(config), e -> AzureMessager.getMessager().error(e));
+                    } else {
+                        deployToApp(config);
+                    }
                 }
             });
             dialog.open();
@@ -86,7 +90,7 @@ public class DeploySpringCloudAppAction {
         });
     }
 
-    @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig.getAppName()"}, type = AzureOperation.Type.ACTION)
     private static SpringCloudDeployment execute(SpringCloudAppConfig appConfig, IAzureMessager messager) {
         AzureMessager.getContext().setMessager(messager);
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);

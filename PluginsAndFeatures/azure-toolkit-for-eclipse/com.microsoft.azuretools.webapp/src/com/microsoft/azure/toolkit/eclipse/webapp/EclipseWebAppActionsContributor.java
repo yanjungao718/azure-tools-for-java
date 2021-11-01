@@ -5,15 +5,18 @@
 
 package com.microsoft.azure.toolkit.eclipse.webapp;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.eclipse.core.commands.Command;
@@ -22,6 +25,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
@@ -30,6 +35,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.ide.IDE;
 
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -70,7 +76,7 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
                         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
                             file.getApp()
                                     .getFileContent(file.getPath())
-                                    .doOnComplete(() -> AzureMessager.getMessager().info(AzureString.format("%s has been saved to %s", file.getName(), destFile.getAbsolutePath())))
+                                    .doOnComplete(() -> notifyDownloadSuccess(file, destFile))
                                     .doOnTerminate(() -> IOUtils.closeQuietly(output))
                                     .subscribe(bytes -> {
                                         try {
@@ -95,6 +101,51 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
                         .orElse(null))
                 .enabled(s -> s instanceof AppServiceFile);
         am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD, new Action<>(downloadHandler, downloadView));
+    }
+
+    private void notifyDownloadSuccess(AppServiceFile file, File destFile) {
+        final Action<?>[] actions = Stream.of(getOpenInExplorerAction(destFile), getOpenFileAction(destFile))
+                .filter(Objects::nonNull).toArray(Action<?>[]::new);
+        AzureMessager.getMessager().info(
+                AzureString.format("%s has been saved to %s", file.getName(), destFile.getAbsolutePath()),
+                "Azure Toolkit for Eclipse", actions);
+    }
+
+    // todo: migrate to eclipse action "org.eclipse.ui.ide.showInSystemExplorer"
+    private Action<?> getOpenInExplorerAction(final File file) {
+        if (!(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN))) {
+            return null;
+        }
+        return new Action<Object>(ignore -> {
+            AzureTaskManager.getInstance().runLater(() -> {
+                try {
+                    Desktop.getDesktop().open(file.getParentFile());
+                } catch (IOException e) {
+                    AzureMessager.getMessager().error(AzureString.format("Failed to open explorer for file %s, %s",
+                            file.getName(), e.getMessage()));
+                }
+            });
+        }, new ActionView.Builder("Open in explorer"));
+    }
+
+    private Action<?> getOpenFileAction(final File file) {
+        return new Action<Object>(ignore -> {
+            if (file.exists() && file.isFile()) {
+                IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
+                final IWorkbenchWindow window = Optional
+                        .ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow())
+                        .orElseGet(() -> PlatformUI.getWorkbench().getWorkbenchWindows()[0]);
+                final IWorkbenchPage page = window.getActivePage();
+                AzureTaskManager.getInstance().runLater(() -> {
+                    try {
+                        IDE.openEditorOnFileStore(page, fileStore);
+                    } catch (Exception e) {
+                        AzureMessager.getMessager().warning(
+                                AzureString.format("Failed to open file %s, %s", file.getName(), e.getMessage()));
+                    }
+                });
+            }
+        }, new ActionView.Builder("Open in editor"));
     }
 
     @Override
@@ -129,23 +180,23 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
                         Command deployCommand = ((ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class))
                                 .getCommand("com.microsoft.azuretools.webapp.commands.deployToAzure");
                         deployCommand.execute(new ExecutionEvent(null, Collections.singletonMap("resourceId", c.id()), c, null));
-                    } catch (ExecutionException | NotHandledException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
+                    } catch (ExecutionException | NotHandledException exception) {
+                        AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager()
+                                .error(AzureString.format("Failed to deploy web app, %s", exception.getMessage())));
                     }
                 });
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, isWebApp, deployWebAppHandler);
 
         final BiPredicate<Object, Object> createCondition = (r, e) -> r instanceof AzureWebApp;
-        final BiConsumer<Object, Object> createHandler = (c, e) -> AzureTaskManager
-                .getInstance().runLater(() -> {
-                    try {
-                        ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class)).executeCommand("com.microsoft.azuretools.webapp.commands.createWebApp", null);
-                    } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                });
+        final BiConsumer<Object, Object> createHandler = (c, e) -> AzureTaskManager.getInstance().runLater(() -> {
+            try {
+                ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
+                        .executeCommand("com.microsoft.azuretools.webapp.commands.createWebApp", null);
+            } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException exception) {
+                AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager()
+                        .error(AzureString.format("Failed to create web app, %s", exception.getMessage())));
+            }
+        });
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
     }
 

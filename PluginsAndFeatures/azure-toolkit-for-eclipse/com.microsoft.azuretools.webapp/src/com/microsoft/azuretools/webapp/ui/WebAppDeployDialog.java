@@ -19,7 +19,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -73,6 +72,7 @@ import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.eclipse.common.component.EclipseProjectComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
@@ -243,13 +243,15 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         projectCombo = new EclipseProjectComboBox(composite);
         projectCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        Optional.ofNullable(project).ifPresent(value -> {
+        projectCombo.addValueChangedListener(value -> {
             this.project = value;
-            if (this.buildBeforeDeploy != null) {
+            if (!projectCombo.isDisposed()) {
                 this.buildBeforeDeploy.setVisible(MavenUtils.isMavenProject(value));
             }
         });
-        projectCombo.addValueChangedListener(value -> this.project = value);
+        Optional.ofNullable(project)
+                .ifPresent(value -> projectCombo.setValue(new ItemReference<>(item -> Objects.equals(value, item))));
+        projectCombo.refreshItems();
         decProjectCombo = decorateContorolAndRegister(projectCombo);
     }
 
@@ -621,23 +623,42 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         if (selectedRow < 0) {
             return;
         }
+        refreshComboBox(comboSlot);
+        refreshComboBox(comboSlotConf);
         String appServiceName = table.getItems()[selectedRow].getText(0);
         IWebApp webApp = webAppDetailsMap.get(appServiceName);
         if (webApp == null) {
             return;
         }
-        List<IWebAppDeploymentSlot> deploymentSlots = webApp.deploymentSlots(false);
+        Mono.fromCallable(() -> webApp.deploymentSlots(false)).subscribeOn(Schedulers.boundedElastic())
+                .subscribe(slots -> {
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        if (comboSlot.isDisposed()) {
+                            return;
+                        }
+                        comboSlot.removeAll();
+                        comboSlot.setEnabled(btnSlotUseExisting.getSelection());
+                        comboSlotConf.removeAll();
+                        comboSlotConf.setEnabled(btnSlotCreateNew.getSelection());
+                        for (IWebAppDeploymentSlot deploymentSlot : slots) {
+                            comboSlot.add(deploymentSlot.name());
+                            comboSlotConf.add(deploymentSlot.name());
+                        }
+                        if (comboSlot.getItemCount() > 0) {
+                            comboSlot.select(0);
+                        }
+                        comboSlotConf.add(webApp.name());
+                        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
+                        comboSlotConf.select(0);
+                    });
+                });
+    }
 
-        for (IWebAppDeploymentSlot deploymentSlot : deploymentSlots) {
-            comboSlot.add(deploymentSlot.name());
-            comboSlotConf.add(deploymentSlot.name());
-        }
-        if (comboSlot.getItemCount() > 0) {
-            comboSlot.select(0);
-        }
-        comboSlotConf.add(webApp.name());
-        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
-        comboSlotConf.select(0);
+    private void refreshComboBox(Combo target) {
+        target.setEnabled(false);
+        target.removeAll();
+        target.add(REFRESHING);
+        target.select(0);
     }
 
     private void fillUserSettings() {

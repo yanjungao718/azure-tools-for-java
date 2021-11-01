@@ -7,18 +7,16 @@ package com.microsoft.azure.toolkit.intellij.redis.explorer;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -30,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
@@ -39,7 +38,6 @@ public class RedisCacheExplorer extends BaseEditor {
     public static final String ID = "com.microsoft.intellij.helpers.rediscache.RedisCacheExplorer";
     public static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.RedisCacheExplorer";
     private final RedisCache redis;
-    private Jedis jedis;
 
     private String currentCursor;
     private String lastChosenKey;
@@ -80,13 +78,9 @@ public class RedisCacheExplorer extends BaseEditor {
     private JSplitPane splitPane;
     private JPanel pnlProgressBar;
 
-    /**
-     * @param sid String, subscription id.
-     * @param id  String, resource id.
-     */
-    public RedisCacheExplorer(String sid, String id, @NotNull final VirtualFile virtualFile) {
+    public RedisCacheExplorer(RedisCache redis, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
-        this.redis = Azure.az(AzureRedis.class).subscription(sid).get(id);
+        this.redis = redis;
         final AzureTaskManager manager = AzureTaskManager.getInstance();
 
         currentCursor = SCAN_POINTER_START;
@@ -102,7 +96,7 @@ public class RedisCacheExplorer extends BaseEditor {
         tblInnerValue.getTableHeader().setFont(valueFont);
         txtStringValue.setFont(valueFont);
         final DefaultTableCellRenderer cellRenderer = (DefaultTableCellRenderer) tblInnerValue.getTableHeader()
-                .getDefaultRenderer();
+            .getDefaultRenderer();
         cellRenderer.setHorizontalAlignment(JLabel.LEFT);
         pnlInnerValue.setBackground(lstKey.getBackground());
 
@@ -125,7 +119,7 @@ public class RedisCacheExplorer extends BaseEditor {
             RedisCacheExplorer.this.setWidgetEnableStatus(false);
             lastChosenKey = selectedKey;
             manager.runOnPooledThread(() -> {
-                final Pair<String, ArrayList<String[]>> data = getValueByKey(this.jedis, selectedKey);
+                final Pair<String, ArrayList<String[]>> data = doWithRedis(jedis -> getValueByKey(jedis, selectedKey));
                 manager.runLater(() -> RedisCacheExplorer.this.showContent(data));
             });
         });
@@ -135,7 +129,8 @@ public class RedisCacheExplorer extends BaseEditor {
         btnScanMore.addActionListener(event -> {
             RedisCacheExplorer.this.setWidgetEnableStatus(false);
             manager.runOnPooledThread(() -> {
-                final ScanResult<String> r = this.jedis.scan(currentCursor, new ScanParams().match(txtKeyPattern.getText()).count(DEFAULT_KEY_COUNT));
+                final ScanResult<String> r = doWithRedis(jedis -> jedis.scan(currentCursor, new ScanParams()
+                    .match(txtKeyPattern.getText()).count(DEFAULT_KEY_COUNT)));
                 manager.runLater(() -> RedisCacheExplorer.this.showScanResult(r));
             });
         });
@@ -152,28 +147,30 @@ public class RedisCacheExplorer extends BaseEditor {
         });
 
         manager.runOnPooledThread(() -> {
-            this.jedis = this.redis.getJedisPool().getResource();
-            final int num = getDbNumber(this.jedis);
+            final int num = doWithRedis(RedisCacheExplorer::getDbNumber);
             AzureTaskManager.getInstance().runLater(() -> this.renderDbCombo(num));
         });
     }
 
-    @NotNull
+    private <T> T doWithRedis(Function<Jedis, T> func) {
+        try (final Jedis jedis = this.redis.getJedisPool().getResource()) {
+            return func.apply(jedis);
+        }
+    }
+
+    @Nonnull
     @Override
     public JComponent getComponent() {
         return pnlMain;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return ID;
     }
 
     public void dispose() {
-        if (Objects.nonNull(this.jedis)) {
-            this.jedis.close();
-        }
     }
 
     public void renderDbCombo(int num) {
@@ -254,8 +251,10 @@ public class RedisCacheExplorer extends BaseEditor {
     private void onDataBaseSelect() {
         final AzureTaskManager manager = AzureTaskManager.getInstance();
         manager.runOnPooledThread(() -> {
-            this.jedis.select(cbDatabase.getSelectedIndex());
-            final ScanResult<String> r = this.jedis.scan(SCAN_POINTER_START, new ScanParams().match(DEFAULT_SCAN_PATTERN).count(DEFAULT_KEY_COUNT));
+            final ScanResult<String> r = doWithRedis(jedis -> {
+                jedis.select(cbDatabase.getSelectedIndex());
+                return jedis.scan(SCAN_POINTER_START, new ScanParams().match(DEFAULT_SCAN_PATTERN).count(DEFAULT_KEY_COUNT));
+            });
             manager.runLater(() -> RedisCacheExplorer.this.showScanResult(r));
         });
     }
@@ -291,15 +290,15 @@ public class RedisCacheExplorer extends BaseEditor {
         if (Objects.equals(actionType, ACTION_GET)) {
             final AzureTaskManager manager = AzureTaskManager.getInstance();
             manager.runOnPooledThread(() -> {
-                final boolean isExist = this.jedis.exists(key);
-                final Pair<String, ArrayList<String[]>> result = isExist ? getValueByKey(this.jedis, key) : null;
+                final Pair<String, ArrayList<String[]>> result = doWithRedis(jedis ->
+                    jedis.exists(key) ? getValueByKey(jedis, key) : Pair.of("", new ArrayList<>()));
                 this.updateKeyList();
                 this.showContent(result);
             });
         } else if (Objects.equals(actionType, ACTION_SCAN)) {
             final AzureTaskManager manager = AzureTaskManager.getInstance();
             manager.runOnPooledThread(() -> {
-                final ScanResult<String> r = this.jedis.scan(SCAN_POINTER_START, new ScanParams().match(key).count(DEFAULT_KEY_COUNT));
+                final ScanResult<String> r = doWithRedis(jedis -> jedis.scan(SCAN_POINTER_START, new ScanParams().match(key).count(DEFAULT_KEY_COUNT)));
                 manager.runLater(() -> RedisCacheExplorer.this.showScanResult(r));
             });
             currentCursor = SCAN_POINTER_START;
@@ -307,7 +306,7 @@ public class RedisCacheExplorer extends BaseEditor {
         lastChosenKey = "";
     }
 
-    private class ReadOnlyTableModel extends DefaultTableModel {
+    private static class ReadOnlyTableModel extends DefaultTableModel {
         ReadOnlyTableModel(Object[][] data, String[] columnNames) {
             super(data, columnNames);
         }
@@ -361,7 +360,7 @@ public class RedisCacheExplorer extends BaseEditor {
             case "LIST":
                 final long listLength = jedis.llen(key);
                 final List<String> listVal = jedis.lrange(key, DEFAULT_RANGE_START,
-                        listLength < DEFAULT_VAL_COUNT ? listLength : DEFAULT_VAL_COUNT);
+                    listLength < DEFAULT_VAL_COUNT ? listLength : DEFAULT_VAL_COUNT);
                 for (int i = 0; i < listVal.size(); i++) {
                     columnData.add(new String[]{String.valueOf(i + 1), listVal.get(i)});
                 }
@@ -375,7 +374,7 @@ public class RedisCacheExplorer extends BaseEditor {
             case "ZSET":
                 final long zsetLength = jedis.zcard(key);
                 final Set<Tuple> zsetVal = jedis.zrangeWithScores(key, DEFAULT_RANGE_START,
-                        zsetLength < DEFAULT_VAL_COUNT ? zsetLength : DEFAULT_VAL_COUNT);
+                    zsetLength < DEFAULT_VAL_COUNT ? zsetLength : DEFAULT_VAL_COUNT);
                 for (final Tuple tuple : zsetVal) {
                     columnData.add(new String[]{String.valueOf(tuple.getScore()), tuple.getElement()});
                 }

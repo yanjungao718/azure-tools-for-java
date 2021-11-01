@@ -13,8 +13,13 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class WebAppExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Web Apps";
@@ -25,14 +30,18 @@ public class WebAppExplorerContributor implements IExplorerContributor {
         final AzureWebApp service = Azure.az(AzureWebApp.class);
         return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(WebAppActionsContributor.SERVICE_ACTIONS)
-                .addChildren(AzureWebApp::list, (webApp, webAppModule) -> new Node<>(webApp)
+                .addChildren(WebAppExplorerContributor::listWebApps, (webApp, webAppModule) -> new Node<>(webApp)
                         .view(new AzureResourceLabelView<>(webApp))
                         .actions(WebAppActionsContributor.WEBAPP_ACTIONS)
-                        .addChildren(app -> Arrays.asList(app), (app, webAppNode) -> new WebAppDeploymentSlotsNode(app))
-                        .addChildren(app -> Arrays.asList(AppServiceFileNode.getRootFileNodeForAppService(app)),
+                        .addChildren(Arrays::asList, (app, webAppNode) -> new WebAppDeploymentSlotsNode(app))
+                        .addChildren(app -> Collections.singletonList(AppServiceFileNode.getRootFileNodeForAppService(app)),
                                 (file, webAppNode) -> new AppServiceFileNode(file)) // Files
-                        .addChildren(app -> Arrays.asList(AppServiceFileNode.getRootLogNodeForAppService(app)),
+                        .addChildren(app -> Collections.singletonList(AppServiceFileNode.getRootLogNodeForAppService(app)),
                                 (file, webAppNode) -> new AppServiceFileNode(file)) // Logs
                 );
+    }
+
+    private static List<IWebApp> listWebApps(AzureWebApp webAppModule) {
+        return webAppModule.list().stream().sorted(Comparator.comparing(IWebApp::name)).collect(Collectors.toList());
     }
 }

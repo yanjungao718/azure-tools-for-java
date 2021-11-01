@@ -9,6 +9,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -35,14 +36,17 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         final Composite container = new Composite(parent, SWT.NONE);
         container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         container.setLayout(new GridLayout(1, false));
-
+        final Rectangle clientArea = parent.getShell().getDisplay().getClientArea();
         Browser browser = new Browser(container, SWT.NO_SCROLL);
+        browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         browser.setText(this.getMessage().getContent());
         browser.setBackgroundMode(SWT.INHERIT_FORCE);
-        browser.setSize(336, 136);
-        browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        Arrays.stream(this.getMessage().getActions()).forEach(a -> this.addActionButton(a, container));
+        int height = clientArea.height / 15;
+        browser.setSize((int) (height * 3.5), height);
+        Composite buttonBar = new Composite(container, SWT.NONE);
+        buttonBar.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false, 1, 1));
+        buttonBar.setLayout(new GridLayout(2, false));
+        Arrays.stream(this.getMessage().getActions()).forEach(a -> this.addActionButton(a, buttonBar));
     }
 
     @Override
