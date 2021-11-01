@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Getter
@@ -68,5 +69,23 @@ public class AppServiceConfig {
         } else {
             return Azure.az(AzureAccount.class).listRegions().stream().findFirst().orElse(null);
         }
+    }
+
+    public String getResourceGroupName() {
+        return Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
+    }
+
+    public String getSubscriptionId() {
+        return Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
+    }
+
+    public static boolean isSameApp(AppServiceConfig first, AppServiceConfig second) {
+        if (Objects.isNull(first) || Objects.isNull(second)) {
+            return first == second;
+        }
+        return StringUtils.equalsIgnoreCase(first.resourceId, second.resourceId) ||
+                (StringUtils.equalsIgnoreCase(first.name, second.name) &&
+                        StringUtils.equalsIgnoreCase(first.getResourceGroupName(), second.getResourceGroupName()) &&
+                        StringUtils.equalsIgnoreCase(first.getSubscriptionId(), second.getSubscriptionId()));
     }
 }
