@@ -53,9 +53,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
     private AzureComboBoxEditor inputEditor;
-    private Object value;
     private boolean valueNotSet = true;
     private boolean isRefreshing = false;
+    protected Object value;
     protected boolean enabled = true;
     @Getter
     @Setter

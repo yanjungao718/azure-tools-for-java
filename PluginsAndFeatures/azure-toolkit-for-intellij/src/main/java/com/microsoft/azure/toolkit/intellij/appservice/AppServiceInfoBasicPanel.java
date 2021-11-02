@@ -90,7 +90,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         final Runtime platform = this.selectorRuntime.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
-        final T result = (T) (this.config == null ? initConfig() : this.config).toBuilder().build();
+        final T result = (T) (this.config == null ? initConfig() : this.config);
         result.setName(name);
         result.setRuntime(platform);
 

@@ -47,7 +47,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project, false);
         $$$setupUI$$$();
-        pnlDeployment.toggleSlotVisibility(webAppConfiguration.isSlotPanelVisible());
     }
 
     @NotNull

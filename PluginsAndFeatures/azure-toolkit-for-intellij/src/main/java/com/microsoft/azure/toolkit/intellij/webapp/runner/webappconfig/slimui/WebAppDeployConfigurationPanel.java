@@ -89,6 +89,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         this.project = project;
         $$$setupUI$$$();
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
+        comboBoxArtifact.addItemListener(e -> chkToRoot.setVisible(isAbleToDeployToRoot(comboBoxArtifact.getValue())));
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
         slotButtonGroup.add(rbtNewSlot);
@@ -131,10 +132,6 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
 
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);
-    }
-
-    public void toggleSlotVisibility(final boolean visible) {
-        slotDecorator.setOn(visible);
     }
 
     private void setComboBoxDefaultValue(JComboBox comboBox, Object value) {
@@ -254,6 +251,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         // configuration
         chkToRoot.setSelected(data.isDeployToRoot());
         chkOpenBrowser.setSelected(data.isOpenBrowserAfterDeployment());
+        slotDecorator.setOn(data.isSlotPanelVisible());
     }
 
     @Override
@@ -263,9 +261,9 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                 AzureArtifactConfig.builder().artifactType(artifact.getType().name())
                         .artifactIdentifier(AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)).build();
         final DeploymentSlotConfig slotConfig = chkDeployToSlot.isSelected() ? rbtExistingSlot.isSelected() ?
-                DeploymentSlotConfig.builder().newCreate(false).name(cbxSlotName.getSelectedItem().toString()).build() :
+                DeploymentSlotConfig.builder().newCreate(false).name(Objects.toString(cbxSlotName.getSelectedItem(), null)).build() :
                 DeploymentSlotConfig.builder().newCreate(true).name(txtNewSlotName.getText())
-                        .configurationSource(cbxSlotConfigurationSource.getSelectedItem().toString()).build() : null;
+                        .configurationSource(Objects.toString(cbxSlotConfigurationSource.getSelectedItem(), null)).build() : null;
         final WebAppConfig webAppConfig = comboBoxWebApp.getValue();
         if (webAppConfig != null) {
             webAppConfig.setDeploymentSlot(slotConfig);
@@ -275,6 +273,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                 .artifactConfig(artifactConfig)
                 .openBrowserAfterDeployment(chkOpenBrowser.isSelected())
                 .deployToRoot(chkToRoot.isSelected())
+                .slotPanelVisible(slotDecorator.isExpanded())
                 .build();
     }
 

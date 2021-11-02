@@ -35,7 +35,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @EqualsAndHashCode
 @SuperBuilder(toBuilder = true)
-public class AppServiceConfig {
+public abstract class AppServiceConfig {
     @Builder.Default
     private MonitorConfig monitorConfig = MonitorConfig.builder().build();
     private String name;
@@ -49,8 +49,6 @@ public class AppServiceConfig {
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
     private DeploymentSlotConfig deploymentSlot;
-
-    protected Runtime runtime;
 
     public Map<String, String> getTelemetryProperties() {
         final Map<String, String> result = new HashMap<>();
@@ -78,6 +76,10 @@ public class AppServiceConfig {
     public String getSubscriptionId() {
         return Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
     }
+
+    public abstract Runtime getRuntime();
+
+    public abstract void setRuntime(Runtime runtime);
 
     public static boolean isSameApp(AppServiceConfig first, AppServiceConfig second) {
         if (Objects.isNull(first) || Objects.isNull(second)) {
