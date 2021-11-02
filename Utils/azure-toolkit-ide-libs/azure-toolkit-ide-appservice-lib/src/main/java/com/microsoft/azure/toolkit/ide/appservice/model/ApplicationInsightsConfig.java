@@ -27,7 +27,7 @@ public class ApplicationInsightsConfig {
         this.name = name;
     }
 
-    public ApplicationInsightsConfig(final String name, final String  instrumentationKey) {
+    public ApplicationInsightsConfig(final String name, final String instrumentationKey) {
         this.newCreate = false;
         this.name = name;
         this.instrumentationKey = instrumentationKey;
