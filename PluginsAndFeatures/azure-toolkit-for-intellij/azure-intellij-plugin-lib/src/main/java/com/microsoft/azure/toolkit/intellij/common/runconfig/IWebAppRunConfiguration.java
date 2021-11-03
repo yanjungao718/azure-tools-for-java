@@ -12,5 +12,7 @@ import java.util.Map;
 public interface IWebAppRunConfiguration {
     void setApplicationSettings(Map<String, String> env);
 
+    Map<String, String> getApplicationSettings();
+
     Module getModule();
 }
