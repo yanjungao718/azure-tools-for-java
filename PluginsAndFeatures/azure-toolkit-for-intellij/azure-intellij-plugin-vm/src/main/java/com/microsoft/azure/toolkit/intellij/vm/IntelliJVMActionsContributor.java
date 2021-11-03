@@ -8,16 +8,13 @@ package com.microsoft.azure.toolkit.intellij.vm;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor;
 import com.microsoft.azure.toolkit.intellij.vm.creation.CreateVirtualMachineAction;
-import com.microsoft.azure.toolkit.intellij.vm.ssh.AddSshConfigAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
 import com.microsoft.azure.toolkit.lib.compute.vm.VirtualMachine;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -42,10 +39,6 @@ public class IntelliJVMActionsContributor implements IActionsContributor {
                 StringUtils.equals(r.status(), IAzureBaseResource.Status.RUNNING);
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> restartHandler = (c, e) -> ((VirtualMachine) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
-
-        final BiConsumer<VirtualMachine, AnActionEvent> addSshConfigHandler = (c, e) -> AddSshConfigAction
-            .addSshConfig(c, Objects.requireNonNull(e.getProject()));
-        am.registerHandler(VirtualMachineActionsContributor.ADD_SSH_CONFIG, (c, e) -> c.isSshEnabled(), addSshConfigHandler);
     }
 
     @Override
