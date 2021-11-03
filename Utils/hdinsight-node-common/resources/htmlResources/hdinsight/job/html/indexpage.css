@@ -4,18 +4,27 @@
     --bg-color: #2b2b2b;
     --selection-bg-color: #4B77AF;
     --selection-text-color: white;
+    --edge-color: #828384;
+    --arrow-color: white;
+    --Job-s-color: #4B77AF;
 }
 :root.light-theme-mode {
     --text-color: black;
     --bg-color: white;
     --selection-bg-color: #2675BF;
     --selection-text-color: white;
+    --edge-color: #828384;
+    --arrow-color: black;
+    --Job-s-color: #2687BF;
 }
 :root.highcontrast-theme-mode {
     --text-color: white;
     --bg-color: black;
     --selection-bg-color: #3333FF;
     --selection-text-color: white;
+    --edge-color: #828384;
+    --arrow-color: white;
+    --Job-s-color: #3333FF;
 }
 
 body {
@@ -91,6 +100,14 @@ body {
     font-weight: 200;
     align-content: center;
 }
+
+#stageSummaryTable > thead > tr > th,
+#taskSummaryTable > thead > tr > th,
+#executorDetailsTable > thead > tr > th {
+    text-align: center;
+    word-wrap: break-word;
+}
+
 #stored_rdd_info,
 #stage_detail_info,
 #job-details-info-table {
@@ -112,7 +129,7 @@ body {
 }
 
 #rightButtonPanel a {
-    color: #2675BF;
+    color: inherit;
     font-size: 11px;
     padding-top: 3px;
     padding-bottom: 3px;
@@ -207,12 +224,12 @@ body {
 .table-striped#myTable thead > tr> th {
     text-align: center;
     background-color: var(--bg-color);
+    word-wrap: break-word;
 }
 
 .table-striped#myTable tbody > tr> td:first-child,
 .table-striped.table-striped#myTable tbody > tr > th:first-child {
     text-align: center;
-    background-color: var(--bg-color);
 }
 
 .table-striped > tbody > tr:nth-child(odd),
@@ -288,4 +305,9 @@ input[type=text]:focus {
   font-size: inherit;
   background-color: inherit;
   color: inherit;
+}
+
+[role="tab"][aria-selected="true"] {
+  background: var(--selection-bg-color);
+  color: var(--selection-text-color);
 }

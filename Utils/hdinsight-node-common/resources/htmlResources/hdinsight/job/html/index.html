@@ -51,7 +51,7 @@
             <div></div>
                 <table id="myTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
                     <thead class="ui-widget-content">
-                    <tr align="center" class="ui-widget-content" style="word-wrap: break-word;">
+                    <tr align="center" class="ui-widget-content">
                         <th class="ui-widget-content" style="width:35px;">State</th>
                         <th class="ui-widget-content">Application ID</th>
                         <th class="ui-widget-content">Job Name</th>
@@ -77,7 +77,7 @@
                         </div>
                     </div>
                 </div>
-                <div  id="sparkDetailsPanel" style="overflow: auto;">
+                <div  id="sparkDetailsPanel">
                    <div role="tablist" id="bottomTab" >
                         <button id="applicationGraphButton"  role="tab" aria-selected="true" aria-controls="applicationGraph">Application Graph</button>
                         <button id="stageSummaryButton"  role="tab" aria-selected="false" tabindex="0" aria-controls="stageSummary">Stage Summary</button>
@@ -96,7 +96,7 @@
                             </div>
                         </div>
                         <div id="stageSummary" role="tabpanel" aria-labelledby="stageSummaryButton" hidden="" >
-                            <table id="stageSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
+                            <table id="stageSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content JColResizer">
                                 <thead class="ui-widget-content">
                                 <tr align="center" class="ui-widget-content">
                                     <th class="ui-widget-content">status</th>
@@ -115,7 +115,7 @@
                         </div>
                         <div id="taskSummary" role="tabpanel" aria-labelledby="taskSummaryButton" hidden="">
                             <input id="filterTableInput" type="text" placeholder="Search.." style="margin-bottom: 5px; height:1.6em; width:350px;" onkeyup="filterTaskSummaryTable()">
-                            <table id="taskSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
+                            <table id="taskSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content JColResizer">
                                 <thead class="ui-widget-content">
                                 <tr align="center" class="ui-widget-content">
                                     <th class="ui-widget-content">taskId</th>
@@ -133,7 +133,7 @@
                             </table>
                         </div>
                         <div id="executorDetailsDiv" role="tabpanel" aria-labelledby="executorDetailsDivButton" hidden="">
-                            <table id="executorDetailsTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
+                            <table id="executorDetailsTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content JColResizer">
                                 <thead class="ui-widget-content">
                                 <tr align="center" class="ui-widget-content">
                                     <th class="ui-widget-content">id</th>
