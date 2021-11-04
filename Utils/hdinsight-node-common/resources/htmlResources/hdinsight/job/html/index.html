@@ -70,23 +70,23 @@
                 <div class="fxs-startboard-header container">
                     <div class="row">
                         <p id="jobName"></p>
-                        <div id="rightButtonPanel" class="btn-group">
+                        <div id="rightButtonPanel">
                             <!--<button id="refreshButton" type="button" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>-->
-                            <button id="openSparkUIButton" type="button" class="btn btn-link">Open Spark History UI</button>
-                            <button id="openYarnUIButton" type="button" class="btn btn-link">Open Yarn UI</button>
+                            <a id="openSparkUIButton" href="#" >Open Spark History UI</a>
+                            <a id="openYarnUIButton" href="#" >Open Yarn UI</a>
                         </div>
                     </div>
                 </div>
-                <div id="sparkDetailsPanel" class="fxs-startboard-layout container hdiPanel">
-                    <ul id="bottomTab" class="nav nav-tabs">
-                        <li class="active"><a href="#applicationGraph" data-toggle="tab">Application Graph</a></li>
-                        <li><a href="#stageSummary" data-toggle="tab">Stage Summary</a></li>
-                        <li><a href="#executorDetailsDiv" data-toggle="tab">Executors</a></li>
-                        <li><a href="#taskSummary" data-toggle="tab">Task Summary</a></li>
-                        <li><a href="#myTabContent" data-toggle="tab">Logs</a></li>
-                    </ul>
+                <div  id="sparkDetailsPanel">
+                   <div role="tablist" id="bottomTab" >
+                        <button id="applicationGraphButton"  role="tab" aria-selected="true" aria-controls="applicationGraph">Application Graph</button>
+                        <button id="stageSummaryButton"  role="tab" aria-selected="false" tabindex="0" aria-controls="stageSummary">Stage Summary</button>
+                        <button id="executorDetailsDivButton" role="tab"  aria-selected="false" tabindex="0" aria-controls="executorDetailsDiv">Executors</button>
+                        <button id="taskSummaryButton"  role="tab"  aria-selected="false" tabindex="0" aria-controls="taskSummary">Task Summary</button>
+                        <button id="myTabContentButton"  role="tab"  aria-selected="false" tabindex="0" aria-controls="myTabContent">Logs</button>
+                    </div>
                     <div id="bottomTabContent" class="tab-content" style="width: 100%; height: 100%">
-                        <div class="tab-pane fade in active" id="applicationGraph" style="width: 100%; height: 100%">
+                        <div id="applicationGraph" role="tabpanel" aria-labelledby="applicationGraphButton" style="width: 100%; height: 100%">
                             <div id="applicationGraphDiv" style="width: 100%; height: 100%">
                                 <svg id="applicationGraphSvg" width="100%" height="100%"></svg>
                             </div>
@@ -95,8 +95,8 @@
                                 <svg id="jobGraphSvg" width="100%" height="80%"></svg>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="stageSummary">
-                            <table id="stageSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
+                        <div id="stageSummary" role="tabpanel" aria-labelledby="stageSummaryButton" hidden="" >
+                            <table id="stageSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content JColResizer">
                                 <thead class="ui-widget-content">
                                 <tr align="center" class="ui-widget-content">
                                     <th class="ui-widget-content">status</th>
@@ -113,9 +113,9 @@
                             </table>
                             <p id="stage_detail_info_message"></p>
                         </div>
-                        <div class="tab-pane fade" id="taskSummary">
+                        <div id="taskSummary" role="tabpanel" aria-labelledby="taskSummaryButton" hidden="">
                             <input id="filterTableInput" type="text" placeholder="Search.." style="margin-bottom: 5px; height:1.6em; width:350px;" onkeyup="filterTaskSummaryTable()">
-                            <table id="taskSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
+                            <table id="taskSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content JColResizer">
                                 <thead class="ui-widget-content">
                                 <tr align="center" class="ui-widget-content">
                                     <th class="ui-widget-content">taskId</th>
@@ -132,8 +132,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="tab-pane fade" id="executorDetailsDiv">
-                            <table id="executorDetailsTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">
+                        <div id="executorDetailsDiv" role="tabpanel" aria-labelledby="executorDetailsDivButton" hidden="">
+                            <table id="executorDetailsTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content JColResizer">
                                 <thead class="ui-widget-content">
                                 <tr align="center" class="ui-widget-content">
                                     <th class="ui-widget-content">id</th>
@@ -152,17 +152,17 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div id="myTabContent" class="tab-pane fade">
+                        <div id="myTabContent" role="tabpanel" aria-labelledby="myTabContentButton" hidden="">
                             <div id="error">
-                                <p>Driver Stderr</p>
+                                <label for="driverErrorTextArea">Driver Stderr</label>
                                 <textarea id="driverErrorTextArea" rows="20" readonly="readonly" class="resultTextArea">error Message</textarea>
                             </div>
                             <div id="jobOutput">
-                                <p>Driver Stdout</p>
+                                <label for="jobOutputTextArea">Driver Stdout</label>
                                 <textarea id="jobOutputTextArea" rows="20" readonly="readonly" class="resultTextArea">Out put</textarea>
                             </div>
                             <div  id="driverLog">
-                                <p>Directory Info</p>
+                                <label for="directoryInfoTextArea">Directory Info</label>
                                 <textarea id="directoryInfoTextArea" rows="20" readonly="readonly" class="resultTextArea">Driver Log</textarea>
                             </div>
                         </div>
@@ -171,5 +171,6 @@
             </div>
         </div>
     </div>
+    <script src="js/tabs.js"></script>
 </body>
 </html>
