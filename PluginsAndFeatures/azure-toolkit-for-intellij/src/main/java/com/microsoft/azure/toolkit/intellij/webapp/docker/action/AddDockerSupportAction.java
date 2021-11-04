@@ -24,6 +24,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
+import com.microsoft.intellij.util.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,7 @@ public class AddDockerSupportAction extends AzureAnAction {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return true;
         }
-        pomXmlBasePath = Paths.get(module.getModuleFilePath()).getParent().toString();
+        pomXmlBasePath = PluginUtil.getModulePath(module);
         String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
         String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(module.getProject()).getProjects();
@@ -123,7 +124,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         module = DataKeys.MODULE.getData(event.getDataContext());
         boolean dockerFileExists = false;
         if (module != null) {
-            String basePath = Paths.get(module.getModuleFilePath()).getParent().toString();
+            String basePath = PluginUtil.getModulePath(module);
             dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME).toFile().exists();
         }
