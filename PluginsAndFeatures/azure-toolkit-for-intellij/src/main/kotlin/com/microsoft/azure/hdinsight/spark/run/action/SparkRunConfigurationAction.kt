@@ -29,6 +29,8 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.UpdateInBackground
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.roots.TestSourcesFilter.isTestSources
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -44,7 +46,7 @@ import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
 
-abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
+abstract class SparkRunConfigurationAction : AzureAnAction, ILogger, UpdateInBackground {
     constructor(icon: Icon?) : super(icon)
     constructor(text: String?) : super(text)
     constructor(text: String?, description: String?, icon: Icon?) : super(text, description, icon)
@@ -64,10 +66,12 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
+        ProgressManager.checkCanceled();
         val mainClass = actionEvent.dataContext.getSparkConfigurationContext()?.getSparkMainClassWithElement()
         if (mainClass?.containingFile?.let { isTestSources(it.virtualFile, project) } == true) {
             return
         }
+        ProgressManager.checkCanceled();
 
         presentation.apply {
             when {
