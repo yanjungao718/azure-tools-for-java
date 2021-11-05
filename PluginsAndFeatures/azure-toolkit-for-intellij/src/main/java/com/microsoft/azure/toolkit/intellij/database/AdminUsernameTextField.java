@@ -43,9 +43,6 @@ public class AdminUsernameTextField extends AzureTextInput {
      */
     @NotNull
     public AzureValidationInfo doValidateValue() {
-        if (!isValueInitialized()) {
-            return AzureValidationInfo.UNINITIALIZED;
-        }
         final String value = this.getValue();
         // validate length
         if (StringUtils.length(value) < MIN_LENGTH || StringUtils.length(value) > MAX_LENGTH) {
@@ -67,6 +64,6 @@ public class AdminUsernameTextField extends AzureTextInput {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this).message(INVALID_USERNAMES_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }

@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.database;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -89,15 +90,9 @@ public class RegionComboBox extends AzureComboBox<Region> {
 
     @NotNull
     @Override
-    public AzureValidationInfo doValidate() {
-        if (Objects.isNull(subscription) || !itemLoaded) {
-            return AzureValidationInfo.UNINITIALIZED;
-        }
-        if (!validateRequired) {
-            return Objects.nonNull(validatedInfo) ? validatedInfo : AzureValidationInfo.UNINITIALIZED;
-        }
-        validatedInfo = super.doValidate();
-        if (AzureValidationInfo.OK.equals(validatedInfo)) {
+    public AzureValidationInfo validateValue() {
+        validatedInfo = super.validateValue();
+        if (validatedInfo.getType() == Type.SUCCESS) {
             validatedInfo = validateFunction.apply(this);
         }
         validateRequired = false;

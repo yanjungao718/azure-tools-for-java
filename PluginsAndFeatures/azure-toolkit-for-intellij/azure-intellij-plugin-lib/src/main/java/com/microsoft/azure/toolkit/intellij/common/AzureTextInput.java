@@ -26,7 +26,7 @@ public class AzureTextInput extends ExtendableTextField
     private static final Extension SUCCESS = Extension.create(AllIcons.General.InspectionsOK, "Valid", null);
     private static final Map<AzureValidationInfo.Type, Function<AzureValidationInfo, Extension>> extensions = ImmutableMap.of(
         AzureValidationInfo.Type.PENDING, (i) -> VALIDATING,
-        AzureValidationInfo.Type.INFO, (i) -> SUCCESS,
+        AzureValidationInfo.Type.SUCCESS, (i) -> SUCCESS,
         AzureValidationInfo.Type.ERROR, (i) -> Extension.create(AllIcons.General.BalloonError, i.getMessage(), null),
         AzureValidationInfo.Type.WARNING, (i) -> Extension.create(AllIcons.General.BalloonWarning, i.getMessage(), null)
     );
@@ -37,7 +37,7 @@ public class AzureTextInput extends ExtendableTextField
         this.debouncer = new TailingDebouncer(() -> {
             this.fireValueChangedEvent(this.getValue());
             this.valueChanged = true;
-            this.doValidate();
+            this.validateValue();
             this.valueChanged = false;
         }, DEBOUNCE_DELAY);
         this.getDocument().addDocumentListener(this);
@@ -55,11 +55,11 @@ public class AzureTextInput extends ExtendableTextField
 
     @Nonnull
     @Override
-    public final AzureValidationInfo doValidate() {
+    public final AzureValidationInfo validateValue() {
         final AzureValidationInfo info = this.getValidationInfo();
         if (info == null || this.valueChanged) {
-            this.setValidationInfo(AzureValidationInfo.PENDING);
-            final AzureValidationInfo validationInfo = AzureFormInputComponent.super.doValidate();
+            this.setValidationInfo(AzureValidationInfo.pending(this));
+            final AzureValidationInfo validationInfo = AzureFormInputComponent.super.validateValue();
             this.setValidationInfo(validationInfo);
             return validationInfo;
         }
@@ -67,7 +67,7 @@ public class AzureTextInput extends ExtendableTextField
     }
 
     public void revalidateValue() {
-        this.setValidationInfo(AzureValidationInfo.PENDING);
+        this.setValidationInfo(AzureValidationInfo.pending(this));
         this.debouncer.debounce();
     }
 

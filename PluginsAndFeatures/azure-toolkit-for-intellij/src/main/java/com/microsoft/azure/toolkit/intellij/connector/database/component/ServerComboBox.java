@@ -42,9 +42,9 @@ public class ServerComboBox<T extends IDatabaseServer> extends AzureComboBox<T> 
     }
 
     @Override
-    public AzureValidationInfo doValidate() {
-        final AzureValidationInfo info = super.doValidate();
-        if (!AzureValidationInfo.OK.equals(info)) {
+    public AzureValidationInfo validateValue() {
+        final AzureValidationInfo info = super.validateValue();
+        if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
             return info;
         }
         if (!StringUtils.equals("Ready", this.getValue().entity().getState())) {

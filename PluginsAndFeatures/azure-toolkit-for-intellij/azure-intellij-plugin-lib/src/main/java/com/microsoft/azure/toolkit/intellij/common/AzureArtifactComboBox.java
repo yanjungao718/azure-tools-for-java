@@ -14,6 +14,7 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -90,15 +91,15 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
 
     @Nonnull
     @Override
-    public AzureValidationInfo doValidate() {
-        final AzureValidationInfo info = super.doValidate();
+    public AzureValidationInfo validateValue() {
+        final AzureValidationInfo info = super.validateValue();
         final AzureArtifact artifact = this.getValue();
-        if (info == AzureValidationInfo.OK && Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
+        if (info.getType() == Type.SUCCESS && Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
             final VirtualFile referencedObject = (VirtualFile) artifact.getReferencedObject();
             if (Objects.nonNull(this.fileFilter) && !this.fileFilter.value(referencedObject)) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(this).message(AzureMessageBundle.message("common.artifact.artifactNotSupport").toString())
-                        .type(AzureValidationInfo.Type.ERROR).build();
+                        .type(Type.ERROR).build();
             }
         }
         return info;

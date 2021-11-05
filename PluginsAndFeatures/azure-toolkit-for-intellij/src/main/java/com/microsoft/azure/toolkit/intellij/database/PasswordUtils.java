@@ -23,9 +23,9 @@ public class PasswordUtils {
     public static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
             @Override
-            public AzureValidationInfo doValidate() {
-                final AzureValidationInfo info = super.doValidate();
-                if (!AzureValidationInfo.OK.equals(info)) {
+            public AzureValidationInfo validateValue() {
+                final AzureValidationInfo info = super.validateValue();
+                if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
                     return info;
                 }
                 final String adminUsername = adminUsernameTextField.getText();
@@ -38,9 +38,9 @@ public class PasswordUtils {
     public static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
         return new AzurePasswordFieldInput(confirmPasswordField) {
             @Override
-            public AzureValidationInfo doValidate() {
-                final AzureValidationInfo info = super.doValidate();
-                if (!AzureValidationInfo.OK.equals(info)) {
+            public AzureValidationInfo validateValue() {
+                final AzureValidationInfo info = super.validateValue();
+                if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
                     return info;
                 }
                 final String value = this.getValue();
@@ -81,7 +81,7 @@ public class PasswordUtils {
                     " Part of a login name is defined as three or more consecutive alphanumeric characters.")
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(input);
     }
 
     private static int longestCommonSubstringLength(String left, String right) {
@@ -122,6 +122,6 @@ public class PasswordUtils {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(input).message("Password and confirm password must match.").type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(input);
     }
 }

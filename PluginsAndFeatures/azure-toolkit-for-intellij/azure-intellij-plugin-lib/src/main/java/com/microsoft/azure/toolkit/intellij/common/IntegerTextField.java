@@ -37,9 +37,9 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
 
     @Nonnull
     @Override
-    public AzureValidationInfo doValidate() {
+    public AzureValidationInfo validateValue() {
         if (!this.isEnabled() || !this.isVisible()) {
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         }
         final String input = getText();
         if (StringUtils.isEmpty(input)) {
@@ -47,7 +47,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.message(MSG_REQUIRED).input(this).type(AzureValidationInfo.Type.ERROR).build();
             }
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         }
         final Integer value = getValue();
         if (value == null) {
@@ -56,7 +56,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
             return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR)
                     .message(String.format("Value should be in range [%d, %d]", minValue, maxValue)).build();
         } else {
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         }
     }
 }

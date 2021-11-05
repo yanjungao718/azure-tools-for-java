@@ -34,6 +34,6 @@ public class AppNameInput extends AzureTextInput {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }

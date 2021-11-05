@@ -32,7 +32,7 @@ class AzureClientIdInput extends AzureTextInput {
                     .message(MessageBundle.message("action.azure.aad.registerApp.clientIdInvalid"))
                     .build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

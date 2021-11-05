@@ -32,14 +32,6 @@ public class AzurePasswordFieldInput implements AzureFormInputComponent<String> 
     }
 
     @Override
-    public AzureValidationInfo doValidate() {
-        if (!isPasswordInitialized()) {
-            return AzureValidationInfo.UNINITIALIZED;
-        }
-        return AzureFormInputComponent.super.doValidate();
-    }
-
-    @Override
     public String getValue() {
         char[] password = this.delegate.getPassword();
         return password != null ? String.valueOf(password) : StringUtils.EMPTY;

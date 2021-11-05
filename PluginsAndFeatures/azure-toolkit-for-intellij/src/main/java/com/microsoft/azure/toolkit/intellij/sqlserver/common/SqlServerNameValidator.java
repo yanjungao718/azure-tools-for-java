@@ -32,6 +32,6 @@ public class SqlServerNameValidator implements Function<ServerNameTextField, Azu
             }
             return AzureValidationInfo.builder().input(textField).message(message).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(textField);
     }
 }

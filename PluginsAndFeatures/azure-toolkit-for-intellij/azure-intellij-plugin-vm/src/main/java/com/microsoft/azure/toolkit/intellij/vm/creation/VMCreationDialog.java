@@ -493,7 +493,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must start with a letter, " +
                     "contain only letters, numbers, and hyphens, and end with a letter or number.").type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     private AzureValidationInfo validateMaximumPricing() {
@@ -502,7 +502,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         } catch (final NumberFormatException e) {
             return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The value must be a valid number.").build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     private AzureValidationInfo validatePassword() {
@@ -512,7 +512,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The password does not conform to complexity requirements. \n" +
                     "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.").build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     enum SecurityGroupPolicy {

@@ -21,7 +21,7 @@ public class MySQLRegionValidator implements Function<RegionComboBox, AzureValid
 
         try {
             if (Azure.az(AzureMySql.class).subscription(comboBox.getSubscription().getId()).checkRegionAvailability(comboBox.getValue())) {
-                return AzureValidationInfo.OK;
+                return AzureValidationInfo.success(comboBox);
             }
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();

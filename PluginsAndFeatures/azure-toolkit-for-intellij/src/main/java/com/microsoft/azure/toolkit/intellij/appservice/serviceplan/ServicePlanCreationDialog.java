@@ -60,7 +60,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
             final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     @Override

@@ -24,7 +24,7 @@ public class SqlServerRegionValidator implements Function<RegionComboBox, AzureV
         AzureSqlServer service = Azure.az(AzureSqlServer.class);
         try {
             if (service.checkRegionCapability(comboBox.getSubscription().getId(), comboBox.getValue().getName())) {
-                return AzureValidationInfo.OK;
+                return AzureValidationInfo.success(comboBox);
             }
         } catch (ManagementException e) {
             return AzureValidationInfo.builder().input(comboBox).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();

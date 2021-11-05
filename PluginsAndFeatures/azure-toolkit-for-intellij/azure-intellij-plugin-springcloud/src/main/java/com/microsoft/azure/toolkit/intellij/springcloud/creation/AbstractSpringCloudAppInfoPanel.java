@@ -65,7 +65,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
                 final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
             }
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         });
         if (Objects.nonNull(this.cluster)) {
             selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));

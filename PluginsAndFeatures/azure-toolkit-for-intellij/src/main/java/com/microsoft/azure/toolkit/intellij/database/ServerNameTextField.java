@@ -35,9 +35,6 @@ public class ServerNameTextField extends AzureTextInput {
 
     @Nonnull
     public AzureValidationInfo doValidateValue() {
-        if (StringUtils.isBlank(subscriptionId)) {
-            return AzureValidationInfo.UNINITIALIZED;
-        }
         final String value = this.getValue();
         // validate length
         if (StringUtils.length(value) < minLength || StringUtils.length(value) > maxLength) {
@@ -55,6 +52,6 @@ public class ServerNameTextField extends AzureTextInput {
         if (Objects.nonNull(validateFunction)) {
             return validateFunction.apply(this);
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }

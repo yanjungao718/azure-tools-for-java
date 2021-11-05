@@ -84,7 +84,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(redisNameTextField).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
             }
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         });
         lblPricingHelp.addMouseListener(new MouseAdapter() {
             @Override

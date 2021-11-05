@@ -130,7 +130,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
     private AzureValidationInfo validateSubnet(final String cidrNotation) {
         try {
             new SubnetUtils(cidrNotation);
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         } catch (final IllegalArgumentException iae) {
             return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message(iae.getMessage()).build();
         }

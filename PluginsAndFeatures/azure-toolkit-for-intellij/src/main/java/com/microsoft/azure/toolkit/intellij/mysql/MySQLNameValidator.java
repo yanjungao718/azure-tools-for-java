@@ -25,6 +25,6 @@ public class MySQLNameValidator implements Function<ServerNameTextField, AzureVa
         } catch (CloudException e) {
             return AzureValidationInfo.builder().input(textField).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(textField);
     }
 }

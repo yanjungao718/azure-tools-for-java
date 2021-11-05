@@ -72,7 +72,7 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
             }
         }
 
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     @Override

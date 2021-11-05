@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.*;
+
 @Log
 public abstract class AzureDialog<T> extends DialogWrapper {
     protected OkActionListener<T> okActionListener;
@@ -30,16 +32,14 @@ public abstract class AzureDialog<T> extends DialogWrapper {
     }
 
     public AzureDialog() {
-        super(true);
-        setTitle(this.getDialogTitle());
-        setModal(true);
+        super(null);
     }
 
     @Override
     protected void doOKAction() {
         try {
             if (Objects.nonNull(this.okActionListener)) {
-                final T data = this.getForm().getData();
+                final T data = this.getForm().getValue();
                 this.okActionListener.onOk(data);
             } else {
                 super.doOKAction();
@@ -55,25 +55,22 @@ public abstract class AzureDialog<T> extends DialogWrapper {
 
     @Override
     protected List<ValidationInfo> doValidateAll() {
-        final List<AzureValidationInfo> infos = this.getForm().validateData();
-        this.setOKActionEnabled(infos.stream().noneMatch(
-                i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
-        final List<ValidationInfo> resultList = infos.stream()
-                .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
-                .map(AzureDialog::toIntellijValidationInfo)
-                .collect(Collectors.toList());
-        // this is in order to let ok action disable if only there is any uninitialized filed.
-        if (infos.stream().anyMatch(AzureValidationInfo.UNINITIALIZED::equals)) {
-            setErrorInfoAll(resultList);
-        }
-        return resultList;
+        final List<AzureValidationInfo> infos = this.getForm().getAllValidationInfos(true);
+        this.setOKActionEnabled(infos.stream().noneMatch(i -> i.getType() == PENDING || i.getType() == ERROR));
+        return infos.stream()
+            .filter(i -> i.getType() != SUCCESS)
+            .map(AzureDialog::toIntellijValidationInfo)
+            .collect(Collectors.toList());
     }
 
-    //TODO: @wangmi move to some util class
     private static ValidationInfo toIntellijValidationInfo(final AzureValidationInfo info) {
         final AzureFormInput<?> input = info.getInput();
         final JComponent component = input instanceof AzureFormInputComponent ? ((AzureFormInputComponent<?>) input).getInputComponent() : null;
-        return new ValidationInfo(info.getType() == AzureValidationInfo.Type.PENDING ? StringUtils.EMPTY : info.getMessage(), component);
+        final ValidationInfo v = new ValidationInfo(info.getType() == PENDING ? StringUtils.EMPTY : info.getMessage(), component);
+        if (info.getType() == WARNING) {
+            v.asWarning();
+        }
+        return v;
     }
 
     public abstract AzureForm<T> getForm();
