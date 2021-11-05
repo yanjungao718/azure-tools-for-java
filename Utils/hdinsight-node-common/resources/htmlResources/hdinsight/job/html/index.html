@@ -27,6 +27,8 @@
     <script src="js/tipsy.js"></script>
     <script src="js/colResizable-1.6.min.js"></script>
     <script src="js/jquery.dragtable.js"></script>
+    <script src="js/dataGrid.js"></script>
+    <script src="js/utils.js"></script>
 
     <script src="common.js"></script>
     <script src="sparkjobview.js"></script>
@@ -43,13 +45,13 @@
     <link rel="stylesheet" href="indexpage.css" type="text/css" />
     <link rel="stylesheet" href="fxs.css" type="text/css" />
     <link rel="stylesheet" href="css/jobgraph.css" type="text/css">
+    <link rel="stylesheet" href="css/dataGrids.css" type="text/css">
 </head>
 
 <body>
     <div id="parent" class="fxs-mainwindow">
         <div id="leftDiv">
-            <div></div>
-                <table id="myTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content" tabindex="1">
+                <table id="myTable" role="grid" class="data table table-bordered table-condensed table-striped sortable ui-widget-content">
                     <thead class="ui-widget-content">
                     <tr align="center" class="ui-widget-content">
                         <th class="ui-widget-content" style="width:35px;">State</th>
