@@ -10,6 +10,18 @@
     panels = document.querySelectorAll('[role="tabpanel"]');
   };
 
+  // key code reference
+  var keys = {
+    left: 37,
+    right: 39
+  };
+
+  // Add or subtract depending on key pressed
+  var direction = {
+    37: -1,
+    39: 1
+  };
+
   // Bind listeners
   for (i = 0; i < tabs.length; ++i) {
     addListeners(i);
@@ -17,6 +29,7 @@
 
   function addListeners (index) {
     tabs[index].addEventListener('click', clickEventListener);
+    tabs[index].addEventListener('keydown', keydownEventListener);
 
     // Build an array with all tabs (<button>s) in it
     tabs[index].index = index;
@@ -28,10 +41,43 @@
     activateTab(tab, false);
   };
 
+  // Handle keydown on left/right arrow key
+  function keydownEventListener (event) {
+    var key = event.keyCode;
+
+    if(key == keys.left || key == keys.right){
+        switchTabOnArrowPress(event);
+    }
+  };
+
+  // Either focus the next, previous, first, or last tab
+  // depening on key pressed
+  function switchTabOnArrowPress (event) {
+    var pressed = event.keyCode;
+
+    for (x = 0; x < tabs.length; x++) {
+      tabs[x].addEventListener('focus', focusEventHandler);
+    };
+
+    if (direction[pressed]) {
+      var target = event.target;
+      if (target.index !== undefined) {
+        if (tabs[target.index + direction[pressed]]) {
+          tabs[target.index + direction[pressed]].focus();
+        }
+        else if (pressed === keys.left) {
+          focusLastTab();
+        }
+        else if (pressed === keys.right) {
+          focusFirstTab();
+        };
+      };
+    };
+  };
+
   // Activates any given tab panel
   function activateTab (tab, setFocus) {
     setFocus = setFocus || true;
-
     // Deactivate all other tabs
     deactivateTabs();
 
@@ -56,12 +102,32 @@
   // Deactivate all tabs and tab panels
   function deactivateTabs () {
     for (t = 0; t < tabs.length; t++) {
-      tabs[t].setAttribute('tabindex', '0');
+      tabs[t].setAttribute('tabindex', '-1');
       tabs[t].setAttribute('aria-selected', 'false');
+      tabs[t].removeEventListener('focus', focusEventHandler);
     };
 
     for (p = 0; p < panels.length; p++) {
       panels[p].setAttribute('hidden', 'hidden');
+    };
+  };
+
+  // focus on first tab
+  function focusFirstTab () {
+    tabs[0].focus();
+  };
+
+  // focus on last tab
+  function focusLastTab () {
+    tabs[tabs.length - 1].focus();
+  };
+
+  function focusEventHandler (event) {
+    var target = event.target;
+    focused = document.activeElement;
+
+    if (target === focused) {
+      activateTab(target, false);
     };
   };
 }());
