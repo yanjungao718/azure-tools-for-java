@@ -14,12 +14,4 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T> {
     default JComponent getInputComponent() {
         return (JComponent) this;
     }
-
-    default void setValidationInfo(AzureValidationInfo info) {
-        this.set("validationInfo", info);
-    }
-
-    default AzureValidationInfo getValidationInfo() {
-        return this.get("validationInfo");
-    }
 }
