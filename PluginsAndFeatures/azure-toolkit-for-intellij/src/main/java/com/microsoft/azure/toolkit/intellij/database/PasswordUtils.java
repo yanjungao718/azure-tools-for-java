@@ -23,13 +23,8 @@ public class PasswordUtils {
     public static AzurePasswordFieldInput generatePasswordFieldInput(JPasswordField passwordField, JTextField adminUsernameTextField) {
         return new AzurePasswordFieldInput(passwordField) {
             @Override
-            public AzureValidationInfo validateValue() {
-                final AzureValidationInfo info = super.validateValue();
-                if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
-                    return info;
-                }
+            public AzureValidationInfo doValidate(final String value) {
                 final String adminUsername = adminUsernameTextField.getText();
-                final String value = this.getValue();
                 return PasswordUtils.validatePassword(value, adminUsername, this);
             }
         };
@@ -38,12 +33,7 @@ public class PasswordUtils {
     public static AzurePasswordFieldInput generateConfirmPasswordFieldInput(JPasswordField confirmPasswordField, JPasswordField passwordField) {
         return new AzurePasswordFieldInput(confirmPasswordField) {
             @Override
-            public AzureValidationInfo validateValue() {
-                final AzureValidationInfo info = super.validateValue();
-                if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
-                    return info;
-                }
-                final String value = this.getValue();
+            public AzureValidationInfo doValidate(final String value) {
                 final char[] password = passwordField.getPassword();
                 final String passwordAsString = password != null ? String.valueOf(password) : StringUtils.EMPTY;
                 return PasswordUtils.validateConfirmPassword(value, passwordAsString, this);

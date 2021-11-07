@@ -49,12 +49,10 @@ public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<Az
     }
 
     private void init() {
-        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
+        serverNameTextField.setSubscription(config.getSubscription());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        serverNameTextField.setMinLength(3);
-        serverNameTextField.setMaxLength(63);
-        serverNameTextField.setValidateFunction(new MySQLNameValidator());
+        serverNameTextField.setValidator(new MySQLNameValidator(serverNameTextField));
     }
 
     private void initListeners() {

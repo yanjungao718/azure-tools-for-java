@@ -7,24 +7,41 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.function.Function;
+import java.util.regex.Pattern;
 
-public class MySQLNameValidator implements Function<ServerNameTextField, AzureValidationInfo> {
+@RequiredArgsConstructor
+public class MySQLNameValidator implements AzureFormInput.Validator {
+    private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
+    private static final int MIN_LENGTH = 3;
+    private static final int MAX_LENGTH = 63;
+    private final ServerNameTextField input;
 
     @Override
-    public AzureValidationInfo apply(ServerNameTextField textField) {
-        final String value = textField.getValue();
-        // validate availability
-        try {
-            if (!Azure.az(AzureMySql.class).subscription(textField.getSubscriptionId()).checkNameAvailability(value)) {
-                return AzureValidationInfo.builder().input(textField).message(value + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
-            }
-        } catch (CloudException e) {
-            return AzureValidationInfo.builder().input(textField).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+    public AzureValidationInfo doValidate() {
+        final String value = input.getValue();
+        if (StringUtils.length(value) < MIN_LENGTH || StringUtils.length(value) > MAX_LENGTH) { // validate length
+            return AzureValidationInfo.builder().input(input)
+                .message(String.format("Server name must be at least %s characters and at most %s characters.", MIN_LENGTH, MAX_LENGTH))
+                .type(AzureValidationInfo.Type.ERROR).build();
+        } else if (!PATTERN.matcher(value).matches()) { // validate special character
+            return AzureValidationInfo.builder().input(input)
+                .message("Your server name can contain only lowercase letters, numbers, and '-', but can't start or end with '-'.")
+                .type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.success(textField);
+        try { // validate availability
+            if (!Azure.az(AzureMySql.class).subscription(input.getSubscription().getId()).checkNameAvailability(value)) {
+                final String message = String.format("name \"%s\" is already in use.", value);
+                return AzureValidationInfo.error(message, input);
+            }
+        } catch (final CloudException e) {
+            return AzureValidationInfo.error(e.getMessage(), input);
+        }
+        return AzureValidationInfo.success(input);
     }
 }

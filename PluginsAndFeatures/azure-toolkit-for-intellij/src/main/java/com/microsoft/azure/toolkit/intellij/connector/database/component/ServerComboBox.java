@@ -42,15 +42,10 @@ public class ServerComboBox<T extends IDatabaseServer> extends AzureComboBox<T> 
     }
 
     @Override
-    public AzureValidationInfo validateValue() {
-        final AzureValidationInfo info = super.validateValue();
-        if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
-            return info;
+    public AzureValidationInfo doValidate(T server) {
+        if (!StringUtils.equals("Ready", server.entity().getState())) {
+            return AzureValidationInfo.error("This server is not ready. please start it first.", this);
         }
-        if (!StringUtils.equals("Ready", this.getValue().entity().getState())) {
-            return AzureValidationInfo.builder().input(this).message("This server is not ready. please start it first.")
-                .type(AzureValidationInfo.Type.ERROR).build();
-        }
-        return info;
+        return AzureValidationInfo.success(this);
     }
 }

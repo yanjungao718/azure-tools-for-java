@@ -15,27 +15,20 @@ import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLNameValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionValidator;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
-import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.AzureService;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
-import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
+import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel<AzureMySQLConfig> {
 
@@ -75,20 +68,10 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        regionComboBox.setValidateFunction(new MySQLRegionValidator());
-        regionComboBox.setLoader(sid -> loadSupportedRegions(Azure.az(AzureMySql.class), sid));
-        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
-        serverNameTextField.setMinLength(3);
-        serverNameTextField.setMaxLength(63);
-        serverNameTextField.setValidateFunction(new SqlServerNameValidator());
-    }
-
-    public static List<Region> loadSupportedRegions(AzureService service, String subscriptionId) {
-        // this the sequence in listSupportedRegions is alphabetical order for mysql
-        // we need to rearrange it according to: az account list-regions
-        final List<Region> regions = Azure.az(AzureAccount.class).listRegions(subscriptionId);
-        final List supportedRegions = service.listSupportedRegions(subscriptionId);
-        return regions.stream().filter(supportedRegions::contains).collect(Collectors.toList());
+        regionComboBox.setValidator(new MySQLRegionValidator(regionComboBox));
+        regionComboBox.setItemsLoader(() -> AzureMySQLConfig.loadSupportedRegions(this.subscriptionComboBox.getValue().getId()));
+        serverNameTextField.setSubscription(config.getSubscription());
+        serverNameTextField.setValidator(new MySQLNameValidator(serverNameTextField));
     }
 
     private void initListeners() {
@@ -102,7 +85,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
             final Subscription subscription = (Subscription) e.getItem();
             this.resourceGroupComboBox.setSubscription(subscription);
-            this.serverNameTextField.setSubscriptionId(subscription.getId());
+            this.serverNameTextField.setSubscription(subscription);
             this.regionComboBox.setSubscription(subscription);
         }
     }

@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.lib.mysql;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
-import com.microsoft.azure.toolkit.intellij.mysql.creation.MySQLCreationAdvancedPanel;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -22,6 +22,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -61,9 +62,16 @@ public class AzureMySQLConfig {
         config.setConfirmPassword(StringUtils.EMPTY.toCharArray());
         // TODO(andy): remove the dependency to MySQLCreationAdvancedPanel
         config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region",
-            MySQLCreationAdvancedPanel.loadSupportedRegions(az(AzureMySql.class), subscription.getId()),
+            loadSupportedRegions(subscription.getId()),
             Region.US_EAST));
         return config;
     }
 
+    public static List<Region> loadSupportedRegions(final String subId) {
+        // this the sequence in listSupportedRegions is alphabetical order for mysql
+        // we need to rearrange it according to: az account list-regions
+        final List<Region> regions = Azure.az(AzureAccount.class).listRegions(subId);
+        final List supportedRegions = Azure.az(AzureMySql.class).listSupportedRegions(subId);
+        return regions.stream().filter(supportedRegions::contains).collect(Collectors.toList());
+    }
 }

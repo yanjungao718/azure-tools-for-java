@@ -22,7 +22,7 @@ public class AppNameInput extends AzureTextInput {
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
             this.subscription = subscription;
-            this.revalidateValue();
+            this.validateValueAsync();
         }
     }
 

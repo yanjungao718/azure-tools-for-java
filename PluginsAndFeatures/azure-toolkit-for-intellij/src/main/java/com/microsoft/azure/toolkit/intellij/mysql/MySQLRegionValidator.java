@@ -7,26 +7,26 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
+import lombok.RequiredArgsConstructor;
 
-import java.util.function.Function;
-
-public class MySQLRegionValidator implements Function<RegionComboBox, AzureValidationInfo> {
+@RequiredArgsConstructor
+public class MySQLRegionValidator implements AzureFormInput.Validator {
 
     private static final String REGION_UNAVAILABLE_MESSAGE = "Currently, the service is not available in this location for your subscription.";
+    private final RegionComboBox input;
 
     @Override
-    public AzureValidationInfo apply(RegionComboBox comboBox) {
-
+    public AzureValidationInfo doValidate() {
         try {
-            if (Azure.az(AzureMySql.class).subscription(comboBox.getSubscription().getId()).checkRegionAvailability(comboBox.getValue())) {
-                return AzureValidationInfo.success(comboBox);
+            if (Azure.az(AzureMySql.class).subscription(input.getSubscription().getId()).checkRegionAvailability(input.getValue())) {
+                return AzureValidationInfo.success(input);
             }
-            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
-        } catch (RuntimeException e) {
-            return AzureValidationInfo.builder().input(comboBox).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+            return AzureValidationInfo.error(REGION_UNAVAILABLE_MESSAGE, input);
+        } catch (final RuntimeException e) {
+            return AzureValidationInfo.error(e.getMessage(), input);
         }
     }
 }

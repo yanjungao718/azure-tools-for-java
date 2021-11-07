@@ -5,22 +5,20 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.creation;
 
-import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
-import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerRegionValidator;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -67,12 +65,10 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        regionComboBox.setLoader(sid -> Azure.az(AzureSqlServer.class).listSupportedRegions(sid));
-        regionComboBox.setValidateFunction(new SqlServerRegionValidator());
-        serverNameTextField.setSubscriptionId(config.getSubscription().getId());
-        serverNameTextField.setMinLength(1);
-        serverNameTextField.setMaxLength(63);
-        serverNameTextField.setValidateFunction(new SqlServerNameValidator());
+        regionComboBox.setItemsLoader(() -> SqlServerConfig.loadSupportedRegions(this.subscriptionComboBox.getValue().getId()));
+        regionComboBox.setValidator(new SqlServerRegionValidator(regionComboBox));
+        serverNameTextField.setSubscription(config.getSubscription());
+        serverNameTextField.setValidator(new SqlServerNameValidator(serverNameTextField));
     }
 
     private void initListeners() {
@@ -84,7 +80,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof Subscription) {
             final Subscription subscription = (Subscription) e.getItem();
             this.resourceGroupComboBox.setSubscription(subscription);
-            this.serverNameTextField.setSubscriptionId(subscription.getId());
+            this.serverNameTextField.setSubscription(subscription);
             this.regionComboBox.setSubscription(subscription);
         }
     }

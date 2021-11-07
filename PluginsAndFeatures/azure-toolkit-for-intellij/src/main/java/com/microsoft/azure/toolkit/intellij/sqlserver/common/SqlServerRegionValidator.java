@@ -8,28 +8,28 @@ package com.microsoft.azure.toolkit.intellij.sqlserver.common;
 import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
+import lombok.RequiredArgsConstructor;
 
-import java.util.function.Function;
-
-public class SqlServerRegionValidator implements Function<RegionComboBox, AzureValidationInfo> {
-
+@RequiredArgsConstructor
+public class SqlServerRegionValidator implements AzureFormInput.Validator {
     private static final String REGION_UNAVAILABLE_MESSAGE = "Your subscription does not have access to create a server "
-            + "in the selected region. For the latest information about region availability for your subscription, go to "
-            + "aka.ms/sqlcapacity. Please try another region or create a support ticket to request access.";
+        + "in the selected region. For the latest information about region availability for your subscription, go to "
+        + "aka.ms/sqlcapacity. Please try another region or create a support ticket to request access.";
+    private final RegionComboBox input;
 
     @Override
-    public AzureValidationInfo apply(RegionComboBox comboBox) {
-        AzureSqlServer service = Azure.az(AzureSqlServer.class);
+    public AzureValidationInfo doValidate() {
         try {
-            if (service.checkRegionCapability(comboBox.getSubscription().getId(), comboBox.getValue().getName())) {
-                return AzureValidationInfo.success(comboBox);
+            final AzureSqlServer service = Azure.az(AzureSqlServer.class);
+            if (service.checkRegionCapability(input.getSubscription().getId(), input.getValue().getName())) {
+                return AzureValidationInfo.success(input);
             }
-        } catch (ManagementException e) {
-            return AzureValidationInfo.builder().input(comboBox).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+        } catch (final ManagementException e) {
+            return AzureValidationInfo.error(e.getMessage(), input);
         }
-        final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-        return builder.input(comboBox).message(REGION_UNAVAILABLE_MESSAGE).type(AzureValidationInfo.Type.ERROR).build();
+        return AzureValidationInfo.error(REGION_UNAVAILABLE_MESSAGE, input);
     }
 }
