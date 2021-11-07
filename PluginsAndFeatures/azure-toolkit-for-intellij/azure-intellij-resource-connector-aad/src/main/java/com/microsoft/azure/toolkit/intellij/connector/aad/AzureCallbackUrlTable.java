@@ -8,21 +8,23 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 import com.intellij.execution.util.ListTableWithButtons;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.util.ui.ListTableModel;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> implements AzureFormInput<List<StringBuilder>> {
+public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> implements AzureFormInputComponent<List<StringBuilder>> {
 
     public AzureCallbackUrlTable() {
         super();
         getTableView().getEmptyText().setText(MessageBundle.message("dialog.identity.ad.register_app.callback_url.emptyText"));
         this.setValidator(this::doValidateValue);
+        this.setRequired(true);
     }
 
     @Override
@@ -65,10 +67,7 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
         final var urls = this.getValue();
         for (final var url : urls) {
             if (!AzureUtils.isValidCallbackURL(url.toString())) {
-                return AzureValidationInfo.builder()
-                        .input(this)
-                        .message(MessageBundle.message("action.azure.aad.registerApp.callbackURLInvalid", url.toString()))
-                        .build();
+                return AzureValidationInfo.error(MessageBundle.message("action.azure.aad.registerApp.callbackURLInvalid", url.toString()), this);
             }
         }
 
@@ -76,13 +75,13 @@ public class AzureCallbackUrlTable extends ListTableWithButtons<StringBuilder> i
     }
 
     @Override
-    public boolean isRequired() {
-        return true;
+    public String getLabel() {
+        return MessageBundle.message("dialog.identity.ad.register_app.callback_url").replace(":", "");
     }
 
     @Override
-    public String getLabel() {
-        return MessageBundle.message("dialog.identity.ad.register_app.callback_url").replace(":", "");
+    public JComponent getInputComponent() {
+        return this.getComponent();
     }
 
     private static class NameColumnInfo extends ElementsColumnInfoBase<StringBuilder> {

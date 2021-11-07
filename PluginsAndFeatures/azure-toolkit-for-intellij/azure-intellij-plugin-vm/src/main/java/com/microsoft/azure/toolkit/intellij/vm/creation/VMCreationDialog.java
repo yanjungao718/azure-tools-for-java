@@ -332,9 +332,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.txtMaximumPrice = new AzureTextInput();
 
         this.txtPassword = new JPasswordField();
-        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);
+        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword);
         this.txtConfirmPassword = new JPasswordField();
-        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword, true);
+        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
 
         this.cbSubscription.refreshItems();
     }

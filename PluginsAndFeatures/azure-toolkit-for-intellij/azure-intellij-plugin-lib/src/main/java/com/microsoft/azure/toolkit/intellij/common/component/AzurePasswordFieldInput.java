@@ -5,35 +5,24 @@
 
 package com.microsoft.azure.toolkit.intellij.common.component;
 
-import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
-import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import lombok.Getter;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
-import javax.swing.event.DocumentListener;
 
-public class AzurePasswordFieldInput implements AzureFormInputComponent<String> {
+public class AzurePasswordFieldInput extends AzureTextInput {
 
-    private JPasswordField delegate;
-    @Getter
-    private boolean passwordInitialized;
+    private final JPasswordField delegate;
 
     public AzurePasswordFieldInput(JPasswordField delegate) {
+        super(delegate);
         this.delegate = delegate;
-        this.delegate.getDocument().addDocumentListener(generateInitializedListener());
-    }
-
-
-    public AzurePasswordFieldInput(JPasswordField delegate, final boolean passwordInitialized) {
-        this.delegate = delegate;
-        this.passwordInitialized = passwordInitialized;
+        this.setRequired(true);
     }
 
     @Override
     public String getValue() {
-        char[] password = this.delegate.getPassword();
+        final char[] password = this.delegate.getPassword();
         return password != null ? String.valueOf(password) : StringUtils.EMPTY;
     }
 
@@ -43,19 +32,7 @@ public class AzurePasswordFieldInput implements AzureFormInputComponent<String> 
     }
 
     @Override
-    public JComponent getInputComponent() {
+    public JPasswordField getInputComponent() {
         return delegate;
     }
-
-    private DocumentListener generateInitializedListener() {
-        return new TextDocumentListenerAdapter() {
-            @Override
-            public void onDocumentChanged() {
-                if (!passwordInitialized) {
-                    passwordInitialized = true;
-                }
-            }
-        };
-    }
-
 }

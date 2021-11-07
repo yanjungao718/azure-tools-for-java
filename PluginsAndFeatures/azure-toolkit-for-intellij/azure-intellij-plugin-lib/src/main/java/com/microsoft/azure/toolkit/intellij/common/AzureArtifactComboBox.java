@@ -90,11 +90,8 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     }
 
     @Nonnull
-    @Override
-    public AzureValidationInfo validateValue() {
-        final AzureValidationInfo info = super.validateValue();
-        final AzureArtifact artifact = this.getValue();
-        if (info.getType() == Type.SUCCESS && Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
+    public AzureValidationInfo doValidate(AzureArtifact artifact) {
+        if (Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
             final VirtualFile referencedObject = (VirtualFile) artifact.getReferencedObject();
             if (Objects.nonNull(this.fileFilter) && !this.fileFilter.value(referencedObject)) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
@@ -102,7 +99,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
                         .type(Type.ERROR).build();
             }
         }
-        return info;
+        return AzureValidationInfo.success(this);
     }
 
     private void onSelectFile() {
