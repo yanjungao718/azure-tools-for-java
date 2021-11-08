@@ -33,7 +33,15 @@ class BundleBuildIDEAConfig implements JdkUrlConfigurable {
 
     private String[] downloadUrls
 
-    String adoptOpenJdkApi = "https://api.adoptopenjdk.net/v2/info/releases/openjdk8?os=windows&arch=x64&type=jdk&openjdk_impl=hotspot&release=latest"
+    String adoptOpenJdkApi = "https://api.adoptium.net/v3/info/release_names?" +
+            "architecture=x64" +
+            "&" + "image_type=jdk" +
+            "&" + "jvm_impl=hotspot" +
+            "&" + "lts=true" +
+            "&" + "os=windows" +
+            "&" + "project=jdk" +
+            "&" + "release_type=ga" +
+            "&" + "version=%5B1.8%2C%209%29"
 
     // Version selection
     String winutilsVer = "hadoop-2.7.1"
