@@ -84,8 +84,10 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final SpringCloudCluster c = (SpringCloudCluster) e.getItem();
             final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
-            final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
-            this.onAppChanged(app);
+            if (Objects.nonNull(c)) {
+                final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
+                this.onAppChanged(app);
+            }
         }
     }
 

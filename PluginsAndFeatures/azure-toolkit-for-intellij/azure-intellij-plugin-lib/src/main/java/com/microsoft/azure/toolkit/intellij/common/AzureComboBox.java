@@ -26,7 +26,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import javax.accessibility.AccessibleRelation;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -60,6 +59,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Getter
     @Setter
     private Supplier<? extends List<? extends T>> itemsLoader;
+    private final TailingDebouncer valueDebouncer;
 
     public AzureComboBox() {
         this(true);
@@ -69,6 +69,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         super();
         this.init();
         this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
+        this.valueDebouncer = new TailingDebouncer(() -> this.fireValueChangedEvent(this.getValue()), DEBOUNCE_DELAY);
         if (refresh) {
             this.refreshItems();
         }
@@ -103,7 +104,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 this.refreshValue();
             }
+            this.valueDebouncer.debounce();
         });
+        this.trackValidation();
     }
 
     @Override
@@ -162,6 +165,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             } else {
                 super.setSelectedItem(null);
             }
+            this.valueDebouncer.debounce();
         }
     }
 
@@ -420,13 +424,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 }
             });
         }
-    }
-
-    public String getLabel() {
-        final JLabel label = (JLabel) this.getClientProperty(AccessibleRelation.LABELED_BY);
-        return Optional.ofNullable(label).map(JLabel::getText)
-                .map(t -> t.endsWith(":") ? t.substring(0, t.length() - 1) : t)
-                .orElse(this.getClass().getSimpleName());
     }
 
     public static class ItemReference<T> {
