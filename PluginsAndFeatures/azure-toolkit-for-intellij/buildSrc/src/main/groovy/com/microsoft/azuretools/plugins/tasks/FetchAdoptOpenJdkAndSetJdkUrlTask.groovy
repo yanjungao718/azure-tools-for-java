@@ -27,6 +27,8 @@ import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
+import javax.net.ssl.HttpsURLConnection
+
 class FetchAdoptOpenJdkAndSetJdkUrlTask extends DefaultTask {
     boolean setOnlyForEmpty = true
 
@@ -46,8 +48,22 @@ class FetchAdoptOpenJdkAndSetJdkUrlTask extends DefaultTask {
 
         def httpcon = new URL(adoptOpenJdkApi).openConnection()
         httpcon.addRequestProperty("User-Agent", "Mozilla")
+        httpcon.addRequestProperty("accept", "application/json")
+
         def adoptOpenJdk = new JsonSlurper().parseText(httpcon.getInputStream().getText())
 
-        conf.jdkUrl = adoptOpenJdk["binaries"][0]["binary_link"]
+        def latestRelease = adoptOpenJdk["releases"][0]
+        def jdkUrl = "https://api.adoptium.net/v3/binary/version/" +
+                latestRelease +
+                "/windows/x64/jdk/hotspot/normal/eclipse?project=jdk"
+
+        HttpURLConnection jdkUrlCon = new URL(jdkUrl).openConnection()
+        jdkUrlCon.setInstanceFollowRedirects(false)
+        jdkUrlCon.setRequestMethod("HEAD")
+        if (jdkUrlCon.getResponseCode() == 307) {
+            conf.jdkUrl = jdkUrlCon.getHeaderField("Location")
+        } else {
+            conf.jdkUrl = jdkUrl
+        }
     }
 }
