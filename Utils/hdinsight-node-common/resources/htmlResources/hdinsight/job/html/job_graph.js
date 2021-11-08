@@ -1,3 +1,11 @@
+document.jobGraphFocusStack = [];
+document.jobGraphView = {
+    minX: -10,
+    width: 480,
+    height: 480,
+    tipsWidth: 200
+}
+
 function renderJobGraphOnApplicationLevel(jobs) {
     $('#applicationGraphDiv').removeClass('graph-disabled');
     $('#jobGraphDiv').addClass('graph-disabled');
@@ -31,9 +39,8 @@ function renderJobGraphOnApplicationLevel(jobs) {
 // Run the renderer. This is what draws the final graph.
     render(d3.select("#applicationGraphSvg g"), g);
 
-    var g_width = g.graph().width;
-    var g_height = g.graph().height;
-    var viewBoxValue = "0 0 " + 1.3 * g_width + " " +  g_height;
+    document.jobGraphView.width = $('#applicationGraphDiv').width() * 0.7;
+    var viewBoxValue = calculateVirtualBox(g.graph())
     svg.attr("viewBox", viewBoxValue);
     svg.attr("preserveAspectRatio", "xMidYMid meet");
 
@@ -58,6 +65,7 @@ function renderJobGraphOnApplicationLevel(jobs) {
 
     // Simple function to style the tooltip for the given node.
     inner.selectAll("g.node")
+        .attr('tabindex', "0")
         .attr("title", function(v) {
             return setToolTips(jobs, v)
         })
@@ -65,7 +73,19 @@ function renderJobGraphOnApplicationLevel(jobs) {
             $(this).tipsy({
                 gravity: "w",
                 opacity: 1,
+                trigger:'hover',
                 html: true });
+            $(this).tipsy({
+                gravity: "w",
+                opacity: 1,
+                trigger:'focus',
+                html: true });
+        })
+        .on('keypress', function(d) {
+            if ( d === '0' || d3.event.code !== "Enter") {
+                return;
+            }
+            renderJobGraphForSelectedJob(d);
         })
         .on('click',function(d) {
             if ( d === '0') {
@@ -73,10 +93,17 @@ function renderJobGraphOnApplicationLevel(jobs) {
             }
             renderJobGraphForSelectedJob(d);
         });
+
+    var lastFocusNodeIdx = document.jobGraphFocusStack.pop();
+    if (lastFocusNodeIdx) {
+        inner.selectAll("g.node")[0][lastFocusNodeIdx].focus();
+    }
 }
 
 function renderJobGraphForSelectedJob(d) {
     var job = spark.jobStartEvents[d - 1];
+    document.jobGraphFocusStack.push(d);
+
     renderJobGraph(job);
 }
 
@@ -158,10 +185,7 @@ function renderJobGraph(job) {
     // Run the renderer. This is what draws the final graph.
     render(inner, g);
 
-    var g_width = g.graph().width;
-    var g_height = g.graph().height;
-    var viewBoxValue = '0 0 ' + 1.2 * g_width + ' ' + g_height;
-    svg.attr('viewBox', viewBoxValue);
+    svg.attr('viewBox', calculateVirtualBox(g.graph()));
     svg.attr('preserveAspectRatio', 'xMidYMid meet');
 
     render(inner, g);
@@ -174,6 +198,7 @@ function renderJobGraph(job) {
     svg.call(zoom);
 
     inner.selectAll('g.node')
+        .attr('tabindex', "0")
         .attr('title', function(d, v) {
             return setToolTipForStage(d);
         })
@@ -181,8 +206,16 @@ function renderJobGraph(job) {
             $(this).tipsy({
                 gravity: "w",
                 opacity: 1,
+                trigger:'hover',
+                html: true });
+            $(this).tipsy({
+                gravity: "w",
+                opacity: 1,
+                trigger:'focus',
                 html: true });
         })
+
+    inner.selectAll("g.node")[0][0].focus()
 }
 
 function setToolTipForStage(stageId) {
@@ -206,4 +239,13 @@ function setToolTipForStage(stageId) {
         }
 
     }
+}
+
+function calculateVirtualBox(graph) {
+    var minX = document.jobGraphView.minX
+     - Math.min(
+         document.jobGraphView.width / 3,
+         Math.abs((graph.width + document.jobGraphView.tipsWidth - document.jobGraphView.width) / 2))
+
+    return minX + " -10 " + document.jobGraphView.width + " " + document.jobGraphView.height;
 }

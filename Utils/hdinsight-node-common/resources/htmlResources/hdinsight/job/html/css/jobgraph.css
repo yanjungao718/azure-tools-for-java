@@ -17,6 +17,7 @@ text {
     stroke: var(--edge-color);
     fill: var(--bg-color);
     stroke-width: 1.5px;
+    margin: 10px;
 }
 
 .edgePath path {
