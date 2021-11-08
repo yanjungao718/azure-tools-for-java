@@ -92,15 +92,15 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     }
 
     @Override
-    public SpringCloudAppConfig getFormData() {
-        final SpringCloudAppConfig config = this.formConfig.getFormData();
-        return super.getFormData(config);
+    public SpringCloudAppConfig getValue() {
+        final SpringCloudAppConfig config = this.formConfig.getValue();
+        return super.getValue(config);
     }
 
     @Override
-    public void setFormData(final SpringCloudAppConfig config) {
-        super.setFormData(config);
-        this.formConfig.setFormData(config);
+    public void setValue(final SpringCloudAppConfig config) {
+        super.setValue(config);
+        this.formConfig.setValue(config);
     }
 
     @Override

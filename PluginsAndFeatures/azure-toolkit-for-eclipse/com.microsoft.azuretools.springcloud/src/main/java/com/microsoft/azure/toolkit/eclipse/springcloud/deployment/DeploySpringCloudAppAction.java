@@ -46,7 +46,7 @@ public class DeploySpringCloudAppAction {
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 if (Objects.nonNull(app)) {
                     SpringCloudAppConfig config = SpringCloudAppConfig.fromApp(app);
-                    AzureTaskManager.getInstance().runLater(() -> dialog.getForm().setFormData(config), AzureTask.Modality.ANY);
+                    AzureTaskManager.getInstance().runLater(() -> dialog.getForm().setValue(config), AzureTask.Modality.ANY);
                 }
             });
             dialog.setOkActionListener((config) -> {

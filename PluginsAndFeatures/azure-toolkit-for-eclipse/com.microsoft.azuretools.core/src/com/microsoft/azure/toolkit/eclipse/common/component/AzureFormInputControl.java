@@ -7,7 +7,9 @@ package com.microsoft.azure.toolkit.eclipse.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.BooleanUtils;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
@@ -30,6 +32,21 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T> {
 
     default Control getInputControl() {
         return (Control) this;
+    }
+
+    /**
+     * NOTE: don't override
+     */
+    @Nonnull
+    @Override
+    default AzureValidationInfo validateInternal(T value) {
+        final Boolean needValidate = AzureTaskManager.getInstance()
+            .runAndWaitAsObservable(new AzureTask<>(() -> !this.getInputControl().isEnabled() || !this.getInputControl().isVisible()))
+            .toBlocking().single();
+        if (BooleanUtils.isTrue(needValidate)) {
+            return AzureValidationInfo.success(this);
+        }
+        return AzureFormInput.super.validateInternal(value);
     }
 
     default void setLabeledBy(Label label) {
@@ -59,34 +76,25 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T> {
         return Optional.ofNullable((String) this.get(ACCESSIBLE_LABEL)).orElse(AzureFormInput.super.getLabel());
     }
 
-    default AzureValidationInfo revalidateAndDecorate() {
-        AzureTaskManager.getInstance().runLater(() -> this.setValidationInfo(AzureValidationInfo.PENDING));
-        final T value = this.getValue();
-        final AzureValidationInfo validationInfo = AzureFormInput.super.doValidate();
-        if (Objects.equals(value, this.getValue())) {
-            AzureTaskManager.getInstance().runLater(() -> this.setValidationInfo(validationInfo));
-        }
-        return validationInfo;
-    }
-
     default void setValidationInfo(@Nullable AzureValidationInfo info) {
-        this.set("validationInfo", info);
+        AzureFormInput.super.setValidationInfo(info);
         final Control input = this.getInputControl();
         if (input.isDisposed()) {
             return;
         }
-        final ControlDecoration deco = getValidationDecorator(input);
-        if ((Objects.isNull(info) || info.getType() == AzureValidationInfo.Type.INFO)) {
-            deco.hide();
-        } else {
-            deco.setImage(getValidationInfoIcon(info.getType()));
-            deco.setDescriptionText("PENDING".equals(info.getMessage()) ? "Validating..." : info.getMessage());
-            deco.show();
-        }
-    }
-
-    default AzureValidationInfo getValidationInfo() {
-        return this.get("validationInfo");
+        AzureTaskManager.getInstance().runLater(() -> {
+            if (input.isDisposed()) {
+                return;
+            }
+            final ControlDecoration deco = getValidationDecorator(input);
+            if (Objects.isNull(info) || info.getType() == AzureValidationInfo.Type.SUCCESS) {
+                deco.hide();
+            } else {
+                deco.setImage(getValidationInfoIcon(info.getType()));
+                deco.setDescriptionText("PENDING".equals(info.getMessage()) ? "Validating..." : info.getMessage());
+                deco.show();
+            }
+        });
     }
 
     @Nonnull
@@ -105,7 +113,7 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T> {
         } else {
             String id = null;
             switch (type) {
-                case INFO:
+                case SUCCESS:
                     id = "DEC_INFORMATION";
                     break;
                 case WARNING:

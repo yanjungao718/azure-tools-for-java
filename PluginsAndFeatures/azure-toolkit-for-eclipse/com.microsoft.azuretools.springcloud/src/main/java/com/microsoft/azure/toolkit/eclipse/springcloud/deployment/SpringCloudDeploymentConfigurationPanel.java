@@ -8,10 +8,10 @@ import com.microsoft.azure.toolkit.eclipse.common.artifact.AzureArtifact;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -67,7 +67,7 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         this.selectorApp.setCluster(cluster);
     }
 
-    public synchronized void setFormData(SpringCloudAppConfig appConfig) {
+    public synchronized void setValue(SpringCloudAppConfig appConfig) {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
             if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
@@ -88,18 +88,18 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
     }
 
     @Nullable
-    public SpringCloudAppConfig getFormData() {
+    public SpringCloudAppConfig getValue() {
         SpringCloudAppConfig appConfig = this.selectorApp.getValue().entity().getConfig();
         if (Objects.isNull(appConfig)) {
             appConfig = SpringCloudAppConfig.builder()
                 .deployment(SpringCloudDeploymentConfig.builder().build())
                 .build();
         }
-        this.getFormData(appConfig);
+        this.getValue(appConfig);
         return appConfig;
     }
 
-    public SpringCloudAppConfig getFormData(SpringCloudAppConfig appConfig) {
+    public SpringCloudAppConfig getValue(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         appConfig.setSubscriptionId(this.selectorSubscription.getValue().getId());
         appConfig.setClusterName(this.selectorCluster.getValue().name());

@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup> implements AzureForm<DraftResourceGroup> {
@@ -89,12 +89,12 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     }
 
     @Override
-    public DraftResourceGroup getFormData() {
+    public DraftResourceGroup getValue() {
         return data;
     }
 
     @Override
-    public void setFormData(DraftResourceGroup draft) {
+    public void setValue(DraftResourceGroup draft) {
         Optional.ofNullable(draft).ifPresent(draftGroup -> textName.setValue(draft.getName()));
     }
 

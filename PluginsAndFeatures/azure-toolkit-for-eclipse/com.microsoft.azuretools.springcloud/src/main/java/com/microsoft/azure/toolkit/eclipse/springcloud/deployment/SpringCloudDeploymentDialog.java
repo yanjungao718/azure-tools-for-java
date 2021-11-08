@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.eclipse.springcloud.deployment;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;

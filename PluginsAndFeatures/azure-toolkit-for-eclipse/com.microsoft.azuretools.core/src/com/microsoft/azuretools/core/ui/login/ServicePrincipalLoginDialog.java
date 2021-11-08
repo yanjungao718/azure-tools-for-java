@@ -6,11 +6,10 @@ package com.microsoft.azuretools.core.ui.login;
 
 import com.google.gson.JsonSyntaxException;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
-import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -38,7 +37,6 @@ import org.eclipse.swt.widgets.Text;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> {
@@ -82,14 +80,14 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
     private class ServicePrincipalLoginPanel extends Composite implements AzureForm<AuthConfiguration> {
         private final Button btnOpenFileButton;
-        private AtomicBoolean intermediateState = new AtomicBoolean(false);
-        private AzureTextInput txtTenantId;
-        private AzureTextInput txtClientId;
-        private AzureTextInput txtPassword;
-        private AzureTextInput txtCertificate;
-        private Text txtJson;
-        private Button radioPassword;
-        private Button radioCertificate;
+        private final AtomicBoolean intermediateState = new AtomicBoolean(false);
+        private final AzureTextInput txtTenantId;
+        private final AzureTextInput txtClientId;
+        private final AzureTextInput txtPassword;
+        private final AzureTextInput txtCertificate;
+        private final Text txtJson;
+        private final Button radioPassword;
+        private final Button radioCertificate;
 
         /**
          * Create the composite.
@@ -233,7 +231,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             txtPassword.setEnabled(!selection);
             List<AzureValidationInfo> infos = ServicePrincipalLoginDialog.this.doValidateAll();
             // workaround: clear validation information
-            getInputs().forEach(ctrl -> ((AzureFormInputControl) ctrl).setValidationInfo(AzureValidationInfo.OK));
+            getInputs().forEach(ctrl -> ctrl.setValidationInfo(AzureValidationInfo.success(ctrl)));
             setErrorInfoAll(infos);
             setOkButtonEnabled(infos.isEmpty());
         }
@@ -243,7 +241,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
                 return;
             }
             try {
-                AuthConfiguration newData = getFormData();
+                AuthConfiguration newData = getValue();
                 Map<String, String> map = new LinkedHashMap<>();
                 if (newData.getKey() == null) {
                     map.put("fileWithCertAndPrivateKey", newData.getCertificate());
@@ -290,7 +288,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
                 if (map.containsKey("fileWithCertAndPrivateKey")) {
                     newData.setCertificate(StringUtils.defaultString(map.get("fileWithCertAndPrivateKey")));
                 }
-                setFormData(newData);
+                setValue(newData);
             } catch (JsonSyntaxException ex) {
                 // ignore all json errors
             } finally {
@@ -308,7 +306,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         }
 
         @Override
-        public AuthConfiguration getFormData() {
+        public AuthConfiguration getValue() {
             AuthConfiguration data = new AuthConfiguration();
 
             data.setClient(txtClientId.getText());
@@ -323,7 +321,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         }
 
         @Override
-        public void setFormData(AuthConfiguration model) {
+        public void setValue(AuthConfiguration model) {
             this.txtTenantId.setText(StringUtils.defaultString(model.getTenant()));
             this.txtClientId.setText(StringUtils.defaultString(model.getClient()));
 
@@ -343,7 +341,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         public List<AzureValidationInfo> validateData() {
             List<AzureValidationInfo> list = new ArrayList<>();
             AzureTaskManager.getInstance().runAndWait(() -> {
-                list.addAll(this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList()));
+                list.addAll(this.validateAllInputs());
                 if (this.radioPassword.getSelection()) {
                     list.add(validateRequiredTemporarily(this.txtPassword));
                 } else {
@@ -356,7 +354,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         private AzureValidationInfo validateRequiredTemporarily(AzureFormInput<?> input) {
             try {
                 input.setRequired(true);
-                return input.doValidate();
+                return input.validateValue();
             } finally {
                 input.setRequired(false);
             }

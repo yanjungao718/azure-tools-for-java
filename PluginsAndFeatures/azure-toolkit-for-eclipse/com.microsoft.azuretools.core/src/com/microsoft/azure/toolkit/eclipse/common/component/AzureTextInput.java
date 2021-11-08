@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.component;
 
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import org.eclipse.swt.SWT;
@@ -14,22 +14,27 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
+import java.util.Objects;
+
 public class AzureTextInput extends Text implements AzureFormInputControl<String>, ModifyListener {
     protected static final int DEBOUNCE_DELAY = 300;
     private final Debouncer debouncer;
     private String value;
 
-    public AzureTextInput(Composite parent, int style) {
+    public AzureTextInput(Composite parent, Text comp, int style) {
         super(parent, style);
-        this.debouncer = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(() -> {
-            this.fireValueChangedEvent(this.getValue());
-            AzureTaskManager.getInstance().runInBackground("validating " + this.getLabel(), this::revalidateAndDecorate);
-        }), DEBOUNCE_DELAY);
-        this.addModifyListener(this);
+        this.trackValidation();
+        this.debouncer = new TailingDebouncer(() -> this.fireValueChangedEvent(this.getValue()), DEBOUNCE_DELAY);
+        Text text = Objects.isNull(comp) ? this.getInputControl() : comp;
+        text.addModifyListener(this);
+    }
+
+    public AzureTextInput(Composite parent, int style) {
+        this(parent, null, style);
     }
 
     public AzureTextInput(Composite parent) {
-        this(parent, SWT.BORDER);
+        this(parent, null, SWT.BORDER);
     }
 
     @Override
@@ -42,6 +47,7 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
         if (this.isDisposed()) {
             return;
         }
+        AzureFormInputControl.super.setValue(val);
         this.setText(val);
     }
 
@@ -49,6 +55,11 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
     public void modifyText(ModifyEvent modifyEvent) {
         this.value = this.getText();
         this.debouncer.debounce();
+    }
+
+    @Override
+    public Text getInputControl() {
+        return this;
     }
 
     @Override

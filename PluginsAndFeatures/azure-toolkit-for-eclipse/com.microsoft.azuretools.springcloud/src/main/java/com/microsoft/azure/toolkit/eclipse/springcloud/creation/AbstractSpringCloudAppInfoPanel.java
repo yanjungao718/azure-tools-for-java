@@ -12,7 +12,6 @@ import com.microsoft.azure.toolkit.eclipse.common.form.AzureFormPanel;
 import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -60,13 +59,12 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
         textName.setValue(this.defaultAppName);
         textName.setValidator(() -> {
             final String name = textName.getValue();
-            final AzureValidationInfoBuilder builder = AzureValidationInfo.builder().input(textName).type(AzureValidationInfo.Type.ERROR);
             if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-                return builder.message(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString()).build();
+                return AzureValidationInfo.error(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString(), textName);
             } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
-                return builder.message(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString()).build();
+                return AzureValidationInfo.error(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString(), textName);
             }
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(textName);
         });
         if (Objects.nonNull(this.cluster)) {
             selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));
@@ -74,40 +72,42 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
         }
     }
 
-    private void onSubscriptionChanged(final Subscription subscription) {
+    private void onSubscriptionChanged(@Nullable final Subscription subscription) {
         this.getSelectorCluster().setSubscription(subscription);
     }
 
-    private void onClusterChanged(final SpringCloudCluster c) {
+    private void onClusterChanged(@Nullable final SpringCloudCluster c) {
         final String appName = StringUtils.firstNonBlank(this.getTextName().getValue(), this.defaultAppName);
-        final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
-        this.onAppChanged(app);
+        if(Objects.nonNull(c)) {
+            final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
+            this.onAppChanged(app);
+        }
     }
 
     protected void onAppChanged(SpringCloudApp app) {
         if (Objects.isNull(this.originalConfig)) {
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 this.originalConfig = SpringCloudAppConfig.fromApp(app);
-                AzureTaskManager.getInstance().runLater(() -> this.setFormData(this.originalConfig));
+                AzureTaskManager.getInstance().runLater(() -> this.setValue(this.originalConfig));
             });
         }
     }
 
-    protected SpringCloudAppConfig getFormData(SpringCloudAppConfig config) {
+    protected SpringCloudAppConfig getValue(SpringCloudAppConfig config) {
         config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
         config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureResource::name).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;
     }
 
-    public SpringCloudAppConfig getFormData() {
+    public SpringCloudAppConfig getValue() {
         final SpringCloudAppConfig config = Optional.ofNullable(this.originalConfig)
-                .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
-        return getFormData(config);
+            .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
+        return getValue(config);
     }
 
     @Override
-    public synchronized void setFormData(final SpringCloudAppConfig config) {
+    public synchronized void setValue(final SpringCloudAppConfig config) {
         final Integer count = config.getDeployment().getInstanceCount();
         config.getDeployment().setInstanceCount(Objects.isNull(count) || count == 0 ? 1 : count);
         this.originalConfig = config;
