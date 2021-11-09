@@ -78,7 +78,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
 
     private void onClusterChanged(@Nullable final SpringCloudCluster c) {
         final String appName = StringUtils.firstNonBlank(this.getTextName().getValue(), this.defaultAppName);
-        if(Objects.nonNull(c)) {
+        if (Objects.nonNull(c)) {
             final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
             this.onAppChanged(app);
         }
