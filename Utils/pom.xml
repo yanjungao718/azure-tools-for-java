@@ -287,7 +287,18 @@
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock</artifactId>
+                <exclusions>
+                    <exclusion> <!--CVE-2021-27568-->
+                        <groupId>net.minidev</groupId>
+                        <artifactId>json-smart</artifactId>
+                    </exclusion>
+                </exclusions>
                 <version>2.27.2</version>
+            </dependency>
+            <dependency> <!--CVE-2021-27568-->
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>2.4.7</version>
             </dependency>
             <dependency>
                 <groupId>com.jcraft</groupId>
