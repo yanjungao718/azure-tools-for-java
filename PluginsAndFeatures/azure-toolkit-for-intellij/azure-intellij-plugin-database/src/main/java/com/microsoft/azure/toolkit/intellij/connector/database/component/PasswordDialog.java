@@ -16,10 +16,10 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.intellij.ui.messages.AzureBundle;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -99,7 +99,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
             testConnectionButton.setIcon(null);
             testConnectionButton.setEnabled(true);
         };
-        final String title = AzureBundle.message("azure.mysql.link.connection.title", this.database.getJdbcUrl().getServerHost());
+        final String title = AzureMessageBundle.message("azure.mysql.link.connection.title", this.database.getJdbcUrl().getServerHost()).toString();
         final AzureTask<Void> task = new AzureTask<>(null, title, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }

@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.ServerComboBox;
@@ -52,15 +53,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends IAzureResourceEntity> implements AzureFormJPanel<Database> {
+public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends IAzureResourceEntity> implements AzureFormJPanel<Resource<Database>> {
     @Getter
     private JPanel contentPanel;
     private SubscriptionComboBox subscriptionComboBox;
     protected ServerComboBox<S> serverComboBox;
     protected DatabaseComboBox<D, S> databaseComboBox;
     protected UsernameComboBox usernameComboBox;
-    private JPasswordField inputPasswordField;
-    private PasswordSaveComboBox passwordSaveComboBox;
+    protected JPasswordField inputPasswordField;
+    protected PasswordSaveComboBox passwordSaveComboBox;
     private JTextField urlTextField;
     private JButton testConnectionButton;
     private JTextPane testResultTextPane;
@@ -116,7 +117,7 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         final String username = usernameComboBox.getValue();
         final String password = String.valueOf(inputPasswordField.getPassword());
-        final String title = String.format("Connecting to Azure Database for MySQL (%s)...", jdbcUrl.getServerHost());
+        final String title = String.format("Connecting to Azure Database for PostgreSQL (%s)...", jdbcUrl.getServerHost());
         AzureTaskManager.getInstance().runInBackground(title, false, () -> {
             final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils.connectWithPing(this.jdbcUrl, username, password);
             // show result info
@@ -206,20 +207,8 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
     }
 
     @Override
-    public Database getValue() {
-        final Password password = new Password();
-        password.password(inputPasswordField.getPassword());
-        password.saveType(passwordSaveComboBox.getValue());
-
-        final Database db = createDatabase();
-        db.setPassword(password);
-        db.setUsername(usernameComboBox.getValue());
-        db.setJdbcUrl(this.jdbcUrl);
-        return db;
-    }
-
-    @Override
-    public void setValue(Database db) {
+    public void setValue(Resource<Database> dbDef) {
+        Database db = dbDef.getData();
         Optional.ofNullable(db.getServerId()).ifPresent((serverId -> {
             this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.subscriptionId(), Subscription::getId));
             this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.name(), server -> server.entity().getName()));
@@ -279,6 +268,21 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
             this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
                     Azure.az(AzureSqlServer.class).subscription(this.serverComboBox.getSubscription().getId()).list());
         }
+
+        @Override
+        public Resource<Database> getValue() {
+            final Password password = new Password();
+            password.password(inputPasswordField.getPassword());
+            password.saveType(passwordSaveComboBox.getValue());
+
+            final Database db = createDatabase();
+            db.setPassword(password);
+            db.setUsername(usernameComboBox.getValue());
+            db.setJdbcUrl(this.jdbcUrl);
+            return DatabaseResource.Definition.SQL_SERVER.define(db);
+        }
+
+
     }
 
     public static class MySQLDatabaseResourcePanel extends DatabaseResourcePanel<MySqlServer, MySqlDatabaseEntity> {
@@ -290,5 +294,20 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
                     .map(s -> Azure.az(AzureMySql.class).subscription(s.getId()).list())
                     .orElse(Collections.emptyList()));
         }
+
+        @Override
+        public Resource<Database> getValue() {
+            final Password password = new Password();
+            password.password(inputPasswordField.getPassword());
+            password.saveType(passwordSaveComboBox.getValue());
+
+            final Database db = createDatabase();
+            db.setPassword(password);
+            db.setUsername(usernameComboBox.getValue());
+            db.setJdbcUrl(this.jdbcUrl);
+            return DatabaseResource.Definition.AZURE_MYSQL.define(db);
+        }
+
+
     }
 }
