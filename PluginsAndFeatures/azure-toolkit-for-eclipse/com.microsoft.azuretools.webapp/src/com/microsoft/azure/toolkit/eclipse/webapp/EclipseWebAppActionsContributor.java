@@ -37,12 +37,16 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.IDE;
 
+import com.microsoft.azure.toolkit.eclipse.webapp.handlers.WebAppLogStreamingHandler;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -198,6 +202,15 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
             }
         });
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
+
+        final BiPredicate<IAppService<?>, Object> logStreamingPredicate = (r, e) -> r instanceof IWebAppBase<?>;
+        final BiConsumer<IAppService<?>, Object> startLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
+                .startLogStreaming((IWebAppBase<?>) c);
+        am.registerHandler(WebAppActionsContributor.START_STREAM_LOG, logStreamingPredicate, startLogStreamingHandler);
+
+        final BiConsumer<IAppService<?>, Object> stopLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
+                .stopLogStreaming((IWebAppBase<?>) c);
+        am.registerHandler(WebAppActionsContributor.STOP_STREAM_LOG, logStreamingPredicate, stopLogStreamingHandler);
     }
 
     private void openEditor(EditorType type, IEditorInput input, IEditorDescriptor descriptor) {
