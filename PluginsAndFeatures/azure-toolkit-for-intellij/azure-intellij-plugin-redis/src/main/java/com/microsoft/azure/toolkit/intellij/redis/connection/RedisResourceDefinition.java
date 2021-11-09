@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -35,7 +36,8 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     }
 
     @Override
-    public Map<String, String> initEnv(RedisCache redis, Project project) {
+    public Map<String, String> initEnv(AzureServiceResource<RedisCache> redisDef, Project project) {
+        RedisCache redis = redisDef.getData();
         final HashMap<String, String> env = new HashMap<>();
         env.put(String.format("%s_HOST", Connection.ENV_PREFIX), redis.entity().getHostName());
         env.put(String.format("%s_PORT", Connection.ENV_PREFIX), String.valueOf(redis.entity().getSSLPort()));
@@ -61,7 +63,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     }
 
     @Override
-    public AzureFormJPanel<RedisCache> getResourcePanel(Project project) {
+    public AzureFormJPanel<Resource<RedisCache>> getResourcePanel(Project project) {
         return new RedisResourcePanel();
     }
 

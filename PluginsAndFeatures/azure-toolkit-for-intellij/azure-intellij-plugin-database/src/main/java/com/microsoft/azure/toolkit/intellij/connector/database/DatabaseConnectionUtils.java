@@ -25,6 +25,7 @@ import java.util.Collections;
 public class DatabaseConnectionUtils {
 
     private static final String SQL_SERVER_URL_PREFIX = "jdbc:sqlserver:";
+    private static final String POSTGRE_URL_PREFIX = "jdbc:postgresql:";
     private static final String CONNECTION_ISSUE_MESSAGE = "%s Please follow https://docs.microsoft.com/en-us/azure/mysql/howto-manage-firewall-using-portal "
             + "to create a firewall rule to unblock your local access.";
     private static final int CONNECTION_ERROR_CODE = 9000;
@@ -85,8 +86,11 @@ public class DatabaseConnectionUtils {
     }
 
     private static String getDriverClassName(JdbcUrl url) {
-        if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
+        String jdbcUrl = url.toString();
+        if (StringUtils.startsWith(jdbcUrl, SQL_SERVER_URL_PREFIX)) {
             return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        } else if (StringUtils.startsWith(jdbcUrl, POSTGRE_URL_PREFIX)) {
+            return "org.postgresql.Driver";
         } else {
             return "com.mysql.cj.jdbc.Driver";
         }

@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class RedisResourcePanel implements AzureFormJPanel<RedisCache> {
+public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>> {
     protected SubscriptionComboBox subscriptionComboBox;
     protected AzureComboBox<RedisCache> redisComboBox;
     @Getter
@@ -47,7 +48,8 @@ public class RedisResourcePanel implements AzureFormJPanel<RedisCache> {
     }
 
     @Override
-    public void setValue(RedisCache account) {
+    public void setValue(Resource<RedisCache> accountDef) {
+        final RedisCache account = accountDef.getData();
         Optional.ofNullable(account).ifPresent((a -> {
             this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId));
             this.redisComboBox.setValue(new ItemReference<>(a.name(), RedisCache::name));
@@ -55,8 +57,8 @@ public class RedisResourcePanel implements AzureFormJPanel<RedisCache> {
     }
 
     @Override
-    public RedisCache getValue() {
-        return this.redisComboBox.getValue();
+    public Resource<RedisCache> getValue() {
+        return RedisResourceDefinition.INSTANCE.define(this.redisComboBox.getValue());
     }
 
     @Override

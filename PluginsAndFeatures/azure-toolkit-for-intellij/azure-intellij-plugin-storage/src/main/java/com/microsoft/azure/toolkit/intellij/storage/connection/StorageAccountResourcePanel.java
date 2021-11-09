@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccount> {
+public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<StorageAccount>> {
     protected SubscriptionComboBox subscriptionComboBox;
     protected AzureComboBox<StorageAccount> accountComboBox;
     @Getter
@@ -47,7 +48,8 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
     }
 
     @Override
-    public void setValue(StorageAccount account) {
+    public void setValue(Resource<StorageAccount> accountResource) {
+        StorageAccount account = accountResource.getData();
         Optional.ofNullable(account).ifPresent((a -> {
             this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId));
             this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name));
@@ -55,8 +57,8 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
     }
 
     @Override
-    public StorageAccount getValue() {
-        return this.accountComboBox.getValue();
+    public Resource<StorageAccount> getValue() {
+        return StorageAccountResourceDefinition.INSTANCE.define(this.accountComboBox.getValue());
     }
 
     @Override

@@ -45,10 +45,10 @@ public interface ResourceDefinition<T> {
      * get resource selection panel<br>
      * with this panel, user could select/create a {@link T} resource.
      */
-    AzureFormJPanel<T> getResourcePanel(final Project project);
+    AzureFormJPanel<Resource<T>> getResourcePanel(final Project project);
 
     /**
-     * write/serialize {@code resouce} to {@code element} for persistence
+     * write/serialize {@code resource} to {@code element} for persistence
      *
      * @return true if to persist, false otherwise
      */

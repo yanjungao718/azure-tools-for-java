@@ -135,7 +135,7 @@ public class DatabaseResource implements Resource<Database> {
         private final String title;
         private final String icon;
         @Getter(AccessLevel.NONE)
-        private final Supplier<AzureFormJPanel<Database>> panelSupplier;
+        private final Supplier<AzureFormJPanel<Resource<Database>>> panelSupplier;
 
         @Override
         public Resource<Database> define(Database resource) {
@@ -143,7 +143,7 @@ public class DatabaseResource implements Resource<Database> {
         }
 
         @Override
-        public AzureFormJPanel<Database> getResourcePanel(Project project) {
+        public AzureFormJPanel<Resource<Database>> getResourcePanel(Project project) {
             return this.panelSupplier.get();
         }
 
