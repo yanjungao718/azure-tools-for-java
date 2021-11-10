@@ -17,9 +17,6 @@ public class TestCredentials extends ApplicationTokenCredentials {
 
     @Override
     public String getToken(String resource) throws IOException {
-        if (!IntegrationTestBase.IS_MOCKED) {
-            // TODO: non-mock case;
-        }
         return "https:/asdd.com";
     }
 }
