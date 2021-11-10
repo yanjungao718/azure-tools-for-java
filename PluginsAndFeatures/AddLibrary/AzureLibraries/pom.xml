@@ -108,7 +108,6 @@
           </execution>
         </executions>
         <configuration>
-          <excludeDependencies>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeDependencies>
           <instructions>
             <Bundle-SymbolicName>com.microsoft.azuretools.sdk;singleton:=true</Bundle-SymbolicName>
             <Bundle-Version>${azuretool.sdk.version}</Bundle-Version>
@@ -188,22 +187,7 @@
               <overWriteReleases>true</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>provided</includeScope> <!-- provided scope will not be package in shade jar -->
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-eclipse-resources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.basedir}/../../azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources</outputDirectory>
-              <overWriteReleases>true</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <stripVersion>true</stripVersion>
-              <includeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</includeArtifactIds>
+              <includeScope>provided</includeScope> <!-- provided scope dependencies will not be package in shade jar -->
             </configuration>
           </execution>
         </executions>
