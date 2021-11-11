@@ -68,7 +68,7 @@ public class MavenRunTaskUtil {
     }
 
     public static String getTargetPath(MavenProject mavenProject) {
-        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator + 
+        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator +
                 mavenProject.getFinalName() + "." + mavenProject.getPackaging();
     }
 
