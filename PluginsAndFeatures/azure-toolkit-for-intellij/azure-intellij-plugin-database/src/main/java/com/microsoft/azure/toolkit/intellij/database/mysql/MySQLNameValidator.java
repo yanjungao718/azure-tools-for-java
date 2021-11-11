@@ -8,7 +8,6 @@ import com.microsoft.azure.toolkit.intellij.database.BaseNameValidator;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
-import lombok.RequiredArgsConstructor;
 
 public class MySQLNameValidator extends BaseNameValidator {
 

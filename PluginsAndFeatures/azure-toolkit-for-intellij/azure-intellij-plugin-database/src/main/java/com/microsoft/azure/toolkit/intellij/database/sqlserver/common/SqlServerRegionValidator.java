@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.intellij.database.BaseRegionValidator;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
-import lombok.RequiredArgsConstructor;
 
 public class SqlServerRegionValidator extends BaseRegionValidator {
 
