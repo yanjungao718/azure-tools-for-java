@@ -165,4 +165,9 @@ task buildAll {
     }
 }
 
+wrapper() {
+    gradleVersion = '6.9'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
 defaultTasks 'buildAll'

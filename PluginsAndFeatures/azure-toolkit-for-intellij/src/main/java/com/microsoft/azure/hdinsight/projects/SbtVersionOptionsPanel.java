@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.ComboBox;
 import org.jetbrains.plugins.scala.project.Versions;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import scala.reflect.ClassTag;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +37,7 @@ public class SbtVersionOptionsPanel extends JPanel implements ILogger {
     public void updateSbtVersions() {
         final String[][] versions = new String[1][1];
         ProgressManager.getInstance().runProcess(() -> {
-            versions[0] = Versions.SBT$.MODULE$.apply().versions();
+            versions[0] = (String[]) Versions.SBT$.MODULE$.loadVersionsWithProgress().versions().toArray(ClassTag.apply(String.class));
         }, null);
 
         for (String version : versions[0]) {
