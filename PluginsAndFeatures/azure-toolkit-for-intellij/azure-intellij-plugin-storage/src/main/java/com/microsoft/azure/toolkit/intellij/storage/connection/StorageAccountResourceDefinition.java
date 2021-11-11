@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -35,7 +36,8 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     }
 
     @Override
-    public Map<String, String> initEnv(StorageAccount account, Project project) {
+    public Map<String, String> initEnv(AzureServiceResource<StorageAccount> accountDef, Project project) {
+        final StorageAccount account = accountDef.getData();
         final String conString = account.getConnectionString();
         final HashMap<String, String> env = new HashMap<>();
         env.put(String.format("%s_CONNECTION_STRING", Connection.ENV_PREFIX), conString);
@@ -63,7 +65,7 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     }
 
     @Override
-    public AzureFormJPanel<StorageAccount> getResourcePanel(Project project) {
+    public AzureFormJPanel<Resource<StorageAccount>> getResourcePanel(Project project) {
         return new StorageAccountResourcePanel();
     }
 

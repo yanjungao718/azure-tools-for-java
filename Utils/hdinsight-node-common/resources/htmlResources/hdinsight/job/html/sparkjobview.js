@@ -43,8 +43,13 @@ function initiate() {
     }
 }
 
-function commandBinding() {
-    $('#JobHistoryTbody').on('click', 'tr', function () {
+function isEnterKeyPressedEvent(event) {
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    return keycode === 13
+}
+
+function onApplicationListRowSelected(event) {
+    if (event.type === "click" || isEnterKeyPressedEvent(event)) {
         // clean all generated values
         spark.isJobGraphGenerated = false;
         spark.currentSelectedJobs = null;
@@ -68,7 +73,7 @@ function commandBinding() {
 
         //get Application Id
         spark.appId = $(this).find('td:eq(1)').text();
-        spark.selectedApp = spark.applicationList.filter(function(item) {
+        spark.selectedApp = spark.applicationList.filter(function (item) {
             return item.id === spark.appId;
         })[0];
         // get last attempt
@@ -94,7 +99,16 @@ function commandBinding() {
         // setDebugInfo("end livy log");
         // setJobDetail();
         // setStoredRDD();
+    }
+}
 
+function commandBinding() {
+    $('#JobHistoryTbody').on('click', 'tr', function (event) {
+        onApplicationListRowSelected.apply(this, [event]);
+    });
+
+    $('#JobHistoryTbody').on('keypress', 'tr', function (event) {
+        onApplicationListRowSelected.apply(this, [event]);
     });
 
     $('#sparkEventButton').click(function () {
@@ -113,10 +127,10 @@ function commandBinding() {
         sendActionSingle("/actions/yarnui");
     });
 
-    $("#refreshButton").click(function () {
-        location.reload();
-        refreshGetSelectedApplication();
-    });
+    // $("#refreshButton").click(function () {
+    //     location.reload();
+    //     refreshGetSelectedApplication();
+    // });
 
     $('#jobGraphBackButton').click(function() {
         $('#applicationGraphDiv').removeClass('graph-disabled');
@@ -151,6 +165,7 @@ function getBasicInfoFromUrl() {
 function getJobHistory() {
     getMessageAsync("/applications/", 'spark', function (s) {
         writeToTable(s);
+        initilizeGrid();
         refreshGetSelectedApplication();
     });
 }
@@ -191,12 +206,19 @@ function writeToTable(message) {
         .enter()
         .append('td')
         .attr('class',"ui-widget-content")
+        .attr('tabindex',"-1")
         .attr('id',function(d,i) {
             return i;
         })
         .html(function(d, i) {
             return d;
         });
+}
+
+function initilizeGrid() {
+    var leftDiv = document.getElementById('leftDiv');
+    var leftDivGrid = new aria.Grid(leftDiv.querySelector('[role="grid"]'));
+    leftDivGrid.focusCell(0, 0)
 }
 
 function appInformationList(app) {
@@ -305,6 +327,7 @@ function renderApplicationGraph() {
             return left['Job ID'] > right['Job ID'];
         });
 
+        initJobViewContext();
         renderJobGraphOnApplicationLevel(spark.currentSelectedJobs);
     }, spark.appId);
 }

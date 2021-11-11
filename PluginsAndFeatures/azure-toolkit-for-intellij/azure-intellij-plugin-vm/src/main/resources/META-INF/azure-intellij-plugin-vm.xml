@@ -1,4 +1,5 @@
 <idea-plugin>
+    <depends optional="true" config-file="azure-intellij-plugin-vm-ultimate.xml">com.intellij.modules.ssh</depends>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.vm.VirtualMachineExplorerContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor"/>

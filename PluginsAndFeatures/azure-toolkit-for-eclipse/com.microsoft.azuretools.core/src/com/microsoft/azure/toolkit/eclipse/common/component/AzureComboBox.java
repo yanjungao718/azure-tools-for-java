@@ -62,10 +62,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     public AzureComboBox(Composite parent, @Nullable Supplier<? extends List<? extends T>> itemsLoader, boolean refresh) {
         super(parent, SWT.NONE);
         this.itemsLoader = itemsLoader;
-        this.valueDebouncer = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(() -> {
-            this.fireValueChangedEvent(this.getValue());
-            AzureTaskManager.getInstance().runInBackground("validating " + this.getLabel(), this::revalidateAndDecorate);
-        }), DEBOUNCE_DELAY);
+        this.valueDebouncer = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(() -> this.fireValueChangedEvent(this.getValue())), DEBOUNCE_DELAY);
         this.setupUI();
         this.init();
         if (refresh) {
@@ -80,6 +77,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
             }
             this.valueDebouncer.debounce();
         });
+        this.trackValidation();
     }
 
     protected void setupUI() {
@@ -135,7 +133,6 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
             this.setEditable(!f);
         });
         this.valueNotSet = false;
-        Object oldVal = this.value;
         this.value = val;
         this.refreshValue();
     }
@@ -179,6 +176,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
             } else {
                 this.viewer.setSelectedItem(null);
             }
+            this.valueDebouncer.debounce();
         }
     }
 

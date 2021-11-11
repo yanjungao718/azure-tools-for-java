@@ -24,24 +24,42 @@ package com.microsoft.intellij.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
+import com.intellij.openapi.ui.Messages
+import com.intellij.util.ui.UIUtil
 import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.intellij.ui.BypassCertificateVerificationWarningForm
-import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 class DisableSslCertificateValidationAction : AzureAnAction(), Toggleable {
+    private val warningPrompt: String =
+            """
+By clicking on the 'Disable' option, the IntelliJ Azure Toolkit will bypass Spark cluster 
+security certificate verification when connecting to Spark clusters. Validation for the 
+following certificate issues(but not limited to) will be skipped.
+
+  1) The security certificate is from an untrusted certifying authority.
+  2) The security certificate is expired.
+  3) The security certificate is invalid.
+  4) The name on the security certificate is invalid or does not match the name of the site.
+            """.trimIndent()
+
     override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         try {
             if (!isActionEnabled()) {
-                val form = object : BypassCertificateVerificationWarningForm(anActionEvent.project) {
-                    override fun doOKAction() {
-                        anActionEvent.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
-                        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
-                        super.doOKAction()
-                    }
+                val messageResult = Messages.showYesNoDialog(
+                        anActionEvent.project,
+                        warningPrompt,
+                        "Disable SSL Certificate Verification",
+                        "Proceed",
+                        "Cancel",
+                        UIUtil.getWarningIcon()
+                )
+
+                if (messageResult == Messages.YES) {
+                    anActionEvent.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
+                    DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
                 }
-                form.show()
             } else {
                 anActionEvent.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
                 DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())

@@ -58,14 +58,14 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         selectorCluster.addItemListener(this::onClusterChanged);
         textName.setRequired(true);
         textName.setValue(this.defaultAppName);
-        textName.setValidator(() -> {
+        textName.addValidator(() -> {
             try {
                 validateSpringCloudAppName(textName.getValue(), this.cluster);
             } catch (final IllegalArgumentException e) {
                 final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
             }
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(this);
         });
         if (Objects.nonNull(this.cluster)) {
             selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));
@@ -84,8 +84,10 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final SpringCloudCluster c = (SpringCloudCluster) e.getItem();
             final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
-            final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
-            this.onAppChanged(app);
+            if (Objects.nonNull(c)) {
+                final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
+                this.onAppChanged(app);
+            }
         }
     }
 
@@ -93,26 +95,27 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         if (Objects.isNull(this.originalConfig)) {
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 this.originalConfig = SpringCloudAppConfig.fromApp(app);
-                AzureTaskManager.getInstance().runLater(() -> this.setData(this.originalConfig));
+                AzureTaskManager.getInstance().runLater(() -> this.setValue(this.originalConfig));
             });
         }
     }
 
-    protected SpringCloudAppConfig getData(SpringCloudAppConfig config) {
+    protected SpringCloudAppConfig getValue(SpringCloudAppConfig config) {
         config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
         config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureResource::name).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;
     }
 
-    public SpringCloudAppConfig getData() {
+    @Override
+    public SpringCloudAppConfig getValue() {
         final SpringCloudAppConfig config = Optional.ofNullable(this.originalConfig)
                 .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
-        return getData(config);
+        return getValue(config);
     }
 
     @Override
-    public synchronized void setData(final SpringCloudAppConfig config) {
+    public synchronized void setValue(final SpringCloudAppConfig config) {
         final Integer count = config.getDeployment().getInstanceCount();
         config.getDeployment().setInstanceCount(Objects.isNull(count) || count == 0 ? 1 : count);
         this.originalConfig = config;

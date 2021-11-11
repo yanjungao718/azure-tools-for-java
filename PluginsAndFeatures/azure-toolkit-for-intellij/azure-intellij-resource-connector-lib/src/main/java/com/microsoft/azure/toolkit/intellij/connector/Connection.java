@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -88,7 +89,9 @@ public class Connection<R, C> {
                         Map.Entry::getValue));
         if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
             final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
-            webAppConfiguration.setApplicationSettings(this.env);
+            final Map<String, String> settings = Optional.ofNullable(webAppConfiguration.getApplicationSettings()).orElse(new HashMap<>());
+            settings.putAll(this.env);
+            webAppConfiguration.setApplicationSettings(settings);
         }
         return true;
     }

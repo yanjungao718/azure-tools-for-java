@@ -24,10 +24,8 @@ public class GuidAzureTextInput extends AzureTextInput {
         final String value = this.getValue();
         // validate regex
         if (!GUID_PATTERN.matcher(value).matches()) {
-            return AzureValidationInfo.builder().input(this)
-                    .message("Guid must match regex:" + GUID_REGEX)
-                    .type(AzureValidationInfo.Type.ERROR).build();
+            return AzureValidationInfo.error("Guid must match regex:" + GUID_REGEX, this);
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }

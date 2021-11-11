@@ -22,7 +22,7 @@ public class AppNameInput extends AzureTextInput {
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
             this.subscription = subscription;
-            this.revalidateValue();
+            this.validateValueAsync();
         }
     }
 
@@ -34,6 +34,6 @@ public class AppNameInput extends AzureTextInput {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }

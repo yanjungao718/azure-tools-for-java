@@ -54,6 +54,6 @@ public class ResourceGroupNameTextField extends AzureTextInput {
         } catch (CloudException e) {
             return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }
