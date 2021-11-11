@@ -54,7 +54,7 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
 
     @Override
     public Map<String, String> initEnv(Project project) {
-        return this.definition.initEnv(this.getData(), project);
+        return this.definition.initEnv(this, project);
     }
 
     @Override
@@ -111,6 +111,6 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
             return this.getTitle();
         }
 
-        public abstract Map<String, String> initEnv(T data, Project project);
+        public abstract Map<String, String> initEnv(AzureServiceResource<T> data, Project project);
     }
 }

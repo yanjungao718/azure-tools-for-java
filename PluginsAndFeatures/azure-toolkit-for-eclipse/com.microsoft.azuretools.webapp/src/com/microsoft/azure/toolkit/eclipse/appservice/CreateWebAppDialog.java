@@ -26,10 +26,10 @@ import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionAndResourceGroupComposite;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.resourcegroup.DraftResourceGroup;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -99,7 +99,7 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
     }
 
     @Override
-    public AppServiceConfig getFormData() {
+    public AppServiceConfig getValue() {
         final AppServicePlanEntity entity = appServicePlanPanel.getServicePlan();
         return new AppServiceConfig().subscriptionId(subsAndResourceGroupPanel.getSubscription().getId())
                 .resourceGroup(subsAndResourceGroupPanel.getResourceGroup().getName())
@@ -113,7 +113,7 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
     }
 
     @Override
-    public void setFormData(AppServiceConfig config) {
+    public void setValue(AppServiceConfig config) {
         Optional.ofNullable(config.subscriptionId()).ifPresent(
                 subscription -> subsAndResourceGroupPanel.getSubscriptionComboBox().setValue(new ItemReference<>(
                         value -> StringUtils.equalsIgnoreCase(value.getId(), config.subscriptionId()))));
@@ -152,7 +152,7 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
 
     @Override
     public int open() {
-        Optional.ofNullable(config).ifPresent(config -> AzureTaskManager.getInstance().runLater(() -> setFormData(config)));
+        Optional.ofNullable(config).ifPresent(config -> AzureTaskManager.getInstance().runLater(() -> setValue(config)));
         return super.open();
     }
 

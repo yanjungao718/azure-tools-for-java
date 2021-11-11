@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
@@ -70,7 +69,7 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
         text = new AzureTextInput(this, SWT.BORDER);
         text.setRequired(true);
         text.setLabeledBy(lblNewLabel);
-        text.setValidator(this::validateAppName);
+        text.addValidator(this::validateAppName);
         text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label azureSuffixLabel = new Label(this, SWT.NONE);
@@ -115,13 +114,12 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
 
     public AzureValidationInfo validateAppName() {
         if (subscription == null) {
-            return AzureValidationInfo.OK;
+            return AzureValidationInfo.success(text);
         }
         CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class)
                 .checkNameAvailability(subscription.getId(), text.getValue());
-        return result.isAvailable() ? AzureValidationInfo.OK
-                : AzureValidationInfo.builder().input(text).message(result.getUnavailabilityReason()).type(Type.ERROR)
-                        .build();
+        return result.isAvailable() ? AzureValidationInfo.success(text)
+                : AzureValidationInfo.error(result.getUnavailabilityReason(), text);
     }
 
     @Override

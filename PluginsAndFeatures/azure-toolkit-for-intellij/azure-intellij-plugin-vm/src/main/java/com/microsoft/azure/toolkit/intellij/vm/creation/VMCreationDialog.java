@@ -135,8 +135,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.project = project;
 
         $$$setupUI$$$();
-        pnlPorts.addActionListenerToComponents(e -> pnlBasicPorts.setData(pnlPorts.getData()));
-        pnlBasicPorts.addActionListenerToComponents(e -> pnlPorts.setData(pnlBasicPorts.getData()));
+        pnlPorts.addActionListenerToComponents(e -> pnlBasicPorts.setValue(pnlPorts.getValue()));
+        pnlBasicPorts.addActionListenerToComponents(e -> pnlPorts.setValue(pnlBasicPorts.getValue()));
         init();
     }
 
@@ -332,9 +332,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.txtMaximumPrice = new AzureTextInput();
 
         this.txtPassword = new JPasswordField();
-        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword, true);
+        this.passwordFieldInput = new AzurePasswordFieldInput(txtPassword);
         this.txtConfirmPassword = new JPasswordField();
-        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword, true);
+        this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
 
         this.cbSubscription.refreshItems();
     }
@@ -350,7 +350,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public DraftVirtualMachine getData() {
+    public DraftVirtualMachine getValue() {
         final Subscription subscription = cbSubscription.getValue();
         final String subscriptionId = Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
         final ResourceGroup resourceGroup = cbResourceGroup.getValue();
@@ -399,7 +399,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             draftNetworkSecurityGroup.setResourceGroup(resourceGroupName);
             draftNetworkSecurityGroup.setName(vmName + "-sg" + Utils.getTimestamp());
             draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
-            draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getData());
+            draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getValue());
             draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
         }
         draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
@@ -423,7 +423,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public void setData(DraftVirtualMachine data) {
+    public void setValue(DraftVirtualMachine data) {
         Optional.ofNullable(data.getResourceGroup()).ifPresent(groupName -> cbResourceGroup.setValue(
                 new AzureComboBox.ItemReference<>(group -> StringUtils.equalsIgnoreCase(group.getName(), groupName))));
         Optional.ofNullable(data.getSubscriptionId()).ifPresent(id -> cbSubscription.setValue(
@@ -443,8 +443,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
                 rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
-                pnlPorts.setData(securityRuleList);
-                pnlBasicPorts.setData(securityRuleList);
+                pnlPorts.setValue(securityRuleList);
+                pnlBasicPorts.setValue(securityRuleList);
             } else if (networkSecurityGroup.exists()) {
                 rdoAdvancedSecurityGroup.setSelected(true);
                 cbSecurityGroup.setData(networkSecurityGroup);
@@ -493,7 +493,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must start with a letter, " +
                     "contain only letters, numbers, and hyphens, and end with a letter or number.").type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     private AzureValidationInfo validateMaximumPricing() {
@@ -502,7 +502,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         } catch (final NumberFormatException e) {
             return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The value must be a valid number.").build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     private AzureValidationInfo validatePassword() {
@@ -512,7 +512,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The password does not conform to complexity requirements. \n" +
                     "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.").build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     enum SecurityGroupPolicy {

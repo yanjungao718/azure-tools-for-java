@@ -6,22 +6,22 @@
 package com.microsoft.azure.toolkit.ide.common.components;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureFormInputControl;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.widgets.Shell;
 import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
 public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
 
-    public static final String CONTROL_DECORATOR = "azure_validation_decorator";
     private Disposable subscription;
+    private int validationDelay = 300;
 
     public AzDialogWrapper(Shell parentShell) {
         super(parentShell);
@@ -50,18 +50,26 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
 
     @Override
     protected final void okPressed() {
-        final AzureTask<Void> task = new AzureTask<>(AzureString.fromString("validating..."), () -> {
-            if (doValidateAll().isEmpty()) {
-                AzureTaskManager.getInstance().runLater(this::doOkAction);
-            }
-        });
-        task.setBackgroundable(false);
-        AzureTaskManager.getInstance().runInModal(task);
+        if (validateAll()) {
+            this.doOkAction();
+        }
+    }
+
+    private boolean validateAll() {
+        final List<AzureValidationInfo> errors = this.doValidateAll();
+        boolean valid = Objects.isNull(errors) || errors.isEmpty();
+        AzureTaskManager.getInstance().runLater(() -> setErrorInfoAll(errors));
+        if (!valid) {
+            this.subscription = Mono.delay(Duration.ofMillis(this.validationDelay))
+                    .map(n -> this.validateAll())
+                    .onErrorStop().subscribe();
+        }
+        return valid;
     }
 
     protected final void setErrorInfoAll(List<AzureValidationInfo> infos) {
-        //        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
-        //        this.setErrorMessage(titleErrorMessage);
+        final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
+        this.setErrorMessage(titleErrorMessage);
         for (AzureValidationInfo info : infos) {
             final AzureFormInputControl<?> input = (AzureFormInputControl<?>) info.getInput();
             input.setValidationInfo(info);
@@ -71,6 +79,10 @@ public abstract class AzDialogWrapper<T> extends TitleAreaDialog {
     public abstract AzureForm<T> getForm();
 
     protected abstract List<AzureValidationInfo> doValidateAll();
+
+    public void setValidationDelay(int delay) {
+        this.validationDelay = delay;
+    }
 
     public void setOkButtonEnabled(boolean enabled) {
         this.getButton(0).setEnabled(enabled);

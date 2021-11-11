@@ -81,7 +81,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
     }
 
     public void reset() {
-        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.originalConfig).ifPresent(this::setFormData));
+        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.originalConfig).ifPresent(this::setValue));
     }
 
     public void setDataChangedListener(Consumer<? super SpringCloudAppConfig> listener) {
@@ -90,7 +90,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 
     private void onDataChanged() {
         if (Objects.nonNull(this.originalConfig) && Objects.nonNull(this.listener)) {
-            final SpringCloudAppConfig newConfig = this.getFormData();
+            final SpringCloudAppConfig newConfig = this.getValue();
             this.listener.accept(newConfig);
         }
     }
@@ -122,7 +122,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
         });
     }
 
-    public SpringCloudAppConfig getFormData(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
+    public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final String javaVersion = this.useJava11.getSelection() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
         appConfig.setIsPublic(this.toggleEndpoint.getSelection());
@@ -145,7 +145,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
     }
 
     @Override
-    public synchronized void setFormData(SpringCloudAppConfig config) {
+    public synchronized void setValue(SpringCloudAppConfig config) {
         this.originalConfig = config;
         final SpringCloudDeploymentConfig deployment = config.getDeployment();
         this.toggle(this.toggleEndpoint, config.getIsPublic());
@@ -167,11 +167,12 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
     }
 
     @Nonnull
-    public SpringCloudAppConfig getFormData() {
+    @Override
+    public SpringCloudAppConfig getValue() {
         final SpringCloudAppConfig appConfig = SpringCloudAppConfig.builder()
             .deployment(SpringCloudDeploymentConfig.builder().build())
             .build();
-        this.getFormData(appConfig);
+        this.getValue(appConfig);
         return appConfig;
     }
 

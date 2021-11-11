@@ -34,10 +34,7 @@ public class AccountNameTextField extends AzureTextInput {
     }
 
     @Nonnull
-    public AzureValidationInfo doValidateValue() {
-        if (StringUtils.isBlank(subscriptionId)) {
-            return AzureValidationInfo.UNINITIALIZED;
-        }
+    private AzureValidationInfo doValidateValue() {
         final String value = this.getValue();
         // validate length
         if (StringUtils.length(value) < minLength || StringUtils.length(value) > maxLength) {
@@ -65,6 +62,6 @@ public class AccountNameTextField extends AzureTextInput {
             }
             return AzureValidationInfo.builder().input(this).message(message).type(AzureValidationInfo.Type.ERROR).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 }

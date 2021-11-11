@@ -60,7 +60,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
             final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
         }
-        return AzureValidationInfo.OK;
+        return AzureValidationInfo.success(this);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
-    public DraftServicePlan getData() {
+    public DraftServicePlan getValue() {
         return new DraftServicePlan(this.subscription,
                this.textName.getValue(),
                this.region,
@@ -89,7 +89,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
-    public void setData(final DraftServicePlan data) {
+    public void setValue(final DraftServicePlan data) {
         this.subscription = data.getSubscription();
         this.os = data.getOperatingSystem();
         this.region = Region.fromName(data.getRegion());

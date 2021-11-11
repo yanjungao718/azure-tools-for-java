@@ -135,7 +135,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
             if (servicePrincipalLoginDialog.open() == Window.CANCEL) {
                 throw new InterruptedException("user cancel");
             }
-            auth = servicePrincipalLoginDialog.getForm().getFormData();
+            auth = servicePrincipalLoginDialog.getForm().getValue();
         }
         return auth;
     }

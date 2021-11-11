@@ -8,8 +8,8 @@ package com.microsoft.azure.toolkit.eclipse.appservice.serviceplan;
 import com.microsoft.azure.toolkit.eclipse.appservice.PricingTierCombobox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -101,12 +101,12 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
     }
 
     @Override
-    public DraftServicePlan getFormData() {
+    public DraftServicePlan getValue() {
         return data;
     }
 
     @Override
-    public void setFormData(DraftServicePlan draft) {
+    public void setValue(DraftServicePlan draft) {
         Optional.ofNullable(draft).ifPresent(value -> {
             text.setValue(value.getName());
             pricingTierCombobox.setValue(value.getPricingTier());

@@ -28,7 +28,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -116,7 +116,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         });
 
         if (ui.showAndGet()) {
-            return ui.getData();
+            return ui.getValue();
         }
         return null;
     }
