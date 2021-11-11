@@ -13,6 +13,8 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.packaging.artifacts.ArtifactType;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -22,10 +24,10 @@ import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MavenRunTaskUtil {
 
@@ -45,8 +47,7 @@ public class MavenRunTaskUtil {
             if (MavenRunTaskUtil.shouldAddMavenPackageTask(tasks, runConfiguration.getProject())) {
                 MavenBeforeRunTask task = new MavenBeforeRunTask();
                 task.setEnabled(true);
-                task.setProjectPath(runConfiguration.getProject().getBasePath() + File.separator
-                        + MavenConstants.POM_XML);
+                task.setProjectPath(runConfiguration.getProject().getBasePath() + File.separator + MavenConstants.POM_XML);
                 task.setGoal(MAVEN_TASK_PACKAGE);
                 tasks.add(task);
                 manager.setBeforeRunTasks(runConfiguration, tasks);
@@ -56,17 +57,19 @@ public class MavenRunTaskUtil {
 
     @NotNull
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
-        return Arrays.asList(MavenConstants.TYPE_WAR, "ear", MavenConstants.TYPE_JAR).stream()
+        return Stream.of(MavenConstants.TYPE_WAR, "ear", MavenConstants.TYPE_JAR)
               .map(ArtifactType::findById)
               .filter(Objects::nonNull)
-              .flatMap(type -> ArtifactManager.getInstance(project).getArtifactsByType(type).stream()).collect(
-                Collectors.toList());
-
+              .flatMap(type ->
+                  AzureTaskManager.getInstance()
+                      .readAsObservable(new AzureTask<>(() -> ArtifactManager.getInstance(project).getArtifactsByType(type)))
+                      .toBlocking().single().stream())
+            .collect(Collectors.toList());
     }
 
     public static String getTargetPath(MavenProject mavenProject) {
-        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator
-                + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator +
+                mavenProject.getFinalName() + "." + mavenProject.getPackaging();
     }
 
     public static String getTargetName(MavenProject mavenProject) {

@@ -5,14 +5,13 @@
 
 package com.microsoft.intellij.ui.libraries;
 
-import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.impl.ModuleLibraryOrderEntryImpl;
+import com.intellij.openapi.roots.impl.OrderEntryUtil;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
@@ -27,6 +26,7 @@ import com.microsoft.intellij.ui.AzureAbstractPanel;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 
 import javax.swing.*;
@@ -274,33 +274,33 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     private void configureAzureSDK() {
         final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
         for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-            if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                    && AzureLibrary.APP_INSIGHTS.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
+            if (OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry) &&
+                    StringUtils.equals(AzureLibrary.APP_INSIGHTS.getName(), orderEntry.getPresentableName())) {
                 return;
             }
         }
 
         final LibrariesContainer.LibraryLevel level = LibrariesContainer.LibraryLevel.MODULE;
-        AccessToken token = WriteAction.start();
-        try {
-            Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(AzureLibrary.APP_INSIGHTS.getName(), level, new ArrayList<OrderRoot>());
-            for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-                if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                        && AzureLibrary.APP_INSIGHTS.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                    ((ModuleLibraryOrderEntryImpl) orderEntry).setExported(true);
-                    break;
+        WriteAction.run(() -> {
+            try {
+                Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(AzureLibrary.APP_INSIGHTS.getName(),
+                        level, new ArrayList<OrderRoot>());
+                for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
+                    if (OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry) &&
+                            StringUtils.equals(AzureLibrary.APP_INSIGHTS.getName(), orderEntry.getPresentableName())) {
+                        // todo: investigate method to set library exported
+                        break;
+                    }
                 }
-            }
-            Library.ModifiableModel newLibraryModel = newLibrary.getModifiableModel();
-            AddLibraryUtility.addLibraryFiles(new File(PluginHelper.getAzureLibLocation()), newLibraryModel, AzureLibrary.APP_INSIGHTS.getFiles());
+                Library.ModifiableModel newLibraryModel = newLibrary.getModifiableModel();
+                AddLibraryUtility.addLibraryFiles(new File(PluginHelper.getAzureLibLocation()), newLibraryModel, AzureLibrary.APP_INSIGHTS.getFiles());
 
-            newLibraryModel.commit();
-            modifiableModel.commit();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            token.finish();
-        }
+                newLibraryModel.commit();
+                modifiableModel.commit();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
     public String createFileIfNotExists(String fileName, String relDirLocation, String resFileLoc) {

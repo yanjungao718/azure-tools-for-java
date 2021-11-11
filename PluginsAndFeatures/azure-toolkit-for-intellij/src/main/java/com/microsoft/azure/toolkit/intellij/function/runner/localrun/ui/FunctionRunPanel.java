@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppS
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.localrun.FunctionRunConfiguration;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -144,6 +146,9 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     }
 
     private void fillModules() {
-        Arrays.stream(FunctionUtils.listFunctionModules(project)).forEach(module -> cbFunctionModule.addItem(module));
+        AzureTaskManager.getInstance()
+                .runOnPooledThreadAsObservable(new AzureTask<>(() -> FunctionUtils.listFunctionModules(project)))
+                .subscribe(modules -> AzureTaskManager.getInstance().runLater(() ->
+                        Arrays.stream(modules).forEach(cbFunctionModule::addItem), AzureTask.Modality.ANY));
     }
 }
