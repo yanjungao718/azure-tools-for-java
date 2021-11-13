@@ -70,7 +70,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         super();
         this.init();
         this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
-        this.valueDebouncer = new TailingDebouncer(() -> this.fireValueChangedEvent(this.getValue()), DEBOUNCE_DELAY);
+        this.valueDebouncer = new TailingDebouncer(this::fireValueChangedEvent, DEBOUNCE_DELAY);
         if (refresh) {
             this.refreshItems();
         }

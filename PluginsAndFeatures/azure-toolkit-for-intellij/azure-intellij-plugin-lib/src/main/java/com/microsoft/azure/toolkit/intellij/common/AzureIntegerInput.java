@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.intellij.ui.components.JBTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class IntegerTextField extends JBTextField implements AzureFormInputComponent<Integer> {
+public class AzureIntegerInput extends AbstractAzureTextInput<Integer> {
 
     @Setter
     @Getter
@@ -27,7 +26,10 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
     @Override
     public Integer getValue() {
         final String text = getText();
-        return (StringUtils.isNotEmpty(text) && StringUtils.isNumeric(text)) ? Integer.valueOf(getText()) : null;
+        if (StringUtils.isBlank(text) || !StringUtils.isNumeric(text)) {
+            throw new NumberFormatException(String.format("\"%s\" is not an integer", text));
+        }
+        return Integer.valueOf(getText());
     }
 
     @Override
@@ -36,9 +38,8 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
     }
 
     @Nonnull
-    @Override
     public AzureValidationInfo doValidate(Integer value) {
-        if ((minValue != null && value < minValue) || (maxValue != null && value > maxValue)) {
+        if (value < minValue || value > maxValue) {
             return AzureValidationInfo.error(String.format("Value should be in range [%d, %d]", minValue, maxValue), this);
         } else {
             return AzureValidationInfo.success(this);
