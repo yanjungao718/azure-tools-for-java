@@ -33,7 +33,7 @@ public abstract class AzureDialog<T> extends DialogWrapper {
     }
 
     public AzureDialog() {
-        super(null);
+        this(null);
     }
 
     @Override
