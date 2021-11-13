@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -54,19 +55,26 @@ public class AzureTextInput extends ExtendableTextField
         this.setText(val);
     }
 
-    public void setValidationInfo(AzureValidationInfo info) {
+    public void setValidationInfo(@Nullable AzureValidationInfo info) {
         AzureFormInputComponent.super.setValidationInfo(info);
-        final Extension ex = extensions.getOrDefault(info.getType(), (i) -> SUCCESS).apply(info);
+        final Extension ex = Objects.isNull(info) ? null : extensions.get(info.getType()).apply(info);
         this.setExtensions(ex);
     }
 
     public void onDocumentChanged() {
-        this.setValidationInfo(AzureValidationInfo.pending(this));
+        if (this.needValidation()) {
+            this.setExtensions(VALIDATING);
+        }
         this.debouncer.debounce();
     }
 
     @Override
     public JTextField getInputComponent() {
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%s]%s", this.getClass().getSimpleName(), this.getLabel());
     }
 }
