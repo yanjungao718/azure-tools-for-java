@@ -26,7 +26,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -218,7 +218,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     }
 
     @Override
-    public void setData(WebAppDeployRunConfigurationModel data) {
+    public void setValue(WebAppDeployRunConfigurationModel data) {
         // artifact
         Optional.ofNullable(data.getArtifactConfig()).map(config -> AzureArtifactManager.getInstance(this.project)
                 .getAzureArtifactById(AzureArtifactType.valueOf(config.getArtifactType()), config.getArtifactIdentifier()))
@@ -231,7 +231,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     }
 
     @Override
-    public WebAppDeployRunConfigurationModel getData() {
+    public WebAppDeployRunConfigurationModel getValue() {
         final AzureArtifact artifact = comboBoxArtifact.getValue();
         final AzureArtifactConfig artifactConfig = AzureArtifactConfig.builder().artifactType(artifact.getType().name())
                 .artifactIdentifier(AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)).build();
