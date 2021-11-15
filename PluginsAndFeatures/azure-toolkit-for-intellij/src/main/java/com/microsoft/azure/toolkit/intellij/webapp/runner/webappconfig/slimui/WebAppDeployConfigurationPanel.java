@@ -225,8 +225,10 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     @Override
     public void setValue(WebAppDeployRunConfigurationModel data) {
         // artifact
-        Optional.ofNullable(data.getArtifactConfig()).map(config -> AzureArtifactManager.getInstance(this.project)
-                .getAzureArtifactById(AzureArtifactType.valueOf(config.getArtifactType()), config.getArtifactIdentifier()))
+        Optional.ofNullable(data.getArtifactConfig())
+                .filter(config -> !StringUtils.isAnyEmpty(config.getArtifactIdentifier(), config.getArtifactType()))
+                .map(config -> AzureArtifactManager.getInstance(this.project)
+                        .getAzureArtifactById(AzureArtifactType.valueOf(config.getArtifactType()), config.getArtifactIdentifier()))
                 .ifPresent(artifact -> comboBoxArtifact.setArtifact(artifact));
         // web app
         Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> {

@@ -91,6 +91,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     protected void resetFromConfig(@NotNull WebAppConfiguration configuration) {
+        if (StringUtils.isAllEmpty(configuration.getWebAppId(), configuration.getWebAppName())) {
+            return;
+        }
         final Subscription subscription = Subscription.builder().id(configuration.getSubscriptionId()).build();
         final ResourceGroup resourceGroup = configuration.isCreatingResGrp() ?
                 new DraftResourceGroup(subscription, configuration.getResourceGroup()) :
@@ -104,9 +107,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                 AppServicePlanEntity.builder().id(configuration.getAppServicePlanId()).build();
         final DeploymentSlotConfig slotConfig = !configuration.isDeployToSlot() ? null :
                 StringUtils.equals(configuration.getSlotName(), Constants.CREATE_NEW_SLOT) ?
-                        DeploymentSlotConfig.builder().name(configuration.getNewSlotName())
+                        DeploymentSlotConfig.builder().newCreate(true).name(configuration.getNewSlotName())
                                 .configurationSource(configuration.getNewSlotConfigurationSource()).build() :
-                        DeploymentSlotConfig.builder().name(configuration.getSlotName()).build();
+                        DeploymentSlotConfig.builder().newCreate(false).name(configuration.getSlotName()).build();
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
                 .enableApplicationLog(configuration.getModel().isEnableApplicationLog())
                 .applicationLogLevel(LogLevel.fromString(configuration.getModel().getApplicationLogLevel()))
@@ -127,19 +130,19 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                 configBuilder.region(region).pricingTier(pricingTier).monitorConfig(monitorConfig).build();
         final AzureArtifactConfig artifactConfig = AzureArtifactConfig.builder()
                 .artifactIdentifier(configuration.getArtifactIdentifier())
-                .artifactType(configuration.getAzureArtifactType().name()).build();
+                .artifactType(Optional.ofNullable(configuration.getAzureArtifactType()).map(AzureArtifactType::name).orElse(null)).build();
         final WebAppDeployRunConfigurationModel runConfigurationModel = WebAppDeployRunConfigurationModel.builder()
                 .webAppConfig(webAppConfig)
                 .artifactConfig(artifactConfig)
                 .deployToRoot(configuration.isDeployToRoot())
                 .slotPanelVisible(configuration.isSlotPanelVisible())
                 .openBrowserAfterDeployment(configuration.isOpenBrowserAfterDeployment()).build();
-        pnlDeployment.setData(runConfigurationModel);
+        pnlDeployment.setValue(runConfigurationModel);
     }
 
     @Override
     protected void apply(@NotNull WebAppConfiguration configuration) {
-        final WebAppDeployRunConfigurationModel runConfigurationModel = pnlDeployment.getData();
+        final WebAppDeployRunConfigurationModel runConfigurationModel = pnlDeployment.getValue();
         Optional.ofNullable(runConfigurationModel.getWebAppConfig()).ifPresent(webAppConfig -> {
             configuration.setWebAppId(webAppConfig.getResourceId());
             configuration.setSubscriptionId(webAppConfig.getSubscriptionId());
