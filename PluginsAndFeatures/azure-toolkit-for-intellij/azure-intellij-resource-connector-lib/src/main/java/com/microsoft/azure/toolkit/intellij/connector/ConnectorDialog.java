@@ -136,12 +136,10 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Connection<?, ?> getValue() {
-        final Object resourceData = ((Resource<?>) this.resourcePanel.getValue()).getData();
-        final Object consumerData = ((Resource<?>) this.consumerPanel.getValue()).getData();
         final ResourceDefinition resourceDef = this.resourceTypeSelector.getValue();
         final ResourceDefinition consumerDef = this.consumerTypeSelector.getValue();
-        final Resource resource = resourceDef.define(resourceData);
-        final Resource consumer = consumerDef.define(consumerData);
+        final Resource resource = (Resource<?>) this.resourcePanel.getValue();
+        final Resource consumer = (Resource<?>) this.consumerPanel.getValue();
         final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
         connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         return connection;
