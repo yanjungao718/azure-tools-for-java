@@ -19,11 +19,11 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstance
 public class SpringCloudDeploymentComboBox extends AzureComboBox<SpringCloudDeploymentInstanceEntity> {
 
     private SpringCloudApp app;
-    
+
     public SpringCloudDeploymentComboBox(Composite parent) {
         super(parent, false);
     }
-    
+
     public void setSpringCloudApp(final SpringCloudApp app) {
         if (Objects.equals(app, this.app)) {
             return;

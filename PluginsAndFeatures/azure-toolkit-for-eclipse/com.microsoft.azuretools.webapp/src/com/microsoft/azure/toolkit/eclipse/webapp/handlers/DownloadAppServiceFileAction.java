@@ -34,7 +34,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class DownloadAppServiceFileAction {
-    
+
     public static void downloadAppServiceFile(final AppServiceFile file) {
         final File destFile = DefaultLoader.getUIHelper().showFileSaver(String.format("Download %s", file.getName()), file.getName());
         if (destFile == null) {
@@ -65,7 +65,7 @@ public class DownloadAppServiceFileAction {
             AzureMessager.getMessager().error(AzureString.format("Target file %s does not exists", destFile.getAbsolutePath()));
         }
     }
-    
+
     private static void notifyDownloadSuccess(AppServiceFile file, File destFile) {
         final Action<?>[] actions = Stream.of(getOpenInExplorerAction(destFile), getOpenFileAction(destFile))
                 .filter(Objects::nonNull).toArray(Action<?>[]::new);
@@ -73,7 +73,7 @@ public class DownloadAppServiceFileAction {
                 AzureString.format("%s has been saved to %s", file.getName(), destFile.getAbsolutePath()),
                 "Azure Toolkit for Eclipse", actions);
     }
-    
+
     // todo: migrate to eclipse action "org.eclipse.ui.ide.showInSystemExplorer"
     private static Action<?> getOpenInExplorerAction(final File file) {
         if (!(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN))) {
