@@ -118,8 +118,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
                 final String message = String.format("The connection between %s and %s has been successfully created.",
                         resource.getName(), consumer.getName());
                 AzureMessager.getMessager().success(message);
-                ResourceConnectionExplorer.open(project);
-                project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(connection);
+                project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
             }
         });
     }

@@ -17,41 +17,55 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.CollectionListModel;
 import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.plugins.gradle.execution.GradleBeforeRunTaskProvider;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class BeforeRunTaskUtils {
+public class BuildArtifactBeforeRunTaskUtils {
     private static final String GRADLE_TASK_ASSEMBLE = "assemble";
     private static final String MAVEN_TASK_PACKAGE = "package";
 
-    public static void addBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
+    public static void addBeforeRunTask(
+        @Nonnull ConfigurationSettingsEditorWrapper editor,
+        @Nonnull AzureArtifact artifact,
+        @Nonnull RunConfiguration config) {
         final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
         final BeforeRunTask<?> task = createBuildTask(artifact, config);
         if (Objects.nonNull(task)) { // task is null if artifact is File type.
             addTask(editor, tasks, task, config);
         }
+        updateConnectorBeforeRunTask(config, editor);
     }
 
-    public static void removeBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
+    public static void removeBeforeRunTask(
+        @Nonnull ConfigurationSettingsEditorWrapper editor,
+        @Nonnull AzureArtifact artifact,
+        @Nonnull RunConfiguration config) {
         final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
         removeTasks(editor, tasks);
+    }
+
+    private static void updateConnectorBeforeRunTask(@Nonnull RunConfiguration config, @Nonnull ConfigurationSettingsEditorWrapper editor) {
+        config.getProject().getMessageBus()
+            .syncPublisher(IWebAppRunConfiguration.MODULE_CHANGED)
+            .moduleMayChanged(config, editor);
     }
 
     public static List<? extends BeforeRunTask<?>> getBuildTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
@@ -84,8 +98,8 @@ public class BeforeRunTaskUtils {
         }
     }
 
-    @NotNull
-    public static List<BeforeRunTask<?>> getIntellijBuildTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @NotNull Artifact artifact) {
+    @Nonnull
+    public static List<BeforeRunTask<?>> getIntellijBuildTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull Artifact artifact) {
         return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), BuildArtifactsBeforeRunTask.class).stream()
             .filter(task -> Objects.nonNull(task) && Objects.nonNull(task.getArtifactPointers())
                 && task.getArtifactPointers().size() == 1
@@ -93,8 +107,8 @@ public class BeforeRunTaskUtils {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static List<BeforeRunTask<?>> getMavenPackageTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @Nonnull MavenProject project) {
+    @Nonnull
+    public static List<BeforeRunTask<?>> getMavenPackageTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull MavenProject project) {
         final String pomXmlPath = MavenUtils.getMavenModulePath(project);
         return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), MavenBeforeRunTask.class).stream()
             .filter(task -> Objects.nonNull(task) && Objects.nonNull(task.getProjectPath()) && Objects.nonNull(pomXmlPath)
@@ -103,8 +117,8 @@ public class BeforeRunTaskUtils {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static List<BeforeRunTask<?>> getGradleAssembleTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @NotNull ExternalProjectPojo project) {
+    @Nonnull
+    public static List<BeforeRunTask<?>> getGradleAssembleTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull ExternalProjectPojo project) {
         return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), ExternalSystemBeforeRunTask.class).stream()
             .filter(task -> Objects.nonNull(task)
                 && StringUtils.equals(task.getTaskExecutionSettings().getExternalProjectPath(), project.getPath())
@@ -113,16 +127,16 @@ public class BeforeRunTaskUtils {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static BeforeRunTask<?> createIntellijBuildTask(@NotNull Artifact artifact, @NotNull RunConfiguration config) {
+    @Nonnull
+    public static BeforeRunTask<?> createIntellijBuildTask(@Nonnull Artifact artifact, @Nonnull RunConfiguration config) {
         final BuildArtifactsBeforeRunTaskProvider provider = new BuildArtifactsBeforeRunTaskProvider(config.getProject());
         final BuildArtifactsBeforeRunTask task = provider.createTask(config);
         task.addArtifact(artifact);
         return task;
     }
 
-    @NotNull
-    public static BeforeRunTask<?> createMavenPackageTask(@Nonnull MavenProject project, @NotNull RunConfiguration config) {
+    @Nonnull
+    public static BeforeRunTask<?> createMavenPackageTask(@Nonnull MavenProject project, @Nonnull RunConfiguration config) {
         final String pomXmlPath = MavenUtils.getMavenModulePath(project);
         final MavenBeforeRunTask task = new MavenBeforeRunTask();
         task.setEnabled(true);
@@ -131,8 +145,8 @@ public class BeforeRunTaskUtils {
         return task;
     }
 
-    @NotNull
-    public static BeforeRunTask<?> createGradleAssembleTask(@NotNull ExternalProjectPojo project, @NotNull RunConfiguration config) {
+    @Nonnull
+    public static BeforeRunTask<?> createGradleAssembleTask(@Nonnull ExternalProjectPojo project, @Nonnull RunConfiguration config) {
         final GradleBeforeRunTaskProvider provider = new GradleBeforeRunTaskProvider(config.getProject());
         final ExternalSystemBeforeRunTask task = provider.createTask(config);
         task.getTaskExecutionSettings().setExternalSystemIdString(GradleConstants.SYSTEM_ID.toString());
@@ -142,10 +156,22 @@ public class BeforeRunTaskUtils {
     }
 
     @SneakyThrows
-    private static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, List<T> tasks) {
+    public static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, List<T> tasks) {
         // there is no way of removing tasks, use reflection
         final Object myBeforeRunStepsPanelField = FieldUtils.readField(editor, "myBeforeRunStepsPanel", true);
         final CollectionListModel<T> model = (CollectionListModel<T>) FieldUtils.readField(myBeforeRunStepsPanelField, "myModel", true);
+        for (final T t : tasks) {
+            t.setEnabled(false);
+            model.remove(t);
+        }
+    }
+
+    @SneakyThrows
+    public static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, Predicate<T> cond) {
+        // there is no way of removing tasks, use reflection
+        final Object myBeforeRunStepsPanelField = FieldUtils.readField(editor, "myBeforeRunStepsPanel", true);
+        final CollectionListModel<T> model = (CollectionListModel<T>) FieldUtils.readField(myBeforeRunStepsPanelField, "myModel", true);
+        final List<T> tasks = model.getItems().stream().filter(cond).collect(Collectors.toList());
         for (final T t : tasks) {
             t.setEnabled(false);
             model.remove(t);
