@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 
@@ -20,7 +20,7 @@ public class SpringCloudStreamingLogDialog extends AzureDialog<SpringCloudDeploy
 
     private SpringCloudApp app;
     private SpringCloudLogStreamingComposite composite;
-    
+
     public SpringCloudStreamingLogDialog(final Shell parentShell, final SpringCloudApp app) {
         super(parentShell);
         this.app = app;
@@ -30,13 +30,13 @@ public class SpringCloudStreamingLogDialog extends AzureDialog<SpringCloudDeploy
     protected String getDialogTitle() {
         return "Select Instance for log Streaming";
     }
-    
+
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite container = (Composite) super.createDialogArea(parent);
         composite = new SpringCloudLogStreamingComposite(container, SWT.NONE);
-        GridData gd_composite = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-        composite.setLayoutData(gd_composite);
+        GridData gdComposite = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+        composite.setLayoutData(gdComposite);
         composite.setSpringCloudApp(app);
         return container;
     }
