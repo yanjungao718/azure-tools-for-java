@@ -8,13 +8,8 @@ package com.microsoft.azure.toolkit.eclipse.springcloud.streaminglog;
 import org.eclipse.swt.widgets.Display;
 
 import com.microsoft.azure.toolkit.eclipse.common.logstream.EclipseAzureLogStreamingManager;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentEntity;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 
 public class SpringCloudLogStreamingHandler {
     public static void startLogStreaming(final SpringCloudApp app) {
@@ -23,13 +18,9 @@ public class SpringCloudLogStreamingHandler {
                     Display.getCurrent().getActiveShell(), app);
             dialog.setOkActionListener(instance -> {
                 dialog.close();
-                final SpringCloudDeploymentEntity entity = instance.getDeployment();
-                final SpringCloudDeployment deployment = Azure.az(AzureSpringCloud.class)
-                        .cluster(entity.getApp().getCluster().getName()).app(entity.getApp().getName())
-                        .activeDeployment();
                 AzureTaskManager.getInstance().runLater(
                         () -> EclipseAzureLogStreamingManager.getInstance().showLogStreaming(instance.getName(),
-                                instance.getName(), deployment.streamLogs(instance.getName())));
+                                instance.getName(), app.activeDeployment().streamLogs(instance.getName())));
             });
             dialog.open();
         });

@@ -14,7 +14,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.microsoft.azure.toolkit.eclipse.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
@@ -22,14 +22,14 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstance
 public class SpringCloudLogStreamingComposite extends Composite implements AzureForm<SpringCloudDeploymentInstanceEntity> {
 
     private SpringCloudDeploymentComboBox springCloudDeploymentComboBox;
-    
+
     public SpringCloudLogStreamingComposite(Composite parent, int style) {
         super(parent, style);
         setLayout(new GridLayout(2, false));
-        
+
         Label lblInstance = new Label(this, SWT.NONE);
         lblInstance.setText("Instance:");
-        
+
         springCloudDeploymentComboBox = new SpringCloudDeploymentComboBox(this);
         springCloudDeploymentComboBox.setLabeledBy(lblInstance);
         springCloudDeploymentComboBox.setRequired(true);
@@ -42,22 +42,22 @@ public class SpringCloudLogStreamingComposite extends Composite implements Azure
     }
 
     @Override
-    public SpringCloudDeploymentInstanceEntity getFormData() {
+    public List<AzureFormInput<?>> getInputs() {
+        return Arrays.asList(springCloudDeploymentComboBox);
+    }
+
+    public void setSpringCloudApp(final SpringCloudApp app) {
+        springCloudDeploymentComboBox.setSpringCloudApp(app);
+    }
+
+    @Override
+    public SpringCloudDeploymentInstanceEntity getValue() {
         return springCloudDeploymentComboBox.getValue();
     }
 
     @Override
-    public void setFormData(SpringCloudDeploymentInstanceEntity value) {
+    public void setValue(SpringCloudDeploymentInstanceEntity value) {
         springCloudDeploymentComboBox.setValue(value);
-    }
-
-    @Override
-    public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(springCloudDeploymentComboBox);
-    }
-    
-    public void setSpringCloudApp(final SpringCloudApp app) {
-        springCloudDeploymentComboBox.setSpringCloudApp(app);
     }
 
 }
