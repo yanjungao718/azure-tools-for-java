@@ -129,8 +129,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
             this.textName,
-            this.selectorRuntime,
-            this.selectorApplication
+            this.selectorRuntime
         };
         return Arrays.asList(inputs);
     }
