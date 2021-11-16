@@ -119,7 +119,7 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
         CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class)
                 .checkNameAvailability(subscription.getId(), text.getValue());
         return result.isAvailable() ? AzureValidationInfo.success(text)
-                : AzureValidationInfo.error(result.getUnavailabilityReason(), text);
+                : AzureValidationInfo.error(result.getUnavailabilityMessage(), text);
     }
 
     @Override
