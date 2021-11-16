@@ -20,6 +20,7 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -52,6 +53,7 @@ public class WebAppService {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw e;
         } finally {
+            ValidationUtils.evictCacheForAppServiceNameValidation(config.getSubscriptionId(), config.getName());
             operation.complete();
         }
     }

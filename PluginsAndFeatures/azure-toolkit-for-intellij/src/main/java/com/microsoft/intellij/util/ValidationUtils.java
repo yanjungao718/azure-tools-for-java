@@ -8,18 +8,18 @@ package com.microsoft.intellij.util;
 import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,9 +35,6 @@ public class ValidationUtils {
     // CreateApplicationBlade.ts&version=GBdev&line=463&lineEnd=463&lineStartColumn=25&lineEndColumn=55&lineStyle=plain&_a=contents
     private static final String SPRING_CLOUD_APP_NAME_PATTERN = "^[a-z][a-z0-9-]{2,30}[a-z0-9]$";
     private static final String APP_INSIGHTS_NAME_INVALID_CHARACTERS = "[*;/?:@&=+$,<>#%\\\"\\{}|^'`\\\\\\[\\]]";
-
-    private static Map<Pair<String, String>, String> appServiceNameValidationCache = new HashMap<>();
-    private static Map<String, String> resourceGroupValidationCache = new HashMap<>();
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -60,45 +57,43 @@ public class ValidationUtils {
         return version != null && version.matches(VERSION_REGEX);
     }
 
+    @Cacheable(cacheName = "appservice/validation/name", key = "$subscriptionId/$appServiceName")
     public static void validateAppServiceName(String subscriptionId, String appServiceName) {
-        final Pair<String, String> cacheKey = Pair.of(subscriptionId, appServiceName);
-        if (appServiceNameValidationCache.containsKey(cacheKey)) {
-            throwCachedValidationResult(appServiceNameValidationCache.get(cacheKey));
-            return;
-        }
         if (StringUtils.isEmpty(subscriptionId)) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.empty"));
+            throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
         }
         if (!isValidAppServiceName(appServiceName)) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
+            throw new IllegalArgumentException(message("appService.subscription.validate.invalidName"));
         }
         final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).checkNameAvailability(subscriptionId, appServiceName);
         if (!result.isAvailable()) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, result.getUnavailabilityMessage());
+            throw new IllegalArgumentException(result.getUnavailabilityMessage());
         }
-        appServiceNameValidationCache.put(cacheKey, null);
     }
 
-    public static void validateResourceGroupName(String subscriptionId, String resourceGroup) {
-        if (resourceGroupValidationCache.containsKey(subscriptionId)) {
-            throwCachedValidationResult(appServiceNameValidationCache.get(subscriptionId));
-            return;
+    // todo: move validation and related cache management to toolkit lib
+    public static void evictCacheForAppServiceNameValidation(String subscriptionId, String appServiceName) {
+        try {
+            CacheManager.evictCache("appservice/validation/name", String.format("%s/%s", subscriptionId, appServiceName));
+        } catch (ExecutionException e) {
+            // swallow exception for clear cache
         }
+    }
+
+    @Cacheable(cacheName = "resourcegroup/validation/name", key = "$subscriptionId/$resourceGroup")
+    public static void validateResourceGroupName(String subscriptionId, String resourceGroup) {
         if (StringUtils.isEmpty(subscriptionId)) {
-            cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.subscription.validate.empty"));
+            throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
         }
         if (StringUtils.isEmpty(resourceGroup)) {
-            cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.empty"));
+            throw new IllegalArgumentException(message("appService.resourceGroup.validate.empty"));
         }
         try {
             final ResourceGroup rg = Azure.az(AzureGroup.class).get(subscriptionId, resourceGroup);
-            if (rg != null) {
-                cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.exist"));
-            }
+            throw new IllegalArgumentException(message("appService.resourceGroup.validate.exist"));
         } catch (ManagementException e) {
             // swallow exception for get resources
         }
-        resourceGroupValidationCache.put(subscriptionId, null);
     }
 
     public static void validateAppServicePlanName(String appServicePlan) {
@@ -140,17 +135,6 @@ public class ValidationUtils {
             throw new IllegalArgumentException(message("springcloud.app.name.validate.invalid"));
         } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
             throw new IllegalArgumentException(message("springcloud.app.name.validate.exist", name));
-        }
-    }
-
-    private static void cacheAndThrow(Map exceptionCache, Object key, String errorMessage) {
-        exceptionCache.put(key, errorMessage);
-        throw new IllegalArgumentException(errorMessage);
-    }
-
-    private static void throwCachedValidationResult(String errorMessage) {
-        if (StringUtils.isNotEmpty(errorMessage)) {
-            throw new IllegalArgumentException(errorMessage);
         }
     }
 }
