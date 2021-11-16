@@ -152,10 +152,12 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             configuration.setCreatingNew(StringUtils.isEmpty(webAppConfig.getResourceId()));
             if (configuration.isCreatingNew()) {
                 configuration.setRegion(webAppConfig.getRegion().getName());
-                configuration.setPricing(webAppConfig.getPricingTier().getSize());
                 configuration.setCreatingResGrp(webAppConfig.getResourceGroup() instanceof Draft);
                 configuration.setCreatingAppServicePlan(webAppConfig.getServicePlan() instanceof Draft);
+                configuration.setPricing(Optional.ofNullable(webAppConfig.getServicePlan())
+                        .map(AppServicePlanEntity::getPricingTier).map(PricingTier::getSize).orElse(null));
                 configuration.setAppServicePlanName(webAppConfig.getServicePlan().getName());
+                configuration.setAppServicePlanId(webAppConfig.getServicePlan().getId());
                 Optional.ofNullable(webAppConfig.getMonitorConfig()).map(MonitorConfig::getDiagnosticConfig).ifPresent(diagnosticConfig -> {
                     configuration.getModel().setEnableApplicationLog(diagnosticConfig.isEnableApplicationLog());
                     configuration.getModel().setApplicationLogLevel(diagnosticConfig.getApplicationLogLevel().getValue());
