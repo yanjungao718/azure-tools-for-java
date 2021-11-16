@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -147,10 +148,11 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         if (selectedWebApp == null || azureArtifact == null) {
             return false;
         }
-        final WebContainer webContainer = selectedWebApp.getRuntime().getWebContainer();
+        final String webContainer = Optional.ofNullable(selectedWebApp.getRuntime())
+                .map(Runtime::getWebContainer).map(WebContainer::getValue).orElse(null);
         final String packaging = AzureArtifactManager.getInstance(project).getPackaging(azureArtifact);
         final boolean isDeployingWar = StringUtils.equalsAnyIgnoreCase(packaging, MavenConstants.TYPE_WAR, "ear");
-        return isDeployingWar && StringUtils.containsAnyIgnoreCase(webContainer.getValue(), "tomcat", "jboss");
+        return isDeployingWar && StringUtils.containsAnyIgnoreCase(webContainer, "tomcat", "jboss");
     }
 
     private void toggleSlotPanel(boolean slot) {
