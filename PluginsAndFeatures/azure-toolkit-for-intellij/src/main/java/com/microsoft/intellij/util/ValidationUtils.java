@@ -29,7 +29,7 @@ public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
     private static final String GROUP_ARTIFACT_ID_REGEX = "[0-9a-zA-Z]([\\.a-zA-Z0-9\\-_])*";
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
-    private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
+    private static final String APP_SERVICE_NAME_REGEX = "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,58}[a-zA-Z0-9]";
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
     // refer: https://dev.azure.com/msazure/AzureDMSS/_git/AzureDMSS-PortalExtension?path=%2Fsrc%2FSpringCloudPortalExt%2FClient%2FCreateApplication%2F
     // CreateApplicationBlade.ts&version=GBdev&line=463&lineEnd=463&lineStartColumn=25&lineEndColumn=55&lineStyle=plain&_a=contents
@@ -48,7 +48,7 @@ public class ValidationUtils {
     }
 
     public static boolean isValidAppServiceName(String name) {
-        return name != null && name.matches(AZURE_FUNCTION_NAME_REGEX);
+        return name != null && name.matches(APP_SERVICE_NAME_REGEX);
     }
 
     public static boolean isValidSpringCloudAppName(String name) {
