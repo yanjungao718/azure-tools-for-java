@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AzureIntegerInput extends AbstractAzureTextInput<Integer> {
+public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
 
     @Setter
     @Getter

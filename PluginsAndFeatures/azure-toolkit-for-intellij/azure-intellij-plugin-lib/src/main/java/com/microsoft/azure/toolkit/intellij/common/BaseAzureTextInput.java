@@ -13,14 +13,14 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 
-public class AbstractAzureTextInput<T> extends ExtendableTextField
+public class BaseAzureTextInput<T> extends ExtendableTextField
     implements AzureFormInputComponent<T>, TextDocumentListenerAdapter {
     protected static final int DEBOUNCE_DELAY = 500;
     private final Debouncer debouncer;
@@ -33,15 +33,17 @@ public class AbstractAzureTextInput<T> extends ExtendableTextField
         AzureValidationInfo.Type.WARNING, (i) -> Extension.create(AllIcons.General.BalloonWarning, i.getMessage(), null)
     );
 
-    public AbstractAzureTextInput() {
-        this(null);
-    }
-
-    public AbstractAzureTextInput(@Nullable JTextField comp) {
+    public BaseAzureTextInput() {
         super();
         this.debouncer = new TailingDebouncer(this::fireValueChangedEvent, DEBOUNCE_DELAY);
-        Optional.ofNullable(comp).or(() -> Optional.of(this.getInputComponent()))
-            .ifPresent(t -> t.getDocument().addDocumentListener(this));
+        this.getInputComponent().getDocument().addDocumentListener(this);
+        this.trackValidation();
+    }
+
+    public BaseAzureTextInput(@Nonnull JTextField comp) {
+        super();
+        this.debouncer = new TailingDebouncer(this::fireValueChangedEvent, DEBOUNCE_DELAY);
+        comp.getDocument().addDocumentListener(this);
         this.trackValidation();
     }
 

@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common;
 import javax.annotation.Nullable;
 import javax.swing.*;
 
-public class AzureTextInput extends AbstractAzureTextInput<String> {
+public class AzureTextInput extends BaseAzureTextInput<String> {
     public AzureTextInput() {
         this(null);
     }
