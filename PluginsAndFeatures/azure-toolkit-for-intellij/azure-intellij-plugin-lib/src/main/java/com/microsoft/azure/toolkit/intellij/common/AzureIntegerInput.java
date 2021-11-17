@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
 
@@ -39,8 +40,12 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
 
     @Nonnull
     public AzureValidationInfo doValidate(Integer value) {
-        if (value < minValue || value > maxValue) {
+        if (Objects.nonNull(minValue) && Objects.nonNull(maxValue) && (value < minValue || value > maxValue)) {
             return AzureValidationInfo.error(String.format("Value should be in range [%d, %d]", minValue, maxValue), this);
+        } else if (Objects.nonNull(minValue) && value < minValue) {
+            return AzureValidationInfo.error(String.format("Value should be >= %d", minValue), this);
+        } else if (Objects.nonNull(maxValue) && value > maxValue) {
+            return AzureValidationInfo.error(String.format("Value should be <= %d", maxValue), this);
         } else {
             return AzureValidationInfo.success(this);
         }
