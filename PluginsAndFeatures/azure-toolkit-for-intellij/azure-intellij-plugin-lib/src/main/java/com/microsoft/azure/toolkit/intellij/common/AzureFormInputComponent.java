@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.accessibility.AccessibleRelation;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
@@ -28,13 +27,10 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposabl
         return (JComponent) this;
     }
 
-    @Nonnull
     @Override
-    default AzureValidationInfo validateInternal(T value) {
-        if (!this.getInputComponent().isEnabled() || !this.getInputComponent().isVisible()) {
-            return AzureValidationInfo.success(this);
-        }
-        return AzureFormInput.super.validateInternal(value);
+    default boolean needValidation() {
+        final JComponent comp = this.getInputComponent();
+        return AzureFormInput.super.needValidation() && comp.isEnabled() && comp.isVisible();
     }
 
     @Override
