@@ -5,15 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.swing.*;
 
 public class AzureTextInput extends BaseAzureTextInput<String> {
     public AzureTextInput() {
-        this(null);
+        super();
     }
 
-    public AzureTextInput(@Nullable JTextField comp) {
+    public AzureTextInput(@Nonnull JTextField comp) {
         super(comp);
     }
 
