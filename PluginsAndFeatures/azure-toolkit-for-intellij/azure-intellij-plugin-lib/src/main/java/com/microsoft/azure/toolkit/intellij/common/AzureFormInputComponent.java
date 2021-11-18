@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.ui.ComponentValidator;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.Disposer;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -15,12 +16,12 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import javax.accessibility.AccessibleRelation;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.PENDING;
-import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.SUCCESS;
-import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.WARNING;
+import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.*;
 
 public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposable {
     default JComponent getInputComponent() {
@@ -44,7 +45,16 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposabl
         input.revalidate();
         input.repaint();
         // see com.intellij.openapi.ui.DialogWrapper.setErrorInfoAll
-        final ComponentValidator v = ComponentValidator.getInstance(input).orElseGet(() -> (new ComponentValidator(this)).installOn(input));
+        final ComponentValidator v = ComponentValidator.getInstance(input).orElseGet(() -> {
+            Optional.ofNullable(SwingUtilities.getWindowAncestor(this.getInputComponent()))
+                .ifPresent(w -> w.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        Disposer.dispose(AzureFormInputComponent.this);
+                    }
+                }));
+            return new ComponentValidator(AzureFormInputComponent.this).installOn(input);
+        });
         if (v != null) {
             AzureTaskManager.getInstance().runLater(() -> v.updateInfo(info));
         }

@@ -4,13 +4,10 @@
  */
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.Disposer;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.extern.java.Log;
@@ -33,16 +30,6 @@ public abstract class AzureDialog<T> extends DialogWrapper {
 
     public AzureDialog() {
         this(null);
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        for (final AzureFormInput<?> input : this.getForm().getInputs()) {
-            if (input instanceof Disposable) {
-                Disposer.register(this.getDisposable(), (Disposable) input);
-            }
-        }
     }
 
     @Override
