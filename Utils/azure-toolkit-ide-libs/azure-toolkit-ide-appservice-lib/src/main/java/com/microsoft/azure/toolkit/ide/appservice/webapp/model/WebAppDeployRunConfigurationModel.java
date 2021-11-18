@@ -22,6 +22,7 @@ public class WebAppDeployRunConfigurationModel {
     private WebAppConfig webAppConfig;
     private AzureArtifactConfig artifactConfig;
     private boolean slotPanelVisible = false;
+    private boolean deployToRoot = true;
     private boolean openBrowserAfterDeployment = true;
     // todo: add config for before run tasks
 }
