@@ -84,7 +84,7 @@ public class PostgreSqlResourceDefinition extends AzureServiceResource.Definitio
         if (StringUtils.isBlank(dataId)) {
             throw new AzureToolkitRuntimeException("Missing required dataId for postgre SQL database in service link.");
         }
-        PostgreSqlDatabaseResource resource = new PostgreSqlDatabaseResource(getResource(dataId), resourceEle.getChildTextTrim("username"), this);
+        final PostgreSqlDatabaseResource resource = new PostgreSqlDatabaseResource(dataId, resourceEle.getChildTextTrim("username"), this);
 
         final String defName = this.getName();
         resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
@@ -107,7 +107,7 @@ public class PostgreSqlResourceDefinition extends AzureServiceResource.Definitio
 
     @Override
     public Resource<PostgreSqlDatabase> define(String dataId) {
-        throw new UnsupportedOperationException("xx");
+        return new AzureServiceResource<>(getResource(dataId), this);
     }
 
     @Override
