@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
@@ -31,6 +32,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     protected Project project;
     protected Subscription subscription;
 
+    @Setter
     protected T configModel;
 
     public AppServiceComboBox(final Project project) {
@@ -39,25 +41,25 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         this.setRenderer(new AppComboBoxRender());
     }
 
-    @Override
-    public void setValue(T value) {
-        if (isDraftResource(value)) {
-            configModel = value;
-        }
-        super.setValue(value);
-    }
-
     @NotNull
     @Override
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
-        if (configModel != null && StringUtils.isEmpty(configModel.getResourceId())) {
+        if (isDraftResource(configModel)) {
             final boolean exist = items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
             if (!exist) {
                 items.add(configModel);
             }
         }
         return items;
+    }
+
+    @Override
+    public T getValue() {
+        if (value instanceof ItemReference && ((ItemReference<?>) value).is(configModel)) {
+            return configModel;
+        }
+        return super.getValue();
     }
 
     protected abstract List<T> loadAppServiceModels() throws Exception;
@@ -116,6 +118,6 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     }
 
     private static boolean isDraftResource(final AppServiceConfig config) {
-        return StringUtils.isEmpty(config.getResourceId());
+        return config != null && StringUtils.isEmpty(config.getResourceId());
     }
 }

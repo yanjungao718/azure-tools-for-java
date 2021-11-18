@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.appservice.webapp.model;
 
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
@@ -42,9 +43,11 @@ public class WebAppConfig extends AppServiceConfig {
         return WebAppConfig.builder()
                 .name(webApp.name())
                 .resourceId(webApp.id())
+                .servicePlan(AppServicePlanEntity.builder().id(webApp.entity().getAppServicePlanId()).build())
                 .subscription(Subscription.builder().id(webApp.subscriptionId()).build())
                 .resourceGroup(ResourceGroup.builder().name(webApp.resourceGroup()).build())
                 .runtime(webApp.getRuntime())
+                .region(webApp.entity().getRegion())
                 .build();
     }
 }

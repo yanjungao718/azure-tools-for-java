@@ -11,15 +11,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.ide.appservice.model.AzureArtifactConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.DeploymentSlotConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppDeployRunConfigurationModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -38,7 +41,10 @@ import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -82,14 +88,16 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     public WebAppDeployConfigurationPanel(@NotNull Project project) {
         super();
         this.project = project;
+        $$$setupUI$$$();
+        comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
+        comboBoxArtifact.addItemListener(e -> chkToRoot.setVisible(isAbleToDeployToRoot(comboBoxArtifact.getValue())));
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
         slotButtonGroup.add(rbtNewSlot);
         slotButtonGroup.add(rbtExistingSlot);
-        rbtExistingSlot.addActionListener(e -> toggleSlotType(true));
-        rbtNewSlot.addActionListener(e -> toggleSlotType(false));
-
-        chkDeployToSlot.addActionListener(e -> toggleSlotPanel(chkDeployToSlot.isSelected()));
+        rbtExistingSlot.addItemListener(e -> toggleSlotType(true));
+        rbtNewSlot.addItemListener(e -> toggleSlotType(false));
+        chkDeployToSlot.addItemListener(e -> toggleSlotPanel(chkDeployToSlot.isSelected()));
 
         final Icon informationIcon = AllIcons.General.ContextHelp;
         btnSlotHover.setIcon(informationIcon);
@@ -120,12 +128,11 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         lblArtifact.setLabelFor(comboBoxArtifact);
         lblWebApp.setLabelFor(comboBoxWebApp);
 
+        final DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        txtNewSlotName.setText(String.format(DEFAULT_SLOT_NAME, df.format(new Date())));
+
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);
-    }
-
-    public void toggleSlotVisibility(final boolean visible) {
-        slotDecorator.setOn(visible);
     }
 
     private void setComboBoxDefaultValue(JComboBox comboBox, Object value) {
@@ -141,10 +148,11 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         if (selectedWebApp == null || azureArtifact == null) {
             return false;
         }
-        final WebContainer webContainer = selectedWebApp.getRuntime().getWebContainer();
+        final String webContainer = Optional.ofNullable(selectedWebApp.getRuntime())
+                .map(Runtime::getWebContainer).map(WebContainer::getValue).orElse(null);
         final String packaging = AzureArtifactManager.getInstance(project).getPackaging(azureArtifact);
         final boolean isDeployingWar = StringUtils.equalsAnyIgnoreCase(packaging, MavenConstants.TYPE_WAR, "ear");
-        return isDeployingWar && StringUtils.containsAnyIgnoreCase(webContainer.getValue(), "tomcat", "jboss");
+        return isDeployingWar && StringUtils.containsAnyIgnoreCase(webContainer, "tomcat", "jboss");
     }
 
     private void toggleSlotPanel(boolean slot) {
@@ -173,7 +181,6 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
 
         comboBoxWebApp = new WebAppComboBox(project);
-        comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
         comboBoxWebApp.refreshItems();
 
         comboBoxArtifact = new AzureArtifactComboBox(this.project);
@@ -220,26 +227,57 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     @Override
     public void setValue(WebAppDeployRunConfigurationModel data) {
         // artifact
-        Optional.ofNullable(data.getArtifactConfig()).map(config -> AzureArtifactManager.getInstance(this.project)
-                .getAzureArtifactById(AzureArtifactType.valueOf(config.getArtifactType()), config.getArtifactIdentifier()))
+        Optional.ofNullable(data.getArtifactConfig())
+                .filter(config -> !StringUtils.isAnyEmpty(config.getArtifactIdentifier(), config.getArtifactType()))
+                .map(config -> AzureArtifactManager.getInstance(this.project)
+                        .getAzureArtifactById(AzureArtifactType.valueOf(config.getArtifactType()), config.getArtifactIdentifier()))
                 .ifPresent(artifact -> comboBoxArtifact.setArtifact(artifact));
         // web app
-        Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> comboBoxWebApp.setValue(webApp));
+        Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> {
+            comboBoxWebApp.setConfigModel(webApp);
+            comboBoxWebApp.setValue(new AzureComboBox.ItemReference<>(item -> WebAppConfig.isSameApp(item, webApp)));
+            toggleSlotPanel(webApp.getDeploymentSlot() != null);
+            Optional.ofNullable(webApp.getDeploymentSlot()).ifPresent(slot -> {
+                chkDeployToSlot.setSelected(true);
+                rbtNewSlot.setSelected(slot.isNewCreate());
+                rbtExistingSlot.setSelected(!slot.isNewCreate());
+                toggleSlotType(!slot.isNewCreate());
+                if (slot.isNewCreate()) {
+                    txtNewSlotName.setText(slot.getName());
+                    cbxSlotConfigurationSource.addItem(slot.getConfigurationSource());
+                    cbxSlotConfigurationSource.setSelectedItem(slot.getConfigurationSource());
+                } else {
+                    cbxSlotName.addItem(slot.getName());
+                    cbxSlotName.setSelectedItem(slot.getName());
+                }
+            });
+        });
         // configuration
         chkToRoot.setSelected(data.isDeployToRoot());
         chkOpenBrowser.setSelected(data.isOpenBrowserAfterDeployment());
+        slotDecorator.setOn(data.isSlotPanelVisible());
     }
 
     @Override
     public WebAppDeployRunConfigurationModel getValue() {
         final AzureArtifact artifact = comboBoxArtifact.getValue();
-        final AzureArtifactConfig artifactConfig = AzureArtifactConfig.builder().artifactType(artifact.getType().name())
-                .artifactIdentifier(AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)).build();
+        final AzureArtifactConfig artifactConfig = artifact == null ? null :
+                AzureArtifactConfig.builder().artifactType(artifact.getType().name())
+                        .artifactIdentifier(AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)).build();
+        final DeploymentSlotConfig slotConfig = chkDeployToSlot.isSelected() ? rbtExistingSlot.isSelected() ?
+                DeploymentSlotConfig.builder().newCreate(false).name(Objects.toString(cbxSlotName.getSelectedItem(), null)).build() :
+                DeploymentSlotConfig.builder().newCreate(true).name(txtNewSlotName.getText())
+                        .configurationSource(Objects.toString(cbxSlotConfigurationSource.getSelectedItem(), null)).build() : null;
+        final WebAppConfig webAppConfig = comboBoxWebApp.getValue();
+        if (webAppConfig != null) {
+            webAppConfig.setDeploymentSlot(slotConfig);
+        }
         return WebAppDeployRunConfigurationModel.builder()
-                .webAppConfig(comboBoxWebApp.getValue())
+                .webAppConfig(webAppConfig)
                 .artifactConfig(artifactConfig)
                 .openBrowserAfterDeployment(chkOpenBrowser.isSelected())
                 .deployToRoot(chkToRoot.isSelected())
+                .slotPanelVisible(slotDecorator.isExpanded())
                 .build();
     }
 
