@@ -85,7 +85,7 @@ public class PostgreSqlDatabaseResource extends AzureServiceResource<PostgreSqlD
             if (dialog.showAndGet()) {
                 final Password password = dialog.getValue();
                 this.database.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(this.getName(),
+                PasswordStore.savePassword(PostgreSqlResourceDefinition.INSTANCE.getName(),
                         this.getDataId(), this.database.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
