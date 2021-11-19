@@ -47,6 +47,13 @@ public class PostgreSqlDatabaseResource extends AzureServiceResource<PostgreSqlD
         this.database.setUsername(username);
     }
 
+    public PostgreSqlDatabaseResource(String id, @Nonnull String username, @Nonnull Definition<PostgreSqlDatabase> definition) {
+        super(id, definition);
+        ResourceId resourceId = ResourceId.fromString(id);
+        this.database = new Database(resourceId.parent().id(), resourceId.name());
+        this.database.setUsername(username);
+    }
+
     public String loadPassword() {
         Password password = getPassword();
         if (Objects.nonNull(password) && password.saveType() == Password.SaveType.NEVER) {
@@ -78,7 +85,7 @@ public class PostgreSqlDatabaseResource extends AzureServiceResource<PostgreSqlD
             if (dialog.showAndGet()) {
                 final Password password = dialog.getValue();
                 this.database.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(this.getName(),
+                PasswordStore.savePassword(PostgreSqlResourceDefinition.INSTANCE.getName(),
                         this.getDataId(), this.database.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
