@@ -3,11 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.ide.appservice.model;
 
-import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,12 +14,11 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class MonitorConfig {
-    private ApplicationInsightsConfig applicationInsightsConfig;
-    @Builder.Default
-    private DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder().build();
+@SuperBuilder(toBuilder = true)
+public class AzureArtifactConfig {
+    private String artifactType;
+    private String artifactIdentifier;
 }

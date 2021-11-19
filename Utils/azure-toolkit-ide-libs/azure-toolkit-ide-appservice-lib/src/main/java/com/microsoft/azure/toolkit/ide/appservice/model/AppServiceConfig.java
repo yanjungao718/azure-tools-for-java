@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.ide.appservice.model;
 
 import com.azure.core.management.AzureEnvironment;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Getter
@@ -34,7 +35,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @EqualsAndHashCode
 @SuperBuilder(toBuilder = true)
-public class AppServiceConfig {
+public abstract class AppServiceConfig {
     @Builder.Default
     private MonitorConfig monitorConfig = MonitorConfig.builder().build();
     private String name;
@@ -47,8 +48,7 @@ public class AppServiceConfig {
     private PricingTier pricingTier;
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
-
-    protected Runtime runtime;
+    private DeploymentSlotConfig deploymentSlot;
 
     public Map<String, String> getTelemetryProperties() {
         final Map<String, String> result = new HashMap<>();
@@ -67,5 +67,27 @@ public class AppServiceConfig {
         } else {
             return Azure.az(AzureAccount.class).listRegions().stream().findFirst().orElse(null);
         }
+    }
+
+    public String getResourceGroupName() {
+        return Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
+    }
+
+    public String getSubscriptionId() {
+        return Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
+    }
+
+    public abstract Runtime getRuntime();
+
+    public abstract void setRuntime(Runtime runtime);
+
+    public static boolean isSameApp(AppServiceConfig first, AppServiceConfig second) {
+        if (Objects.isNull(first) || Objects.isNull(second)) {
+            return first == second;
+        }
+        return StringUtils.equalsIgnoreCase(first.resourceId, second.resourceId) ||
+                (StringUtils.equalsIgnoreCase(first.name, second.name) &&
+                        StringUtils.equalsIgnoreCase(first.getResourceGroupName(), second.getResourceGroupName()) &&
+                        StringUtils.equalsIgnoreCase(first.getSubscriptionId(), second.getSubscriptionId()));
     }
 }

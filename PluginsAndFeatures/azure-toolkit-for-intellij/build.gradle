@@ -217,6 +217,7 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
+    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib:' + azureToolkitVersion
 
     compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
 
