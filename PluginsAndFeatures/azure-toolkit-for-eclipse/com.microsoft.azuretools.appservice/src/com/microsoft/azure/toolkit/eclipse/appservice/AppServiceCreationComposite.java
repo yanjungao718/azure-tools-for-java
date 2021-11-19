@@ -39,8 +39,8 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
     private AppServiceInstanceDetailComposite instanceDetailPanel;
     private SubscriptionAndResourceGroupComposite subsAndResourceGroupPanel;
     private AppServicePlanComposite appServicePlanPanel;
-        
-    public AppServiceCreationComposite(Composite parent, int style,  Supplier<T> supplier) {
+
+    public AppServiceCreationComposite(Composite parent, int style, Supplier<T> supplier) {
         super(parent, style);
         this.supplier = supplier;
         setupUI();
@@ -93,7 +93,7 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
     public void setRuntime(final List<Runtime> platformList) {
         instanceDetailPanel.getRuntimeComboBox().setPlatformList(platformList);
     }
-    
+
     @Override
     protected void checkSubclass() {
     }

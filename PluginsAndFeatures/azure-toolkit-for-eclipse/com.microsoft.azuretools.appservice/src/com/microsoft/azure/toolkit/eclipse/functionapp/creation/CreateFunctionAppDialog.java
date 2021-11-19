@@ -46,7 +46,7 @@ public class CreateFunctionAppDialog extends AzureDialog<FunctionAppConfig> {
 
     @Override
     protected String getDialogTitle() {
-        return "Create Azure Web App";
+        return "Create Azure Function App";
     }
 
     @Override
