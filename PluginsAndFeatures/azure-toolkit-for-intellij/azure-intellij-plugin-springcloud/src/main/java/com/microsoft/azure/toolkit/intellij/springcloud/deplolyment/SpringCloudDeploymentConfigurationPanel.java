@@ -105,7 +105,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
             if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
-                AzureTaskManager.getInstance().runLater(() -> this.selectorApp.addLocalItem(cluster.app(appConfig)));
+                this.selectorApp.addLocalItem(cluster.app(appConfig));
             }
         });
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
