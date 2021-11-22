@@ -58,7 +58,7 @@ public class ValidationUtils {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
         }
-        if(StringUtils.isEmpty(appServiceName)){
+        if (StringUtils.isEmpty(appServiceName)) {
             throw new IllegalArgumentException(message("appService.name.validate.empty"));
         }
         if (appServiceName.length() < 2 || appServiceName.length() > 60) {
