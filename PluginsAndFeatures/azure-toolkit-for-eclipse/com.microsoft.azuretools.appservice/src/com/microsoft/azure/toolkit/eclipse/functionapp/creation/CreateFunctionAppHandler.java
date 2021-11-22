@@ -31,7 +31,7 @@ public class CreateFunctionAppHandler {
     private static final int RG_NAME_MAX_LENGTH = 90;
     private static final int SP_NAME_MAX_LENGTH = 40;
 
-    public static void createFunctionApp() {
+    public static void create() {
         Shell shell = Display.getCurrent().getActiveShell();
         CreateFunctionAppDialog createDialog = new CreateFunctionAppDialog(shell, getDefaultAppServiceConfig());
         createDialog.setOkActionListener(config -> {

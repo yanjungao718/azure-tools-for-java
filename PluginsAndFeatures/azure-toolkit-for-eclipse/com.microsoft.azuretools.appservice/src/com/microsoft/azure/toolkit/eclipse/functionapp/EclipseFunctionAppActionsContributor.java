@@ -23,7 +23,7 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, Object> createCondition = (r, e) -> r instanceof AzureFunction;
         final BiConsumer<Object, Object> createHandler = (c, e) -> AzureTaskManager.getInstance()
-                .runLater(() -> CreateFunctionAppHandler.createFunctionApp());
+                .runLater(() -> CreateFunctionAppHandler.create());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
     }
 

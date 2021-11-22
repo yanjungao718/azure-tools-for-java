@@ -31,6 +31,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import org.eclipse.swt.layout.GridLayout;
 
@@ -40,9 +41,9 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
     private SubscriptionAndResourceGroupComposite subsAndResourceGroupPanel;
     private AppServicePlanComposite appServicePlanPanel;
 
-    public AppServiceCreationComposite(Composite parent, int style, Supplier<T> supplier) {
+    public AppServiceCreationComposite(Composite parent, int style, Supplier<T> defaultConfigSupplier) {
         super(parent, style);
-        this.supplier = supplier;
+        this.supplier = defaultConfigSupplier;
         setupUI();
     }
 
@@ -102,14 +103,15 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
     public T getValue() {
         final AppServicePlanEntity entity = appServicePlanPanel.getServicePlan();
         final T result = supplier.get();
-        result.subscriptionId(subsAndResourceGroupPanel.getSubscription().getId());
-        result.resourceGroup(subsAndResourceGroupPanel.getResourceGroup().getName());
+        result.subscriptionId(
+                Optional.ofNullable(subsAndResourceGroupPanel.getSubscription()).map(Subscription::getId).orElse(null));
+        result.resourceGroup(Optional.ofNullable(subsAndResourceGroupPanel.getResourceGroup())
+                .map(ResourceGroup::getName).orElse(null));
         result.appName(instanceDetailPanel.getAppName());
         result.region(instanceDetailPanel.getResourceRegion());
         result.runtime(instanceDetailPanel.getRuntime());
         result.servicePlanName(entity.getName());
-        result.servicePlanResourceGroup(StringUtils.firstNonBlank(entity.getResourceGroup(),
-                subsAndResourceGroupPanel.getResourceGroup().getName()));
+        result.servicePlanResourceGroup(StringUtils.firstNonBlank(entity.getResourceGroup(), result.resourceGroup()));
         result.pricingTier(entity.getPricingTier());
         result.appSettings(new HashMap<>());
         return result;
