@@ -153,6 +153,7 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
         txtRetention = new AzureIntegerInput();
         txtRetention.setMinValue(0);
         txtRetention.setMaxValue(99999);
+        txtRetention.setDefaultValue(0);
         txtRetention.setRequired(false);
     }
 
