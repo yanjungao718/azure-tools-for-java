@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +29,7 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
     public Integer getValue() {
         final String text = getText();
         if (StringUtils.isBlank(text) || !StringUtils.isNumeric(text)) {
-            throw new NumberFormatException(String.format("\"%s\" is not an integer", text));
+            throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
         }
         return Integer.valueOf(getText());
     }
