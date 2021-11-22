@@ -9,12 +9,10 @@ import com.microsoft.azure.toolkit.eclipse.common.artifact.AzureArtifactManager;
 import com.microsoft.azure.toolkit.eclipse.common.console.AzureAsyncConsoleJob;
 import com.microsoft.azure.toolkit.eclipse.common.console.EclipseConsoleMessager;
 import com.microsoft.azure.toolkit.eclipse.common.console.JobConsole;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -80,10 +78,7 @@ public class DeploySpringCloudAppAction {
 
             job.setMessager(messager);
             job.setSupplier(() -> {
-                final AzureString title = AzureOperationBundle.title("springcloud|app.create_update", config.getAppName());
-                final AzureTask<Void> task = new AzureTask<Void>(title, () -> execute(config, messager));
-                task.setType(AzureOperation.Type.ACTION.name());
-                AzureTaskManager.getInstance().runImmediately(task);
+                AzureTaskManager.getInstance().runImmediately(() -> execute(config, messager));
                 return Status.OK_STATUS;
             });
             job.schedule();
