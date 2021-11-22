@@ -41,6 +41,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
 public class SpringCloudDeploymentConfigurationState implements RunProfileState {
     private static final int GET_URL_TIMEOUT = 60;
@@ -67,14 +68,15 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final ConsoleMessager messager = new ConsoleMessager(processHandler);
         final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         consoleView.attachToProcess(processHandler);
-        final Disposable subscribe = Mono.fromCallable(() -> {
-                try {
-                    return this.execute(messager);
-                } catch (final Exception e) {
-                    messager.error(e);
-                }
-                return Optional.empty();
-            })
+        final Callable<Object> execute = () -> {
+            try {
+                return this.execute(messager);
+            } catch (final Exception e) {
+                messager.error(e);
+            }
+            return Optional.empty();
+        };
+        final Disposable subscribe = Mono.fromCallable(execute)
             .doOnTerminate(processHandler::notifyComplete)
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe((res) -> messager.success("Deploy succeed!"), messager::error);
