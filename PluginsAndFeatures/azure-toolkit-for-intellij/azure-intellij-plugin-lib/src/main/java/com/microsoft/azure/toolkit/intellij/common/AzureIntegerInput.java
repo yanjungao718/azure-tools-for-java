@@ -24,19 +24,11 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
     @Setter
     private Integer maxValue;
 
-    public AzureIntegerInput() {
-        super();
-        this.setDefaultValue(0);
-    }
-
     @Nullable
     @Override
     public Integer getValue() {
         final String text = getText();
-        if (StringUtils.isBlank(text)) {
-            return getDefaultValue();
-        }
-        if (!StringUtils.isNumeric(text)) {
+        if (StringUtils.isBlank(text) || !StringUtils.isNumeric(text)) {
             throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
         }
         return Integer.valueOf(getText());
