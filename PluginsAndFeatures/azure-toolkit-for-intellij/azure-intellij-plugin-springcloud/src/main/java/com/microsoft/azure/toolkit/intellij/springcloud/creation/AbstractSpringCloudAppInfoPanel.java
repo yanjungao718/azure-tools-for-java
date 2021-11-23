@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
@@ -95,7 +96,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         if (Objects.isNull(this.originalConfig)) {
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 this.originalConfig = SpringCloudAppConfig.fromApp(app);
-                AzureTaskManager.getInstance().runLater(() -> this.setValue(this.originalConfig));
+                AzureTaskManager.getInstance().runLater(() -> this.setValue(this.originalConfig), AzureTask.Modality.ANY);
             });
         }
     }
