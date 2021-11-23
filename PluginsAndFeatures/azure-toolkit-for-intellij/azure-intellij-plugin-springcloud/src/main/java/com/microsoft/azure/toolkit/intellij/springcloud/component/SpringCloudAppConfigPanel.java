@@ -220,6 +220,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     private void toggleStorage(Boolean e) {
+        if (Objects.isNull(this.originalConfig)) { // prevent action before data is loaded.
+            return;
+        }
         final boolean enabled = BooleanUtils.isTrue(e);
         this.toggleStorage.setActionCommand(enabled ? "disable" : "enable");
         this.toggleStorage.setText(enabled ? "Disable" : "Enable");
@@ -231,6 +234,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     private void toggleEndpoint(Boolean e) {
+        if (Objects.isNull(this.originalConfig)) { // prevent action before data is loaded.
+            return;
+        }
         final boolean enabled = BooleanUtils.isTrue(e);
         this.toggleEndpoint.setActionCommand(enabled ? "disable" : "enable");
         this.toggleEndpoint.setText(enabled ? "Disable" : "Enable");
