@@ -5,9 +5,11 @@
 
 package com.microsoft.azure.toolkit.eclipse.appservice;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,15 +18,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.toolkit.eclipse.appservice.serviceplan.DraftServicePlan;
-import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
-import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionAndResourceGroupComposite;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.eclipse.common.component.resourcegroup.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
@@ -32,49 +31,43 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.eclipse.swt.layout.GridLayout;
 
-public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements AzureForm<AppServiceConfig> {
-    private CreateWebAppInstanceDetailComposite instanceDetailPanel;
+public class AppServiceCreationComposite<T extends AppServiceConfig> extends Composite implements AzureForm<T> {
+    private Supplier<T> supplier;
+    private AppServiceInstanceDetailComposite instanceDetailPanel;
     private SubscriptionAndResourceGroupComposite subsAndResourceGroupPanel;
-    private CreateWebAppAppServicePlanComposite appServicePlanPanel;
-    private AppServiceConfig config;
+    private AppServicePlanComposite appServicePlanPanel;
 
-    /**
-     * Create the dialog.
-     *
-     * @param parentShell
-     */
-    public CreateWebAppDialog(Shell parentShell, AppServiceConfig config) {
-        super(parentShell);
-        this.config = config;
-        setShellStyle(SWT.SHELL_TRIM);
+    public AppServiceCreationComposite(Composite parent, int style, Supplier<T> defaultConfigSupplier) {
+        super(parent, style);
+        this.supplier = defaultConfigSupplier;
+        setupUI();
     }
 
-    @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite container = (Composite) super.createDialogArea(parent);
-
-        Group grpProjectDetails = new Group(container, SWT.NONE);
+    private void setupUI() {
+        setLayout(new GridLayout(1, false));
+        Group grpProjectDetails = new Group(this, SWT.NONE);
         grpProjectDetails.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpProjectDetails.setText("Project Details");
         grpProjectDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
 
         subsAndResourceGroupPanel = new SubscriptionAndResourceGroupComposite(grpProjectDetails, SWT.NONE);
 
-        Group grpInstanceDetails = new Group(container, SWT.NONE);
+        Group grpInstanceDetails = new Group(this, SWT.NONE);
         grpInstanceDetails.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpInstanceDetails.setText("Instance Details");
         grpInstanceDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
-        instanceDetailPanel = new CreateWebAppInstanceDetailComposite(grpInstanceDetails, SWT.NONE);
+        instanceDetailPanel = new AppServiceInstanceDetailComposite(grpInstanceDetails, SWT.NONE);
 
-        Group grpAppServicePlan = new Group(container, SWT.NONE);
+        Group grpAppServicePlan = new Group(this, SWT.NONE);
         grpAppServicePlan.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpAppServicePlan.setText("App Service Plan");
         grpAppServicePlan.setLayout(new FillLayout(SWT.HORIZONTAL));
 
-        appServicePlanPanel = new CreateWebAppAppServicePlanComposite(grpAppServicePlan, SWT.NONE);
+        appServicePlanPanel = new AppServicePlanComposite(grpAppServicePlan, SWT.NONE);
 
         SubscriptionComboBox subscriptionComboBox = subsAndResourceGroupPanel.getSubscriptionComboBox();
         subscriptionComboBox.addValueChangedListener(event -> {
@@ -96,29 +89,39 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
 
         });
         subscriptionComboBox.refreshItems();
-        return container;
+    }
+
+    public void setRuntime(final List<Runtime> platformList) {
+        instanceDetailPanel.getRuntimeComboBox().setPlatformList(platformList);
     }
 
     @Override
-    public AppServiceConfig getValue() {
+    protected void checkSubclass() {
+    }
+
+    @Override
+    public T getValue() {
         final AppServicePlanEntity entity = appServicePlanPanel.getServicePlan();
-        return new AppServiceConfig().subscriptionId(subsAndResourceGroupPanel.getSubscription().getId())
-                .resourceGroup(subsAndResourceGroupPanel.getResourceGroup().getName())
-                .appName(instanceDetailPanel.getAppName())
-                .region(instanceDetailPanel.getResourceRegion())
-                .runtime(instanceDetailPanel.getRuntime())
-                .servicePlanName(entity.getName())
-                .servicePlanResourceGroup(StringUtils.firstNonBlank(entity.getResourceGroup(),
-                        subsAndResourceGroupPanel.getResourceGroup().getName()))
-                .pricingTier(entity.getPricingTier());
+        final T result = supplier.get();
+        result.subscriptionId(
+                Optional.ofNullable(subsAndResourceGroupPanel.getSubscription()).map(Subscription::getId).orElse(null));
+        result.resourceGroup(Optional.ofNullable(subsAndResourceGroupPanel.getResourceGroup())
+                .map(ResourceGroup::getName).orElse(null));
+        result.appName(instanceDetailPanel.getAppName());
+        result.region(instanceDetailPanel.getResourceRegion());
+        result.runtime(instanceDetailPanel.getRuntime());
+        result.servicePlanName(entity.getName());
+        result.servicePlanResourceGroup(StringUtils.firstNonBlank(entity.getResourceGroup(), result.resourceGroup()));
+        result.pricingTier(entity.getPricingTier());
+        result.appSettings(new HashMap<>());
+        return result;
     }
 
     @Override
-    public void setValue(AppServiceConfig config) {
+    public void setValue(T config) {
         Optional.ofNullable(config.subscriptionId()).ifPresent(
                 subscription -> subsAndResourceGroupPanel.getSubscriptionComboBox().setValue(new ItemReference<>(
                         value -> StringUtils.equalsIgnoreCase(value.getId(), config.subscriptionId()))));
-        // todo: refactor config to support draft value
         Optional.ofNullable(config.resourceGroup()).ifPresent(resourceGroup -> subsAndResourceGroupPanel
                 .getResourceGroupComboBox().setValue(new DraftResourceGroup(resourceGroup)));
         Optional.ofNullable(config.appName())
@@ -140,21 +143,4 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
         return Stream.of(subsAndResourceGroupPanel.getInputs(), instanceDetailPanel.getInputs(),
                 appServicePlanPanel.getInputs()).flatMap(List::stream).collect(Collectors.toList());
     }
-
-    @Override
-    protected String getDialogTitle() {
-        return "Create Azure Web App";
-    }
-
-    @Override
-    public AzureForm<AppServiceConfig> getForm() {
-        return this;
-    }
-
-    @Override
-    public int open() {
-        Optional.ofNullable(config).ifPresent(config -> AzureTaskManager.getInstance().runLater(() -> setValue(config)));
-        return super.open();
-    }
-
 }
