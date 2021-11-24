@@ -200,10 +200,6 @@
             <artifactId>retrofit</artifactId>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure</artifactId>
             <version>${azure.version}</version>
