@@ -47,6 +47,7 @@
 
         <h4>Fixed</h4>
         <ul>
+          <li>CVE issues</li>
           <li>progress indicator shows `<unknown>.<unknow>` on menu actions.</li>
           <li>URL starts with 'http' instead of 'https' in Web App properties window and Open in Browser option</li>
           <li>Pops up com.azure.core.management.exception.ManagementException while deploying spring cloud with a creating service</li>

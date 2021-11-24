@@ -15,6 +15,7 @@
 - BeforeRunTask for Azure Resource Connector will show which resources are connected to the run configuration.
 
 ### Fixed
+- CVE issues.
 - progress indicator shows `<unknown>.<unknow>` on menu actions.
 - URL starts with 'http' instead of 'https' in Web App properties window and Open in Browser option
 - Pops up com.azure.core.management.exception.ManagementException while deploying spring cloud with a creating service
