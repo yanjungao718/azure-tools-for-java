@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,10 +28,14 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
     @Override
     public Integer getValue() {
         final String text = getText();
-        if (StringUtils.isBlank(text) || !StringUtils.isNumeric(text)) {
-            throw new NumberFormatException(String.format("\"%s\" is not an integer", text));
+        if (StringUtils.isBlank(text)) {
+            return getDefaultValue();
         }
-        return Integer.valueOf(getText());
+        try {
+            return Integer.parseInt(text);
+        } catch (final Exception e) {
+            throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
+        }
     }
 
     @Override
@@ -40,6 +45,9 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
 
     @Nonnull
     public AzureValidationInfo doValidate(Integer value) {
+        if (Objects.isNull(value)) {
+            return AzureValidationInfo.none(this);
+        }
         if (Objects.nonNull(minValue) && Objects.nonNull(maxValue) && (value < minValue || value > maxValue)) {
             return AzureValidationInfo.error(String.format("Value should be in range [%d, %d]", minValue, maxValue), this);
         } else if (Objects.nonNull(minValue) && value < minValue) {

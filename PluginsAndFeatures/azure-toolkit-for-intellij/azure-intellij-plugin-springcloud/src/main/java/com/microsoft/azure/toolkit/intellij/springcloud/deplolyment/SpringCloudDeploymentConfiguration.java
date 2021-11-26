@@ -12,6 +12,7 @@ import com.intellij.execution.configurations.LocatableConfiguration;
 import com.intellij.execution.configurations.LocatableConfigurationBase;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.impl.CheckableRunConfigurationEditor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
@@ -135,7 +136,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         }
     }
 
-    static class Editor extends SettingsEditor<SpringCloudDeploymentConfiguration> {
+    static class Editor extends SettingsEditor<SpringCloudDeploymentConfiguration> implements CheckableRunConfigurationEditor<SpringCloudDeploymentConfiguration> {
         private final SpringCloudDeploymentConfigurationPanel panel;
 
         Editor(SpringCloudDeploymentConfiguration configuration, Project project) {
@@ -160,9 +161,9 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
 
         @Override
         protected void applyEditorTo(@NotNull SpringCloudDeploymentConfiguration config) throws ConfigurationException {
-            final List<AzureValidationInfo> infos = this.panel.validateAllInputs();
+            final List<AzureValidationInfo> infos = this.panel.getAllValidationInfos(true);
             final AzureValidationInfo error = infos.stream()
-                    .filter(i -> i.getType() == AzureValidationInfo.Type.ERROR)
+                    .filter(i -> !i.isValid())
                     .findAny().orElse(null);
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());
@@ -173,6 +174,10 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         @Override
         protected @NotNull JComponent createEditor() {
             return this.panel.getContentPanel();
+        }
+
+        @Override
+        public void checkEditorData(SpringCloudDeploymentConfiguration s) {
         }
     }
 }
