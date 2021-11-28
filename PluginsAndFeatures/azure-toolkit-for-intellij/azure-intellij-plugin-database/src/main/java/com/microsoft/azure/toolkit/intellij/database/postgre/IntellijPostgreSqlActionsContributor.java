@@ -53,7 +53,7 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
 
     }
 
-    @AzureOperation(name = "postgre.open_by_database_tools.server", params = {"server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "postgre.open_by_database_tools", params = {"server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void openDatabaseTool(Project project, PostgreSqlServer server) {
         PostgreSqlServerEntity entity = server.entity();
         IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
