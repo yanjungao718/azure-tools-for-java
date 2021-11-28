@@ -52,7 +52,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @NotNull
     @Override
     @AzureOperation(
-            name = "springcloud|app.list.cluster",
+            name = "springcloud.list_app.cluster",
             params = {"this.cluster.name()"},
             type = AzureOperation.Type.SERVICE
     )

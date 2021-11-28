@@ -38,9 +38,9 @@ public class CreateSpringCloudAppAction {
         });
     }
 
-    @AzureOperation(name = "springcloud|app.create", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud.create_app", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void createApp(SpringCloudAppConfig config) {
-        AzureTaskManager.getInstance().runInBackground(AzureOperationBundle.title("springcloud|app.create", config.getAppName()), () -> {
+        AzureTaskManager.getInstance().runInBackground(AzureOperationBundle.title("springcloud.create_app", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
             if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
