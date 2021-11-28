@@ -29,8 +29,8 @@ public class SqlServerModule extends AzureRefreshableNode {
         super(SQL_SERVER_DATABASE_MODULE_ID, MODULE_NAME, parent);
         createListener();
 
-        AzureEventBus.after("sqlserver|server.create", this::onServerCreatedOrRemoved);
-        AzureEventBus.after("sqlserver|server.delete", this::onServerCreatedOrRemoved);
+        AzureEventBus.after("sqlserver.create_server", this::onServerCreatedOrRemoved);
+        AzureEventBus.after("sqlserver.delete_server", this::onServerCreatedOrRemoved);
     }
 
     private void onServerCreatedOrRemoved(AzureOperationEvent.Source source) {

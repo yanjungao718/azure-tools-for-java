@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 
 public class OpenStorageExplorerAction {
     public static void openStorageBrowser(StorageAccount account) {
-        final AzureString title = AzureString.format("storage|account.open_storage_explorer", account.name());
+        final AzureString title = AzureString.format("storage.open_storage_explorer", account.name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, () -> {
             final String url = account.portalUrl() + "/storageExplorer";
             AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);

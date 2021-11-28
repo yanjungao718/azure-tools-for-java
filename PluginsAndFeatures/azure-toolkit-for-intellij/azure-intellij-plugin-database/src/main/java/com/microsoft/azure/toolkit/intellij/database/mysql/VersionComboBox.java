@@ -18,7 +18,7 @@ public class VersionComboBox extends AzureComboBox<String> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "mysql|version.list.supported",
+        name = "mysql.list_versions.supported",
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends String> loadItems() {
