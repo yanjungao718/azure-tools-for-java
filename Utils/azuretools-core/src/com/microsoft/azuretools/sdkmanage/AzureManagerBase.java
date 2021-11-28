@@ -109,7 +109,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    @AzureOperation(name = "account.list_subscriptions.tenant|authorized", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "account.list_tenant_subscriptions", type = AzureOperation.Type.SERVICE)
     public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
@@ -234,7 +234,7 @@ public abstract class AzureManagerBase implements AzureManager {
             .singleOrDefault(Collections.emptyList());
     }
 
-    @AzureOperation(name = "account.auth_tenant", params = {"tenantId"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.auth_tenant.tenant", params = {"tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         final Azure.Configurable configurable = Azure.configure()

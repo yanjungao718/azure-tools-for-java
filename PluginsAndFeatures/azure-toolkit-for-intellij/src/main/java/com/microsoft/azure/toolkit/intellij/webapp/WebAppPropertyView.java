@@ -33,7 +33,7 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
         AzureEventBus.after("webapp.start", this::onAppServiceStatusChanged);
         AzureEventBus.after("webapp.stop", this::onAppServiceStatusChanged);
         AzureEventBus.after("webapp.restart", this::onAppServiceStatusChanged);
-        AzureEventBus.after("webapp.delete", this::onAppServiceStatusChanged);
+        AzureEventBus.after("webapp.delete_app.app", this::onAppServiceStatusChanged);
     }
 
     @Override

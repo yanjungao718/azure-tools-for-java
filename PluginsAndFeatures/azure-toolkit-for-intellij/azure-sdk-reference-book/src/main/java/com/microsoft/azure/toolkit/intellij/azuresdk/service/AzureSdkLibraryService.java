@@ -22,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -170,7 +169,7 @@ public class AzureSdkLibraryService {
 
     @SneakyThrows(MalformedURLException.class)
     @Cacheable("sdk/packages/spring")
-    @AzureOperation(name = "sdk.load_meta_data.spring", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "sdk.load_spring_libs_metadata", type = AzureOperation.Type.TASK)
     private static List<AzureSdkServiceEntity> loadSpringSDKEntities() {
         final List<AzureSdkServiceEntity> remote = loadSpringSDKEntities(new URL(SPRING_SDK_METADATA_URL));
         if (CollectionUtils.isEmpty(remote)) {
@@ -181,7 +180,7 @@ public class AzureSdkLibraryService {
 
     @SneakyThrows(MalformedURLException.class)
     @Cacheable("sdk/packages")
-    @AzureOperation(name = "sdk.load_meta_data.java", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "sdk.load_java_libs_meta_data", type = AzureOperation.Type.TASK)
     public static List<AzureJavaSdkEntity> loadAzureSDKEntities() {
         final List<AzureJavaSdkEntity> remote = loadAzureSDKEntities(new URL(CLIENT_MGMT_SDK_METADATA_URL));
         if (CollectionUtils.isEmpty(remote)) {
@@ -215,7 +214,7 @@ public class AzureSdkLibraryService {
     }
 
     @Cacheable("sdk/packages/whitelist")
-    @AzureOperation(name = "sdk.load_meta_data.whitelist", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "sdk.load_whitelist_metadata", type = AzureOperation.Type.TASK)
     private static Set<String> loadAzureSDKWhitelist() {
         try {
             final URL destination = AzureSdkLibraryService.class.getResource(SDK_ALLOW_LIST_CSV);

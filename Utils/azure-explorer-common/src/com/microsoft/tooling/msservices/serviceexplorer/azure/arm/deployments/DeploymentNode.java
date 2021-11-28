@@ -70,13 +70,13 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
         return subscriptionId;
     }
 
-    @AzureOperation(name = "common.show_properties", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "common.show_properties.deployment", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
         DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
     }
 
-    @AzureOperation(name = "arm.delete_deployment", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "arm.delete_deployment.deployment", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
     }

@@ -85,7 +85,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
 
     @Nullable
     @Override
-    @AzureOperation(name = "function.deploy.state", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.deploy_app", type = AzureOperation.Type.ACTION)
     public IFunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws IOException {
         final FunctionDeploymentMessenger messenger = new FunctionDeploymentMessenger(processHandler);
         AzureMessager.getContext().setMessager(messenger);
@@ -139,7 +139,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     }
 
     @AzureOperation(
-            name = "function.prepare_staging_folder_detail",
+            name = "function.prepare_staging_folder.folder&app",
             params = {"stagingFolder.getName()", "this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )
@@ -166,7 +166,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
 
     @Override
     @AzureOperation(
-            name = "function.complete_deployment",
+            name = "function.complete_deployment.app",
             params = {"this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )

@@ -96,7 +96,7 @@ public class AuthMethodManager {
 
     @NotNull
     @AzureOperation(
-            name = "common.create_rest_client",
+            name = "common.create_rest_client.sub",
             params = {"sid"},
             type = AzureOperation.Type.TASK
     )

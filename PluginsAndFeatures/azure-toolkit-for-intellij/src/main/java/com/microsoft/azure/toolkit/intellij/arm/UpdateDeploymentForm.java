@@ -74,7 +74,7 @@ public class UpdateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         String deploymentName = deploymentNode.getDeployment().name();
-        final AzureString title = AzureOperationBundle.title("arm.update_deployment", deploymentName);
+        final AzureString title = AzureOperationBundle.title("arm.update_deployment.deployment", deploymentName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.UPDATE_DEPLOYMENT, (operation -> {
                 Deployment.Update update = deploymentNode.getDeployment().update();

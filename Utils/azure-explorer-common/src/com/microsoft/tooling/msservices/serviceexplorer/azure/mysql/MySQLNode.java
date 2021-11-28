@@ -118,12 +118,12 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.getServer().restart();
     }
 
-    @AzureOperation(name = "mysql.open_portal", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.open_portal.server", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.server.entity().getSubscriptionId(), this.server.id());
     }
 
-    @AzureOperation(name = "mysql.show_properties", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.show_properties.server", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openMySQLPropertyView(this.getId(), this.getProject());
     }

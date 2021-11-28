@@ -312,7 +312,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         disableNext();
 
         final VirtualMachinePublisher publisher = (VirtualMachinePublisher) publisherComboBox.getSelectedItem();
-        final AzureString title = AzureOperationBundle.title("vm.list_offers", publisher.name());
+        final AzureString title = AzureOperationBundle.title("vm.list_offers.publisher", publisher.name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -338,7 +338,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
         if (offerComboBox.getItemCount() > 0) {
             final VirtualMachineOffer offer = (VirtualMachineOffer) offerComboBox.getSelectedItem();
-            final AzureString title = AzureOperationBundle.title("vm.list_skus", offer.name());
+            final AzureString title = AzureOperationBundle.title("vm.list_skus.offer", offer.name());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);

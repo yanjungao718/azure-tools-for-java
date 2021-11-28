@@ -116,7 +116,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "function.clean_staging_folder",
+        name = "function.clean_staging_folder.folder",
         params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -131,7 +131,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "function.list_function_modules",
+        name = "function.list_function_modules.project",
         params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -156,7 +156,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "common.validate_project",
+        name = "common.validate_func_project.project",
         params = {"project.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -175,7 +175,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "function.list_function_methods",
+        name = "function.list_function_methods.module",
         params = {"module.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -210,7 +210,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "function.copy_settings",
+        name = "function.copy_settings.settings&folder",
         params = {"localSettingJson", "stagingFolder"},
         type = AzureOperation.Type.TASK
     )

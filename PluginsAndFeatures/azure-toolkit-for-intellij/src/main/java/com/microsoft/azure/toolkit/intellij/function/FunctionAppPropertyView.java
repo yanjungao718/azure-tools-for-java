@@ -32,10 +32,10 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
 
     protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, resId, null, virtualFile);
-        AzureEventBus.after("function.start", this::onAppServiceStatusChanged);
-        AzureEventBus.after("function.stop", this::onAppServiceStatusChanged);
-        AzureEventBus.after("function.restart", this::onAppServiceStatusChanged);
-        AzureEventBus.after("function.delete", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.start_app.app", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.stop_app.app", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.restart_app.app", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.delete_app.app", this::onAppServiceStatusChanged);
     }
 
     @Override

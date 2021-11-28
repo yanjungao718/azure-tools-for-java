@@ -58,7 +58,7 @@ public class WebAppNode extends WebAppBaseNode {
     }
 
     @Override
-    @AzureOperation(name = "webapp.refresh", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.reload_app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         super.refreshItems();
         this.renderSubModules();
@@ -116,7 +116,7 @@ public class WebAppNode extends WebAppBaseNode {
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "webapp.delete", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete_app.app", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
@@ -139,7 +139,7 @@ public class WebAppNode extends WebAppBaseNode {
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp.open_portal", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_portal.app", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.webApp.subscriptionId(), this.webApp.id());
     }

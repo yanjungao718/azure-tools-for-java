@@ -40,7 +40,7 @@ public class WebAppModule extends AzureRefreshableNode {
     }
 
     @Override
-    @AzureOperation(name = "webapp.reload", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.list_apps", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         Azure.az(AzureAppService.class).webapps(true)
                 .stream()
@@ -49,7 +49,7 @@ public class WebAppModule extends AzureRefreshableNode {
     }
 
     @Override
-    @AzureOperation(name = "webapp.delete", params = {"nameFromResourceId(id)"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete_app.app", params = {"nameFromResourceId(id)"}, type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         Azure.az(AzureAppService.class).subscription(sid).webapp(id).delete();
         removeDirectChildNode(node);

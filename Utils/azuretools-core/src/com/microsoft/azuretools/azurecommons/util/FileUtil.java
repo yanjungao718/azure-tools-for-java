@@ -138,7 +138,7 @@ public class FileUtil {
      * @param targetZipFile ZIP file that will be created or overwritten
      */
     @AzureOperation(
-        name = "common.zip_artifact_files",
+        name = "common.zip_artifact_files.file",
         params = {"targetZipFile.getName()"},
         type = AzureOperation.Type.TASK
     )

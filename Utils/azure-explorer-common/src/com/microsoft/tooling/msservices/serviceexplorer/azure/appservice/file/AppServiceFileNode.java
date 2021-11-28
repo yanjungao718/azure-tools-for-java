@@ -56,13 +56,13 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         });
     }
 
-    @AzureOperation(name = "appservice.download_file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.download_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(name = "appservice.refresh_file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.refresh_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         executeWithTelemetryWrapper(TelemetryConstants.REFRESH_FILE, () -> {
             if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
@@ -74,7 +74,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         });
     }
 
-    @AzureOperation(name = "appservice.open_file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.open_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         executeWithTelemetryWrapper(TelemetryConstants.OPEN_FILE, () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context));
     }

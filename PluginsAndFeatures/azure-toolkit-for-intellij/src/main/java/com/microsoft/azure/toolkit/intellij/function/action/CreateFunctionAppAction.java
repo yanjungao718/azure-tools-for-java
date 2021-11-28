@@ -61,7 +61,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(name = "function.create", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create_app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
         AzureSignInAction.requireSignedIn(project, () -> this.openDialog(project, null));
@@ -87,9 +87,9 @@ public class CreateFunctionAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(name = "function.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<IFunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureString title = title("function.create_detail", config.getName());
+        final AzureString title = title("function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public boolean show(IAzureMessage raw) {

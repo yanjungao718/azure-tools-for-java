@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
@@ -44,7 +43,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "webapp.list.detail|java|subscription|selected",
+        name = "webapp.list_apps",
         type = AzureOperation.Type.SERVICE
     )
     protected List<WebAppComboBoxModel> loadAppServiceModels() {

@@ -110,7 +110,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @Override
-    @AzureOperation(name = "function.run.state", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
     protected IFunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
         validateFunctionRuntime(processHandler);
@@ -123,7 +123,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.validate_runtime",
+        name = "function.validate_runtime.function",
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
@@ -157,7 +157,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.get_version",
+        name = "function.get_version.func",
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
@@ -189,7 +189,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.run_cli",
+        name = "function.run_cli.folder",
         params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -262,7 +262,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.prepare_staging_folder_detail",
+        name = "function.prepare_staging_folder.folder&app",
         params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -345,7 +345,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
 
     @Override
     @AzureOperation(
-        name = "function.complete_local_run",
+        name = "function.complete_run.func",
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )

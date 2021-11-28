@@ -105,7 +105,7 @@ public class SubscriptionManager {
         return IdentityAzureManager.getInstance().getSubscriptionDetails();
     }
 
-    @AzureOperation(name = "account.get_subscription_detail.selected", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.get_subscription_detail", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
