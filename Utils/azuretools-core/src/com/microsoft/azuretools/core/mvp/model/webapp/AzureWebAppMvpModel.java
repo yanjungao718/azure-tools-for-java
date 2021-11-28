@@ -185,7 +185,7 @@ public class AzureWebAppMvpModel {
      * API to create a new Deployment Slot by setting model.
      */
     @AzureOperation(
-            name = "webapp|deployment.create",
+            name = "webapp.create_deployment",
             params = {"model.getNewSlotName()", "model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -207,7 +207,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-            name = "webapp|artifact.upload",
+            name = "webapp.upload_artifact",
             params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -254,7 +254,7 @@ public class AzureWebAppMvpModel {
      * todo: move to app service library
      */
     @AzureOperation(
-            name = "webapp|deployment.update_settings",
+            name = "webapp.update_deployment_settings",
             params = {"slot.entity().getName()", "slot.entity().getWebappName()"},
             type = AzureOperation.Type.SERVICE
     )

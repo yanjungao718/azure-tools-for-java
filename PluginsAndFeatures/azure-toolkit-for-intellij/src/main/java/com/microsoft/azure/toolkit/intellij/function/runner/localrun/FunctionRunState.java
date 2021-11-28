@@ -189,7 +189,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function|cli.run",
+        name = "function.run_cli",
         params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.SERVICE
     )

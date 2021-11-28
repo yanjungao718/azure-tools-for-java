@@ -33,7 +33,7 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "appservice|flight_recorder.list.app",
+        name = "appservice.list_flight_recorders.app",
         params = {"this.appService.name()"},
         type = AzureOperation.Type.SERVICE
     )

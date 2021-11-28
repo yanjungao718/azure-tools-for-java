@@ -54,9 +54,9 @@ public class FunctionNode extends Node implements TelemetryProperties {
     protected void loadActions() {
         addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
             @Override
-            @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "function.trigger", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
-                final AzureString title = AzureOperationBundle.title("function|trigger.start");
+                final AzureString title = AzureOperationBundle.title("function.trigger");
                 AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, () -> trigger()));
             }
         }));
@@ -72,7 +72,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
     }
 
     @AzureOperation(
-        name = "function|trigger.start.detail",
+        name = "function.trigger.detail",
         params = {"this.functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -101,7 +101,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
     }
 
     @AzureOperation(
-        name = "function|trigger.start_http",
+        name = "function.start_http_trigger",
         params = {"this.functionApp.name()"},
         type = AzureOperation.Type.TASK
     )

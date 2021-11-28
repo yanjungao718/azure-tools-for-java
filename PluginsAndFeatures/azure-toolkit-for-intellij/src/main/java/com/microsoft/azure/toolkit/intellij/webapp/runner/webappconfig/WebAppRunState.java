@@ -172,7 +172,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     }
 
     @AzureOperation(
-        name = "webapp|artifact.get.state",
+        name = "webapp.get_artifact.state",
         params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -188,7 +188,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     }
 
     @AzureOperation(
-        name = "webapp|deployment.create.state",
+        name = "webapp.create_deployment.state",
         params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
