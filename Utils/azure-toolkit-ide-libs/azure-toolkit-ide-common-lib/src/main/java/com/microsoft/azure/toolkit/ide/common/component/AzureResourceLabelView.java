@@ -35,7 +35,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.resource = resource;
         this.label = resource.name();
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-        AzureEventBus.on("common|resource.refresh", listener);
+        AzureEventBus.on("resource.refresh", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
         this.refreshView();
     }
@@ -45,7 +45,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         final Object source = event.getSource();
         if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.resource.id())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            if ("common|resource.refresh".equals(type)) {
+            if ("resource.refresh".equals(type)) {
                 if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                     tm.runLater(this::refreshChildren);
                 }
@@ -56,7 +56,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     }
 
     public void dispose() {
-        AzureEventBus.off("common|resource.refresh", listener);
+        AzureEventBus.off("resource.refresh", listener);
         AzureEventBus.off("common|resource.status_changed", listener);
         this.refresher = null;
     }

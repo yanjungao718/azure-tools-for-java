@@ -102,7 +102,7 @@ public class AzureWebAppMvpModel {
      * @return instance of the updated Web App on Linux
      */
     @AzureOperation(
-        name = "docker|image.update",
+        name = "docker.update_image",
         params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )

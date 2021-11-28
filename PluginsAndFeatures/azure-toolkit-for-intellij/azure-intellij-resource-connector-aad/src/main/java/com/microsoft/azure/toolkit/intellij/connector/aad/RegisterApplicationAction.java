@@ -52,7 +52,7 @@ public class RegisterApplicationAction extends AnAction {
     }
 
     @Override
-    @AzureOperation(name = "connector|aad.register_application", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "aad.register_application", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();
         if (project == null || project.isDisposed()) {
@@ -86,7 +86,7 @@ public class RegisterApplicationAction extends AnAction {
         private final Subscription subscription;
 
         @Override
-        @AzureOperation(name = "connector|aad.create_aad_application", type = AzureOperation.Type.TASK)
+        @AzureOperation(name = "aad.create_application", type = AzureOperation.Type.TASK)
         public void run() {
             var validSuffix = new StringBuilder();
             for (char c : (model.getDisplayName() + UUID.randomUUID().toString().substring(0, 6)).toCharArray()) {
@@ -132,7 +132,7 @@ public class RegisterApplicationAction extends AnAction {
             showApplicationTemplateDialog(subscription, application);
         }
 
-        @AzureOperation(name = "connector|aad.show_aad_template", type = AzureOperation.Type.TASK)
+        @AzureOperation(name = "aad.show_application_template", type = AzureOperation.Type.TASK)
         private void showApplicationTemplateDialog(@Nonnull Subscription subscription, @Nonnull Application application) {
             AzureTaskManager.getInstance().runLater(() -> {
                 new AzureApplicationTemplateDialog(project, new SubscriptionApplicationPair(subscription, application)).show();

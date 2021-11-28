@@ -101,7 +101,7 @@ public class ResourceConnectionExplorer extends Tree {
         public static final String ID = "Azure Resource Connector";
 
         @Override
-        @AzureOperation(name = "connector|explorer.initialize", type = AzureOperation.Type.SERVICE)
+        @AzureOperation(name = "connector.initialize_explorer", type = AzureOperation.Type.SERVICE)
         public void createToolWindowContent(final Project project, final com.intellij.openapi.wm.ToolWindow toolWindow) {
             final ToolWindow myToolWindow = new ToolWindow(project);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();

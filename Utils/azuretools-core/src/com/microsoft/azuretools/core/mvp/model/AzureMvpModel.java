@@ -67,7 +67,7 @@ public class AzureMvpModel {
      * @return Instance of Subscription
      */
     @AzureOperation(
-        name = "account|subscription.get_detail",
+        name = "account.get_subscription_detail",
         params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -82,7 +82,7 @@ public class AzureMvpModel {
      * @return List of Subscription instances
      */
     @AzureOperation(
-        name = "account|subscription.get_detail.selected",
+        name = "account.get_subscription_detail.selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<Subscription> getSelectedSubscriptions() {
@@ -98,7 +98,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "arm|rg.list.subscription|selected",
+        name = "arm.list_resource_groups.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<ResourceGroup>> getResourceGroups(String sid) {
@@ -114,7 +114,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-            name = "arm|rg.list.subscription|selected",
+            name = "arm.list_resource_groups.subscription|selected",
             type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<ResourceGroup>> getResourceGroups() {
@@ -132,7 +132,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "arm|rg.delete",
+        name = "arm.delete_resource_group",
         params = {"rgName"},
         type = AzureOperation.Type.SERVICE
     )
@@ -147,7 +147,7 @@ public class AzureMvpModel {
      * @return List of ResourceGroup instances
      */
     @AzureOperation(
-        name = "arm|rg.list.subscription",
+        name = "arm.list_resource_groups.subscription",
         params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -161,7 +161,7 @@ public class AzureMvpModel {
      * Get Resource Group by Subscription ID and Resource Group name.
      */
     @AzureOperation(
-        name = "arm|rg.get.subscription",
+        name = "arm.get_resource_group.subscription",
         params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -174,7 +174,7 @@ public class AzureMvpModel {
     }
 
     @AzureOperation(
-        name = "arm|deployment.list.subscription|selected",
+        name = "arm.list_deployments.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<Deployment> listAllDeployments() {
@@ -193,7 +193,7 @@ public class AzureMvpModel {
     }
 
     @AzureOperation(
-        name = "arm|deployment.list.subscription",
+        name = "arm.list_deployments.subscription",
         params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -210,7 +210,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "arm|deployment.list.subscription|rg",
+        name = "arm.list_deployments.subscription|rg",
         params = {"rgName", "sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -231,7 +231,7 @@ public class AzureMvpModel {
      * @return List of Location instances
      */
     @AzureOperation(
-        name = "common|region.list.subscription",
+        name = "common.list_regions.subscription",
         params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )

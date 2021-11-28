@@ -281,7 +281,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         if (customImageBtn.isSelected()) {
             disableNext();
 
-            final AzureString title = AzureOperationBundle.title("vm|publisher.list");
+            final AzureString title = AzureOperationBundle.title("vm.list_publishers");
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
@@ -312,7 +312,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         disableNext();
 
         final VirtualMachinePublisher publisher = (VirtualMachinePublisher) publisherComboBox.getSelectedItem();
-        final AzureString title = AzureOperationBundle.title("vm|offer.list", publisher.name());
+        final AzureString title = AzureOperationBundle.title("vm.list_offers", publisher.name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -338,7 +338,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
         if (offerComboBox.getItemCount() > 0) {
             final VirtualMachineOffer offer = (VirtualMachineOffer) offerComboBox.getSelectedItem();
-            final AzureString title = AzureOperationBundle.title("vm|sku.list", offer.name());
+            final AzureString title = AzureOperationBundle.title("vm.list_skus", offer.name());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
@@ -365,7 +365,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     private void fillImages() {
         disableNext();
 
-        final AzureString title = AzureOperationBundle.title("vm|image.list");
+        final AzureString title = AzureOperationBundle.title("vm.list_images");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);

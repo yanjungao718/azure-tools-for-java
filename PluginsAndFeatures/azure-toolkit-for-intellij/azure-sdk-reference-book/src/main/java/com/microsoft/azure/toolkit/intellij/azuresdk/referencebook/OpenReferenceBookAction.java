@@ -20,7 +20,7 @@ public class OpenReferenceBookAction extends AnAction {
         AzureTaskManager.getInstance().runLater(() -> openSdkReferenceBook(event.getProject()));
     }
 
-    @AzureOperation(name = "sdk|reference_book.open", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sdk.open_reference_book", type = AzureOperation.Type.ACTION)
     private void openSdkReferenceBook(final @Nullable Project project) {
         final AzureSdkReferenceBookDialog dialog = new AzureSdkReferenceBookDialog(project);
         dialog.show();

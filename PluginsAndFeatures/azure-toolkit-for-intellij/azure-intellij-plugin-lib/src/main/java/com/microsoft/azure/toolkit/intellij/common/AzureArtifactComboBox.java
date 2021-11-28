@@ -67,7 +67,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Nonnull
     @Override
     @AzureOperation(
-            name = "common|artifact.list.project",
+            name = "common.list_artifacts.project",
             params = {"this.project.getName()"},
             type = AzureOperation.Type.SERVICE
     )

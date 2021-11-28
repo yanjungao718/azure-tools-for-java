@@ -70,7 +70,7 @@ public class AzureArtifactManager {
     }
 
     @AzureOperation(
-        name = "common|artifact.get_file",
+        name = "common.get_artifact_file",
         params = {"artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -130,7 +130,7 @@ public class AzureArtifactManager {
 
     @Nullable
     @AzureOperation(
-        name = "common|artifact.get_module",
+        name = "common.get_artifact_module",
         params = {"azureArtifact.getName()"},
         type = AzureOperation.Type.TASK
     )

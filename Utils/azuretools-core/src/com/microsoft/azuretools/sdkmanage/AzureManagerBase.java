@@ -109,7 +109,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    @AzureOperation(name = "account|subscription.list.tenant|authorized", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "account.list_subscriptions.tenant|authorized", type = AzureOperation.Type.SERVICE)
     public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
@@ -221,12 +221,12 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
-    @AzureOperation(name = "account|subscription.list.tenant", params = {"authentication.tenantId()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.list_subscriptions.tenant", params = {"authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
         return az(AzureAccount.class).account().getSubscriptions();
     }
 
-    @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.list_tenants.authorized", type = AzureOperation.Type.TASK)
     protected List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
             .toList()
@@ -234,7 +234,7 @@ public abstract class AzureManagerBase implements AzureManager {
             .singleOrDefault(Collections.emptyList());
     }
 
-    @AzureOperation(name = "account|tenant.auth", params = {"tenantId"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.auth_tenant", params = {"tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         final Azure.Configurable configurable = Azure.configure()

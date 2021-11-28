@@ -180,7 +180,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     @AzureOperation(
-            name = "common|combobox.load_items",
+            name = "common.load_combobox_items",
             params = {"this.getLabel()"},
             type = AzureOperation.Type.ACTION
     )

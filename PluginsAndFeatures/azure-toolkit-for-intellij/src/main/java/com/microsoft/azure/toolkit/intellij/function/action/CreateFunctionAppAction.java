@@ -119,7 +119,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     // todo: replace with Azure Event Hub
-    @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "common.refresh_explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(IFunctionApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

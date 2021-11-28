@@ -121,7 +121,7 @@ public class CreateWebAppAction extends NodeActionListener {
         }); // let root exception handler to show the error.
     }
 
-    @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "common.refresh_explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(IWebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
