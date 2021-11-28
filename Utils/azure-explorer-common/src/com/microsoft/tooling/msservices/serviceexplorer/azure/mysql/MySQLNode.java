@@ -44,13 +44,13 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.server = server;
         this.serverState = server.entity().getState();
         loadActions();
-        AzureEventBus.after("mysql.start_server", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql.stop_server", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql.restart_server", this::onMySqlServerStatusChanged);
-        AzureEventBus.before("mysql.start_server", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql.stop_server", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql.restart_server", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql.delete_server", this::onMySqlServerStatusChanging);
+        AzureEventBus.after("mysql.start_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.stop_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.restart_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.before("mysql.start_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.stop_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.restart_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.delete_server.server", this::onMySqlServerStatusChanging);
     }
 
     public void onMySqlServerStatusChanged(MySqlServer server) {

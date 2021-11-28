@@ -90,13 +90,13 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
         connectionStringsSpring.getOutputTextArea().setText(getConnectionString(POSTGRE_SQL_OUTPUT_TEXT_PATTERN_SPRING, null, null, null));
         this.rerender();
         this.initListeners();
-        AzureEventBus.after("postgre.delete_server", (PostgreSqlServer server2) -> {
+        AzureEventBus.after("postgre.delete_server.server", (PostgreSqlServer server2) -> {
             if (this.server.name().equals(server2.name())) {
                 AzureMessager.getMessager().info(String.format("PostgreSQL server(%s) is deleted", this.server.name()), "");
                 IntellijShowPropertiesViewAction.closePropertiesView(this.server, this.project);
             }
         });
-        AzureEventBus.after("postgre.restart_server", (PostgreSqlServer server2) -> {
+        AzureEventBus.after("postgre.restart_server.server", (PostgreSqlServer server2) -> {
             if (this.server.name().equals(server2.name())) {
                 this.refresh();
             }

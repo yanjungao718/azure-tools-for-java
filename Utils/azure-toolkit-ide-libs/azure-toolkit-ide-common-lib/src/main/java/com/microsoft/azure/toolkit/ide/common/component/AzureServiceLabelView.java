@@ -45,19 +45,19 @@ public class AzureServiceLabelView<T extends AzureService> implements NodeView {
         this.label = label;
         this.iconPath = iconPath;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-        AzureEventBus.on("service.refresh", listener);
+        AzureEventBus.on("service.refresh.service", listener);
         this.refreshView();
     }
 
     public void dispose() {
-        AzureEventBus.off("service.refresh", listener);
+        AzureEventBus.off("service.refresh.service", listener);
         this.refresher = null;
     }
 
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if ("service.refresh".equals(type)
+        if ("service.refresh.service".equals(type)
                 && source instanceof AzureService
                 && ((AzureService) source).name().equals(this.service.name())) {
             if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {

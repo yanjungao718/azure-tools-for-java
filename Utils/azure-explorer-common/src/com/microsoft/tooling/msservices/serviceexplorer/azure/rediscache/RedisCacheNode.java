@@ -6,7 +6,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
@@ -108,7 +107,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
-    @AzureOperation(name = "redis.delete", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.delete.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }

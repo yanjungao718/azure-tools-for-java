@@ -67,13 +67,13 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final Consumer<IAzureBaseResource<?, ?>> refresh = IAzureBaseResource::refresh;
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAzureBaseResource);
         am.registerAction(REFRESH, new Action<>(refresh, refreshView));
 
         final Consumer<AzureService<?>> serviceRefresh = AzureService::refresh;
         final ActionView.Builder serviceRefreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("service.refresh", ((AzureService<?>) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("service.refresh.service", ((AzureService<?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof AzureService);
         am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
 

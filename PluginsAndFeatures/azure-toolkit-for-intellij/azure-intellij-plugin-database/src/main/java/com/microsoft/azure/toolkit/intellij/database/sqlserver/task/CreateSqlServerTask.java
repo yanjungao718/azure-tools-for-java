@@ -32,7 +32,7 @@ public class CreateSqlServerTask {
     }
 
     @AzureOperation(
-        name = "sqlserver.create_server",
+        name = "sqlserver.create_server.server",
         params = {
             "config.getServerName()",
             "config.getSubscription().getName()"

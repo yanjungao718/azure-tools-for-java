@@ -123,13 +123,13 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.reset.setVisible(changedFromOrigin);
             this.saveButton.setEnabled(changedFromOrigin);
         });
-        AzureEventBus.after("springcloud.remove_app", (SpringCloudApp app) -> {
+        AzureEventBus.after("springcloud.remove_app.app", (SpringCloudApp app) -> {
             if (this.app.name().equals(app.name())) {
                 AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.app.name()), "");
                 IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
             }
         });
-        AzureEventBus.after("springcloud.update_app", (SpringCloudApp app) -> {
+        AzureEventBus.after("springcloud.update_app.app", (SpringCloudApp app) -> {
             if (this.app.name().equals(app.name())) {
                 this.refresh();
             }

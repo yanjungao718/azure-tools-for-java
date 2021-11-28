@@ -29,8 +29,8 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
         super(MYSQL_DATABASE_MODULE_ID, MODULE_NAME, parent);
         createListener();
 
-        AzureEventBus.after("mysql.create_server", this::onMySqlServerCreatedOrRemoved);
-        AzureEventBus.after("mysql.delete_server", this::onMySqlServerCreatedOrRemoved);
+        AzureEventBus.after("mysql.create_server.server", this::onMySqlServerCreatedOrRemoved);
+        AzureEventBus.after("mysql.delete_server.server", this::onMySqlServerCreatedOrRemoved);
     }
 
     private void onMySqlServerCreatedOrRemoved(AzureOperationEvent.Source source) {

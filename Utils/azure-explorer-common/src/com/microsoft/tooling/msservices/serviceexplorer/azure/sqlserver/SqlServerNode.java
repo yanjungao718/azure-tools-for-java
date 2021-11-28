@@ -38,7 +38,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         this.subscriptionId = subscriptionId;
         this.server = server;
         this.loadActions();
-        AzureEventBus.before("sqlserver.delete_server", this::onServerStatusChanging);
+        AzureEventBus.before("sqlserver.delete_server.server", this::onServerStatusChanging);
     }
 
     private void onServerStatusChanging(SqlServer server) {

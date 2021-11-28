@@ -92,8 +92,8 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         init();
         initListeners();
 
-        AzureEventBus.after("sqlserver.delete_server", this::onMySqlServerStatusDeleted);
-        AzureEventBus.before("sqlserver.delete_server", this::onMySqlServerStatusDeleting);
+        AzureEventBus.after("sqlserver.delete_server.server", this::onMySqlServerStatusDeleted);
+        AzureEventBus.before("sqlserver.delete_server.server", this::onMySqlServerStatusDeleting);
     }
 
     private void onMySqlServerStatusDeleted(SqlServer server) {

@@ -98,14 +98,14 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         init();
         initListeners();
 
-        AzureEventBus.after("mysql.start_server", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql.restart_server", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql.stop_server", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql.delete_server", this::onMySqlServerStatusDeleted);
-        AzureEventBus.before("mysql.start_server", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql.stop_server", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql.restart_server", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql.delete_server", this::onMySqlServerStatusDeleting);
+        AzureEventBus.after("mysql.start_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.restart_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.stop_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.delete_server.server", this::onMySqlServerStatusDeleted);
+        AzureEventBus.before("mysql.start_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.stop_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.restart_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.delete_server.server", this::onMySqlServerStatusDeleting);
     }
 
     private void onMySqlServerStatusChanged(MySqlServer server) {
