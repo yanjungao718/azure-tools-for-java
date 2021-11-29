@@ -210,7 +210,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        name = "function.copy_settings.settings&folder",
+        name = "function.copy_settings.settings|folder",
         params = {"localSettingJson", "stagingFolder"},
         type = AzureOperation.Type.TASK
     )

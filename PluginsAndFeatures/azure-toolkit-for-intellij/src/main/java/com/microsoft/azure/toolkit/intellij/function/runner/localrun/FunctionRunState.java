@@ -39,8 +39,8 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.intellij.util.ReadStreamLineThread;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
@@ -262,7 +262,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.prepare_staging_folder.folder&app",
+        name = "function.prepare_staging_folder.folder|app",
         params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )

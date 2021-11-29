@@ -161,7 +161,7 @@ public class AzureMvpModel {
      * Get Resource Group by Subscription ID and Resource Group name.
      */
     @AzureOperation(
-        name = "arm.get_resource_group.rg&subscription",
+        name = "arm.get_resource_group.rg|subscription",
         params = {"name", "sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -210,7 +210,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "arm.list_deployments.rg&subscription",
+        name = "arm.list_deployments.rg|subscription",
         params = {"rgName", "sid"},
         type = AzureOperation.Type.SERVICE
     )

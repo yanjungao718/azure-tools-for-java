@@ -139,7 +139,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     }
 
     @AzureOperation(
-            name = "function.prepare_staging_folder.folder&app",
+            name = "function.prepare_staging_folder.folder|app",
             params = {"stagingFolder.getName()", "this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )

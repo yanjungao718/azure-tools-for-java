@@ -570,7 +570,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile fileSelection = getFileSelection();
 
         if (fileSelection != null) {
-            final AzureString title = AzureOperationBundle.title("blob.download_blob.file&container", targetFile, blobContainer.getName());
+            final AzureString title = AzureOperationBundle.title("blob.download_blob.file|container", targetFile, blobContainer.getName());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 try {
@@ -679,7 +679,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     }
 
     private void uploadFile(final String path, final File selectedFile) {
-        final AzureString title = AzureOperationBundle.title("blob.upload_blob.file&container", selectedFile, blobContainer.getName());
+        final AzureString title = AzureOperationBundle.title("blob.upload_blob.file|container", selectedFile, blobContainer.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             try {

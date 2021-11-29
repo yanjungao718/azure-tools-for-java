@@ -58,7 +58,7 @@ public class AzureWebAppMvpModel {
      * @return instance of created WebApp
      */
     @AzureOperation(
-            name = "webapp.create_app.app&subscription&image",
+            name = "webapp.create_app.app|subscription|image",
             params = {
                 "model.getWebAppName()",
                 "model.getSubscriptionId()",
@@ -102,7 +102,7 @@ public class AzureWebAppMvpModel {
      * @return instance of the updated Web App on Linux
      */
     @AzureOperation(
-        name = "docker.update_image.app&image",
+        name = "docker.update_image.app|image",
         params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -185,7 +185,7 @@ public class AzureWebAppMvpModel {
      * API to create a new Deployment Slot by setting model.
      */
     @AzureOperation(
-            name = "webapp.create_deployment.deployment&app",
+            name = "webapp.create_deployment.deployment|app",
             params = {"model.getNewSlotName()", "model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -207,7 +207,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-            name = "webapp.upload_artifact.artifact&app",
+            name = "webapp.upload_artifact.artifact|app",
             params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -254,7 +254,7 @@ public class AzureWebAppMvpModel {
      * todo: move to app service library
      */
     @AzureOperation(
-            name = "webapp.update_deployment_settings.deployment&app",
+            name = "webapp.update_deployment_settings.deployment|app",
             params = {"slot.entity().getName()", "slot.entity().getWebappName()"},
             type = AzureOperation.Type.SERVICE
     )

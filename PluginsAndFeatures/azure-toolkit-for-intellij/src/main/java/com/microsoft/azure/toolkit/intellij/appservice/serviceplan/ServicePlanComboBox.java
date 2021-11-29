@@ -108,7 +108,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
     @Nonnull
     @Override
     @AzureOperation(
-        name = "appservice.list_plans.subscription&region&os",
+        name = "appservice.list_plans.subscription|region|os",
         params = {"this.subscription.getId()", "this.region.getName()", "this.os.name()"},
         type = AzureOperation.Type.SERVICE
     )
