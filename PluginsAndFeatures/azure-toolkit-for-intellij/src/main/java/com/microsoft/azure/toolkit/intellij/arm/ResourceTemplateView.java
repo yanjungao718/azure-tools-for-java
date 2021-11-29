@@ -17,13 +17,13 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.management.resources.DeploymentMode;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.intellij.language.arm.ARMLanguage;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
@@ -31,10 +31,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ARM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.UPDATE_DEPLOYMENT_SHORTCUT;
 import static com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_FAIL;
 import static com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_SUCCESS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ARM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.UPDATE_DEPLOYMENT_SHORTCUT;
 
 public class ResourceTemplateView extends BaseEditor {
 
@@ -153,19 +153,19 @@ public class ResourceTemplateView extends BaseEditor {
         }));
     }
 
-    public boolean isTemplateUpdate(){
+    public boolean isTemplateUpdate() {
         return !originTemplate.equals(getTemplate());
     }
 
-    public boolean isPropertiesUpdate(){
+    public boolean isPropertiesUpdate() {
         return !originParameters.equals(getParameters());
     }
 
-    public String getTemplate(){
+    public String getTemplate() {
         return ((PsiAwareTextEditorImpl) fileEditor).getEditor().getDocument().getText();
     }
 
-    public String getParameters(){
+    public String getParameters() {
         final String parameters = ((PsiAwareTextEditorImpl) parameterEditor).getEditor().getDocument().getText();
         return DeploymentUtils.parseParameters(parameters);
     }
