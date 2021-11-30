@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "appservice|flight_recorder.list.app",
+        name = "appservice.list_flight_recorders.app",
         params = {"this.appService.name()"},
         type = AzureOperation.Type.SERVICE
     )

@@ -35,14 +35,14 @@ public class FunctionModule extends AzureRefreshableNode {
     }
 
     @Override
-    @AzureOperation(name = "function.delete", params = {"nameFromResourceId(id)", "sid"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.delete_app.app", params = {"nameFromResourceId(id)", "sid"}, type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         Azure.az(AzureAppService.class).functionApp(id).delete();
         removeDirectChildNode(node);
     }
 
     @Override
-    @AzureOperation(name = "function.reload_all", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.list_apps", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         Azure.az(AzureAppService.class).functionApps(true)
                 .stream()

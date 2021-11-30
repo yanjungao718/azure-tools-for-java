@@ -21,7 +21,7 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
     @Nonnull
     @Override
     @AzureOperation(
-        name = "account|subscription.list.selected",
+        name = "account.list_subscriptions",
         type = AzureOperation.Type.SERVICE
     )
     protected List<Subscription> loadItems() throws Exception {

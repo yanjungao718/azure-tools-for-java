@@ -90,9 +90,9 @@ public class CreateWebAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<IWebApp> createWebApp(final WebAppConfig config) {
-        final AzureString title = title("webapp.create_detail", config.getName());
+        final AzureString title = title("webapp.create_app.app", config.getName());
         final AzureTask<IWebApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -104,9 +104,9 @@ public class CreateWebAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(name = "webapp.deploy_artifact", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void deploy(final IWebApp webapp, final Path application, final Project project) {
-        final AzureString title = title("webapp.deploy_artifact", webapp.name());
+        final AzureString title = title("webapp.deploy_artifact.app", webapp.name());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
@@ -121,7 +121,7 @@ public class CreateWebAppAction extends NodeActionListener {
         }); // let root exception handler to show the error.
     }
 
-    @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "common.refresh_explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(IWebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

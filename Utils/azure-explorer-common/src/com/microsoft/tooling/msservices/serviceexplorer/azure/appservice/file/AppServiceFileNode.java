@@ -56,13 +56,13 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         });
     }
 
-    @AzureOperation(name = "appservice|file.download", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.download_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.refresh", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.refresh_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         executeWithTelemetryWrapper(TelemetryConstants.REFRESH_FILE, () -> {
             if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
@@ -74,7 +74,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         });
     }
 
-    @AzureOperation(name = "appservice|file.open", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.open_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         executeWithTelemetryWrapper(TelemetryConstants.OPEN_FILE, () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context));
     }
@@ -88,7 +88,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
             return;
         }
         final Runnable runnable = () -> open(context);
-        final AzureString title = AzureOperationBundle.title("appservice|file.get_content", file.getName(), file.getApp().name());
+        final AzureString title = AzureOperationBundle.title("appservice.get_file_content", file.getName(), file.getApp().name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), title, false, runnable));
     }
 

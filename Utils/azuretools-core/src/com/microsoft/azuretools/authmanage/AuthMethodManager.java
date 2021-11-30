@@ -96,7 +96,7 @@ public class AuthMethodManager {
 
     @NotNull
     @AzureOperation(
-            name = "common|rest_client.create",
+            name = "common.create_rest_client.sub",
             params = {"sid"},
             type = AzureOperation.Type.TASK
     )
@@ -187,7 +187,7 @@ public class AuthMethodManager {
         return this.authMethodDetails;
     }
 
-    @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.update_auth_setting", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
         waitInitFinish();
         cleanAll();
@@ -203,7 +203,7 @@ public class AuthMethodManager {
         persistAuthMethodDetails();
     }
 
-    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.persist_auth_setting", type = AzureOperation.Type.TASK)
     public void persistAuthMethodDetails() {
         waitInitFinish();
         try {
@@ -280,7 +280,7 @@ public class AuthMethodManager {
         });
     }
 
-    @AzureOperation(name = "account|auth_setting.load", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.load_auth_setting", type = AzureOperation.Type.TASK)
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {

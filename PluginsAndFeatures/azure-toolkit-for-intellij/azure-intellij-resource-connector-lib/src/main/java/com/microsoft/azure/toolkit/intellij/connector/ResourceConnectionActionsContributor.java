@@ -42,13 +42,13 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
 
         final Consumer<Module> addHandler = (m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject());
         final ActionView.Builder addView = new ActionView.Builder("Add", "/icons/action/add")
-                .title(t -> AzureOperationBundle.title("connector|explorer.add_connection"))
+                .title(t -> AzureOperationBundle.title("connector.add_connection"))
                 .enabled(m -> m instanceof Module);
         final Action<Module> addAction = new Action<>(addHandler, addView);
 
         final BiConsumer<Connection<?, ?>, AnActionEvent> editHandler = (c, e) -> openDialog(c, e.getProject());
         final ActionView.Builder editView = new ActionView.Builder("Edit", "/icons/action/edit")
-                .title(t -> AzureOperationBundle.title("connector|explorer.edit_connection"))
+                .title(t -> AzureOperationBundle.title("connector.edit_connection"))
                 .enabled(m -> m instanceof Connection);
         final Action<Connection<?, ?>> editAction = new Action<>(editHandler, editView);
 
@@ -59,7 +59,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                     project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, c, ConnectionTopics.Action.REMOVE);
                 };
         final ActionView.Builder removeView = new ActionView.Builder("Remove", "/icons/action/remove")
-                .title(t -> AzureOperationBundle.title("connector|explorer.remove_connection"))
+                .title(t -> AzureOperationBundle.title("connector.remove_connection"))
                 .enabled(m -> m instanceof Connection);
         final Action<Connection<?, ?>> removeAction = new Action<>(removeHandler, removeView);
 

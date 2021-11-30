@@ -60,7 +60,7 @@ public class SubscriptionManager {
         AzureStoreManager.getInstance().getIdeStore().setProperty(TelemetryConstants.ACCOUNT, "subscriptions_json", null);
     }
 
-    @AzureOperation(name = "account|subscription.load_cache", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.load_subscription_cache", type = AzureOperation.Type.TASK)
     public static List<SubscriptionDetail> loadSubscriptions() {
         System.out.println("SubscriptionManager.loadSubscriptions()");
         try {
@@ -85,7 +85,7 @@ public class SubscriptionManager {
         }
     }
 
-    @AzureOperation(name = "account|subscription.persist", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.persist_subscription", type = AzureOperation.Type.TASK)
     private static void saveSubscriptions(List<SubscriptionDetail> sdl)
             throws IOException {
         System.out.println("SubscriptionManager.saveSubscriptions()");
@@ -98,14 +98,14 @@ public class SubscriptionManager {
         return Utils.groupByIgnoreDuplicate(IdentityAzureManager.getInstance().getSubscriptionDetails(), d -> d.getSubscriptionId());
     }
 
-    @AzureOperation(name = "account|subscription.get_details", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.get_subscription_details", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return IdentityAzureManager.getInstance().getSubscriptionDetails();
     }
 
-    @AzureOperation(name = "account|subscription.get_detail.selected", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.get_subscription_detail", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();

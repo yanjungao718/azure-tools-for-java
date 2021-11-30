@@ -91,35 +91,35 @@ public class FunctionAppNode extends WebAppBaseNode {
         return this.functionApp.entity().getRegion().getName();
     }
 
-    @AzureOperation(name = "function.start", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.start_app.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         functionApp.start();
         refreshStatus();
     }
 
-    @AzureOperation(name = "function.stop", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.stop_app.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         functionApp.stop();
         refreshStatus();
     }
 
-    @AzureOperation(name = "function.restart", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.restart_app.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         functionApp.restart();
         refreshStatus();
     }
 
-    @AzureOperation(name = "function.delete", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.delete_app.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getFunctionAppId(), FunctionAppNode.this);
     }
 
-    @AzureOperation(name = "function.open_portal", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.open_portal.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(subscriptionId, this.getFunctionAppId());
     }
 
-    @AzureOperation(name = "function.show_properties", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.show_properties.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
     }

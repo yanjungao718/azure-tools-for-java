@@ -27,7 +27,7 @@ public class FunctionsNode extends RefreshableNode {
     }
 
     @Override
-    @AzureOperation(name = "function.refresh", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.refresh_funcs", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         functionApp.listFunctions(true).stream()
                 .map(envelope -> new FunctionNode(envelope, functionApp, this))

@@ -41,7 +41,7 @@ public class ShowApplicationTemplatesAction extends AnAction {
     }
 
     @Override
-    @AzureOperation(name = "connector|aad.show_application_templates", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "aad.show_application_templates", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();
         assert project != null;

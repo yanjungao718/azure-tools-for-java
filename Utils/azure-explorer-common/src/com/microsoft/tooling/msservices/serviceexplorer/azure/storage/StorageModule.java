@@ -22,8 +22,8 @@ public class StorageModule extends AzureRefreshableNode {
 
     public StorageModule(Node parent) {
         super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, null);
-        AzureEventBus.after("storage|account.create", this::onCreatedOrRemoved);
-        AzureEventBus.after("storage|account.delete", this::onCreatedOrRemoved);
+        AzureEventBus.after("storage.create_account.account", this::onCreatedOrRemoved);
+        AzureEventBus.after("storage.delete_account.account", this::onCreatedOrRemoved);
     }
 
     @Override
