@@ -80,10 +80,10 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -156,7 +156,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             + " content and configurations elements can be swapped between two deployment slots, including the production "
             + "slot.";
 
-    private Map<String, IWebApp> webAppDetailsMap = new HashMap<>();
+    private Map<String, WebApp> webAppDetailsMap = new HashMap<>();
     private WebAppSettingModel webAppSettingModel;
     private boolean isDeployToSlot = false;
     private boolean isCreateNewSlot = false;
@@ -532,7 +532,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             return;
         }
         String appServiceName = table.getItems()[selectedRow].getText(0);
-        IWebApp webApp = webAppDetailsMap.get(appServiceName);
+        WebApp webApp = webAppDetailsMap.get(appServiceName);
         FtpCredentialsWindow w = new FtpCredentialsWindow(getShell(), webApp);
         w.open();
     }
@@ -550,9 +550,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         browserAppServiceDetails.setText("Fetching app service information");
 
         final String appServiceName = table.getItems()[selectedRow].getText(0);
-        final IWebApp webApp = webAppDetailsMap.get(appServiceName);
+        final WebApp webApp = webAppDetailsMap.get(appServiceName);
         Mono.fromCallable(() -> {
-            IAppServicePlan asp = webApp.plan();
+            AppServicePlan asp = webApp.plan();
             Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(webApp.subscriptionId());
 
             StringBuilder sb = new StringBuilder();
@@ -599,7 +599,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         return;
                     }
                     table.removeAll();
-                    for (IWebApp webApp : webAppDetailsList) {
+                    for (WebApp webApp : webAppDetailsList) {
                         TableItem item = new TableItem(table, SWT.NULL);
                         item.setText(new String[] { webApp.name(), webApp.getRuntime().getWebContainer().getValue(),
                                 webApp.getRuntime().getJavaVersion().getValue(), webApp.resourceGroup() });
@@ -626,7 +626,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         refreshComboBox(comboSlot);
         refreshComboBox(comboSlotConf);
         String appServiceName = table.getItems()[selectedRow].getText(0);
-        IWebApp webApp = webAppDetailsMap.get(appServiceName);
+        WebApp webApp = webAppDetailsMap.get(appServiceName);
         if (webApp == null) {
             return;
         }
@@ -640,7 +640,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         comboSlot.setEnabled(btnSlotUseExisting.getSelection());
                         comboSlotConf.removeAll();
                         comboSlotConf.setEnabled(btnSlotCreateNew.getSelection());
-                        for (IWebAppDeploymentSlot deploymentSlot : slots) {
+                        for (WebAppDeploymentSlot deploymentSlot : slots) {
                             comboSlot.add(deploymentSlot.name());
                             comboSlotConf.add(deploymentSlot.name());
                         }
@@ -752,7 +752,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             // something went wrong - report an error!
             return;
         }
-        IWebApp webApp = d.getWebApp();
+        WebApp webApp = d.getWebApp();
         CommonUtils.setPreference(CommonUtils.WEBAPP_NAME, webApp.name());
         doFillTable(true);
     }
@@ -766,7 +766,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             return false;
         }
         String appServiceName = table.getItems()[selectedRow].getText(0);
-        IWebApp wad = webAppDetailsMap.get(appServiceName);
+        WebApp wad = webAppDetailsMap.get(appServiceName);
         if (wad != null && Objects.equals(wad.getRuntime().getJavaVersion(), JavaVersion.OFF)) {
             setErrorMessage("Select java based App Service");
             okButton.setEnabled(false);
@@ -828,7 +828,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private void deploy(String artifactName, String artifactPath) {
         int selectedRow = table.getSelectionIndex();
         String appServiceName = table.getItems()[selectedRow].getText(0);
-        IWebApp webApp = webAppDetailsMap.get(appServiceName);
+        WebApp webApp = webAppDetailsMap.get(appServiceName);
         String jobDescription = String.format("Web App '%s' deployment", webApp.name());
         if (isDeployToSlot) {
             jobDescription = String.format("Web App '%s' deploy to slot '%s'", webApp.name(),
@@ -962,7 +962,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         job.schedule();
     }
 
-    private IWebAppBase<? extends AppServiceBaseEntity> getRealWebApp(IWebApp webApp, Object parent,
+    private IWebAppBase<? extends AppServiceBaseEntity> getRealWebApp(WebApp webApp, Object parent,
             IProgressMonitor monitor, String deploymentName) {
         if (isDeployToSlot) {
             if (isCreateNewSlot) {
@@ -978,7 +978,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         }
     }
 
-    private IWebAppDeploymentSlot createDeploymentSlot(IWebApp webApp) {
+    private WebAppDeploymentSlot createDeploymentSlot(WebApp webApp) {
         return EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP_SLOT, (operation) -> {
             return AzureWebAppMvpModel.getInstance().createDeploymentSlotFromSettingModel(webApp, webAppSettingModel);
         }, (e) -> {
@@ -1006,7 +1006,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             return;
         }
         String appServiceName = table.getItems()[selectedRow].getText(0);
-        IWebApp webApp = webAppDetailsMap.get(appServiceName);
+        WebApp webApp = webAppDetailsMap.get(appServiceName);
 
         boolean confirmed = MessageDialog.openConfirm(getShell(), "Delete App Service",
                 "Do you really want to delete the App Service '" + appServiceName + "'?");

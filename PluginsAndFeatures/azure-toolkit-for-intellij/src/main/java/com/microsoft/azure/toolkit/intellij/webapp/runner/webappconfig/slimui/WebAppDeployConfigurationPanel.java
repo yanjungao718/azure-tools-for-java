@@ -24,7 +24,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -206,7 +206,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         }
     }
 
-    private synchronized void fillDeploymentSlots(List<IWebAppDeploymentSlot> slotList, @NotNull final WebAppConfig selectedWebApp) {
+    private synchronized void fillDeploymentSlots(List<WebAppDeploymentSlot> slotList, @NotNull final WebAppConfig selectedWebApp) {
         final String defaultSlot = (String) cbxSlotName.getSelectedItem();
         final String defaultConfigurationSource = (String) cbxSlotConfigurationSource.getSelectedItem();
         cbxSlotName.removeAllItems();

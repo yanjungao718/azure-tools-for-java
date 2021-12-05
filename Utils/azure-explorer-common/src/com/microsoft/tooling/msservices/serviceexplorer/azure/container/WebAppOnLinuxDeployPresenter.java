@@ -34,7 +34,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
 
     private List<WebApp> retrieveListOfWebAppOnLinux(boolean force) {
         return Azure.az(AzureAppService.class).webapps(force).stream()
-                .filter(iWebApp -> iWebApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
+                .filter(WebApp -> WebApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
                 .collect(Collectors.toList());
     }
 

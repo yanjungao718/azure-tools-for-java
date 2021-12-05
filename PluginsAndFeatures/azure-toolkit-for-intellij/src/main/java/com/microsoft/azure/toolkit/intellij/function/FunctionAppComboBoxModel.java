@@ -5,7 +5,7 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
@@ -16,9 +16,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Optional;
 
 @Getter
-public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionApp, FunctionAppConfig> {
+public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionApp, FunctionAppConfig> {
 
-    public FunctionAppComboBoxModel(IFunctionApp functionApp) {
+    public FunctionAppComboBoxModel(FunctionApp functionApp) {
         super(functionApp);
         this.config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(functionApp);
     }

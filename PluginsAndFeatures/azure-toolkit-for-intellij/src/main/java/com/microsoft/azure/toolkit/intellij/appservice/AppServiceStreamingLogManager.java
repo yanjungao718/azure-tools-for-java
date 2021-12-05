@@ -13,9 +13,9 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -120,7 +120,7 @@ public enum AppServiceStreamingLogManager {
 
     private AppServiceStreamingLogConsoleView getOrCreateConsoleView(Project project, String resourceId) {
         return consoleViewMap.compute(resourceId,
-                                      (id, view) -> (view == null || view.isDisposed()) ? new AppServiceStreamingLogConsoleView(project, id) : view);
+            (id, view) -> (view == null || view.isDisposed()) ? new AppServiceStreamingLogConsoleView(project, id) : view);
     }
 
     interface ILogStreaming {
@@ -144,7 +144,7 @@ public enum AppServiceStreamingLogManager {
         private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS = message("appService.logStreaming.error.noApplicationInsights");
 
         private final String resourceId;
-        private IFunctionApp functionApp;
+        private FunctionApp functionApp;
 
         FunctionLogStreaming(final String resourceId) {
             this.resourceId = resourceId;
@@ -207,7 +207,7 @@ public enum AppServiceStreamingLogManager {
             return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
         }
 
-        private IFunctionApp getFunctionApp() {
+        private FunctionApp getFunctionApp() {
             if (functionApp == null) {
                 functionApp = Azure.az(AzureAppService.class).functionApp(resourceId);
             }
@@ -216,7 +216,7 @@ public enum AppServiceStreamingLogManager {
     }
 
     static class WebAppLogStreaming implements ILogStreaming {
-        private final IWebApp webApp;
+        private final WebApp webApp;
 
         public WebAppLogStreaming(String resourceId) {
             this.webApp = Azure.az(AzureAppService.class).webapp(resourceId);
@@ -245,7 +245,7 @@ public enum AppServiceStreamingLogManager {
     }
 
     static class WebAppSlotLogStreaming implements ILogStreaming {
-        private final IWebAppDeploymentSlot deploymentSlot;
+        private final WebAppDeploymentSlot deploymentSlot;
 
         public WebAppSlotLogStreaming(String resourceId) {
             this.deploymentSlot = Azure.az(AzureAppService.class).deploymentSlot(resourceId);

@@ -7,19 +7,19 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 @Getter
-public class WebAppComboBoxModel extends AppServiceComboBoxModel<IWebApp, WebAppConfig> {
+public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp, WebAppConfig> {
 
     private WebAppSettingModel webAppSettingModel;
 
     // todo: migrate Base Model to service library
-    public WebAppComboBoxModel(final IWebApp webApp) {
+    public WebAppComboBoxModel(final WebApp webApp) {
         super(webApp);
         this.runtime = webApp.getRuntime();
     }
