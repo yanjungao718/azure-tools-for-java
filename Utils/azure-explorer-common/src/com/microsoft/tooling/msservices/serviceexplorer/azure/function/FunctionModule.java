@@ -7,7 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -79,6 +79,6 @@ public class FunctionModule extends AzureRefreshableNode {
     }
 
     private static boolean isFunctionModuleEvent(Object eventObject) {
-        return eventObject != null && eventObject instanceof IFunctionApp;
+        return eventObject != null && eventObject instanceof FunctionApp;
     }
 }

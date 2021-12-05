@@ -7,7 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -32,14 +32,14 @@ public class WebAppNode extends WebAppBaseNode {
     public static final String SSH_INTO = "SSH into Web App (Preview)";
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
-    private final IWebApp webApp;
+    private final WebApp webApp;
 
-    public WebAppNode(WebAppModule parent, IWebApp webApp) {
+    public WebAppNode(WebAppModule parent, WebApp webApp) {
         super(parent, LABEL, webApp);
         this.webApp = webApp;
     }
 
-    public IWebApp getWebApp() {
+    public WebApp getWebApp() {
         return webApp;
     }
 

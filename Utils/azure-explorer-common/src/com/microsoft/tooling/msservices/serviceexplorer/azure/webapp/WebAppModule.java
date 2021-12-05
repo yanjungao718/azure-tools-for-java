@@ -7,7 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -63,12 +63,12 @@ public class WebAppModule extends AzureRefreshableNode {
                 if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN || event.opsType == AzureUIRefreshEvent
                         .EventType.SIGNOUT) {
                     removeAllChildNodes();
-                } else if (event.object instanceof IWebApp && (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event
+                } else if (event.object instanceof WebApp && (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event
                         .opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
                     if (hasChildNodes()) {
                         load(true);
                     }
-                } else if (event.object instanceof IWebApp && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
+                } else if (event.object instanceof WebApp && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
                     load(true);
                 }
             }

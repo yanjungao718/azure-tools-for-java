@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.AllArgsConstructor;
@@ -39,7 +39,7 @@ public class WebAppConfig extends AppServiceConfig {
                            .region(AppServiceConfig.getDefaultRegion()).build();
     }
 
-    public static WebAppConfig fromRemote(IWebApp webApp) {
+    public static WebAppConfig fromRemote(WebApp webApp) {
         return WebAppConfig.builder()
                 .name(webApp.name())
                 .resourceId(webApp.id())

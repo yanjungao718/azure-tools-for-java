@@ -4,7 +4,7 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -19,9 +19,9 @@ public class FunctionsNode extends RefreshableNode {
     private static final String ICON_PATH = "azure-functions-small.png";
     private static final String EMPTY_POSTFIX = " (Empty)";
 
-    private final IFunctionApp functionApp;
+    private final FunctionApp functionApp;
 
-    public FunctionsNode(@Nonnull final Node parent, @Nonnull final IFunctionApp functionApp) {
+    public FunctionsNode(@Nonnull final Node parent, @Nonnull final FunctionApp functionApp) {
         super(ID, NAME, parent, ICON_PATH);
         this.functionApp = functionApp;
     }

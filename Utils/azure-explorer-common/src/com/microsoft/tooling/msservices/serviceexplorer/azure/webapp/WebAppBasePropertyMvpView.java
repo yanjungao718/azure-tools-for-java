@@ -9,11 +9,11 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 
 public interface WebAppBasePropertyMvpView extends MvpView {
-    public void onLoadWebAppProperty(String sid, String webAppId, String slotName);
+    void onLoadWebAppProperty(String sid, String webAppId, String slotName);
 
-    public void showProperty(WebAppProperty property);
+    void showProperty(WebAppProperty property);
 
-    public void showPropertyUpdateResult(boolean isSuccess);
+    void showPropertyUpdateResult(boolean isSuccess);
 
-    public void showGetPublishingProfileResult(boolean isSuccess);
+    void showGetPublishingProfileResult(boolean isSuccess);
 }

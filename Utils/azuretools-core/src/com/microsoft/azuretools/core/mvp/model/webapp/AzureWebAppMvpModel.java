@@ -12,10 +12,9 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -66,7 +65,7 @@ public class AzureWebAppMvpModel {
             },
             type = AzureOperation.Type.SERVICE
     )
-    public IWebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+    public WebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
                 .id(model.getAppServicePlanId())
@@ -76,7 +75,7 @@ public class AzureWebAppMvpModel {
                 .region(model.getLocationName())
                 .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
                 .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
-        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         // todo: support start up file in docker configuration
         final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
@@ -106,8 +105,8 @@ public class AzureWebAppMvpModel {
         params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
-    public IWebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
-        final IWebApp app = com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).webapp(webAppId);
+    public WebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
+        final WebApp app = com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).webapp(webAppId);
         // clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
@@ -132,7 +131,7 @@ public class AzureWebAppMvpModel {
             params = {"model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
-    public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
+    public WebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
                 .id(model.getAppServicePlanId())
@@ -142,7 +141,7 @@ public class AzureWebAppMvpModel {
                 .region(model.getRegion())
                 .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
                 .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing())).build();
-        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
                 .enableApplicationLog(model.isEnableApplicationLog())
                 .applicationLogLevel(com.microsoft.azure.toolkit.lib.appservice.model.LogLevel.fromString(model.getApplicationLogLevel()))
@@ -165,9 +164,9 @@ public class AzureWebAppMvpModel {
         return new CreateResourceGroupTask(subscriptionId, resourceGroup, Region.fromName(region)).execute();
     }
 
-    private IAppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
+    private AppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
         final AzureAppService az = getAzureAppServiceClient(servicePlanEntity.getSubscriptionId());
-        final IAppServicePlan appServicePlan = az.appServicePlan(servicePlanEntity);
+        final AppServicePlan appServicePlan = az.appServicePlan(servicePlanEntity);
         if (appServicePlan.exists()) {
             return appServicePlan;
         }
@@ -189,7 +188,7 @@ public class AzureWebAppMvpModel {
             params = {"model.getNewSlotName()", "model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
-    public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
+    public WebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final WebApp webApp, @NotNull final WebAppSettingModel model) {
         String configurationSource = model.getNewSlotConfigurationSource();
         if (StringUtils.equalsIgnoreCase(configurationSource, webApp.name())) {
             configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_PARENT;
@@ -213,13 +212,13 @@ public class AzureWebAppMvpModel {
     )
     public void deployArtifactsToWebApp(@NotNull final IWebAppBase deployTarget, @NotNull final File file,
                                         boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
-        if (!(deployTarget instanceof IWebApp || deployTarget instanceof IWebAppDeploymentSlot)) {
+        if (!(deployTarget instanceof WebApp || deployTarget instanceof WebAppDeploymentSlot)) {
             final String error = "the deployment target is not a valid (deployment slot of) Web App";
             final String action = "select a valid Web App or deployment slot to deploy the artifact";
             throw new AzureToolkitRuntimeException(error, action);
         }
         // stop target app service
-        String stopMessage = deployTarget instanceof IWebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
+        String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
         progressIndicator.setText(stopMessage);
         deployTarget.stop();
 
@@ -233,7 +232,7 @@ public class AzureWebAppMvpModel {
             deployTarget.deploy(deployType, file, webappPath);
         }
 
-        String successMessage = deployTarget instanceof IWebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
+        String successMessage = deployTarget instanceof WebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
         progressIndicator.setText(successMessage);
         deployTarget.start();
     }
@@ -258,7 +257,7 @@ public class AzureWebAppMvpModel {
             params = {"slot.entity().getName()", "slot.entity().getWebappName()"},
             type = AzureOperation.Type.SERVICE
     )
-    public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
+    public void updateDeploymentSlotAppSettings(final WebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
         slot.update().withAppSettings(toUpdate).commit();
     }
 

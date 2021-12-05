@@ -8,7 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -41,10 +41,10 @@ public class FunctionNode extends Node implements TelemetryProperties {
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
 
-    private final IFunctionApp functionApp;
+    private final FunctionApp functionApp;
     private final FunctionEntity functionEntity;
 
-    public FunctionNode(@Nonnull FunctionEntity functionEnvelope, @Nonnull IFunctionApp functionApp, @Nonnull FunctionsNode parent) {
+    public FunctionNode(@Nonnull FunctionEntity functionEnvelope, @Nonnull FunctionApp functionApp, @Nonnull FunctionsNode parent) {
         super(functionEnvelope.getTriggerId(), functionEnvelope.getName(), parent, SUB_FUNCTION_ICON_PATH);
         this.functionEntity = functionEnvelope;
         this.functionApp = functionApp;

@@ -5,11 +5,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 import java.util.List;
 
 public interface WebAppModuleView extends MvpView {
-    void renderChildren(List<IWebApp> resourceExes);
+    void renderChildren(List<WebApp> resourceExes);
 }
