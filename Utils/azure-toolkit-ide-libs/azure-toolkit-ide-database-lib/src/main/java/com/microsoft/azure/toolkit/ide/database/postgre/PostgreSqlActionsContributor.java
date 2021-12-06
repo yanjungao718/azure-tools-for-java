@@ -29,7 +29,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools")
-                .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server", ((IAzureResource<?>) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((IAzureResource<?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof PostgreSqlServer);
         am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
     }

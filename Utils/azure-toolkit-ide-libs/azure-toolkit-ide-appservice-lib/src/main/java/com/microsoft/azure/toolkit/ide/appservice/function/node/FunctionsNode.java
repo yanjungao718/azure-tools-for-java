@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsCon
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -22,11 +22,11 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class FunctionsNode extends Node<IFunctionApp> {
-    private final IFunctionApp functionApp;
+public class FunctionsNode extends Node<FunctionApp> {
+    private final FunctionApp functionApp;
     private final NodeView nodeView;
 
-    public FunctionsNode(@Nonnull IFunctionApp functionApp) {
+    public FunctionsNode(@Nonnull FunctionApp functionApp) {
         super(functionApp);
         this.functionApp = functionApp;
         this.nodeView = new FunctionsNodeView(functionApp);
@@ -48,7 +48,7 @@ public class FunctionsNode extends Node<IFunctionApp> {
 
         @Nonnull
         @Getter
-        private final IFunctionApp functionApp;
+        private final FunctionApp functionApp;
         private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
 
         @Nullable
@@ -56,7 +56,7 @@ public class FunctionsNode extends Node<IFunctionApp> {
         @Getter
         private Refresher refresher;
 
-        public FunctionsNodeView(@Nonnull IFunctionApp functionApp) {
+        public FunctionsNodeView(@Nonnull FunctionApp functionApp) {
             this.functionApp = functionApp;
             this.listener = new AzureEventBus.EventListener<>(this::onEvent);
             AzureEventBus.on("appservice|function.functions.refresh", listener);

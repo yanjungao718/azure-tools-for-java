@@ -54,7 +54,7 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
         return ActionConstants.parse(ActionConstants.MySQL.CONNECT_TO_SERVER).getOperationName();
     }
 
-    @AzureOperation(name = "mysql.connect_server", params = {"this.node.getServer().name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.connect_server.server", params = {"this.node.getServer().name()"}, type = AzureOperation.Type.ACTION)
     private void doActionPerformed(boolean isLoggedIn, Project project) {
         final IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
                 .name(String.format(MYSQL_PATTERN_NAME, node.getServer().name()))

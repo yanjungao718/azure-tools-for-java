@@ -8,7 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -41,10 +41,10 @@ public class FunctionNode extends Node implements TelemetryProperties {
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
 
-    private final IFunctionApp functionApp;
+    private final FunctionApp functionApp;
     private final FunctionEntity functionEntity;
 
-    public FunctionNode(@Nonnull FunctionEntity functionEnvelope, @Nonnull IFunctionApp functionApp, @Nonnull FunctionsNode parent) {
+    public FunctionNode(@Nonnull FunctionEntity functionEnvelope, @Nonnull FunctionApp functionApp, @Nonnull FunctionsNode parent) {
         super(functionEnvelope.getTriggerId(), functionEnvelope.getName(), parent, SUB_FUNCTION_ICON_PATH);
         this.functionEntity = functionEnvelope;
         this.functionApp = functionApp;
@@ -54,9 +54,9 @@ public class FunctionNode extends Node implements TelemetryProperties {
     protected void loadActions() {
         addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
             @Override
-            @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "function.trigger_func", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
-                final AzureString title = AzureOperationBundle.title("function|trigger.start");
+                final AzureString title = AzureOperationBundle.title("function.trigger_func");
                 AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, () -> trigger()));
             }
         }));
@@ -72,7 +72,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
     }
 
     @AzureOperation(
-        name = "function|trigger.start.detail",
+        name = "function.trigger_func.app",
         params = {"this.functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -101,7 +101,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
     }
 
     @AzureOperation(
-        name = "function|trigger.start_http",
+        name = "function.trigger_func_http.app",
         params = {"this.functionApp.name()"},
         type = AzureOperation.Type.TASK
     )

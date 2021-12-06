@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -108,12 +108,12 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private final WebAppOnLinuxDeployModel model;
     private String basePath;
     // cached lists of resources
-    private List<IAppServicePlan> appServicePlanList;
+    private List<AppServicePlan> appServicePlanList;
     private List<Region> locationList;
     private List<Subscription> subscriptionList;
     private List<PricingTier> pricingTierList;
     private List<ResourceGroup> resourceGroupList;
-    private List<IWebApp> webAppList;
+    private List<WebApp> webAppList;
     // Widgets
     private Button rdoExistingWebApp;
     private Button rdoNewWebApp;
@@ -275,7 +275,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         if (rdoExistingWebApp.getSelection()) {
             // existing web app
             model.setCreatingNewWebAppOnLinux(false);
-            IWebApp selectedWebApp = getSelectedWebApp();
+            WebApp selectedWebApp = getSelectedWebApp();
             if (selectedWebApp != null) {
                 model.setWebAppId(selectedWebApp.id());
                 model.setWebAppName(selectedWebApp.name());
@@ -334,7 +334,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 }
             } else if (cpNew.rdoExistingAppServicePlan.getSelection()) {
                 model.setCreatingNewAppServicePlan(false);
-                IAppServicePlan selectedAsp = getSelectedAppServicePlan();
+                AppServicePlan selectedAsp = getSelectedAppServicePlan();
                 if (selectedAsp != null) {
                     model.setAppServicePlanId(selectedAsp.id());
                 } else {
@@ -481,7 +481,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             if (model.isCreatingNewWebAppOnLinux()) {
                 // create new WebApp
                 ConsoleLogger.info(String.format("Creating new WebApp ... [%s]", model.getWebAppName()));
-                IWebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(model);
+                WebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(model);
 
                 if (app != null && app.name() != null) {
                     ConsoleLogger.info(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
@@ -491,7 +491,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             } else {
                 // update WebApp
                 ConsoleLogger.info(String.format("Updating WebApp ... [%s]", model.getWebAppName()));
-                IWebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(model.getWebAppId(), acrInfo);
+                WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(model.getWebAppId(), acrInfo);
                 if (app != null && app.name() != null) {
                     ConsoleLogger.info(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                 }
@@ -533,8 +533,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     // get selected items in Combo
-    private IWebApp getSelectedWebApp() {
-        IWebApp selectedWebApp = null;
+    private WebApp getSelectedWebApp() {
+        WebApp selectedWebApp = null;
         int index = cpExisting.tblWebApps.getSelectionIndex();
         if (webAppList != null && index >= 0 && index < webAppList.size()) {
             selectedWebApp = webAppList.get(index);
@@ -542,8 +542,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         return selectedWebApp;
     }
 
-    private IAppServicePlan getSelectedAppServicePlan() {
-        IAppServicePlan asp = null;
+    private AppServicePlan getSelectedAppServicePlan() {
+        AppServicePlan asp = null;
         int index = cpNew.cbExistingAppServicePlan.getSelectionIndex();
         if (appServicePlanList != null && index >= 0 && index < appServicePlanList.size()) {
             asp = appServicePlanList.get(index);
@@ -654,7 +654,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private void onAppServicePlanSelection() {
         cpNew.lblLocationValue.setText("N/A");
         cpNew.lblPricingTierValue.setText("N/A");
-        IAppServicePlan asp = getSelectedAppServicePlan();
+        AppServicePlan asp = getSelectedAppServicePlan();
         if (asp != null) {
             cpNew.lblLocationValue.setText(asp.entity().getRegion());
             cpNew.lblPricingTierValue.setText(asp.entity().getPricingTier().getSize());
@@ -719,11 +719,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     @Override
-    public void renderAppServicePlanList(List<IAppServicePlan> list) {
+    public void renderAppServicePlanList(List<AppServicePlan> list) {
         // TODO Auto-generated method stub
         appServicePlanList = list;
         cpNew.cbExistingAppServicePlan.removeAll();
-        for (IAppServicePlan asp : appServicePlanList) {
+        for (AppServicePlan asp : appServicePlanList) {
             cpNew.cbExistingAppServicePlan.add(asp.name());
         }
         if (cpNew.cbExistingAppServicePlan.getItemCount() > 0) {
@@ -759,7 +759,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     @Override
-    public void renderWebAppOnLinuxList(List<IWebApp> list) {
+    public void renderWebAppOnLinuxList(List<WebApp> list) {
         // TODO Auto-generated method stub
         cpExisting.btnRefresh.setEnabled(true);
         webAppList = list.stream().sorted((a, b) -> a.subscriptionId().compareToIgnoreCase(b.subscriptionId()))
@@ -768,7 +768,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         // TODO: where to show loading ...
         if (webAppList.size() > 0) {
             cpExisting.tblWebApps.removeAll();
-            for (IWebApp app : webAppList) {
+            for (WebApp app : webAppList) {
                 TableItem it = new TableItem(cpExisting.tblWebApps, SWT.NULL);
                 it.setText(new String[] {app.name(), app.resourceGroup()});
             }

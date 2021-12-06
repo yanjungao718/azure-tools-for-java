@@ -68,7 +68,7 @@ public class StartStreamingLogsAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        final AzureString title = AzureOperationBundle.title("appservice|log_stream.start", ResourceUtils.nameFromResourceId(resourceId));
+        final AzureString title = AzureOperationBundle.title("appservice.start_log_stream.app", ResourceUtils.nameFromResourceId(resourceId));
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             switch (operation) {
                 case START_STREAMING_LOG_FUNCTION_APP:

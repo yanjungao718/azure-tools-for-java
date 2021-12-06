@@ -457,7 +457,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     private void pullImage() {
-        final AzureString title = AzureOperationBundle.title("docker|image.pull", currentRepo);
+        final AzureString title = AzureOperationBundle.title("docker.pull_image.image", currentRepo);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
             try {
                 if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {

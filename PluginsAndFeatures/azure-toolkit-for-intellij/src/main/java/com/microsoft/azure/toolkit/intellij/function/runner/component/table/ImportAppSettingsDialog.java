@@ -10,7 +10,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
 import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionsConstants;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.intellij.CommonConst;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 
@@ -59,9 +59,9 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
         cbAppSettingsSource.setRenderer(new ListCellRendererWrapper() {
             @Override
             public void customize(JList list, Object object, int index, boolean isSelected, boolean cellHasFocus) {
-                if (object instanceof IFunctionApp) {
+                if (object instanceof FunctionApp) {
                     setIcon(UIHelperImpl.loadIcon(AzureFunctionsConstants.AZURE_FUNCTIONS_ICON));
-                    setText(((IFunctionApp) object).name());
+                    setText(((FunctionApp) object).name());
                 } else if (LOCAL_SETTINGS_JSON.equals(object)) {
                     setText(object.toString());
                     setIcon(AllIcons.FileTypes.Json);
@@ -75,8 +75,8 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 final Object selectedItem = cbAppSettingsSource.getSelectedItem();
-                if (selectedItem instanceof IFunctionApp) {
-                    presenter.onLoadFunctionAppSettings((IFunctionApp) selectedItem);
+                if (selectedItem instanceof FunctionApp) {
+                    presenter.onLoadFunctionAppSettings((FunctionApp) selectedItem);
                 } else if (LOCAL_SETTINGS_JSON.equals(selectedItem)) {
                     presenter.onLoadLocalSettings(localSettingsPath);
                 }
@@ -103,7 +103,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     }
 
     @Override
-    public void fillFunctionApps(List<IFunctionApp> functionApps) {
+    public void fillFunctionApps(List<FunctionApp> functionApps) {
         functionApps.forEach(functionAppResourceEx -> cbAppSettingsSource.addItem(functionAppResourceEx));
         pack();
     }

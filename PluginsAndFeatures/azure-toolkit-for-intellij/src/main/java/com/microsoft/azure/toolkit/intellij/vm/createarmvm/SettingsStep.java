@@ -671,7 +671,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final boolean isNewResourceGroup = createNewRadioButton.isSelected();
         final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
         Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-        final AzureString title = AzureOperationBundle.title("vm.create", model.getName());
+        final AzureString title = AzureOperationBundle.title("vm.create_vm.vm", model.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);

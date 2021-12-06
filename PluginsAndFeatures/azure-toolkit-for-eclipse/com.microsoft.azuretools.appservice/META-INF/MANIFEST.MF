@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: WebApp Plugin for Eclipse
 Bundle-SymbolicName: com.microsoft.azuretools.appservice;singleton:=true
-Bundle-Version: 3.29.0.qualifier
+Bundle-Version: 3.30.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.jdt.core,
@@ -49,4 +49,4 @@ Export-Package: com.microsoft.azuretools.appservice,
  com.microsoft.azuretools.appservice.handlers,
  com.microsoft.azuretools.appservice.ui
 Bundle-ClassPath: .,
- target/lib/azure-toolkit-ide-appservice-lib-0.14.0.jar
+ target/lib/azure-toolkit-ide-appservice-lib-0.15.0-SNAPSHOT.jar

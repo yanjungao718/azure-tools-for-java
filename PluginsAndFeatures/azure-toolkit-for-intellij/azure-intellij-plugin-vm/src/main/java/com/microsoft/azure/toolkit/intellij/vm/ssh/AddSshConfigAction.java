@@ -40,7 +40,7 @@ public class AddSshConfigAction {
         }
     }
 
-    @AzureOperation(name = "vm|ssh.open_ssh_config_dialog", params = "vm.name()", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "vm.open_ssh_config_dialog", params = "vm.name()", type = AzureOperation.Type.TASK)
     private static void openConfigDialog(VirtualMachine vm, @Nonnull Project project, Configurable configurable) {
         ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
             try {

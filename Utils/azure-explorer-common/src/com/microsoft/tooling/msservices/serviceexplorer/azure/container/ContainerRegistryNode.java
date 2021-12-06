@@ -59,12 +59,12 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
                 .withInstanceName(name);
     }
 
-    @AzureOperation(name = "container.show_properties", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "container.show_properties.container", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
     }
 
-    @AzureOperation(name = "container.open_portal", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "container.open_portal.container", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,

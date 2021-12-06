@@ -424,7 +424,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         return TelemetryConstants.ACTION;
     }
 
-    @AzureOperation(name = "common.open_portal", params = {"nameFromResourceId(resourceId)"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "common.open_portal.resource", params = {"nameFromResourceId(resourceId)"}, type = AzureOperation.Type.ACTION)
     public void openResourcesInPortal(String subscriptionId, String resourceId) {
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in

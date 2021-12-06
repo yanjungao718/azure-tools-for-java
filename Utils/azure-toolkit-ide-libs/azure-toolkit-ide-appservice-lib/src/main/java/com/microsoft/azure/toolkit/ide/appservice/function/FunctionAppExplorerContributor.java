@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class FunctionAppExplorerContributor implements IExplorerContributor {
                 );
     }
 
-    private static List<IFunctionApp> listFunctionApps(AzureFunction functionModule) {
-        return functionModule.list().stream().sorted(Comparator.comparing(IFunctionApp::name)).collect(Collectors.toList());
+    private static List<FunctionApp> listFunctionApps(AzureFunction functionModule) {
+        return functionModule.list().stream().sorted(Comparator.comparing(FunctionApp::name)).collect(Collectors.toList());
     }
 }

@@ -38,7 +38,7 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
     @NotNull
     @Override
     @AzureOperation(
-        name = "function.list.detail|java|subscription|selected",
+        name = "function.list_java_apps",
         type = AzureOperation.Type.SERVICE
     )
     protected List<FunctionAppComboBoxModel> loadAppServiceModels() {

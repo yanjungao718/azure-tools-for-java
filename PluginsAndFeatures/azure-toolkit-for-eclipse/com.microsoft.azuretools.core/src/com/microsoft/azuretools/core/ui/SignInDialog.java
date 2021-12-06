@@ -160,6 +160,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
     private Button createRadioButton(Composite parent, String label, AuthType type) {
         final Button radioButton = new Button(parent, SWT.RADIO);
+        radioButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         radioButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
@@ -29,14 +29,14 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
     private Text textHost;
     private Text textUsername;
     private Text textPassword;
-    private IWebApp webApp;
+    private WebApp webApp;
 
     /**
      * Create the dialog.
      *
      * @param parentShell
      */
-    public FtpCredentialsWindow(Shell parentShell, IWebApp webApp) {
+    public FtpCredentialsWindow(Shell parentShell, WebApp webApp) {
         super(parentShell);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         setHelpAvailable(false);

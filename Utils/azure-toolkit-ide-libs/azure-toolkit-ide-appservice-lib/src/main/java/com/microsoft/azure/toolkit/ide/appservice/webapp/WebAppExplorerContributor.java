@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class WebAppExplorerContributor implements IExplorerContributor {
                 );
     }
 
-    private static List<IWebApp> listWebApps(AzureWebApp webAppModule) {
-        return webAppModule.list().stream().sorted(Comparator.comparing(IWebApp::name)).collect(Collectors.toList());
+    private static List<WebApp> listWebApps(AzureWebApp webAppModule) {
+        return webAppModule.list().stream().sorted(Comparator.comparing(WebApp::name)).collect(Collectors.toList());
     }
 }
