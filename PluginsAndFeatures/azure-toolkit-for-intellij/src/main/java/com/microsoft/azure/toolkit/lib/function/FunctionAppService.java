@@ -15,8 +15,8 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -73,7 +73,7 @@ public class FunctionAppService {
         return FunctionAppService.instance;
     }
 
-    public FunctionAppConfig getFunctionAppConfigFromExistingFunction(@Nonnull final IFunctionApp functionApp) {
+    public FunctionAppConfig getFunctionAppConfigFromExistingFunction(@Nonnull final FunctionApp functionApp) {
         return FunctionAppConfig.builder()
                 .resourceId(functionApp.id())
                 .name(functionApp.name())
@@ -83,16 +83,16 @@ public class FunctionAppService {
                 .servicePlan(AppServicePlanEntity.builder().id(functionApp.entity().getAppServicePlanId()).build()).build();
     }
 
-    public IFunctionApp createFunctionApp(final FunctionAppConfig config) {
+    public FunctionApp createFunctionApp(final FunctionAppConfig config) {
         AzureTelemetry.getActionContext().setProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(config);
-        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
+        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
         AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP, config.getName()));
         final Map<String, String> appSettings = getAppSettings(config);
         // get/create ai instances only if user didn't specify ai connection string in app settings
         AzureTelemetry.getActionContext().setProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
         bindApplicationInsights(appSettings, config);
-        final IFunctionApp result = Azure.az(AzureAppService.class).subscription(config.getSubscription())
+        final FunctionApp result = Azure.az(AzureAppService.class).subscription(config.getSubscription())
                 .functionApp(resourceGroup.getName(), config.getName()).create()
                 .withName(config.getName())
                 .withResourceGroup(resourceGroup.getName())
@@ -141,10 +141,10 @@ public class FunctionAppService {
         }
     }
 
-    private IAppServicePlan getOrCreateAppServicePlan(final FunctionAppConfig config) {
+    private AppServicePlan getOrCreateAppServicePlan(final FunctionAppConfig config) {
         final String servicePlanName = config.getServicePlan().getName();
         final String servicePlanGroup = StringUtils.firstNonBlank(config.getServicePlan().getResourceGroup(), config.getResourceGroup().getName());
-        final IAppServicePlan appServicePlan = Azure.az(AzureAppService.class).subscription(config.getSubscription().getId())
+        final AppServicePlan appServicePlan = Azure.az(AzureAppService.class).subscription(config.getSubscription().getId())
                 .appServicePlan(servicePlanGroup, servicePlanName);
         if (!appServicePlan.exists()) {
             AzureMessager.getMessager().info(CREATE_APP_SERVICE_PLAN);
@@ -201,7 +201,7 @@ public class FunctionAppService {
         }
     }
 
-    public void deployFunctionApp(final IFunctionApp functionApp, final File stagingFolder) throws IOException {
+    public void deployFunctionApp(final FunctionApp functionApp, final File stagingFolder) throws IOException {
         AzureMessager.getMessager().info(DEPLOY_START);
         final FunctionDeployType deployType = getDeployType(functionApp);
         AzureTelemetry.getActionContext().setProperty(DEPLOYMENT_TYPE, deployType.name());
@@ -213,7 +213,7 @@ public class FunctionAppService {
         AzureMessager.getMessager().info(String.format(DEPLOY_FINISH, resourceUrl));
     }
 
-    private FunctionDeployType getDeployType(final IFunctionApp functionApp) {
+    private FunctionDeployType getDeployType(final FunctionApp functionApp) {
         if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
             return FunctionDeployType.RUN_FROM_ZIP;
         }

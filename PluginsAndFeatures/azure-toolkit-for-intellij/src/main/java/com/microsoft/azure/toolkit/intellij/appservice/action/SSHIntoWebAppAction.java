@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.appservice.TunnelProxy;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -44,7 +44,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private final String webAppName;
     private final String subscriptionId;
     private final String resourceGroupName;
-    private final IWebApp webApp;
+    private final WebApp webApp;
 
     public SSHIntoWebAppAction(WebAppNode webAppNode) {
         super();

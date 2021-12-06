@@ -25,7 +25,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Getter;
@@ -371,7 +371,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             webAppSettingModel.setEnableFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
         } else {
             setCreatingNew(false);
-            final IWebApp webApp = webAppComboBoxModel.getResource();
+            final WebApp webApp = webAppComboBoxModel.getResource();
             if (webApp != null) {
                 saveRuntime(webApp.getRuntime());
                 setAppServicePlanId(webApp.entity().getAppServicePlanId());

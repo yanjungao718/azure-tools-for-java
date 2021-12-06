@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
@@ -60,7 +60,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             if (!appService.exists()) {
                 return new WebAppProperty(new HashMap<>());
             }
-            final IAppServicePlan plan = Azure.az(AzureAppService.class).appServicePlan(appService.entity().getAppServicePlanId());
+            final AppServicePlan plan = Azure.az(AzureAppService.class).appServicePlan(appService.entity().getAppServicePlanId());
 
             return generateProperty(appService, plan);
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
@@ -71,7 +71,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         }));
     }
 
-    protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final IAppService<T> appService, @Nonnull final IAppServicePlan plan) {
+    protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final IAppService<T> appService, @Nonnull final AppServicePlan plan) {
         final AppServiceBaseEntity appServiceEntity = appService.entity();
         final AppServicePlanEntity planEntity = plan.entity();
         final Map<String, String> appSettingsMap = appServiceEntity.getAppSettings();

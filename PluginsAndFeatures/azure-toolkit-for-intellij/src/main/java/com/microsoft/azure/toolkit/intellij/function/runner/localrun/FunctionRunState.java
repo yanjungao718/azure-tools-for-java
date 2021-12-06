@@ -24,7 +24,7 @@ import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
+public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static final int DEFAULT_FUNC_PORT = 7071;
     private static final int DEFAULT_DEBUG_PORT = 5005;
@@ -111,7 +111,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
 
     @Override
     @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
-    protected IFunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
         validateFunctionRuntime(processHandler);
         stagingFolder = FunctionUtils.getTempStagingFolder();
@@ -349,7 +349,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(IFunctionApp result, RunProcessHandler processHandler) {
+    protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
         stopProcessIfAlive(process);
 
         if (!processHandler.isProcessTerminated()) {

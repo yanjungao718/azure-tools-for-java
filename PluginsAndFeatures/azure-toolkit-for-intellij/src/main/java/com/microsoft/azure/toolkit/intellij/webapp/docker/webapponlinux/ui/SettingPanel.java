@@ -11,9 +11,8 @@ import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -91,14 +90,14 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private JRadioButton rdoCreateAppServicePlan;
     private JTextField txtCreateAppServicePlan;
     private JRadioButton rdoUseExistAppServicePlan;
-    private JComboBox<IAppServicePlan> cbExistAppServicePlan;
+    private JComboBox<AppServicePlan> cbExistAppServicePlan;
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JPanel pnlAcr;
     private JPanel pnlWebApp;
     private JBTable webAppTable;
     private AnActionButton btnRefresh;
-    private List<IWebApp> cachedWebAppList;
+    private List<WebApp> cachedWebAppList;
     private String defaultWebAppId;
     private String defaultLocationName;
     private String defaultPricingTier;
@@ -166,7 +165,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         // app service plan
         cbExistAppServicePlan.setRenderer(new SimpleListCellRenderer<>() {
             @Override
-            public void customize(JList jlist, IAppServicePlan asp, int index, boolean isSelected, boolean
+            public void customize(JList jlist, AppServicePlan asp, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (asp != null) {
                     setText(asp.name());
@@ -362,7 +361,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (rdoUseExist.isSelected()) {
             // existing web app
             webAppOnLinuxDeployConfiguration.setCreatingNewWebAppOnLinux(false);
-            IWebApp selectedWebApp = null;
+            WebApp selectedWebApp = null;
             final int index = webAppTable.getSelectedRow();
             if (cachedWebAppList != null && index >= 0 && index < cachedWebAppList.size()) {
                 selectedWebApp = cachedWebAppList.get(webAppTable.getSelectedRow());
@@ -572,17 +571,17 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     }
 
     @Override
-    public void renderWebAppOnLinuxList(List<IWebApp> webAppOnLinuxList) {
+    public void renderWebAppOnLinuxList(List<WebApp> webAppOnLinuxList) {
         btnRefresh.setEnabled(true);
         webAppTable.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
-        final List<IWebApp> sortedList = webAppOnLinuxList.stream()
+        final List<WebApp> sortedList = webAppOnLinuxList.stream()
                 .sorted((a, b) -> a.subscriptionId().compareToIgnoreCase(b.subscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
         if (cachedWebAppList.size() > 0) {
             final DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
             model.getDataVector().clear();
-            for (final IWebApp resource : sortedList) {
+            for (final WebApp resource : sortedList) {
                 model.addRow(new String[]{resource.name(), resource.resourceGroup()});
             }
         }
@@ -640,7 +639,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     }
 
     @Override
-    public void renderAppServicePlanList(List<IAppServicePlan> appServicePlans) {
+    public void renderAppServicePlanList(List<AppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
         lblLocation.setText(NOT_APPLICABLE);
         lblPricing.setText(NOT_APPLICABLE);

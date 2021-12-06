@@ -5,7 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -27,9 +27,9 @@ public class FunctionAppNode extends WebAppBaseNode {
 
     private static final String FUNCTION_LABEL = "Function";
 
-    private final IFunctionApp functionApp;
+    private final FunctionApp functionApp;
 
-    public FunctionAppNode(@Nonnull AzureRefreshableNode parent, @Nonnull IFunctionApp functionApp) {
+    public FunctionAppNode(@Nonnull AzureRefreshableNode parent, @Nonnull FunctionApp functionApp) {
         super(parent, FUNCTION_LABEL, functionApp);
         this.functionApp = functionApp;
     }

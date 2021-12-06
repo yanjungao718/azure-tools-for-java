@@ -34,9 +34,9 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -66,24 +66,24 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> isWebApp = (r, e) -> r instanceof IWebApp;
+        final BiPredicate<IAzureBaseResource<?, ?>, Object> isWebApp = (r, e) -> r instanceof WebApp;
         final BiConsumer<IAzureBaseResource<?, ?>, Object> openWebAppPropertyViewHandler = (c, e) -> AzureTaskManager
                 .getInstance().runLater(() -> {
                     IWorkbench workbench = PlatformUI.getWorkbench();
-                    WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(((IWebApp) c).subscriptionId(),
-                            ((IWebApp) c).id(), ((IWebApp) c).name());
+                    WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(((WebApp) c).subscriptionId(),
+                            ((WebApp) c).id(), ((WebApp) c).name());
                     IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
                     openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
                 });
         am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, isWebApp, openWebAppPropertyViewHandler);
 
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> isWebAppSlot = (r, e) -> r instanceof IWebAppDeploymentSlot;
+        final BiPredicate<IAzureBaseResource<?, ?>, Object> isWebAppSlot = (r, e) -> r instanceof WebAppDeploymentSlot;
         final BiConsumer<IAzureBaseResource<?, ?>, Object> openWebAppSlotPropertyViewHandler = (c,
                 e) -> AzureTaskManager.getInstance().runLater(() -> {
                     IWorkbench workbench = PlatformUI.getWorkbench();
                     DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(
-                            ((IWebAppDeploymentSlot) c).id(), ((IWebAppDeploymentSlot) c).subscriptionId(),
-                            ((IWebAppDeploymentSlot) c).webApp().id(), ((IWebAppDeploymentSlot) c).name());
+                            ((WebAppDeploymentSlot) c).id(), ((WebAppDeploymentSlot) c).subscriptionId(),
+                            ((WebAppDeploymentSlot) c).webApp().id(), ((WebAppDeploymentSlot) c).name());
                     IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
                     openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
                 });

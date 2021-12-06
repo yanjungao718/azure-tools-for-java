@@ -11,7 +11,7 @@ public enum WebAppBaseState {
     UPDATING,
     UNKNOWN;
 
-    private static WebAppBaseState[] copyOfValues = values();
+    private static final WebAppBaseState[] copyOfValues = values();
 
     public static WebAppBaseState fromString(final String name) {
         for (final WebAppBaseState value: copyOfValues) {

@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> {
+public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
 
     private static final int LIST_TRIGGERS_MAX_RETRY = 5;
     private static final int LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS = 10;
@@ -86,10 +86,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     @Nullable
     @Override
     @AzureOperation(name = "function.deploy_app", type = AzureOperation.Type.ACTION)
-    public IFunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws IOException {
+    public FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws IOException {
         final FunctionDeploymentMessenger messenger = new FunctionDeploymentMessenger(processHandler);
         AzureMessager.getContext().setMessager(messenger);
-        final IFunctionApp functionApp;
+        final FunctionApp functionApp;
         if (StringUtils.isEmpty(functionDeployConfiguration.getFunctionId())) {
             functionApp = createFunctionApp(processHandler);
         } else {
@@ -107,8 +107,8 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         return functionApp;
     }
 
-    private IFunctionApp createFunctionApp(@NotNull RunProcessHandler processHandler) {
-        IFunctionApp functionApp = Azure.az(AzureAppService.class)
+    private FunctionApp createFunctionApp(@NotNull RunProcessHandler processHandler) {
+        FunctionApp functionApp = Azure.az(AzureAppService.class)
                 .subscription(functionDeployConfiguration.getSubscriptionId())
                 .functionApp(functionDeployConfiguration.getConfig().getResourceGroup().getName(), functionDeployConfiguration.getAppName());
         if (functionApp.exists()) {
@@ -128,7 +128,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         return functionApp;
     }
 
-    private void updateApplicationSettings(IFunctionApp deployTarget) {
+    private void updateApplicationSettings(FunctionApp deployTarget) {
         final Map<String, String> applicationSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionDeployConfiguration.getAppSettingsKey());
         if (MapUtils.isEmpty(applicationSettings)) {
             return;
@@ -170,7 +170,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
             params = {"this.deployModel.getFunctionAppConfig().getName()"},
             type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(IFunctionApp result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(FunctionApp result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
@@ -206,7 +206,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         }
     }
 
-    private void listHTTPTriggerUrls(IFunctionApp target) {
+    private void listHTTPTriggerUrls(FunctionApp target) {
         try {
             final List<FunctionEntity> triggers = listFunctions(target);
             final List<FunctionEntity> httpFunction = triggers.stream()
@@ -233,7 +233,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
     }
 
     // todo: Move to toolkit lib as shared task
-    private List<FunctionEntity> listFunctions(final IFunctionApp functionApp) {
+    private List<FunctionEntity> listFunctions(final FunctionApp functionApp) {
         final int[] count = {0};
         final IAzureMessager azureMessager = AzureMessager.getMessager();
         return Mono.fromCallable(() -> {
