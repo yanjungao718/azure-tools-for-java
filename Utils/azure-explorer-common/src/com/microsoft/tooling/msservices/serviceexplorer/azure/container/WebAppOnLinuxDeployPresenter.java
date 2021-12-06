@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -32,9 +32,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     private static final String CANNOT_LIST_LOCATION = "Failed to list location.";
     private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
 
-    private List<IWebApp> retrieveListOfWebAppOnLinux(boolean force) {
+    private List<WebApp> retrieveListOfWebAppOnLinux(boolean force) {
         return Azure.az(AzureAppService.class).webapps(force).stream()
-                .filter(iWebApp -> iWebApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
+                .filter(WebApp -> WebApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
                 .collect(Collectors.toList());
     }
 

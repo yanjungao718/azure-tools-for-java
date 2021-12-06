@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -38,8 +38,8 @@ public class WebAppService {
         return WebAppService.instance;
     }
 
-    @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.SERVICE)
-    public IWebApp createWebApp(final WebAppConfig config) {
+    @AzureOperation(name = "webapp.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.SERVICE)
+    public WebApp createWebApp(final WebAppConfig config) {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);
         final Map<String, String> properties = settings.getTelemetryProperties(null);

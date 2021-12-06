@@ -6,9 +6,9 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
@@ -21,7 +21,7 @@ public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
                                      final Set toRemove) {
-        final IWebApp webApp = getWebAppBase(sid, webAppId, name);
+        final WebApp webApp = getWebAppBase(sid, webAppId, name);
         final IAppServiceUpdater appServiceUpdater = webApp.update();
         appServiceUpdater.withAppSettings(toUpdate);
         toRemove.forEach(key -> appServiceUpdater.withoutAppSettings((String) key));
@@ -29,8 +29,8 @@ public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter
     }
 
     @Override
-    protected IWebApp getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
+    protected WebApp getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
                                     @Nullable final String name) {
-        return Azure.az(AzureAppService.class).subscription(sid).webapp(webAppId);
+        return Azure.az(AzureWebApp.class).subscription(sid).get(webAppId);
     }
 }

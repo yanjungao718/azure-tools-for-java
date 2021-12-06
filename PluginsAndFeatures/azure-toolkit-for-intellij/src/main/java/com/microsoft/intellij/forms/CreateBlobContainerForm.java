@@ -75,7 +75,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     protected void doOKAction() {
         final String name = nameTextField.getText();
         //Field outerFiele = onCreate.getClass().getDeclaredField("this$0");
-        final AzureString title = AzureOperationBundle.title("blob.create", name);
+        final AzureString title = AzureOperationBundle.title("blob.create_container.container", name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
                 ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);

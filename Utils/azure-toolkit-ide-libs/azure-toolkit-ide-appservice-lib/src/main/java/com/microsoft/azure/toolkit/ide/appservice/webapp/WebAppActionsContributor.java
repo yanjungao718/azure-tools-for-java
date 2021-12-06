@@ -9,8 +9,8 @@ import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -34,8 +34,8 @@ public class WebAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployment_slot";
 
-    public static final Action.Id<IWebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
-    public static final Action.Id<IWebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
+    public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
+    public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -85,17 +85,17 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<IWebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
+        final Consumer<WebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|webapp.slot.refresh", ((IWebApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof IWebApp);
+                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|webapp.slot.refresh", ((WebApp) r).name())).orElse(null))
+                .enabled(s -> s instanceof WebApp);
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, new Action<>(refresh, refreshView));
 
-        final Consumer<IWebAppDeploymentSlot> swap = slot -> slot.webApp().swap(slot.name());
+        final Consumer<WebAppDeploymentSlot> swap = slot -> slot.webApp().swap(slot.name());
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|deployment.swap",
-                        ((IWebAppDeploymentSlot) s).name(), ((IWebAppDeploymentSlot) s).webApp().name())).orElse(null))
-                .enabled(s -> s instanceof IWebAppDeploymentSlot && StringUtils.equals(((IWebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
+                .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
+                        ((WebAppDeploymentSlot) s).name(), ((WebAppDeploymentSlot) s).webApp().name())).orElse(null))
+                .enabled(s -> s instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
     }
 

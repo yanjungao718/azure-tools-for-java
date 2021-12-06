@@ -88,7 +88,7 @@ public class DockerUtil {
      * build image.
      */
     @AzureOperation(
-        name = "docker|image.build",
+        name = "docker.build_image.image|dir|host",
         params = {"imageNameWithTag", "dockerDirectory", "docker.getHost()"},
         type = AzureOperation.Type.TASK
     )
@@ -103,7 +103,7 @@ public class DockerUtil {
      * Push image to a private registry.
      */
     @AzureOperation(
-        name = "docker|image.push",
+        name = "docker.push_image.image|registry",
         params = {"targetImageName", "registryUrl"},
         type = AzureOperation.Type.TASK
     )
@@ -179,7 +179,7 @@ public class DockerUtil {
     }
 
     @AzureOperation(
-        name = "docker.ping",
+        name = "docker.ping_host.host",
         params = {"docker.getHost()"},
         type = AzureOperation.Type.TASK
     )

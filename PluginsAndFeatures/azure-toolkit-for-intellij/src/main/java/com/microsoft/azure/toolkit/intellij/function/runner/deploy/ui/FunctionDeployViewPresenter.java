@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy.ui;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -19,11 +19,11 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
     private Subscription loadAppSettingsSubscription;
 
     @AzureOperation(
-        name = "function.load_setting",
+        name = "function.load_setting.app",
         params = {"functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
-    public void loadAppSettings(IFunctionApp functionApp) {
+    public void loadAppSettings(FunctionApp functionApp) {
         if (functionApp == null) {
             return;
         }

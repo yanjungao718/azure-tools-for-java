@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 public class LegacyIntellijActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
-        final AzureString title = AzureOperationBundle.title("account.authorize");
+        final AzureString title = AzureOperationBundle.title("account.authorize_action");
         final ActionView.Builder authView = new ActionView.Builder("Authorize").title((s) -> title);
         final BiConsumer<Runnable, AnActionEvent> handler = (Runnable r, AnActionEvent e) ->
             AzureSignInAction.requireSignedIn(Optional.ofNullable(e).map(AnActionEvent::getProject).orElse(null), r);

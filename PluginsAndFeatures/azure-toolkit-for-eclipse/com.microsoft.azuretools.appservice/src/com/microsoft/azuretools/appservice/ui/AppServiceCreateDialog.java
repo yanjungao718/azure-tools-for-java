@@ -84,8 +84,8 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -217,7 +217,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private List<WebContainer> binderWebConteiners;
     private List<Subscription> binderSubscriptionDetails;
     private List<ResourceGroup> binderResourceGroup;
-    private List<IAppServicePlan> binderAppServicePlan;
+    private List<AppServicePlan> binderAppServicePlan;
     private List<Region> binderAppServicePlanLocation;
     private List<PricingTier> binderAppServicePlanPricingTier;
     private List<Runtime> binderRuntimeStacks;
@@ -246,15 +246,15 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private Composite compositeRuntime;
 
     private boolean chooseWin = false;
-    protected IWebApp webApp;
+    protected WebApp webApp;
     private String packaging = "war";
 
     private final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
-    private static Map<String, List<IAppServicePlan>> sidAspMap = new ConcurrentHashMap<>();
+    private static Map<String, List<AppServicePlan>> sidAspMap = new ConcurrentHashMap<>();
     private Map<String, String> appSettings = new HashMap<>();
     protected WebAppSettingModel model = new WebAppSettingModel();
 
-    public IWebApp getWebApp() {
+    public WebApp getWebApp() {
         return this.webApp;
     }
 
@@ -954,7 +954,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     .collect(Collectors.toList());
         }).subscribeOn(Schedulers.boundedElastic())
             .subscribe(appServicePlans -> {
-                appServicePlans.sort(Comparator.comparing(IAppServicePlan::name));
+                appServicePlans.sort(Comparator.comparing(AppServicePlan::name));
                 DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (comboAppServicePlan.isDisposed()) {
                         return;
@@ -962,7 +962,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     setComboRefreshingStatus(comboAppServicePlan, false);
                     comboAppServicePlan.setEnabled(btnAppServiceUseExisting.getSelection());
                     binderAppServicePlan = new ArrayList<>();
-                    for (IAppServicePlan asp : appServicePlans) {
+                    for (AppServicePlan asp : appServicePlans) {
                         binderAppServicePlan.add(asp);
                         comboAppServicePlan.add(asp.name());
                     }
@@ -983,7 +983,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             lblAppSevicePlanLocation.setText(NOT_AVAILABLE);
             lblAppServicePlanPricingTier.setText(NOT_AVAILABLE);
         } else {
-            IAppServicePlan asp = binderAppServicePlan.get(i);
+            AppServicePlan asp = binderAppServicePlan.get(i);
             lblAppSevicePlanLocation.setText(asp.entity().getRegion());
             lblAppServicePlanPricingTier.setText(asp.entity().getPricingTier().toString());
         }
@@ -1187,7 +1187,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             setError(dec_textAppName, WEB_APP_NAME_INVALID_MSG);
             return false;
         } else {
-            for (IWebApp wa : Azure.az(AzureAppService.class).subscription(model.getSubscriptionId()).webapps(false)) {
+            for (WebApp wa : Azure.az(AzureAppService.class).subscription(model.getSubscriptionId()).webapps(false)) {
                 if (wa != null && wa.name().toLowerCase().equals(webappName.toLowerCase())) {
                     setError(dec_textAppName, NAME_ALREADY_TAKEN);
                     return false;
@@ -1210,9 +1210,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     return false;
                 }
                 // App service plan name must be unique in each subscription
-                List<IAppServicePlan> appServicePlans = Azure.az(AzureAppService.class)
+                List<AppServicePlan> appServicePlans = Azure.az(AzureAppService.class)
                         .appServicePlans(model.getSubscriptionId(), false);
-                for (IAppServicePlan asp : appServicePlans) {
+                for (AppServicePlan asp : appServicePlans) {
                     if (asp != null && StringUtils.equalsIgnoreCase(asp.name(), model.getAppServicePlanName())) {
                         setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
                         return false;

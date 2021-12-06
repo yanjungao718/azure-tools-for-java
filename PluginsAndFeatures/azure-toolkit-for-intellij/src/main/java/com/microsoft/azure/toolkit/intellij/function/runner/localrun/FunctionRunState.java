@@ -24,7 +24,7 @@ import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -39,8 +39,8 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.intellij.util.ReadStreamLineThread;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
+public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static final int DEFAULT_FUNC_PORT = 7071;
     private static final int DEFAULT_DEBUG_PORT = 5005;
@@ -110,8 +110,8 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @Override
-    @AzureOperation(name = "function.run.state", type = AzureOperation.Type.ACTION)
-    protected IFunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
+    protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
         validateFunctionRuntime(processHandler);
         stagingFolder = FunctionUtils.getTempStagingFolder();
@@ -123,7 +123,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.validate_runtime",
+        name = "function.validate_runtime.function",
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
@@ -157,7 +157,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.get_version",
+        name = "function.get_version.func",
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
@@ -189,7 +189,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function|cli.run",
+        name = "function.run_cli.folder",
         params = {"stagingFolder.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -262,7 +262,7 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.prepare_staging_folder_detail",
+        name = "function.prepare_staging_folder.folder|app",
         params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -345,11 +345,11 @@ public class FunctionRunState extends AzureRunProfileState<IFunctionApp> {
 
     @Override
     @AzureOperation(
-        name = "function.complete_local_run",
+        name = "function.complete_run.func",
         params = {"this.functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(IFunctionApp result, RunProcessHandler processHandler) {
+    protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
         stopProcessIfAlive(process);
 
         if (!processHandler.isProcessTerminated()) {

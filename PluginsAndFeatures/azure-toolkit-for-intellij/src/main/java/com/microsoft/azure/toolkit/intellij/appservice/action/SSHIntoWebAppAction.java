@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.appservice.TunnelProxy;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -44,7 +44,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private final String webAppName;
     private final String subscriptionId;
     private final String resourceGroupName;
-    private final IWebApp webApp;
+    private final WebApp webApp;
 
     public SSHIntoWebAppAction(WebAppNode webAppNode) {
         super();
@@ -60,7 +60,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         logger.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
-        final AzureString title = title("webapp|ssh.connect", webAppName);
+        final AzureString title = title("webapp.connect_ssh.app", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false,
             () -> {
                 final TunnelProxy proxy = new TunnelProxy(webApp);
@@ -83,7 +83,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                     // create a new terminal tab.
                     TerminalView terminalView = TerminalView.getInstance(project);
                     ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
-                    final AzureString messageTitle = title("webapp|ssh.open", webAppName);
+                    final AzureString messageTitle = title("webapp.open_ssh.app", webAppName);
                     AzureTaskManager.getInstance().runInBackground(new AzureTask(project, messageTitle, false, () -> {
                         // create connection to the local proxy.
                         final SSHTerminalManager.CreateRemoteConnectionInfo info = new SSHTerminalManager.CreateRemoteConnectionInfo();

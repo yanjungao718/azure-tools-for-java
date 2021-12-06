@@ -6,9 +6,9 @@
 package com.microsoft.azure.toolkit.eclipse.webapp.handlers;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -55,10 +55,10 @@ public class WebAppLogStreamingHandler {
         diagnosticConfig.setEnableWebServerLogging(true);
         diagnosticConfig.setWebServerLogQuota(35);
         diagnosticConfig.setWebServerRetentionPeriod(0);
-        if (webApp instanceof IWebApp) {
-            ((IWebApp) webApp).update().withDiagnosticConfig(diagnosticConfig).commit();
-        } else if (webApp instanceof IWebAppDeploymentSlot) {
-            ((IWebAppDeploymentSlot) webApp).update().withDiagnosticConfig(diagnosticConfig).commit();
+        if (webApp instanceof WebApp) {
+            ((WebApp) webApp).update().withDiagnosticConfig(diagnosticConfig).commit();
+        } else if (webApp instanceof WebAppDeploymentSlot) {
+            ((WebAppDeploymentSlot) webApp).update().withDiagnosticConfig(diagnosticConfig).commit();
         }
     }
 }

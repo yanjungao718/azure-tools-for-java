@@ -10,7 +10,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -61,7 +61,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(name = "function.create", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create_app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
         AzureSignInAction.requireSignedIn(project, () -> this.openDialog(project, null));
@@ -87,9 +87,9 @@ public class CreateFunctionAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(name = "function.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
-    private Single<IFunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureString title = title("function.create_detail", config.getName());
+    @AzureOperation(name = "function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
+        final AzureString title = title("function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public boolean show(IAzureMessage raw) {
@@ -99,7 +99,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
                 return false;
             }
         };
-        final AzureTask<IFunctionApp> task = new AzureTask<>(null, title, false, () -> {
+        final AzureTask<FunctionApp> task = new AzureTask<>(null, title, false, () -> {
             final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_APP);
             operation.trackProperties(config.getTelemetryProperties());
             try {
@@ -119,8 +119,8 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     // todo: replace with Azure Event Hub
-    @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
-    private void refreshAzureExplorer(IFunctionApp app) {
+    @AzureOperation(name = "common.refresh_explorer", type = AzureOperation.Type.TASK)
+    private void refreshAzureExplorer(FunctionApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));

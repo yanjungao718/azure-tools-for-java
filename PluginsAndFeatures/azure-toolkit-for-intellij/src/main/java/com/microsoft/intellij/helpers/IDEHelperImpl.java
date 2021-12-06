@@ -362,7 +362,7 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-            name = "appservice|file.open",
+            name = "appservice.open_file.file",
             params = {"target.getName()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -372,7 +372,7 @@ public class IDEHelperImpl implements IDEHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
-        final AzureString title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
+        final AzureString title = AzureOperationBundle.title("appservice.open_file.file", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -447,12 +447,12 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-            name = "appservice|file.save",
+            name = "appservice.save_file.file",
             params = {"appServiceFile.getName()"},
             type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
-        final AzureString title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
+        final AzureString title = AzureOperationBundle.title("appservice.save_file.file", appServiceFile.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             final IAppService appService = appServiceFile.getApp();
             final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
@@ -482,7 +482,7 @@ public class IDEHelperImpl implements IDEHelper {
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final AzureString title = AzureOperationBundle.title("appservice|file.download", file.getName());
+        final AzureString title = AzureOperationBundle.title("appservice.download_file.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             file.getApp()

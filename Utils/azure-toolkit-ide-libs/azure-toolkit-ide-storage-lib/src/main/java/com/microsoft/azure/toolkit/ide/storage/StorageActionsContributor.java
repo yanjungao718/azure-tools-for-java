@@ -29,7 +29,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<StorageAccount> open = OpenStorageExplorerAction::openStorageBrowser;
         final ActionView.Builder openView = new ActionView.Builder("Open Storage Explorer", "/icons/action/portal.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("storage|account.open_storage_explorer", ((StorageAccount) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("storage.open_storage_explorer.account", ((StorageAccount) r).name())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount);
         am.registerAction(OPEN_STORAGE_EXPLORER, new Action<>(open, openView));
     }

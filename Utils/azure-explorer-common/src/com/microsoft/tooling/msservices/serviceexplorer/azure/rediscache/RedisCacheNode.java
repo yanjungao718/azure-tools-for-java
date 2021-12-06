@@ -6,7 +6,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
@@ -108,12 +107,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
-    @AzureOperation(name = "redis.delete", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.delete_redis.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
-    @AzureOperation(name = "redis.open_portal", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.open_portal.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = "";
         try {
@@ -124,12 +123,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, this.resourceId));
     }
 
-    @AzureOperation(name = "redis.show_properties", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.show_properties.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openRedisPropertyView(this);
     }
 
-    @AzureOperation(name = "redis.open_explorer", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.open_redis_explorer.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openExplorer() {
         DefaultLoader.getUIHelper().openRedisExplorer(this);
     }

@@ -50,7 +50,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
     @NotNull
     @Override
     @AzureOperation(
-        name = "ai.list.subscription",
+        name = "ai.list_ais.subscription",
         params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )

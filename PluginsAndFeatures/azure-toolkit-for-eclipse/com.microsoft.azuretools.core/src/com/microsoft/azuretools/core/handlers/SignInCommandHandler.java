@@ -131,11 +131,17 @@ public class SignInCommandHandler extends AzureAbstractHandler {
 
         AuthConfiguration auth = dialog.getData();
         if (auth.getType() == AuthType.SERVICE_PRINCIPAL) {
+            CompletableFuture<AuthConfiguration> future = new CompletableFuture<>();
             ServicePrincipalLoginDialog servicePrincipalLoginDialog = new ServicePrincipalLoginDialog(parentShell);
+            servicePrincipalLoginDialog.setOkActionListener(value -> {
+                future.complete(value);
+                servicePrincipalLoginDialog.close();
+            });
+
             if (servicePrincipalLoginDialog.open() == Window.CANCEL) {
                 throw new InterruptedException("user cancel");
             }
-            auth = servicePrincipalLoginDialog.getForm().getValue();
+            auth = future.getNow(null);
         }
         return auth;
     }

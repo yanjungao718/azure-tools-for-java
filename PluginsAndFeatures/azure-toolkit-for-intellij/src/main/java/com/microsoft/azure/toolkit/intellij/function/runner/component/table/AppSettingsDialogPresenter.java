@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function.runner.component.table;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
@@ -26,7 +26,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
                 }));
     }
 
-    public void onLoadFunctionAppSettings(IFunctionApp functionApp) {
+    public void onLoadFunctionAppSettings(FunctionApp functionApp) {
         Observable.fromCallable(() -> {
             getMvpView().beforeFillAppSettings();
             return functionApp.entity().getAppSettings();

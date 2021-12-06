@@ -29,7 +29,7 @@ public class DeploySpringCloudAppAction extends AnAction {
     private static final String DEPLOY_SPRING_CLOUD_APP_TITLE = "Deploy Azure Spring Cloud App";
     private static final SpringCloudDeploymentConfigurationType configType = SpringCloudDeploymentConfigurationType.getInstance();
 
-    @AzureOperation(name = "springcloud.deploy", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud.deploy_app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         final Project project = anActionEvent.getProject();
         if (project != null) {

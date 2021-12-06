@@ -9,8 +9,8 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributo
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -23,16 +23,16 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class WebAppDeploymentSlotsNode extends Node<IWebApp> {
-    private final IWebApp webApp;
+public class WebAppDeploymentSlotsNode extends Node<WebApp> {
+    private final WebApp webApp;
     private final NodeView nodeView;
 
-    public WebAppDeploymentSlotsNode(@Nonnull IWebApp data) {
+    public WebAppDeploymentSlotsNode(@Nonnull WebApp data) {
         super(data);
         this.webApp = data;
         this.nodeView = new WebAppDeploymentSlotsNodeView(data);
         this.actions(WebAppActionsContributor.DEPLOYMENT_SLOTS_ACTIONS);
-        this.addChildren(ignore -> webApp.deploymentSlots().stream().sorted(Comparator.comparing(IWebAppDeploymentSlot::name)).collect(Collectors.toList()),
+        this.addChildren(ignore -> webApp.deploymentSlots().stream().sorted(Comparator.comparing(WebAppDeploymentSlot::name)).collect(Collectors.toList()),
                 (slot, slotsNode) -> new Node<>(slot).view(new AzureResourceLabelView<>(slot)).actions(WebAppActionsContributor.DEPLOYMENT_SLOT_ACTIONS));
     }
 
@@ -46,7 +46,7 @@ public class WebAppDeploymentSlotsNode extends Node<IWebApp> {
 
         @Nonnull
         @Getter
-        private final IWebApp webApp;
+        private final WebApp webApp;
         private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
 
         @Nullable
@@ -54,7 +54,7 @@ public class WebAppDeploymentSlotsNode extends Node<IWebApp> {
         @Getter
         private Refresher refresher;
 
-        public WebAppDeploymentSlotsNodeView(@Nonnull IWebApp webApp) {
+        public WebAppDeploymentSlotsNodeView(@Nonnull WebApp webApp) {
             this.webApp = webApp;
             this.listener = new AzureEventBus.EventListener<>(this::onEvent);
             AzureEventBus.on("appservice|webapp.slot.refresh", listener);

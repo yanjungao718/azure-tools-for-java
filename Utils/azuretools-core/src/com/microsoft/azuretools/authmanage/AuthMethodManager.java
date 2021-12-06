@@ -24,33 +24,27 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
+@Slf4j
 public class AuthMethodManager {
-    private static final org.apache.log4j.Logger LOGGER =
-            org.apache.log4j.Logger.getLogger(AuthMethodManager.class);
     public static final String AUTH_METHOD_DETAIL = "auth_method_detail";
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
@@ -60,9 +54,25 @@ public class AuthMethodManager {
 
     static {
         // fix the class load problem for intellij plugin
-        Logger.getLogger("com.microsoft.aad.adal4j.AuthenticationContext").setLevel(Level.OFF);
-        Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
-        Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
+        disableLogLevelFor("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
+                "com.microsoft.aad.msal4j.ConfidentialClientApplication");
+    }
+
+    private static void disableLogLevelFor(String...classes) {
+        try {
+            Class<?> loggerClz = Class.forName("org.apache.log4j.Logger");
+            Class<?> loggerLevelClz = Class.forName("org.apache.log4j.Level");
+            Object offLevel = FieldUtils.readDeclaredStaticField(loggerLevelClz, "OFF");
+            Method getLoggerMethod = ClassUtils.getPublicMethod(loggerClz, "getLogger", String.class);
+            if (getLoggerMethod != null) {
+                for (String className : classes) {
+                    Object logger2 = getLoggerMethod.invoke(loggerClz, className);
+                    FieldUtils.writeField(logger2, "level", offLevel, true);
+                }
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            // ignore
+        }
     }
 
     private static class LazyHolder {
@@ -78,7 +88,7 @@ public class AuthMethodManager {
             try {
                 initAuthMethodManagerFromSettings();
             } catch (Throwable ex) {
-                LOGGER.warn("Cannot restore login due to error: " + ex.getMessage());
+                log.warn("Cannot restore login due to error: " + ex.getMessage());
             }
             return true;
         }).subscribeOn(Schedulers.boundedElastic()).subscribe();
@@ -86,7 +96,7 @@ public class AuthMethodManager {
 
     @NotNull
     @AzureOperation(
-            name = "common|rest_client.create",
+            name = "common.create_rest_client.sub",
             params = {"sid"},
             type = AzureOperation.Type.TASK
     )
@@ -177,7 +187,7 @@ public class AuthMethodManager {
         return this.authMethodDetails;
     }
 
-    @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.update_auth_setting", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
         waitInitFinish();
         cleanAll();
@@ -193,7 +203,7 @@ public class AuthMethodManager {
         persistAuthMethodDetails();
     }
 
-    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.persist_auth_setting", type = AzureOperation.Type.TASK)
     public void persistAuthMethodDetails() {
         waitInitFinish();
         try {
@@ -227,7 +237,7 @@ public class AuthMethodManager {
                         }
                         case AD:
                             // we don't support it now
-                            LOGGER.warn("The AD auth method is not supported now, ignore the credential.");
+                            log.warn("The AD auth method is not supported now, ignore the credential.");
                             break;
                         case SP:
                             targetAuthMethodDetails.setAuthType(AuthType.SERVICE_PRINCIPAL);
@@ -270,7 +280,7 @@ public class AuthMethodManager {
         });
     }
 
-    @AzureOperation(name = "account|auth_setting.load", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.load_auth_setting", type = AzureOperation.Type.TASK)
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {

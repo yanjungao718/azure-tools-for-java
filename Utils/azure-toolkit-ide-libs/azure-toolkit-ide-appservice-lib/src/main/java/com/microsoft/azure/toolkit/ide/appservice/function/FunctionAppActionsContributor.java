@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -29,7 +29,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final String FUNCTIONS_ACTIONS = "actions.function.functions";
     public static final String FUNCTION_ACTION = "actions.function.function";
 
-    public static final Action.Id<IFunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
+    public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
 
     @Override
@@ -63,10 +63,10 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<IFunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
+        final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|function.functions.refresh", ((IFunctionApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof IFunctionApp);
+                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|function.functions.refresh", ((FunctionApp) r).name())).orElse(null))
+                .enabled(s -> s instanceof FunctionApp);
         am.registerAction(REFRESH_FUNCTIONS, new Action<>(refresh, refreshView));
 
         final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")

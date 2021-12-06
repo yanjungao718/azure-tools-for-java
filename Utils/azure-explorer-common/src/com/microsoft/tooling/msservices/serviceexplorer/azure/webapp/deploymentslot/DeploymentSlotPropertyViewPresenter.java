@@ -6,9 +6,9 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
@@ -21,17 +21,17 @@ public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewP
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
                                      final Set toRemove) {
-        final IWebAppDeploymentSlot slot = getWebAppBase(sid, webAppId, name);
-        final IWebAppDeploymentSlot.Updater updater = slot.update();
+        final WebAppDeploymentSlot slot = getWebAppBase(sid, webAppId, name);
+        final WebAppDeploymentSlot.WebAppDeploymentSlotUpdater updater = slot.update();
         updater.withAppSettings(toUpdate);
         toRemove.forEach(key -> updater.withoutAppSettings((String) key));
         updater.commit();
     }
 
     @Override
-    protected IWebAppDeploymentSlot getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
+    protected WebAppDeploymentSlot getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
                                                   @Nullable final String name) {
-        final IWebApp webApp = Azure.az(AzureAppService.class).webapp(webAppId);
+        final WebApp webApp = Azure.az(AzureWebApp.class).get(webAppId);
         return webApp.deploymentSlot(name);
     }
 }

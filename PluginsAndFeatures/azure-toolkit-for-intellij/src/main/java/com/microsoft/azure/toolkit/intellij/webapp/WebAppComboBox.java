@@ -9,8 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -44,11 +43,11 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "webapp.list.detail|java|subscription|selected",
+        name = "webapp.list_apps",
         type = AzureOperation.Type.SERVICE
     )
     protected List<WebAppComboBoxModel> loadAppServiceModels() {
-        final List<IWebApp> webApps = Azure.az(AzureAppService.class).webapps(false);
+        final List<WebApp> webApps = Azure.az(AzureAppService.class).webapps(false);
         return webApps.stream().parallel()
                 .filter(this::isJavaAppService)
                 .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))

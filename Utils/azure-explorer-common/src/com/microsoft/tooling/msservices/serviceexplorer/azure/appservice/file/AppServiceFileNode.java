@@ -19,11 +19,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
@@ -56,13 +52,13 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         });
     }
 
-    @AzureOperation(name = "appservice|file.download", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.download_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.refresh", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.refresh_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         executeWithTelemetryWrapper(TelemetryConstants.REFRESH_FILE, () -> {
             if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
@@ -74,7 +70,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
         });
     }
 
-    @AzureOperation(name = "appservice|file.open", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice.open_file.file", params = {"this.file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         executeWithTelemetryWrapper(TelemetryConstants.OPEN_FILE, () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context));
     }
@@ -88,7 +84,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
             return;
         }
         final Runnable runnable = () -> open(context);
-        final AzureString title = AzureOperationBundle.title("appservice|file.get_content", file.getName(), file.getApp().name());
+        final AzureString title = AzureOperationBundle.title("appservice.get_file_content", file.getName(), file.getApp().name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), title, false, runnable));
     }
 

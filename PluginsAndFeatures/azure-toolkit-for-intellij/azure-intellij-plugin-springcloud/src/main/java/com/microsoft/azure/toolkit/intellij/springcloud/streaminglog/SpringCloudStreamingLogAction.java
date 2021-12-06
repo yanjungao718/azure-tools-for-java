@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,7 +33,7 @@ public class SpringCloudStreamingLogAction {
 
     public static void startLogStreaming(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final IAzureMessager messager = AzureMessager.getMessager();
-        final AzureString title = AzureOperationBundle.title("springcloud|log_stream.open", app.name());
+        final AzureString title = AzureOperationBundle.title("springcloud.open_log_stream.instance", app.name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             try {
                 final SpringCloudDeployment deployment = app.activeDeployment();

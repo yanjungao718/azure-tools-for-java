@@ -44,13 +44,13 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.server = server;
         this.serverState = server.entity().getState();
         loadActions();
-        AzureEventBus.after("mysql|server.start", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql|server.stop", this::onMySqlServerStatusChanged);
-        AzureEventBus.after("mysql|server.restart", this::onMySqlServerStatusChanged);
-        AzureEventBus.before("mysql|server.start", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql|server.stop", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql|server.restart", this::onMySqlServerStatusChanging);
-        AzureEventBus.before("mysql|server.delete", this::onMySqlServerStatusChanging);
+        AzureEventBus.after("mysql.start_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.stop_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.after("mysql.restart_server.server", this::onMySqlServerStatusChanged);
+        AzureEventBus.before("mysql.start_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.stop_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.restart_server.server", this::onMySqlServerStatusChanging);
+        AzureEventBus.before("mysql.delete_server.server", this::onMySqlServerStatusChanging);
     }
 
     public void onMySqlServerStatusChanged(MySqlServer server) {
@@ -118,12 +118,12 @@ public class MySQLNode extends Node implements TelemetryProperties {
         this.getServer().restart();
     }
 
-    @AzureOperation(name = "mysql.open_portal", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.open_portal.server", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.server.entity().getSubscriptionId(), this.server.id());
     }
 
-    @AzureOperation(name = "mysql.show_properties", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.show_properties.server", params = {"this.server.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openMySQLPropertyView(this.getId(), this.getProject());
     }

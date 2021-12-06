@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.WebAppBasePropertyView;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
@@ -32,10 +32,10 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
 
     protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, resId, null, virtualFile);
-        AzureEventBus.after("function.start", this::onAppServiceStatusChanged);
-        AzureEventBus.after("function.stop", this::onAppServiceStatusChanged);
-        AzureEventBus.after("function.restart", this::onAppServiceStatusChanged);
-        AzureEventBus.after("function.delete", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.start_app.app", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.stop_app.app", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.restart_app.app", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.delete_app.app", this::onAppServiceStatusChanged);
     }
 
     @Override
@@ -47,13 +47,13 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
     protected WebAppBasePropertyViewPresenter createPresenter() {
         return new WebAppBasePropertyViewPresenter() {
             @Override
-            protected IFunctionApp getWebAppBase(String subscriptionId, String functionAppId, String name) {
+            protected FunctionApp getWebAppBase(String subscriptionId, String functionAppId, String name) {
                 return Azure.az(AzureAppService.class).subscription(subscriptionId).functionApp(functionAppId);
             }
 
             @Override
             protected void updateAppSettings(String subscriptionId, String functionAppId, String name, Map toUpdate, Set toRemove) {
-                final IFunctionApp functionApp = getWebAppBase(subscriptionId, functionAppId, name);
+                final FunctionApp functionApp = getWebAppBase(subscriptionId, functionAppId, name);
                 final IAppServiceUpdater appServiceUpdater = functionApp.update();
                 appServiceUpdater.withAppSettings(toUpdate);
                 toRemove.forEach(key -> appServiceUpdater.withoutAppSettings((String) key));
