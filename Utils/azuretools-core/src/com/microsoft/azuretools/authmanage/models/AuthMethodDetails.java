@@ -70,9 +70,9 @@ public class AuthMethodDetails {
     public String toString() {
         if (getAuthMethod() == AuthMethod.IDENTITY) {
             return String.format("{ accountEmail: %s, credFilePath: %s, authType: %s, azureEnv: %s }",
-                    getAccountEmail(), getCredFilePath(), getAuthType(), getAzureEnv());
+                getAccountEmail(), getCredFilePath(), getAuthType(), getAzureEnv());
         }
         return String.format("{ accountEmail: %s, credFilePath: %s, authMethod: %s, azureEnv: %s }",
-                getAccountEmail(), getCredFilePath(), getAuthMethod(), getAzureEnv());
+            getAccountEmail(), getCredFilePath(), getAuthMethod(), getAzureEnv());
     }
 }

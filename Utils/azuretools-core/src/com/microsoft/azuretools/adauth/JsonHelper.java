@@ -18,19 +18,19 @@ public class JsonHelper {
     public static <T> T deserialize(Class<T> cls, String json) throws IOException {
 //        log.log(Level.FINEST, "structure: " + cls.getName());
 //        log.log(Level.FINEST, "json string: " + json);
-        if(json == null) return null;
+        if (json == null) return null;
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, cls);
     }
 
-    public static <T> T deserialize(Class<T> cls,InputStream is) throws IOException {
-        if(is == null) return null;
+    public static <T> T deserialize(Class<T> cls, InputStream is) throws IOException {
+        if (is == null) return null;
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(is, cls);
     }
 
     public static <T> String serialize(T jsonObject) throws IOException {
-        if(jsonObject == null) return null;
+        if (jsonObject == null) return null;
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(jsonObject);
     }
