@@ -5,12 +5,12 @@
 
 package com.microsoft.azuretools.authmanage.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import lombok.Getter;
 import lombok.Setter;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Created by shch on 10/8/2016.
@@ -70,9 +70,9 @@ public class AuthMethodDetails {
     public String toString() {
         if (getAuthMethod() == AuthMethod.IDENTITY) {
             return String.format("{ accountEmail: %s, credFilePath: %s, authType: %s, azureEnv: %s }",
-                    getAccountEmail(), getCredFilePath(), getAuthType(), getAzureEnv());
+                getAccountEmail(), getCredFilePath(), getAuthType(), getAzureEnv());
         }
         return String.format("{ accountEmail: %s, credFilePath: %s, authMethod: %s, azureEnv: %s }",
-                getAccountEmail(), getCredFilePath(), getAuthMethod(), getAzureEnv());
+            getAccountEmail(), getCredFilePath(), getAuthMethod(), getAzureEnv());
     }
 }
