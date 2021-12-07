@@ -38,12 +38,12 @@ public class AppServiceActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));
 
         final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", "/icons/action/log.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|app.start_stream_log", ((IAppService) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("appservice.open_log_stream.app", ((IAppService) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAppService);
         am.registerAction(START_STREAM_LOG, new Action<>(startStreamLogView));
 
         final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", "/icons/action/log.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|app.stop_stream_log", ((IAppService) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("appservice.close_log_stream.app", ((IAppService) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAppService);
         am.registerAction(STOP_STREAM_LOG, new Action<>(stopStreamLogView));
     }

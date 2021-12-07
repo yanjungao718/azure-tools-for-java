@@ -17,42 +17,40 @@ import java.util.regex.Pattern;
 
 public class ResourceGroupNameTextField extends AzureTextInput {
 
-    private static final Pattern PATTERN = Pattern.compile("[a-z0-9._()-]+[a-z0-9_()-]$");
+    private static final Pattern PATTERN = Pattern.compile("^[-\\w._()]+$");
+    private static final String INVALID_CHARACTERS = "Resource group names only allow alphanumeric characters, periods, underscores, hyphens and parenthesis " +
+        "and cannot end in a period.";
+    public static final String INVALID_LENGTH = "Resource group names only allow up to 90 characters.";
+    public static final String CONFLICT_NAME = "A resource group with the same name already exists in the selected subscription %s";
     @Setter
     private Subscription subscription;
 
     public ResourceGroupNameTextField() {
-        this.setValidator(this::doValidateValue);
+        super();
+        this.addValidator(this::doValidateValue);
         this.setRequired(true);
     }
 
     public AzureValidationInfo doValidateValue() {
         final String value = this.getValue();
         // validate length
-        int minLength = 1;
-        int maxLength = 90;
-        if (StringUtils.length(value) < minLength) {
-            return AzureValidationInfo.builder().input(this)
-                .message("The value must not be empty.")
-                .type(AzureValidationInfo.Type.ERROR).build();
+        final int maxLength = 90;
+        if (StringUtils.length(value) < 1) {
+            return AzureValidationInfo.error("The value must not be empty.", this);
         } else if (StringUtils.length(value) > maxLength) {
-            return AzureValidationInfo.builder().input(this)
-                .message(String.format("Resource group names only allow up to %s characters.", maxLength))
-                .type(AzureValidationInfo.Type.ERROR).build();
+            return AzureValidationInfo.error(INVALID_LENGTH, this);
         }
         // validate special character
-        if (!PATTERN.matcher(value).matches()) {
-            return AzureValidationInfo.builder().input(this)
-                .message("Resource group names only allow alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period.")
-                .type(AzureValidationInfo.Type.ERROR).build();
+        if (value.endsWith(".") || !PATTERN.matcher(value).matches()) {
+            return AzureValidationInfo.error(INVALID_CHARACTERS, this);
         }
         // validate availability
         try {
             if (!Azure.az(AzureGroup.class).checkNameAvailability(subscription.getId(), value)) {
-                return AzureValidationInfo.builder().input(this).message(value + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
+                return AzureValidationInfo.error(String.format(CONFLICT_NAME, subscription.getName()), this);
             }
-        } catch (CloudException e) {
-            return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+        } catch (final CloudException e) {
+            return AzureValidationInfo.error(e.getMessage(), this);
         }
         return AzureValidationInfo.success(this);
     }

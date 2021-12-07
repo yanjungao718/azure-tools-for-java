@@ -476,8 +476,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             final String password = passwordFieldInput.getValue();
             final String confirmPassword = confirmPasswordFieldInput.getValue();
             if (!StringUtils.equals(password, confirmPassword)) {
-                result.add(AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR)
-                        .message("Password and confirm password must match.").input(confirmPasswordFieldInput).build());
+                result.add(AzureValidationInfo.error("Password and confirm password must match.", confirmPasswordFieldInput));
             }
         }
         return result;
@@ -486,33 +485,33 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private AzureValidationInfo validateVirtualMachineName() {
         final String name = txtVisualMachineName.getText();
         if (StringUtils.isEmpty(name) || name.length() > 64) {
-            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must be between 1 and 64 " +
-                    "characters long.").type(AzureValidationInfo.Type.ERROR).build();
+            return AzureValidationInfo.error("Invalid virtual machine name. The name must be between 1 and 64 " +
+                    "characters long.", txtVisualMachineName);
         }
-        if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
-            return AzureValidationInfo.builder().input(txtVisualMachineName).message("Invalid virtual machine name. The name must start with a letter, " +
-                    "contain only letters, numbers, and hyphens, and end with a letter or number.").type(AzureValidationInfo.Type.ERROR).build();
+        if (!name.matches("^[A-Za-z][A-Za-z0-9-]*$") || name.endsWith("-")) {
+            return AzureValidationInfo.error("Invalid virtual machine name. The name must start with a letter, " +
+                    "contain only letters, numbers, and hyphens, and end with a letter or number.", txtVisualMachineName);
         }
-        return AzureValidationInfo.success(this);
+        return AzureValidationInfo.success(txtVisualMachineName);
     }
 
     private AzureValidationInfo validateMaximumPricing() {
         try {
             final Double number = Double.valueOf(txtMaximumPrice.getValue());
         } catch (final NumberFormatException e) {
-            return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The value must be a valid number.").build();
+            return AzureValidationInfo.error("The value must be a valid number.", txtMaximumPrice);
         }
-        return AzureValidationInfo.success(this);
+        return AzureValidationInfo.success(txtMaximumPrice);
     }
 
     private AzureValidationInfo validatePassword() {
         final String password = passwordFieldInput.getValue();
         if (!password.matches("(?=^.{8,72}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])" +
                 "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
-            return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message("The password does not conform to complexity requirements. \n" +
-                    "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.").build();
+            return AzureValidationInfo.error("The password does not conform to complexity requirements. \n" +
+                    "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", passwordFieldInput);
         }
-        return AzureValidationInfo.success(this);
+        return AzureValidationInfo.success(passwordFieldInput);
     }
 
     enum SecurityGroupPolicy {

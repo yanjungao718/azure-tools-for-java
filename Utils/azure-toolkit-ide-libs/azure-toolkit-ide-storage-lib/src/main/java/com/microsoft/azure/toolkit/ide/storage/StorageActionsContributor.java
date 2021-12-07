@@ -44,7 +44,6 @@ public class StorageActionsContributor implements IActionsContributor {
 
         final ActionGroup accountActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                StorageActionsContributor.OPEN_STORAGE_EXPLORER,
                 "---",
                 ResourceCommonActionsContributor.CONNECT,
                 ResourceCommonActionsContributor.DELETE,
