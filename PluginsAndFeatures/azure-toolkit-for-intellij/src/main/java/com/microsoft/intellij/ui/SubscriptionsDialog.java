@@ -85,8 +85,8 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
      */
     public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
         if (CollectionUtils.isEmpty(sdl)) {
-            PluginUtil.displayInfoDialog("No subscription", "No subscription in current account, you may get a free "
-                + "one from https://azure.microsoft.com/en-us/free/");
+            PluginUtil.displayInfoDialog("No subscription", "No subscription in current account, you may get a free " +
+                    "one from https://azure.microsoft.com/en-us/free/");
             return null;
         }
         SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
