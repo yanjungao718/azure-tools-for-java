@@ -248,7 +248,7 @@ public class AuthMethodManager {
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
-                List<SubscriptionDetail> persistSubscriptions = identityAzureManager.getSubscriptionManager().loadSubscriptions();
+                List<SubscriptionDetail> persistSubscriptions = SubscriptionManager.loadSubscriptions();
                 if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
                     List<String> savedSubscriptionList = persistSubscriptions.stream()
                             .filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());

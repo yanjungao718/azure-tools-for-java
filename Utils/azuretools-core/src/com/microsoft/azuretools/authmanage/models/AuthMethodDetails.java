@@ -8,9 +8,12 @@ package com.microsoft.azuretools.authmanage.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * Created by shch on 10/8/2016.
@@ -26,6 +29,7 @@ public class AuthMethodDetails {
     @JsonProperty
     @Setter
     @Getter
+    @Deprecated
     private String tenantId;
 
     @JsonProperty
@@ -61,6 +65,16 @@ public class AuthMethodDetails {
     @Setter
     @Getter
     private AuthType authType;
+
+    @JsonProperty
+    @Setter
+    @Getter
+    private List<String> tenantIds;
+
+    @JsonProperty
+    @Setter
+    @Getter
+    private List<Subscription> subscriptions;
 
     // for jackson json
     public AuthMethodDetails() {
