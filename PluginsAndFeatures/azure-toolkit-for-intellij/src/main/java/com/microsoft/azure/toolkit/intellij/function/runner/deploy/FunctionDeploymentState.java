@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
 import com.intellij.execution.process.ProcessOutputType;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
@@ -145,12 +146,16 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
         AzureTaskManager.getInstance().read(() -> {
+            final Module module = functionDeployConfiguration.getModule();
+            if (module == null) {
+                throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
+            }
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
+            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(module);
             final Path folder = stagingFolder.toPath();
             try {
                 final Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionDeployConfiguration.getModule(), methods);
+                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, module, methods);
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
             } catch (final AzureExecutionException | IOException e) {
                 final String error = String.format("failed prepare staging folder[%s]", folder);
