@@ -104,6 +104,7 @@ public final class Messages extends NLS {
 
     public static String HDInsightCreateLocalEmulator;
     public static String HDInsightAddNewClusterAction;
+    public static String WindowsAzurePreferencePageAzueCloudLabel;
 
     static {
         // initialize resource bundle

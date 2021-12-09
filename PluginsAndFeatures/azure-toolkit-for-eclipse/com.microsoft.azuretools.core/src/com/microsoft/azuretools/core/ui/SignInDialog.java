@@ -5,9 +5,13 @@
 
 package com.microsoft.azuretools.core.ui;
 
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import lombok.SneakyThrows;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -15,25 +19,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-
-import lombok.SneakyThrows;
+import org.eclipse.swt.widgets.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private static final String AZURE_SIGN_IN = "Azure Sign In";
@@ -89,7 +82,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         group.setLayout(new GridLayout(1, false));
 
         btnAzureCli = createRadioButton(group, "Azure CLI (checking...)", AuthType.AZURE_CLI);
-        lblAzureCli = createDescriptionLabel(group, "Consume your existing Azure CLI credential..");
+        lblAzureCli = createDescriptionLabel(group, "Consume your existing Azure CLI credential.");
 
         this.btnOAuth = createRadioButton(group, "OAuth2", AuthType.OAUTH2);
         this.lblOAuth = createDescriptionLabel(group, "You will need to open an external browser and sign in.");
@@ -185,7 +178,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         compositeDevice.setLayoutData(gdCompositeDevice);
         compositeDevice.setLayout(new GridLayout(1, false));
         Label label = new Label(compositeDevice, SWT.WRAP);
-        GridData gdLblDeviceInfo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+        GridData gdLblDeviceInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gdLblDeviceInfo.horizontalIndent = 11;
         label.setLayoutData(gdLblDeviceInfo);
         label.setText(description);
