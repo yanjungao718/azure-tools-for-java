@@ -45,6 +45,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -502,7 +503,7 @@ public class FunctionUtils {
     }
 
     private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
-        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
+        final JsonObject jsonObject = ObjectUtils.firstNonNull(JsonUtils.readJsonFile(target), new JsonObject());
         final JsonObject valueObject = new JsonObject();
         appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
         jsonObject.add("Values", valueObject);
