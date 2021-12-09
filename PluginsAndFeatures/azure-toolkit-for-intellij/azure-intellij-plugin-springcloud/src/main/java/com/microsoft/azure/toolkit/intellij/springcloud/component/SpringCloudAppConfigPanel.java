@@ -145,8 +145,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final int maxMem = basic ? 2 : 8;
         final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxCpu).boxed().toArray(Integer[]::new));
         final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxMem).boxed().toArray(Integer[]::new));
-        numCpuModel.setSelectedItem(Objects.nonNull(cpu) && cpu > maxCpu ? null : cpu);
-        numMemoryModel.setSelectedItem(Objects.nonNull(mem) && mem > maxMem ? null : mem);
+        numCpuModel.setSelectedItem(Objects.isNull(cpu) ? 1 : (cpu > maxCpu) ? null : cpu);
+        numMemoryModel.setSelectedItem(Objects.isNull(mem) ? 1 : mem > maxMem ? null : mem);
         this.numCpu.setModel(numCpuModel);
         this.numMemory.setModel(numMemoryModel);
         this.numInstance.setMaximum(basic ? 25 : 500);
