@@ -19,8 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 public class IntellijDatasourceService {
 
     private static final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
-    private static final String DATABASE_PLUGIN_NOT_INSTALLED = "\"Database Tools\" plugin is not installed.";
-    private static final String NOT_SUPPORT_ERROR_ACTION = "\"Database Tools\" plugin is only provided in IntelliJ Ultimate edition.";
+    private static final String DATABASE_PLUGIN_NOT_INSTALLED = "\"Database tools and SQL\" plugin is not installed.";
+    private static final String NOT_SUPPORT_ERROR_ACTION = "\"Database tools and SQL\" plugin is only provided in IntelliJ Ultimate edition.";
     private static final String ERROR_MESSAGE_PATTERN = "Failed to open \"Data Sources and Drivers\" dialog for %s";
     private static final String ERROR_ACTION = "please try again.";
     private static final IntellijDatasourceService instance = new IntellijDatasourceService();
