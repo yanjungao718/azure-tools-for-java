@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -13,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 public class StreamingLogsToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-//        toolWindow.setIcon(
-//                PluginUtil.getIcon(IconPathBuilder.custom(CommonConst.CosmosServerlessToolWindowIconName).build()));
+        toolWindow.setIcon(AllIcons.Nodes.LogFolder);
     }
 }
