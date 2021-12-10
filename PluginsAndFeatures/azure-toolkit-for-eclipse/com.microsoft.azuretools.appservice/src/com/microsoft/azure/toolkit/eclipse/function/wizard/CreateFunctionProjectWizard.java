@@ -4,11 +4,12 @@
  */
 package com.microsoft.azure.toolkit.eclipse.function.wizard;
 
-import com.microsoft.azure.toolkit.eclipse.function.wizard.model.FunctionArtifactModel;
 import com.microsoft.azure.toolkit.eclipse.function.wizard.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
+import com.microsoft.azure.toolkit.ide.appservice.model.FunctionArtifactModel;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -20,6 +21,7 @@ import org.eclipse.ui.internal.wizards.datatransfer.SmartImportJob;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
     protected FunctionProjectPage projectPage;
@@ -45,6 +47,18 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
         artifactPage = new ProjectArtifactPage();
         addPage(projectPage);
         addPage(artifactPage);
+    }
+
+    public boolean canFinish() {
+        if (projectPage == null || StringUtils.isBlank(projectPage.getProjectName())
+                || !projectPage.isPageComplete()) {
+            return false;
+        }
+        if (artifactPage == null || Objects.isNull(artifactPage.getValue()) || Objects.isNull(artifactPage.getValue().getGroupId())
+                || !artifactPage.isPageComplete()) {
+            return false;
+        }
+        return super.canFinish();
     }
 
     @Override

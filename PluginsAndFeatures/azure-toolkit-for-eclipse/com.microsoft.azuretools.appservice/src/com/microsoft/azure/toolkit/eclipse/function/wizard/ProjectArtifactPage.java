@@ -6,7 +6,7 @@ package com.microsoft.azure.toolkit.eclipse.function.wizard;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzWizardPageWrapper;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
-import com.microsoft.azure.toolkit.eclipse.function.wizard.model.FunctionArtifactModel;
+import com.microsoft.azure.toolkit.ide.appservice.model.FunctionArtifactModel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -16,7 +16,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -49,26 +48,30 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
             defaultModel.setArtifactId(previousPage.getProjectName());
             setValue(defaultModel);
         }
-        addValidator("Group id", txtGroupId, ProjectArtifactPage::isValidGroupIdArtifactId);
-        addValidator("Artifact id", txtArtifact, ProjectArtifactPage::isValidGroupIdArtifactId);
-        addValidator("Artifact id", txtVersion, ProjectArtifactPage::isValidVersion);
-        addValidator("Package name", txtPackageName, ProjectArtifactPage::isValidJavaPackageName);
+        addValidator("group id", txtGroupId, ProjectArtifactPage::isValidGroupIdArtifactId,
+                "contain only letters, numbers, the period, the underscore and start only with letters.");
+        addValidator("artifact id", txtArtifact, ProjectArtifactPage::isValidGroupIdArtifactId,
+                "contain only letters, numbers, the hyphen, the period, the underscore and start only with letters, numbers.");
+        addValidator("version", txtVersion, ProjectArtifactPage::isValidVersion,
+                "contain only letters, numbers, the hyphen, the period, the underscore and start only with numbers.");
+        addValidator("package name", txtPackageName, ProjectArtifactPage::isValidJavaPackageName,
+                "contain only letters, numbers, the period, the underscore and start only with letters.");
     }
 
-    private static void addValidator(String propertyName, AzureTextInput input, Predicate<String> validator) {
+    private static void addValidator(String propertyName, AzureTextInput input, Predicate<String> validator, String description) {
         input.setRequired(true);
-        input.addValidator(() -> validateProperties(propertyName, input, validator));
+        input.addValidator(() -> validateProperties(propertyName, input, validator, description));
     }
 
-    private static AzureValidationInfo validateProperties(String propertyName, AzureTextInput input, Predicate<String> validator) {
+    private static AzureValidationInfo validateProperties(String propertyName, AzureTextInput input, Predicate<String> validator, String description) {
         String text = input.getValue();
 
         if (text.isEmpty()) {
-            return AzureValidationInfo.builder().input(input).type(AzureValidationInfo.Type.ERROR).message(propertyName + " is required.").build();
+            return AzureValidationInfo.error(propertyName + " is required.", input);
         }
 
         if (!validator.test(text)) {
-            return AzureValidationInfo.builder().input(input).type(AzureValidationInfo.Type.ERROR).message(String.format("Invalid %s: %s", propertyName, text)).build();
+            return AzureValidationInfo.error(String.format("Invalid %s: %s, it shall %s", propertyName, text, description), input);
         }
         return AzureValidationInfo.success(input);
     }
