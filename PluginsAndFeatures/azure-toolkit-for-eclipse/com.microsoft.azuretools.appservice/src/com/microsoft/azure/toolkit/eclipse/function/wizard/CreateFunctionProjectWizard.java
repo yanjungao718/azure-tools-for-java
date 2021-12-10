@@ -4,9 +4,9 @@
  */
 package com.microsoft.azure.toolkit.eclipse.function.wizard;
 
-import com.microsoft.azure.toolkit.eclipse.function.wizard.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.ide.appservice.model.FunctionArtifactModel;
+import com.microsoft.azure.toolkit.ide.appservice.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;

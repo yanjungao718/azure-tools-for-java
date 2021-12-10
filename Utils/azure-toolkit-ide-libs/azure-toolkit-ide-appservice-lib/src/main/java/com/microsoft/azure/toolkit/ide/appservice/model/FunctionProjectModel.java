@@ -10,6 +10,7 @@ public class FunctionProjectModel {
     private String projectName;
     private String location;
     private List<String> triggers;
+
     public String getProjectName() {
         return projectName;
     }
