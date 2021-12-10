@@ -18,10 +18,12 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.*;
 import java.util.Collections;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final String DESC = "desc_label";
+    public static final String AZURE_FREE = "https://azure.microsoft.com/en-us/free/?utm_campaign=javatools";
     private JPanel contentPane;
 
     private JRadioButton cliBtn;
@@ -47,19 +49,20 @@ public class SignInWindow extends AzureDialogWrapper {
     @Override
     protected void init() {
         super.init();
-        cliBtn.addItemListener(e -> updateSelection());
+        cliBtn.addActionListener(e -> updateSelection());
         cliBtn.setActionCommand(AuthType.AZURE_CLI.name());
         cliBtn.putClientProperty(DESC, cliDesc);
-        oauthBtn.addItemListener(e -> updateSelection());
+        oauthBtn.addActionListener(e -> updateSelection());
         oauthBtn.setActionCommand(AuthType.OAUTH2.name());
         oauthBtn.putClientProperty(DESC, oauthDesc);
-        deviceBtn.addItemListener(e -> updateSelection());
+        deviceBtn.addActionListener(e -> updateSelection());
         deviceBtn.setActionCommand(AuthType.DEVICE_CODE.name());
         deviceBtn.putClientProperty(DESC, deviceDesc);
-        spBtn.addItemListener(e -> updateSelection());
+        spBtn.addActionListener(e -> updateSelection());
         spBtn.setActionCommand(AuthType.SERVICE_PRINCIPAL.name());
         spBtn.putClientProperty(DESC, spDesc);
-
+        final Dimension size = this.contentPane.getPreferredSize();
+        this.contentPane.setPreferredSize(new Dimension(500, size.height));
         cliBtn.setSelected(true);
         updateSelection();
     }
@@ -84,22 +87,22 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void checkAccountAvailability() {
         // only azure cli need availability check.
-        this.cliBtn.setEnabled(false);
         this.oauthBtn.setEnabled(true);
         this.deviceBtn.setEnabled(true);
         this.spBtn.setEnabled(true);
-        Azure.az(AzureAccount.class).accounts().stream().filter(a -> a.getAuthType() == AuthType.AZURE_CLI)
-            .findAny().ifPresent(az -> Mono.just(az).subscribeOn(Schedulers.boundedElastic())
+        Azure.az(AzureAccount.class).accounts().stream().filter(a -> a.getAuthType() == AuthType.AZURE_CLI).findAny().ifPresent(az -> {
+            this.cliBtn.setText("Azure CLI (checking...)");
+            this.cliDesc.setIcon(new AnimatedIcon.Default());
+            this.cliBtn.setEnabled(false);
+            Mono.just(az).subscribeOn(Schedulers.boundedElastic())
                 .flatMap(a -> a.checkAvailable().onErrorResume(e -> Mono.just(false)))
-                .doOnSubscribe((e) -> {
-                    cliBtn.setText("Azure CLI (checking...)");
-                    cliDesc.setIcon(AnimatedIcon.Default.INSTANCE);
-                }).doFinally((s) -> {
+                .doFinally((s) -> {
                     cliBtn.setText("Azure CLI");
                     cliDesc.setIcon(null);
                     oauthBtn.setSelected(cliBtn.isSelected() && !cliBtn.isEnabled());
                     updateSelection();
-                }).subscribe(cliBtn::setEnabled));
+                }).subscribe(cliBtn::setEnabled);
+        });
     }
 
     @Override
