@@ -5,9 +5,7 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-
+import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.util.Map;
 
@@ -45,7 +43,7 @@ public interface Operation extends Closeable {
     void complete();
 
     // Add a context property that will be set in all later events
-    void trackProperty(@NotNull String key, @Nullable String value);
+    void trackProperty(@Nonnull String key, @Nonnull String value);
 
-    void trackProperties(@NotNull Map<String, String> properties);
+    void trackProperties(@Nonnull Map<String, String> properties);
 }

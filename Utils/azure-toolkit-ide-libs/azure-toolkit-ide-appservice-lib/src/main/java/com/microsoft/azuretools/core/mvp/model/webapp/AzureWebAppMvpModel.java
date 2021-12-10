@@ -21,12 +21,12 @@ import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Map;
 import java.util.Objects;
@@ -65,7 +65,7 @@ public class AzureWebAppMvpModel {
             },
             type = AzureOperation.Type.SERVICE
     )
-    public WebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+    public WebApp createAzureWebAppWithPrivateRegistryImage(@Nonnull WebAppOnLinuxDeployModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
                 .id(model.getAppServicePlanId())
@@ -131,7 +131,7 @@ public class AzureWebAppMvpModel {
             params = {"model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
-    public WebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
+    public WebApp createWebAppFromSettingModel(@Nonnull WebAppSettingModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
                 .id(model.getAppServicePlanId())
@@ -174,7 +174,7 @@ public class AzureWebAppMvpModel {
                 // todo: remove duplicated parameters declared in service plan entity
                 .withName(servicePlanEntity.getName())
                 .withResourceGroup(servicePlanEntity.getResourceGroup())
-                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(servicePlanEntity.getRegion()))
+                .withRegion(Region.fromName(servicePlanEntity.getRegion()))
                 .withPricingTier(servicePlanEntity.getPricingTier())
                 .withOperatingSystem(servicePlanEntity.getOperatingSystem())
                 .commit();
@@ -188,7 +188,7 @@ public class AzureWebAppMvpModel {
             params = {"model.getNewSlotName()", "model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
-    public WebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final WebApp webApp, @NotNull final WebAppSettingModel model) {
+    public WebAppDeploymentSlot createDeploymentSlotFromSettingModel(@Nonnull final WebApp webApp, @Nonnull final WebAppSettingModel model) {
         String configurationSource = model.getNewSlotConfigurationSource();
         if (StringUtils.equalsIgnoreCase(configurationSource, webApp.name())) {
             configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_PARENT;
@@ -210,8 +210,8 @@ public class AzureWebAppMvpModel {
             params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
-    public void deployArtifactsToWebApp(@NotNull final IWebAppBase deployTarget, @NotNull final File file,
-                                        boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
+    public void deployArtifactsToWebApp(@Nonnull final IWebAppBase deployTarget, @Nonnull final File file,
+                                        boolean isDeployToRoot, @Nonnull final IProgressIndicator progressIndicator) {
         if (!(deployTarget instanceof WebApp || deployTarget instanceof WebAppDeploymentSlot)) {
             final String error = "the deployment target is not a valid (deployment slot of) Web App";
             final String action = "select a valid Web App or deployment slot to deploy the artifact";
@@ -225,7 +225,7 @@ public class AzureWebAppMvpModel {
         final DeployType deployType = getDeployTypeByWebContainer(deployTarget.getRuntime().getWebContainer());
         // java se runtime will always deploy to root
         if (isDeployToRoot ||
-                Objects.equals(deployTarget.getRuntime().getWebContainer(), com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
+                Objects.equals(deployTarget.getRuntime().getWebContainer(), WebContainer.JAVA_SE)) {
             deployTarget.deploy(deployType, file);
         } else {
             final String webappPath = String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
@@ -238,8 +238,8 @@ public class AzureWebAppMvpModel {
     }
 
     // todo: get deploy type with runtime&artifact
-    private static DeployType getDeployTypeByWebContainer(com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer) {
-        if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
+    private static DeployType getDeployTypeByWebContainer(WebContainer webContainer) {
+        if (Objects.equals(webContainer, WebContainer.JAVA_SE)) {
             return DeployType.JAR;
         }
         if (Objects.equals(webContainer, WebContainer.JBOSS_7)) {

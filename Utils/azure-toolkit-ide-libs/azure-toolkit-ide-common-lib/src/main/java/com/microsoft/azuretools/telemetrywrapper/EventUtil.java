@@ -5,10 +5,9 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import org.apache.commons.lang3.ObjectUtils;
+import com.azure.core.management.AzureEnvironment;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
@@ -195,9 +194,13 @@ public class EventUtil {
 
     // Will collect error stack traces only if user signed in with Azure account
     public static boolean isAbleToCollectErrorStacks() {
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        return azureManager != null && azureManager.getEnvironment() != null &&
-            ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
+        try {
+            final AzureEnvironment environment = Azure.az(IAzureAccount.class).account().getEnvironment();
+            return environment == AzureEnvironment.AZURE;
+        } catch (Exception e) {
+            // return true if user is not signed in
+            return true;
+        }
     }
 
     private static void logError(String serviceName, String operName, ErrorType errorType, Throwable e,

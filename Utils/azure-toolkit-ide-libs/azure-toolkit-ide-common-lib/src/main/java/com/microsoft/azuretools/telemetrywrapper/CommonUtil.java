@@ -6,10 +6,10 @@
 package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
-import com.microsoft.azuretools.adauth.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
-import org.joda.time.Instant;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +44,7 @@ public class CommonUtil {
         Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
         // Tag UTC time as timestamp
         mutableProps.put(TIMESTAMP, Instant.now().toString());
-        if (!StringUtils.isNullOrEmpty(serviceName)) {
+        if (!StringUtils.isEmpty(serviceName)) {
             mutableProps.put(SERVICE_NAME, serviceName);
         }
         if (client != null) {

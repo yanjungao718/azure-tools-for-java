@@ -10,8 +10,12 @@ package com.microsoft.azuretools.utils;
  */
 public interface IProgressIndicator {
     void setText(String text);
+
     void setText2(String text2);
+
     void setFraction(double fraction);
+
     boolean isCanceled();
+
     void notifyComplete();
 }

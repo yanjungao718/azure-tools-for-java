@@ -11,8 +11,8 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.Data;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -65,11 +65,11 @@ public class WebAppSettingModel {
         if (StringUtils.isAllEmpty(operatingSystem, webAppContainer, webAppJavaVersion)) {
             return null;
         }
-        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem system =
-                com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(operatingSystem);
+        final OperatingSystem system =
+                OperatingSystem.fromString(operatingSystem);
         final WebContainer container = WebContainer.fromString(webAppContainer);
-        final com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion javaVersion =
-                com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion.fromString(webAppJavaVersion);
+        final JavaVersion javaVersion =
+                JavaVersion.fromString(webAppJavaVersion);
         return Runtime.getRuntime(system, container, javaVersion);
     }
 
@@ -87,17 +87,17 @@ public class WebAppSettingModel {
             }
             final Runtime runtime = getRuntime();
             final String osValue = Optional.ofNullable(runtime.getOperatingSystem())
-                    .map(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem::toString).orElse(StringUtils.EMPTY);
+                    .map(OperatingSystem::toString).orElse(StringUtils.EMPTY);
             final String webContainerValue = Optional.ofNullable(runtime.getWebContainer()).map(WebContainer::getValue).orElse(StringUtils.EMPTY);
             final String javaVersionValue = Optional.ofNullable(runtime.getJavaVersion())
-                    .map(com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion::getValue).orElse(StringUtils.EMPTY);
+                    .map(JavaVersion::getValue).orElse(StringUtils.EMPTY);
             result.put(TelemetryConstants.RUNTIME, String.format("%s-%s-%s", osValue, webContainerValue, javaVersionValue));
             result.put(TelemetryConstants.WEBAPP_DEPLOY_TO_SLOT, String.valueOf(isDeployToSlot()));
             result.put(TelemetryConstants.SUBSCRIPTIONID, getSubscriptionId());
             result.put(TelemetryConstants.CREATE_NEWWEBAPP, String.valueOf(isCreatingNew()));
             result.put(TelemetryConstants.CREATE_NEWASP, String.valueOf(isCreatingAppServicePlan()));
             result.put(TelemetryConstants.CREATE_NEWRG, String.valueOf(isCreatingResGrp()));
-            result.put(TelemetryConstants.FILETYPE, WebAppUtils.getFileType(getTargetName()));
+            result.put(TelemetryConstants.FILETYPE, FilenameUtils.getExtension(getTargetName()));
             result.put(TelemetryConstants.PRICING_TIER, pricing);
             result.put(TelemetryConstants.REGION, region);
         } catch (final Exception ignore) {

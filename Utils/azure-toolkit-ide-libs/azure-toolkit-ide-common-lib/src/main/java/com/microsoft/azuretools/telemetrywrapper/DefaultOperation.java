@@ -5,9 +5,9 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

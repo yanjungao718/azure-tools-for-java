@@ -16,10 +16,11 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -63,7 +64,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             final AppServicePlan plan = Azure.az(AzureAppService.class).appServicePlan(appService.entity().getAppServicePlanId());
 
             return generateProperty(appService, plan);
-        }).subscribeOn(Schedulers.boundedElastic()).subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe(property -> AzureTaskManager.getInstance().runLater(() -> {
             if (isViewDetached()) {
                 return;
             }
@@ -80,7 +81,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_RESOURCE_GRP, appServiceEntity.getResourceGroup());
         propertyMap.put(KEY_LOCATION, appServiceEntity.getRegion().getLabel());
         propertyMap.put(KEY_SUB_ID, appService.subscriptionId());
-        propertyMap.put(KEY_STATUS, appService.state());
+        propertyMap.put(KEY_STATUS, appService.status());
         propertyMap.put(KEY_PLAN, plan.name());
         propertyMap.put(KEY_URL, appService.hostName());
         final PricingTier pricingTier = planEntity.getPricingTier();
@@ -140,7 +141,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             updateAppSettings(sid, webAppId, name, editedSettings, toRemove);
             return true;
         }).subscribeOn(getSchedulerProvider().io())
-            .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+            .subscribe(property -> AzureTaskManager.getInstance().runLater(() -> {
                 if (isViewDetached()) {
                     return;
                 }
@@ -160,7 +161,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         final Map<String, String> telemetryMap = new HashMap<>();
         telemetryMap.put("SubscriptionId", sid);
         Observable.fromCallable(() -> getPublishingProfile(sid, webAppId, name, filePath))
-            .subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+            .subscribeOn(getSchedulerProvider().io()).subscribe(res -> AzureTaskManager.getInstance().runLater(() -> {
                 if (isViewDetached()) {
                     return;
                 }
@@ -181,6 +182,8 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         if (!success) {
             telemetryMap.put("ErrorMsg", errorMsg);
         }
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "WebApp", actionName, telemetryMap);
+        telemetryMap.put("operationName", actionName);
+        telemetryMap.put("serviceName", "WebApp");
+        AzureTelemeter.log(AzureTelemetry.Type.INFO, telemetryMap);
     }
 }

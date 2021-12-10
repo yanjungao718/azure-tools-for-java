@@ -11,18 +11,20 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import rx.Observable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
+import static com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.WEB_APP_PRICING;
 
 public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> extends MvpPresenter<V> {
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
@@ -44,7 +46,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     public void onLoadAppList() {
         Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(false))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(webAppList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -58,7 +60,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     public void onRefreshList() {
         Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(true))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(webAppList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -72,7 +74,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     public void onLoadSubscriptionList() {
         Observable.fromCallable(() -> az(AzureAccount.class).account().getSelectedSubscriptions())
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(subscriptions -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(subscriptions -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -86,9 +88,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param sid Subscription Id.
      */
     public void onLoadResourceGroup(String sid) {
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid))
+        Observable.fromCallable(() -> new ArrayList<>(az(AzureGroup.class).list(sid)))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(resourceGroupList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(resourceGroupList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -102,9 +104,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param sid Subscription Id.
      */
     public void onLoadLocationList(String sid) {
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
+        Observable.fromCallable(() -> new ArrayList(az(AzureAccount.class).listRegions(sid)))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(locationList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(locationList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -117,9 +119,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * Load List of Pricing Tier.
      */
     public void onLoadPricingTierList() {
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().listPricingTier())
+        Observable.fromCallable(() -> new ArrayList<>(WEB_APP_PRICING))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(pricingTierList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(pricingTierList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -140,7 +142,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
             .subscription(sid).appServicePlansByResourceGroup(rg)).flatMapMany(Flux::fromIterable)
                 .filter(asp -> OperatingSystem.LINUX.equals(asp.entity().getOperatingSystem()))
                 .subscribeOn(Schedulers.boundedElastic())
-                .collectList().subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -159,7 +161,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
             .subscription(sid).appServicePlans()).flatMapMany(Flux::fromIterable)
             .filter(asp -> OperatingSystem.LINUX.equals(asp.entity().getOperatingSystem()))
             .subscribeOn(Schedulers.boundedElastic())
-            .collectList().subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+            .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
                 if (isViewDetached()) {
                     return;
                 }
