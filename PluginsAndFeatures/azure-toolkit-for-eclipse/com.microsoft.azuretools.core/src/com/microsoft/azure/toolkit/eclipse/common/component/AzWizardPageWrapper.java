@@ -37,7 +37,7 @@ public abstract class AzWizardPageWrapper<T> extends WizardPage {
     public boolean isPageComplete() {
         if (super.isPageComplete()) {
             final List<AzureValidationInfo> infos = this.getForm().getAllValidationInfos(false);
-            return infos.stream().allMatch(AzureValidationInfo::isValid);
+            return !infos.isEmpty() && infos.stream().allMatch(AzureValidationInfo::isValid);
         }
         return false;
     }

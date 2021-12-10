@@ -6,7 +6,7 @@ package com.microsoft.azure.toolkit.eclipse.function.wizard;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzWizardPageWrapper;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
-import com.microsoft.azure.toolkit.eclipse.function.wizard.model.FunctionProjectModel;
+import com.microsoft.azure.toolkit.ide.appservice.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
