@@ -105,7 +105,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
         composite.setLayout(new GridLayout(2, false));
 
         Label lblNewLabel = new Label(composite, SWT.NONE);
-        lblNewLabel.setText(Messages.WindowsAzurePreferencePageAzueCloudLabel);
+        lblNewLabel.setText(Messages.WindowsAzurePreferencePageAzureCloudLabel);
 
         cbAzureEnv = new AzureComboBox<AzureEnvironment>(composite) {
             protected String getItemText(final Object item) {
