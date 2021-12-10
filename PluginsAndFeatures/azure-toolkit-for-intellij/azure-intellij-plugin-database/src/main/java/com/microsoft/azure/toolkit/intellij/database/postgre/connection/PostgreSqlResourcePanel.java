@@ -56,7 +56,7 @@ public class PostgreSqlResourcePanel implements AzureFormJPanel<Resource<Postgre
         init();
         initListeners();
 
-        this.jdbcUrl = JdbcUrl.postgre(StringUtils.EMPTY);
+        this.jdbcUrl = JdbcUrl.postgre(StringUtils.EMPTY, StringUtils.EMPTY);
         this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
                 Azure.az(AzurePostgreSql.class).subscription(this.serverComboBox.getSubscription().getId()).list());
     }
