@@ -7,11 +7,11 @@ package com.microsoft.azure.toolkit.intellij.database.sqlserver;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
-import com.microsoft.azure.toolkit.intellij.database.util.AzureSignInHelper;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -41,7 +41,7 @@ public class OpenSqlServerByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInHelper.requireSignedIn(project, () -> this.doActionPerformed(project));
+        AzureLoginHelper.requireSignedIn(project, () -> this.doActionPerformed(project));
     }
 
     @Override

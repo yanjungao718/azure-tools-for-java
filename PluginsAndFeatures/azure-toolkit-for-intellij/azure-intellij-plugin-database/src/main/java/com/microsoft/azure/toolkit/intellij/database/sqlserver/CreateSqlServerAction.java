@@ -10,10 +10,10 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.database.sqlserver.creation.SqlServerCreationDialog;
 import com.microsoft.azure.toolkit.intellij.database.sqlserver.task.CreateSqlServerTask;
-import com.microsoft.azure.toolkit.intellij.database.util.AzureSignInHelper;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -40,7 +40,7 @@ public class CreateSqlServerAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInHelper.requireSignedIn(project, () -> this.doActionPerformed(project));
+        AzureLoginHelper.requireSignedIn(project, () -> this.doActionPerformed(project));
     }
 
     private void doActionPerformed(Project project) {

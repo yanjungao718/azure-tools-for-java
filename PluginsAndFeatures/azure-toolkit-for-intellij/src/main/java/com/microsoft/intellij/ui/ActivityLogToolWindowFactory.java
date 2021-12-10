@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class ActivityLogToolWindowFactory implements ToolWindowFactory {
     public static final String ACTIVITY_LOG_WINDOW = "Azure Activity Log";

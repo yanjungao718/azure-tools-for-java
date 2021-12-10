@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_VM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class SettingsStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
     private static final String CREATE_NEW = "<< Create new >>";

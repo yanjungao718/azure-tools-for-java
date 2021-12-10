@@ -28,7 +28,7 @@ import java.util.List;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_BLOB_CONTAINER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class CreateBlobContainerForm extends AzureDialogWrapper {
     private JPanel contentPane;

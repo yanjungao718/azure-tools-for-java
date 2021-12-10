@@ -17,7 +17,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import javax.swing.*;
 import java.util.ArrayList;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class ApplicationInsightsAddDialog extends AzureDialogWrapper {
     private JPanel contentPane;

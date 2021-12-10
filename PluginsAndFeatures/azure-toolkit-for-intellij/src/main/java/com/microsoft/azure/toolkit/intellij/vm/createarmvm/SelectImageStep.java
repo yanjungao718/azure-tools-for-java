@@ -56,7 +56,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
     private static final String ERROR_MESSAGE_LIST_PUBLISHER = "An error occurred while attempting to retrieve publisher list. \n%s";
