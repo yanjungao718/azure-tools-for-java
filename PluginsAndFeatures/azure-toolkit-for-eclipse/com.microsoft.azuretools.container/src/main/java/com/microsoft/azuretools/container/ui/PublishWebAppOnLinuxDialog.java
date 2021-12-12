@@ -484,7 +484,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 WebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(model);
 
                 if (app != null && app.name() != null) {
-                    ConsoleLogger.info(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
+                    ConsoleLogger.info(String.format("URL:  https://%s.azurewebsites.net/", app.name()));
 
                     AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                 }
@@ -493,7 +493,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 ConsoleLogger.info(String.format("Updating WebApp ... [%s]", model.getWebAppName()));
                 WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(model.getWebAppId(), acrInfo);
                 if (app != null && app.name() != null) {
-                    ConsoleLogger.info(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
+                    ConsoleLogger.info(String.format("URL:  https://%s.azurewebsites.net/", app.name()));
                 }
             }
             return null;

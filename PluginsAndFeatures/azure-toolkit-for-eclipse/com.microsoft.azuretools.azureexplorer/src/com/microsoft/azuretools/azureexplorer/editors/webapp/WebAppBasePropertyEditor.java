@@ -554,7 +554,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         if (url == null) {
             lnkUrl.setText(TXT_NA);
         } else {
-            lnkUrl.setText(String.format("<a>http://%s</a>", url));
+            lnkUrl.setText(String.format("<a>https://%s</a>", url));
         }
         txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? TXT_NA
             : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING));
