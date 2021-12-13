@@ -5,9 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.appservice.actions.AppServiceFileAction;
@@ -20,8 +23,10 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.action.CreateFunctio
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.DeployWebAppAction;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
@@ -32,7 +37,10 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -110,10 +118,37 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> showWebAppSlotPropertyViewHandler = (c, e) -> AzureTaskManager.getInstance()
                 .runLater(() -> new OpenAppServicePropertyViewAction().openDeploymentSlotPropertyView((WebAppDeploymentSlot) c, e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, (r, e) -> r instanceof WebAppDeploymentSlot, showWebAppSlotPropertyViewHandler);
+
+        final BiPredicate<FunctionEntity, AnActionEvent> triggerPredicate = (r, e) -> r instanceof FunctionEntity;
+        final BiConsumer<FunctionEntity, AnActionEvent> triggerFunctionHandler = (entity, e) -> {
+            final String functionId = Optional.ofNullable(entity.getFunctionAppId())
+                    .orElseGet(() -> ResourceId.fromString(entity.getTriggerId()).parent().id());
+            final FunctionApp functionApp = Azure.az(AzureFunction.class).get(functionId);
+            final String triggerType = Optional.ofNullable(entity.getTrigger())
+                    .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
+            final Object request;
+            if (StringUtils.equalsIgnoreCase(triggerType, "timertrigger")) {
+                request = new Object();
+            } else {
+                final String input = AzureTaskManager.getInstance().runAndWaitAsObservable(new AzureTask<>(() -> Messages.showInputDialog(e.getProject(), "Please set the input value: ",
+                        String.format("Trigger function %s", entity.getName()), null))).toBlocking().single();
+                if (input == null) {
+                    return;
+                }
+                request = new TriggerRequest(input);
+            }
+            functionApp.triggerFunction(entity.getName(), request);
+        };
+        am.registerHandler(FunctionAppActionsContributor.TRIGGER_FUNCTION, triggerPredicate, triggerFunctionHandler);
     }
 
     @Override
     public int getOrder() {
         return INITIALIZE_ORDER;
+    }
+
+    @RequiredArgsConstructor
+    static class TriggerRequest {
+        private final String input;
     }
 }
