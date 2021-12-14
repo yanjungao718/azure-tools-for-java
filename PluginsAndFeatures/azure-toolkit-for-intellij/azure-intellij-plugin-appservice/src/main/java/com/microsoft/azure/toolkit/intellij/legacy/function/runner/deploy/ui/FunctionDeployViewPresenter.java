@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.ui;
 
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.intellij.util.RxJavaUtils;
@@ -34,6 +35,6 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
                               return;
                           }
                           getMvpView().fillAppSettings(appSettings);
-                      }));
+                      }, AzureTask.Modality.ANY));
     }
 }
