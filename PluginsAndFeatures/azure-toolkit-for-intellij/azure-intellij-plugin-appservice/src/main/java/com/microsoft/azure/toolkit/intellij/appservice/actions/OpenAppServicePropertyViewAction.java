@@ -70,7 +70,7 @@ public class OpenAppServicePropertyViewAction {
             final Map<Key, String> userData = new HashMap<>();
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
-            userData.put(WEBAPP_ID, slot.id());
+            userData.put(WEBAPP_ID, slot.webApp().id());
             userData.put(SLOT_NAME, slot.name());
             itemVirtualFile = createVirtualFile(slot.webApp().name() + "-" + slot.name(), userData);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.DeploymentSlot.MODULE.getPath())));
