@@ -10,11 +10,13 @@ import com.microsoft.azure.toolkit.lib.AzureService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -35,6 +37,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
     public static final Action.Id<AzureService<?>> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
+    public static final Action.Id<Void> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -99,6 +102,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.deploy_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null));
         am.registerAction(DEPLOY, new Action<>(deployView));
+
+        final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
+                .title((s) -> AzureOperationBundle.title("common.open_azure_settings"));
+        am.registerAction(OPEN_AZURE_SETTINGS, new Action<Void>(openSettingsView).authRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> {

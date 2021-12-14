@@ -6,7 +6,10 @@
 package com.microsoft.azure.toolkit.lib.legacy.function;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.DataManager;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -16,9 +19,12 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.utils.FunctionCliResolver;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
@@ -77,8 +83,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
                     if (StringUtils.equals((String) e.getItem(), OPEN_AZURE_SETTINGS)) {
                         if (!pendingOpenAzureSettings) {
                             AzureTaskManager.getInstance().runLater(() -> {
-                                // todo: migrate to call configure action
-                                // ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class);
+                                FunctionCoreToolsCombobox.this.openAzureSettingsPanel();
                                 FunctionCoreToolsCombobox.this.reset();
                                 pendingOpenAzureSettings = false;
                             });
@@ -92,6 +97,12 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
                 }
             });
         }
+    }
+
+    private void openAzureSettingsPanel() {
+        final Action<Void> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+        final AnActionEvent event = AnActionEvent.createFromInputEvent(null, ActionPlaces.UNKNOWN, null, DataManager.getInstance().getDataContext(FunctionCoreToolsCombobox.this));
+        openSettingsAction.handler(null, event).accept(null, event); // Open Azure Settings Panel sync
     }
 
     public void reset() {
