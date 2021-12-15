@@ -24,6 +24,7 @@ import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import rx.Observable;
@@ -81,7 +82,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_RESOURCE_GRP, appServiceEntity.getResourceGroup());
         propertyMap.put(KEY_LOCATION, appServiceEntity.getRegion().getLabel());
         propertyMap.put(KEY_SUB_ID, appService.subscriptionId());
-        propertyMap.put(KEY_STATUS, appService.status());
+        propertyMap.put(KEY_STATUS, StringUtils.capitalize(StringUtils.lowerCase(appService.status())));
         propertyMap.put(KEY_PLAN, plan.name());
         propertyMap.put(KEY_URL, appService.hostName());
         final PricingTier pricingTier = planEntity.getPricingTier();
