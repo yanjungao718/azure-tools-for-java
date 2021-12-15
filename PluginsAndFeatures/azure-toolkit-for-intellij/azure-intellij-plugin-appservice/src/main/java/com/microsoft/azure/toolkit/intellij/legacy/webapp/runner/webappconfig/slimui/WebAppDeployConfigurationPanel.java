@@ -149,7 +149,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
             return false;
         }
         final String webContainer = Optional.ofNullable(selectedWebApp.getRuntime())
-                .map(Runtime::getWebContainer).map(WebContainer::getValue).orElse(null);
+                .map(Runtime::getWebContainer).map(WebContainer::getValue).orElse(StringUtils.EMPTY);
         final String packaging = AzureArtifactManager.getInstance(project).getPackaging(azureArtifact);
         final boolean isDeployingWar = StringUtils.equalsAnyIgnoreCase(packaging, MavenConstants.TYPE_WAR, "ear");
         return isDeployingWar && StringUtils.containsAny(webContainer.toLowerCase(), "tomcat", "jboss");
