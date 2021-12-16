@@ -241,6 +241,7 @@ public class FunctionUtils {
         final IntellijGradleFunctionProject gradleProject = new IntellijGradleFunctionProject(project, module);
         if (gradleProject.isValid() && gradleProject.getArtifactFile() != null) {
             jarFile = gradleProject.getArtifactFile().toPath();
+            gradleProject.packageJar();
             FileUtils.copyFileToDirectory(gradleProject.getArtifactFile(), stagingFolder.toFile());
         } else {
             jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);;

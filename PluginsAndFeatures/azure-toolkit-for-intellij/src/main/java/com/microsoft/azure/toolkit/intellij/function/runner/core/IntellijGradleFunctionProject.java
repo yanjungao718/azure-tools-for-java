@@ -5,17 +5,28 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.core;
 
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListenerAdapter;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionMethod;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionProject;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.plugins.gradle.GradleManager;
 import org.jetbrains.plugins.gradle.model.ExternalLibraryDependency;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.model.ExternalProjectDependency;
 import org.jetbrains.plugins.gradle.model.ExternalSourceSet;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
+import org.jetbrains.plugins.gradle.service.task.GradleTaskManager;
+import org.jetbrains.plugins.gradle.settings.GradleExecutionSettings;
+import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,6 +51,26 @@ public class IntellijGradleFunctionProject extends FunctionProject {
         externalProject = ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(project.getPath());
         isValid = externalProject != null;
         init();
+    }
+
+    public void packageJar() {
+        //TODO(andxu) this method will be removed after we add logic to add before run task for function run configuraiotn
+        final GradleManager manager = (GradleManager) ExternalSystemApiUtil.getManager(GradleConstants.SYSTEM_ID);
+        final GradleTaskManager gradleTaskManager = new GradleTaskManager();
+        final ExternalSystemTaskId externalSystemTaskId = ExternalSystemTaskId.create(GradleConstants.SYSTEM_ID, ExternalSystemTaskType.EXECUTE_TASK, workspace);
+        final GradleExecutionSettings settings = manager.getExecutionSettingsProvider().fun(Pair.create(workspace, externalProject.getProjectDir().toString()));
+        final IAzureMessager messager = AzureMessager.getMessager();
+        gradleTaskManager.executeTasks(externalSystemTaskId, List.of("jar"),
+            externalProject.getProjectDir().toString(), settings, null, new ExternalSystemTaskNotificationListenerAdapter() {
+                public void onTaskOutput(ExternalSystemTaskId id, String text, boolean stdOut) {
+                    if (StringUtils.isNotBlank(text)) {
+                        for (String line : text.split("\\r?\\n")) {
+                            messager.info(line);
+                        }
+                    }
+                }
+            }
+        );
     }
 
     private void init() {
