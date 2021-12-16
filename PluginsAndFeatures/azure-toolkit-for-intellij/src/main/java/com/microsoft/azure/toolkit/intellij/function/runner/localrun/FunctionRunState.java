@@ -129,11 +129,17 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         try {
             final String funcPath = functionRunConfiguration.getFuncPath();
             if (StringUtils.isEmpty(funcPath)) {
-                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                throw new AzureToolkitRuntimeException(
+                    message("function.run.error.runtimeNotFound"),
+                    message("function.run.error.runtimeNotFound.tips"),
+                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
             final ComparableVersion funcVersion = getFuncVersion();
             if (funcVersion == null) {
-                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                throw new AzureToolkitRuntimeException(
+                    message("function.run.error.runtimeNotFound"),
+                    message("function.run.error.runtimeNotFound.tips"),
+                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
             final ComparableVersion javaVersion = getJavaVersion();
             if (javaVersion == null) {
@@ -147,10 +153,15 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0 ? MINIMUM_JAVA_9_SUPPORTED_VERSION
                                                      : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
             if (funcVersion.compareTo(minimumVersion) < 0) {
-                throw new AzureToolkitRuntimeException(message("function.run.error.funcOutOfDate"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                throw new AzureToolkitRuntimeException(
+                    message("function.run.error.funcOutOfDate"),
+                    message("function.run.error.funcOutOfDate.tips"),
+                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
         } catch (IOException e) {
-            throw new AzureToolkitRuntimeException(e.getMessage(), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+            throw new AzureToolkitRuntimeException(e.getMessage(),
+                message("function.run.error.runtimeNotFound.tips"),
+                DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
         }
     }
 
