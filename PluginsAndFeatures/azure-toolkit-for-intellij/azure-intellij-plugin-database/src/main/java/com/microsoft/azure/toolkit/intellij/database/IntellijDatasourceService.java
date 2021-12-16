@@ -53,8 +53,8 @@ public class IntellijDatasourceService {
             MethodUtils.invokeMethod(builder, true, "withUser", properties.getUsername());
             MethodUtils.invokeMethod(builder, true, "commit");
             showDataSourceManagerDialog(dbPsiFacade, registry, properties);
-        } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            throw new AzureToolkitRuntimeException(String.format(ERROR_MESSAGE_PATTERN, properties.getName()), ERROR_ACTION);
+        } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassNotFoundException | InstantiationException e) {
+            throw new AzureToolkitRuntimeException(String.format(ERROR_MESSAGE_PATTERN, properties.getName()));
         }
     }
 

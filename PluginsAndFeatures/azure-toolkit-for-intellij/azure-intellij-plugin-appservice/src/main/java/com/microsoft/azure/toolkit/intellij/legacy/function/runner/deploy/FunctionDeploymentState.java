@@ -5,14 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy;
 
-import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
-import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
@@ -21,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -33,7 +31,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.RunProcessHandler;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -86,7 +83,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
     @Override
     @AzureOperation(name = "function.deploy_app", type = AzureOperation.Type.ACTION)
     public FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws IOException {
-        final FunctionDeploymentMessenger messenger = new FunctionDeploymentMessenger(processHandler);
+        final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         AzureMessager.getContext().setMessager(messenger);
         final FunctionApp functionApp;
         if (StringUtils.isEmpty(functionDeployConfiguration.getFunctionId())) {
@@ -151,7 +148,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             final Path folder = stagingFolder.toPath();
             try {
                 final Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, module, methods);
+                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, module, methods);
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
             } catch (final AzureExecutionException | IOException e) {
                 final String error = String.format("failed prepare staging folder[%s]", folder);
@@ -186,25 +183,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
     @Override
     protected Map<String, String> getTelemetryMap() {
         return deployModel.getTelemetryProperties();
-    }
-
-    // todo: create shared run state messenger for all run states
-    @RequiredArgsConstructor
-    private static class FunctionDeploymentMessenger extends IntellijAzureMessager {
-        private final RunProcessHandler handler;
-
-        @Override
-        public boolean show(IAzureMessage raw) {
-            if (raw.getType() == IAzureMessage.Type.INFO || raw.getType() == IAzureMessage.Type.WARNING) {
-                handler.setText(raw.getMessage().toString());
-                return true;
-            } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                handler.println(raw.getMessage().toString(), ProcessOutputType.SYSTEM);
-            } else if (raw.getType() == IAzureMessage.Type.ERROR) {
-                handler.println(raw.getContent(), ProcessOutputType.STDERR);
-            }
-            return super.show(raw);
-        }
     }
 
     private void listHTTPTriggerUrls(FunctionApp target) {

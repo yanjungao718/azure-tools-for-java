@@ -110,8 +110,7 @@ public class AuthMethodManager {
         }
         final String error = "Failed to connect Azure service with current account";
         final String action = "Confirm you have already signed in with subscription: " + sid;
-        final String errorCode = "001";
-        throw new AzureToolkitRuntimeException(error, null, action, errorCode);
+        throw new AzureToolkitRuntimeException(error, null, action);
     }
 
     public void addSignInEventListener(Runnable l) {

@@ -230,14 +230,24 @@ public class FunctionUtils {
         name = "function.prepare_staging_folder",
         type = AzureOperation.Type.TASK
     )
-    public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
+    public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Project project, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
         if (stagingFolder.toFile().isDirectory()) {
             FileUtils.cleanDirectory(stagingFolder.toFile());
         }
 
-        final Path jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);
+        final Path jarFile;
+        // test if it is gradle project
+        final IntellijGradleFunctionProject gradleProject = new IntellijGradleFunctionProject(project, module);
+        if (gradleProject.isValid() && gradleProject.getArtifactFile() != null) {
+            jarFile = gradleProject.getArtifactFile().toPath();
+            gradleProject.packageJar();
+            FileUtils.copyFileToDirectory(gradleProject.getArtifactFile(), stagingFolder.toFile());
+        } else {
+            jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);;
+        }
+
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
         configMap.values().forEach(config -> config.setScriptFile(scriptFilePath));
         for (final Map.Entry<String, FunctionConfiguration> config : configMap.entrySet()) {
@@ -252,21 +262,26 @@ public class FunctionUtils {
         copyFilesWithDefaultContent(hostJson, hostJsonFile, DEFAULT_HOST_JSON);
 
         final List<File> jarFiles = new ArrayList<>();
-        OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
-            if (StringUtils.isNotEmpty(lib.getName()) && ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
-                return true;
-            }
+        if (gradleProject.isValid()) {
+            jarFiles.addAll(gradleProject.getDependencies());
+        } else {
+            OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
+                if (StringUtils.isNotEmpty(lib.getName()) && ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
+                    return true;
+                }
 
-            if (lib != null) {
-                for (final VirtualFile virtualFile : lib.getFiles(OrderRootType.CLASSES)) {
-                    final File file = new File(stripExtraCharacters(virtualFile.getPath()));
-                    if (file.exists()) {
-                        jarFiles.add(file);
+                if (lib != null) {
+                    for (final VirtualFile virtualFile : lib.getFiles(OrderRootType.CLASSES)) {
+                        final File file = new File(stripExtraCharacters(virtualFile.getPath()));
+                        if (file.exists()) {
+                            jarFiles.add(file);
+                        }
                     }
                 }
-            }
-            return true;
-        });
+                return true;
+            });
+        }
+
         final File libFolder = new File(stagingFolder.toFile(), "lib");
         for (final File file : jarFiles) {
             FileUtils.copyFileToDirectory(file, libFolder);
