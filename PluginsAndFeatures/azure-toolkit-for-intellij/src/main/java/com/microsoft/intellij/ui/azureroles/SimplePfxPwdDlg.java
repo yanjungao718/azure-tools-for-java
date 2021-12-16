@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class SimplePfxPwdDlg extends AzureDialogWrapper {
     private JPanel contentPane;

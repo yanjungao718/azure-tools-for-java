@@ -35,7 +35,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
     private JPanel contentPane;

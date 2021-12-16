@@ -15,7 +15,7 @@ import java.io.*;
 import java.util.*;
 
 import static com.microsoft.intellij.AzurePlugin.log;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 @State(
         name = "AzureSettings",
