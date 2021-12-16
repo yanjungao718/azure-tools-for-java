@@ -6,12 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.intellij.AzureConfigurable;
 import com.microsoft.intellij.actions.AzureSignInAction;
 
 import java.util.Optional;
@@ -25,5 +29,14 @@ public class LegacyIntellijActionsContributor implements IActionsContributor {
         final BiConsumer<Runnable, AnActionEvent> handler = (Runnable r, AnActionEvent e) ->
             AzureSignInAction.requireSignedIn(Optional.ofNullable(e).map(AnActionEvent::getProject).orElse(null), r);
         am.registerAction(Action.REQUIRE_AUTH, new Action<>(handler, authView).authRequired(false));
+    }
+
+    @Override
+    public void registerHandlers(AzureActionManager am) {
+        final BiConsumer<Void, AnActionEvent> openSettingsHandler = (ignore, e) ->
+                AzureTaskManager.getInstance().runAndWait(() ->
+                        ShowSettingsUtil.getInstance().showSettingsDialog(Optional.ofNullable(e).map(event -> event.getProject()).orElse(null),
+                                AzureConfigurable.AzureAbstractConfigurable.class));
+        am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
     }
 }

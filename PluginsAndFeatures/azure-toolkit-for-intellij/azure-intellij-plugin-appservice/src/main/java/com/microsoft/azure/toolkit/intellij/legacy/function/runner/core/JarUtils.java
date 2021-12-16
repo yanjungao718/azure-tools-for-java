@@ -27,19 +27,19 @@ public class JarUtils {
         final String moduleName = module.getName();
         final String path = CompilerPaths.getModuleOutputPath(module, false);
         final Path outputFile = Paths.get(stagingFolder, moduleName + ".jar");
-//        final JarArchiver jar = new JarArchiver();
-//        jar.setCompress(true);
-//        jar.setDestFile(outputFile.toFile());
-//        jar.addDirectory(new File(path));
-//        final Manifest manifest = new Manifest();
-//        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-//        manifest.getMainAttributes().put(new Attributes.Name("Created-By"), "Azure Intellij Plugin");
-//        try {
-//            jar.addConfiguredManifest(manifest);
-//        } catch (ManifestException e) {
-//            throw new AzureToolkitRuntimeException("Cannot create manifest for function jar.", e);
-//        }
-//        jar.createArchive();
+        final JarArchiver jar = new JarArchiver();
+        jar.setCompress(true);
+        jar.setDestFile(outputFile.toFile());
+        jar.addDirectory(new File(path));
+        final Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(new Attributes.Name("Created-By"), "Azure Intellij Plugin");
+        try {
+            jar.addConfiguredManifest(manifest);
+        } catch (ManifestException e) {
+            throw new AzureToolkitRuntimeException("Cannot create manifest for function jar.", e);
+        }
+        jar.createArchive();
         return outputFile;
     }
 }

@@ -3,7 +3,7 @@ plugins {
 }
 
 intellij {
-    plugins = ['java', 'maven', 'maven-model', 'gradle', "properties", 'terminal']
+    plugins = ['java', 'maven', 'maven-model', "properties", 'terminal']
 }
 
 dependencies {
@@ -11,5 +11,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-appservice-lib:' + azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib:' + azureToolkitVersion
     compile 'com.spotify:docker-client:8.16.0'
+    compile 'org.codehaus.plexus:plexus-archiver:4.2.6'
+    compile 'org.codehaus.plexus:plexus-component-api:1.0-alpha-33'
     compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
 }

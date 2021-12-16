@@ -13,6 +13,8 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
+import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
@@ -32,7 +34,6 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,24 +142,23 @@ public enum AppServiceStreamingLogManager {
         private static final String APPLICATION_INSIGHT_PATTERN = "%s/#blade/AppInsightsExtension/QuickPulseBladeV2/ComponentId/%s/ResourceId/%s";
         private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS = message("appService.logStreaming.error.noApplicationInsights");
 
-        private final String resourceId;
-        private FunctionApp functionApp;
+        private final FunctionApp functionApp;
 
         FunctionLogStreaming(final String resourceId) {
-            this.resourceId = resourceId;
+            this.functionApp = Azure.az(AzureFunction.class).get(resourceId);
         }
 
         @Override
         public boolean isLogStreamingEnabled() {
-            return getFunctionApp().getRuntime().getOperatingSystem() == OperatingSystem.LINUX ||
-                    getFunctionApp().getDiagnosticConfig().isEnableApplicationLog();
+            return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX ||
+                    functionApp.getDiagnosticConfig().isEnableApplicationLog();
         }
 
         @Override
         public void enableLogStreaming() {
-            final DiagnosticConfig diagnosticConfig = getFunctionApp().getDiagnosticConfig();
+            final DiagnosticConfig diagnosticConfig = functionApp.getDiagnosticConfig();
             diagnosticConfig.setEnableApplicationLog(true);
-            getFunctionApp().update().withDiagnosticConfig(diagnosticConfig).commit();
+            functionApp.update().withDiagnosticConfig(diagnosticConfig).commit();
         }
 
         @Override
@@ -168,12 +168,12 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public Flux<String> getStreamingLogContent() throws IOException {
-            if (getFunctionApp().getRuntime().getOperatingSystem() == OperatingSystem.LINUX) {
+            if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX) {
                 // For linux function, we will just open the "Live Metrics Stream" view in the portal
                 openLiveMetricsStream();
-                return null;
+                return Flux.empty();
             }
-            return getFunctionApp().streamAllLogsAsync();
+            return functionApp.streamAllLogsAsync();
         }
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
@@ -184,9 +184,7 @@ public enum AppServiceStreamingLogManager {
                 throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }
             final String subscriptionId = functionApp.id();
-            Azure.az(ApplicationInsights.class).list();
-            final List<ApplicationInsightsEntity> insightsResources =
-                    subscriptionId == null ? Collections.EMPTY_LIST : Azure.az(ApplicationInsights.class).list();
+            final List<ApplicationInsightsEntity> insightsResources = Azure.az(ApplicationInsights.class).subscription(subscriptionId).list();
             final ApplicationInsightsEntity target = insightsResources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
@@ -205,20 +203,13 @@ public enum AppServiceStreamingLogManager {
             final String aiResourceId = URLEncoder.encode(target.getId(), StandardCharsets.UTF_8);
             return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
         }
-
-        private FunctionApp getFunctionApp() {
-            if (functionApp == null) {
-                functionApp = Azure.az(AzureAppService.class).functionApp(resourceId);
-            }
-            return functionApp;
-        }
     }
 
     static class WebAppLogStreaming implements ILogStreaming {
         private final WebApp webApp;
 
         public WebAppLogStreaming(String resourceId) {
-            this.webApp = Azure.az(AzureAppService.class).webapp(resourceId);
+            this.webApp = Azure.az(AzureWebApp.class).get(resourceId);
         }
 
         @Override
