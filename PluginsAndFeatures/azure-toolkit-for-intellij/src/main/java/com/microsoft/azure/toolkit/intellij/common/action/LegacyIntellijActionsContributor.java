@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.AzureConfigurable;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.actions.AzureSignInAction;
 
 import java.util.Optional;
@@ -24,11 +25,20 @@ import java.util.function.BiConsumer;
 public class LegacyIntellijActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
-        final AzureString title = AzureOperationBundle.title("account.authorize_action");
-        final ActionView.Builder authView = new ActionView.Builder("Authorize").title((s) -> title);
-        final BiConsumer<Runnable, AnActionEvent> handler = (Runnable r, AnActionEvent e) ->
+        final AzureString authzTitle = AzureOperationBundle.title("account.authorize_action");
+        final ActionView.Builder authzView = new ActionView.Builder("Authorize").title((s) -> authzTitle);
+        final BiConsumer<Runnable, AnActionEvent> authzHandler = (Runnable r, AnActionEvent e) ->
             AzureSignInAction.requireSignedIn(Optional.ofNullable(e).map(AnActionEvent::getProject).orElse(null), r);
-        am.registerAction(Action.REQUIRE_AUTH, new Action<>(handler, authView).authRequired(false));
+        am.registerAction(Action.REQUIRE_AUTH, new Action<>(authzHandler, authzView).authRequired(false));
+
+        final AzureString authnTitle = AzureOperationBundle.title("account.authenticate");
+        final ActionView.Builder authnView = new ActionView.Builder("Sign in").title((s) -> authnTitle);
+        final BiConsumer<Void, AnActionEvent> authnHandler = (Void v, AnActionEvent e) -> {
+            final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+            if (authMethodManager.isSignedIn()) authMethodManager.signOut();
+            AzureSignInAction.onAzureSignIn(e.getProject());
+        };
+        am.registerAction(Action.AUTHENTICATE, new Action<>(authnHandler, authnView).authRequired(false));
     }
 
     @Override

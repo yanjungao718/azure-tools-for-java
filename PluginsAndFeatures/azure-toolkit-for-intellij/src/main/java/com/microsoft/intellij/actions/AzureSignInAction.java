@@ -214,7 +214,7 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     private static AuthConfiguration showSignInWindowAndGetAuthConfiguration(Project project) throws InterruptedException {
-        final SignInWindow dialog = new SignInWindow(new AuthMethodDetails(), project);
+        final SignInWindow dialog = new SignInWindow(project);
         if (!dialog.showAndGet()) {
             throw new InterruptedException("user cancel");
         }

@@ -103,27 +103,41 @@
       </actionContributor>
    </extension>
 
-	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
-		<launchConfigurationType name="Deploy Azure Webapp launch" 
-			delegate="com.microsoft.azure.toolkit.eclipse.webapp.WebAppDeployLaunchConfiguration" 
-			modes="run"
-			id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType">
-		</launchConfigurationType>
-	</extension>
-	<extension
-    	point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-    	<launchConfigurationTabGroup
-	        class="com.microsoft.azure.toolkit.eclipse.webapp.AzureWebAppDeployConfigurationTabGroup"
-	        id="com.microsoft.azure.toolkit.eclipse.webapp.azureWebAppDeployConfigurationTabGroup"
-	        type="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType">
-	    </launchConfigurationTabGroup>
-	</extension>
-	<extension
-        point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-	    <launchConfigurationTypeImage
-	            id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationTypeImage"
-	            configTypeID="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType"
-	            icon="icons/PublishWebApp_16.png">
-	    </launchConfigurationTypeImage>
+    <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+        <launchConfigurationType name="Deploy Azure Webapp launch"
+            delegate="com.microsoft.azure.toolkit.eclipse.webapp.WebAppDeployLaunchConfiguration"
+            modes="run"
+            id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType">
+        </launchConfigurationType>
     </extension>
+    <extension
+        point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+        <launchConfigurationTabGroup
+            class="com.microsoft.azure.toolkit.eclipse.webapp.AzureWebAppDeployConfigurationTabGroup"
+            id="com.microsoft.azure.toolkit.eclipse.webapp.azureWebAppDeployConfigurationTabGroup"
+            type="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType">
+        </launchConfigurationTabGroup>
+    </extension>
+    <extension
+        point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+        <launchConfigurationTypeImage
+                id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationTypeImage"
+                configTypeID="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType"
+                icon="icons/PublishWebApp_16.png">
+        </launchConfigurationTypeImage>
+    </extension>
+    <extension
+         point="org.eclipse.ui.newWizards">
+           <category
+                 id="com.microsoft.azure.wizards.category"
+                 name="Azure">
+          </category>
+         <wizard
+            name="Create New Azure Function Project"
+            icon="icons/functionapp.png"
+            category="com.microsoft.azure.wizards.category"
+            class="com.microsoft.azure.toolkit.eclipse.function.wizard.CreateFunctionProjectWizard"
+            project="true"
+            id="com.microsoft.azure.toolkit.eclipse.wizards.functionwizard"></wizard>
+   </extension>
 </plugin>

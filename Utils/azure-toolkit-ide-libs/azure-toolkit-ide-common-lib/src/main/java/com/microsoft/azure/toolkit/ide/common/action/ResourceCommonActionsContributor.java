@@ -37,6 +37,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AzureService<?>> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
     public static final Action.Id<Void> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
+    public static final Action.Id<Void> OPEN_SETTINGS = Action.Id.of("action.open_settings");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -86,9 +87,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
 
         // register commands
-        am.registerAction(OPEN_URL, (s) -> {
+        final Action<String> action = new Action<>((s) -> {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
         });
+        action.authRequired(false);
+        am.registerAction(OPEN_URL, action);
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((IAzureResource<?>) r).name())).orElse(null));
