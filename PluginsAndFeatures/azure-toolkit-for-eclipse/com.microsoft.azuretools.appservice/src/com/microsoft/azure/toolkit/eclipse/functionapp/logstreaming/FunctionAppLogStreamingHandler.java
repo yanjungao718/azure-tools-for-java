@@ -85,7 +85,7 @@ public class FunctionAppLogStreamingHandler {
         AzureTaskManager.getInstance().runLater(() -> PluginUtil.openLinkInBrowser(aiUrl));
     }
 
-    private static String getApplicationInsightLiveMetricsUrl(ApplicationInsightsEntity target, String portalUrl) 
+    private static String getApplicationInsightLiveMetricsUrl(ApplicationInsightsEntity target, String portalUrl)
             throws UnsupportedEncodingException {
         final JsonObject componentObject = new JsonObject();
         componentObject.addProperty("Name", target.getName());
@@ -97,8 +97,7 @@ public class FunctionAppLogStreamingHandler {
     }
 
     private static boolean isLogStreamingEnabled(IFunctionAppBase<?> functionApp) {
-        return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX
-                || functionApp.getDiagnosticConfig().isEnableApplicationLog();
+        return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX || functionApp.getDiagnosticConfig().isEnableApplicationLog();
     }
 
     private static void enableLogStreaming(IFunctionAppBase<?> functionApp) {
