@@ -33,7 +33,7 @@ public class DeployFunctionAppAction {
     private final Project project;
     private final FunctionApp functionApp;
 
-    public DeployFunctionAppAction(final FunctionApp functionApp,final Project project) {
+    public DeployFunctionAppAction(final FunctionApp functionApp, final Project project) {
         super();
         this.project = project;
         this.functionApp = functionApp;

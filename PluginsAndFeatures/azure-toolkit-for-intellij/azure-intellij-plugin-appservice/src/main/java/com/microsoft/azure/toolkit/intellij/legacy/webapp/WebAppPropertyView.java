@@ -5,10 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.webapp;
 
-import com.intellij.openapi.vfs.VirtualFile;
-
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 

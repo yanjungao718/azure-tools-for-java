@@ -21,5 +21,5 @@ public class DockerHostRunSettingsEditor extends AzureSettingsEditor<DockerHostR
     @Override
     protected AzureSettingPanel getPanel() {
         return this.settingPanel;
-   }
+    }
 }

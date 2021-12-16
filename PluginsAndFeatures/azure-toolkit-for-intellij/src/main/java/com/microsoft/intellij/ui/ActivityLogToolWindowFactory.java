@@ -55,7 +55,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         this.project = project;
-        table = new TableView<DeploymentTableItem>(new ListTableModel<DeploymentTableItem>(DESC, PROGRESS, STATUS, START_TIME));
+        table = new TableView<DeploymentTableItem>(new ListTableModel<DeploymentTableItem>(desc, progress, status, startTime));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         // add mouse listener for links in table
         table.addMouseListener(createTableMouseListener());
@@ -155,13 +155,13 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
         }
     }
 
-    private final ColumnInfo<DeploymentTableItem, String> DESC = new ColumnInfo<DeploymentTableItem, String>(message("desc")) {
+    private final ColumnInfo<DeploymentTableItem, String> desc = new ColumnInfo<DeploymentTableItem, String>(message("desc")) {
         public String valueOf(DeploymentTableItem object) {
             return object.deploymentId;
         }
     };
 
-    private final ColumnInfo<DeploymentTableItem, Integer> PROGRESS = new ColumnInfo<DeploymentTableItem, Integer>("Progress") {
+    private final ColumnInfo<DeploymentTableItem, Integer> progress = new ColumnInfo<DeploymentTableItem, Integer>("Progress") {
         private TableCellRenderer renderer = new ProgressBarRenderer();
 
         public Integer valueOf(DeploymentTableItem object) {
@@ -173,7 +173,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
         }
     };
 
-    private final ColumnInfo<DeploymentTableItem, String> STATUS = new ColumnInfo<DeploymentTableItem, String>(message("status")) {
+    private final ColumnInfo<DeploymentTableItem, String> status = new ColumnInfo<DeploymentTableItem, String>(message("status")) {
         private TableCellRenderer renderer = new LinkRenderer();
 
         public String valueOf(DeploymentTableItem object) {
@@ -189,7 +189,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
         }
     };
 
-    private final ColumnInfo<DeploymentTableItem, String> START_TIME = new ColumnInfo<DeploymentTableItem, String>(message("startTime")) {
+    private final ColumnInfo<DeploymentTableItem, String> startTime = new ColumnInfo<DeploymentTableItem, String>(message("startTime")) {
         public String valueOf(DeploymentTableItem object) {
             return object.startDate;
         }

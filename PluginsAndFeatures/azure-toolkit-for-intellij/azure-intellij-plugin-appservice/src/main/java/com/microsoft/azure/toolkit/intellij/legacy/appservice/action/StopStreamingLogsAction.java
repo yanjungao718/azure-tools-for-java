@@ -24,7 +24,7 @@ public class StopStreamingLogsAction {
         this.appService = appService;
         this.resourceId = appService.id();
     }
-    
+
     public void execute() {
         AppServiceStreamingLogManager.INSTANCE.closeStreamingLog(project, resourceId);
     }
