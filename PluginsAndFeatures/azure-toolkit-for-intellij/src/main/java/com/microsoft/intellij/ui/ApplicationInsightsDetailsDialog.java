@@ -10,7 +10,7 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 
 import javax.swing.*;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class ApplicationInsightsDetailsDialog extends AzureDialogWrapper {
     private JTextField txtName;

@@ -17,7 +17,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AILibraryHandler {
     Document webXMLDoc = null;
@@ -182,9 +182,9 @@ public class AILibraryHandler {
                 filterName.setTextContent(message("aiWebfilter"));
                 filter.appendChild(filterName);
 
-                Element fClass = webXMLDoc.createElement("filter-class");
-                fClass.setTextContent(message("aiWebFilterClassName"));
-                filter.appendChild(fClass);
+                Element filterClass = webXMLDoc.createElement("filter-class");
+                filterClass.setTextContent(message("aiWebFilterClassName"));
+                filter.appendChild(filterClass);
 
                 NodeList existingFilterNodeList = webXMLDoc.getElementsByTagName(message("filterTag"));
                 Node existingFilterNode = existingFilterNodeList != null
@@ -235,7 +235,7 @@ public class AILibraryHandler {
             if (eleListener != null) {
                 eleListener.getParentNode().removeChild(eleListener);
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             AzurePlugin.log(ex.getMessage(), ex);
             throw new Exception(String.format("%s%s", message("aiRemoveErr"), ex.getMessage()));

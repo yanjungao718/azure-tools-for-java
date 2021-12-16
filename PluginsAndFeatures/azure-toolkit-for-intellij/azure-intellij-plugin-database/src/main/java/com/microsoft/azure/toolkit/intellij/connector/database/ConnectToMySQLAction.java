@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
-import com.microsoft.azure.toolkit.intellij.database.util.AzureSignInHelper;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -37,7 +37,7 @@ public class ConnectToMySQLAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInHelper.requireSignedIn(project, () -> {
+        AzureLoginHelper.requireSignedIn(project, () -> {
             final ConnectorDialog dialog = new ConnectorDialog(project);
             final MySqlServer server = this.node.getServer();
             final Database database = new Database(server.id(), null);

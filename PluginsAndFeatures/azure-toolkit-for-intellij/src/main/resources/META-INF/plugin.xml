@@ -85,6 +85,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-vm.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-redis.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-database.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-appservice.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -108,13 +109,13 @@
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.mysql.MySQLPropertyViewProvider"/>
@@ -128,7 +129,7 @@
 
     <toolWindow
             anchor="bottom"
-            factoryClass="com.microsoft.azure.toolkit.intellij.appservice.StreamingLogsToolWindowFactory"
+            factoryClass="com.microsoft.azure.toolkit.intellij.legacy.appservice.StreamingLogsToolWindowFactory"
             id="Azure Streaming Log"
             canCloseContents="true"/>
 
@@ -142,30 +143,30 @@
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
-    <configurationType implementation="com.microsoft.azure.toolkit.intellij.webapp.runner.WebAppConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfigurationType"/>
-    <configurationType implementation="com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
     <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoter"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.LivySparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkRunConfigurationProducer"/>
-    <programRunner implementation="com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeploymentRunner"/>
-    <programRunner implementation="com.microsoft.azure.toolkit.intellij.function.runner.localrun.FunctionLocalRunner"/>
+    <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentRunner"/>
+    <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionLocalRunner"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkRunConfigurationProducer"/>
-    <programRunner implementation="com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppRunner"/>
+    <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkBatchRunner" />
-    <configurationType implementation="com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.toolkit.intellij.docker.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
@@ -176,11 +177,11 @@
     <completion.contributor language="JSON" order="first"
       implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
     <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
-    <facetType implementation="com.microsoft.azure.toolkit.intellij.function.wizard.facet.FunctionsFacetType"/>
-    <moduleBuilder builderClass="com.microsoft.azure.toolkit.intellij.function.wizard.module.FunctionsModuleBuilder"/>
-    <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunConfigurationProducer"/>
+    <facetType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.facet.FunctionsFacetType"/>
+    <moduleBuilder builderClass="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionsModuleBuilder"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunConfigurationProducer"/>
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
-                              implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
+                              implementationClass="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunLineMarkerProvider"/>
 
     <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceDefinitionRegisterActivity"/>
   </extensions>
@@ -242,34 +243,34 @@
     <action class="com.microsoft.intellij.actions.NewCustomerIssueFeedbackAction" id="AzureToolkit.GithubIssue" text="Report Issues" />
     <action class="com.microsoft.intellij.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
     <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback" />
-    <action id="Actions.WebDeployAction" class="com.microsoft.azure.toolkit.intellij.webapp.action.WebDeployAction"
+    <action id="Actions.WebDeployAction" class="com.microsoft.azure.toolkit.intellij.legacy.webapp.action.WebDeployAction"
             text="Deploy to Azure Web Apps" description="Deploy to Azure Web Apps"
             icon="/icons/WebApp/Deploy.svg">
     </action>
     <!-- Functions Start -->
-    <action id="Actions.RunFunction" class="com.microsoft.azure.toolkit.intellij.function.action.RunFunctionAction"
+    <action id="Actions.RunFunction" class="com.microsoft.azure.toolkit.intellij.legacy.function.action.RunFunctionAction"
             text="Run Function" description="Run function project locally"
             icon="/icons/FunctionApp/Run.svg">
     </action>
-    <action id="Actions.DeployFunction" class="com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAction"
+    <action id="Actions.DeployFunction" class="com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAction"
             text="Deploy to Azure Functions" description="Deploy Java Function to Azure"
             icon="/icons/FunctionApp/Deploy.svg">
     </action>
     <!-- Functions End -->
 
-    <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.webapp.docker.action.AddDockerSupportAction"
+    <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.docker.action.AddDockerSupportAction"
             text="Add Docker Support" description="Add Docker Support"
             icon="/icons/DockerSupport/DockerSupport.svg">
     </action>
-    <action id="Actions.RunOnDockerHost" class="com.microsoft.azure.toolkit.intellij.webapp.docker.action.RunOnDockerHostAction"
+    <action id="Actions.RunOnDockerHost" class="com.microsoft.azure.toolkit.intellij.docker.action.RunOnDockerHostAction"
             text="Docker Run" description="Docker Run"
             icon="/icons/DockerSupport/Run.svg">
     </action>
-    <action id="Actions.PushImage" class="com.microsoft.azure.toolkit.intellij.webapp.docker.action.PushImageAction"
+    <action id="Actions.PushImage" class="com.microsoft.azure.toolkit.intellij.docker.action.PushImageAction"
             text="Push Image" description="Push Image"
             icon="/icons/DockerSupport/PushImage.svg">
     </action>
-    <action id="Actions.WebAppOnLinux" class="com.microsoft.azure.toolkit.intellij.webapp.action.WebAppOnLinuxAction"
+    <action id="Actions.WebAppOnLinux" class="com.microsoft.azure.toolkit.intellij.docker.action.WebAppOnLinuxAction"
             text="Run on Web App for Containers" description="Run on Web App for Containers"
             icon="/icons/DockerSupport/RunOnWebApp.svg">
     </action>
@@ -417,7 +418,7 @@
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction"
             text="Apache Spark on SQL Server Big Data Cluster"
             description="Start a Apache Spark local console for Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
-    <action id="page.new" class="com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAction"
+    <action id="page.new" class="com.microsoft.azure.toolkit.intellij.function.CreateFunctionAction"
             text="Azure Function Class"
             description="Create New Azure Function Class">
       <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>

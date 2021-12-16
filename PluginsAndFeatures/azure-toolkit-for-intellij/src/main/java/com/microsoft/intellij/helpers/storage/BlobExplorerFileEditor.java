@@ -66,7 +66,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     static final String OPEN = "Open";

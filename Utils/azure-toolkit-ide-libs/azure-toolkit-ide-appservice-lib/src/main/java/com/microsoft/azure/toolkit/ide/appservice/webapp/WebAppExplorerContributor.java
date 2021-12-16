@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class WebAppExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Web Apps";
-    private static final String ICON = "/icons/WebApp_16.png";
+    private static final String ICON = "/icons/webapp.svg";
 
     @Override
     public Node<?> getModuleNode() {

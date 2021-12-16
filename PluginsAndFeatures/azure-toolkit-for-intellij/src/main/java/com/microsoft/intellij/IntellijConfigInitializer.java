@@ -18,7 +18,7 @@ import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,7 @@ import java.util.Map;
 
 import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.*;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class IntellijConfigInitializer {
 

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract implements OptionsContainingConfigurable {
     public static final String AZURE_PLUGIN_NAME = "Microsoft Tools";
