@@ -276,7 +276,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final Path folder = stagingFolder.toPath();
             try {
                 Map<String, FunctionConfiguration> configMap =
-                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionRunConfiguration.getModule(), methods);
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
                 final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
                 FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
