@@ -23,10 +23,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -278,6 +280,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private void prepareStagingFolder(File stagingFolder,
                                       RunProcessHandler processHandler,
                                       final @NotNull Operation operation) throws Exception {
+        final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
+        AzureMessager.getContext().setMessager(messenger);
         AzureTaskManager.getInstance().read(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
@@ -285,7 +289,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final Path folder = stagingFolder.toPath();
             try {
                 Map<String, FunctionConfiguration> configMap =
-                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionRunConfiguration.getModule(), methods);
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
                 final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
                 FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
