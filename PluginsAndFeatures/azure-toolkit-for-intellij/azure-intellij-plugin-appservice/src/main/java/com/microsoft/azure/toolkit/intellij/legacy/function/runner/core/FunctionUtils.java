@@ -10,6 +10,7 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInsight.MetaAnnotationUtil;
 import com.intellij.lang.jvm.JvmAnnotation;
 import com.intellij.lang.jvm.JvmParameter;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -144,8 +145,7 @@ public class FunctionUtils {
                 return false;
             }
             final GlobalSearchScope scope = GlobalSearchScope.moduleWithLibrariesScope(m);
-            final PsiClass ecClass = JavaPsiFacade.getInstance(project).findClass(AZURE_FUNCTION_ANNOTATION_CLASS,
-                                                                                  scope);
+            final PsiClass ecClass = ReadAction.compute(() -> JavaPsiFacade.getInstance(project).findClass(AZURE_FUNCTION_ANNOTATION_CLASS, scope));
             return ecClass != null;
         }).toArray(Module[]::new);
     }

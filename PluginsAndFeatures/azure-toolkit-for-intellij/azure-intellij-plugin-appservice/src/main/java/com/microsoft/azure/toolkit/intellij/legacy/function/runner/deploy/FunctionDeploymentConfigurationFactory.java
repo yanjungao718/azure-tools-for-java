@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -42,5 +43,10 @@ public class FunctionDeploymentConfigurationFactory extends ConfigurationFactory
     @Override
     public Icon getIcon() {
         return AzureIcons.getIcon(AzureIconSymbol.FunctionApp.DEPLOY.getPath());
+    }
+
+    @Override
+    public @NotNull @NonNls String getId() {
+        return message("function.deploy.factory.name");
     }
 }
