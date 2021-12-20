@@ -21,7 +21,7 @@ public class AzureIcons {
     public static ImageDescriptor getIcon(String input) {
         if (StringUtils.startsWith(input, FILE_EXTENSION_ICON_PREFIX)) {
             final String fileExtension = StringUtils.removeStart(input, FILE_EXTENSION_ICON_PREFIX);
-            if (StringUtils.equalsAnyIgnoreCase("root", "folder")) {
+            if (StringUtils.equalsAnyIgnoreCase(fileExtension, "root", "folder")) {
                 return Activator.getImageDescriptor(FOLDER_ICON_PATH);
             }
             final Program program = org.eclipse.swt.program.Program.findProgram(fileExtension);
