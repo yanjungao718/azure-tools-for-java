@@ -20,6 +20,9 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
     private final Debouncer debouncer;
     private String value;
 
+    private int setValueCount = 0;
+    private boolean isUserInput = false;
+
     public AzureTextInput(Composite parent, Text comp, int style) {
         super(parent, style);
         this.trackValidation();
@@ -42,16 +45,29 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
     }
 
     @Override
-    public void setValue(final String val) {
+    public synchronized void setValue(String value) {
+        this.setValue(value, false);
+    }
+
+    public synchronized void setValue(String value, boolean isUserInput) {
         if (this.isDisposed()) {
             return;
         }
-        AzureFormInputControl.super.setValue(val);
-        this.setText(val);
+        if (isUserInput || !this.isUserInput) {
+            if (!isUserInput) {
+                setValueCount++;
+            }
+            this.isUserInput = isUserInput;
+            AzureFormInputControl.super.setValue(value);
+            this.setText(value);
+        }
     }
 
     @Override
-    public void modifyText(ModifyEvent modifyEvent) {
+    public synchronized void modifyText(ModifyEvent modifyEvent) {
+        if (!this.isUserInput && --this.setValueCount < 0) {
+            this.isUserInput = true;
+        }
         this.value = this.getText();
         this.debouncer.debounce();
     }
@@ -59,6 +75,10 @@ public class AzureTextInput extends Text implements AzureFormInputControl<String
     @Override
     public Text getInputControl() {
         return this;
+    }
+
+    public boolean isUserInput() {
+        return this.isUserInput;
     }
 
     @Override
