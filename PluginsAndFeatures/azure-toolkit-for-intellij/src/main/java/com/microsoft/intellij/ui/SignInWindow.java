@@ -10,6 +10,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.toolkit.intellij.common.action.IntellijAccountActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -25,11 +26,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collections;
 
-import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
-
 public class SignInWindow extends AzureDialogWrapper {
     private static final String DESC = "desc_label";
-    public static final String AZURE_FREE = "https://azure.microsoft.com/en-us/free/?utm_campaign=javatools";
     private JPanel contentPane;
 
     private JRadioButton cliBtn;
@@ -113,7 +111,7 @@ public class SignInWindow extends AzureDialogWrapper {
 
     protected JPanel createSouthAdditionalPanel() {
         final ActionLink link = new ActionLink("Try Azure for free", e -> {
-            AzureActionManager.getInstance().getAction(OPEN_URL).handle(AZURE_FREE);
+            AzureActionManager.getInstance().getAction(IntellijAccountActionsContributor.TRY_AZURE).handle(null);
         });
         final JPanel panel = new NonOpaquePanel(new BorderLayout());
         panel.setBorder(JBUI.Borders.emptyLeft(10));
@@ -125,6 +123,11 @@ public class SignInWindow extends AzureDialogWrapper {
     @Nullable
     protected String getHelpId() {
         return AzureWebHelpProvider.HELP_SIGN_IN;
+    }
+
+    @Override
+    protected DialogStyle getStyle() {
+        return DialogStyle.COMPACT;
     }
 
     @Nullable
