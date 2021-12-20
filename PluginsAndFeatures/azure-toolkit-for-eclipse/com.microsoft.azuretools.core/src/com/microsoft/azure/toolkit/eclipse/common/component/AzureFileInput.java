@@ -92,7 +92,7 @@ public class AzureFileInput extends Composite implements AzureForm<String> {
     }
 
     protected void selectFile() {
-        FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
+        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
         dialog.setText("Choose file");
         dialog.setOverwrite(false);
         File origin = Optional.ofNullable(textInput.getValue()).map(File::new).orElse(null);
