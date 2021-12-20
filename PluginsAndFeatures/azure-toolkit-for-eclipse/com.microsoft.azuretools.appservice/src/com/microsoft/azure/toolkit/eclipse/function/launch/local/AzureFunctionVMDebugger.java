@@ -15,7 +15,6 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class AzureFunctionVMDebugger extends StandardVMDebugger {
     private final String funcPath;
@@ -33,13 +32,13 @@ public class AzureFunctionVMDebugger extends StandardVMDebugger {
             String cmd = Arrays.stream(cmdLine).filter(args -> args.contains("-agentlib:jdwp=transport=dt_socket")).findFirst().orElse(null);
             if (cmd != null) {
                 return new String[]{
-                        getFuncPath(),
-                        "host",
-                        "start",
-                        "--verbose",
-                        "--language-worker",
-                        "--",
-                        cmd
+                    getFuncPath(),
+                    "host",
+                    "start",
+                    "--verbose",
+                    "--language-worker",
+                    "--",
+                    cmd
                 };
             } else {
                 throw new AzureToolkitRuntimeException("Cannot find -agentlib in command line arguments:" + StringUtils.join(cmdLine, " "));
