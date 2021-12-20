@@ -453,7 +453,7 @@ public abstract class AppServiceBasePropertyEditor extends EditorPart implements
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSite(site);
         setInput(input);
-        
+
         this.setPartName(input.getName());
         if (input instanceof AppServicePropertyEditorInput) {
             AppServicePropertyEditorInput appServiceInput = (AppServicePropertyEditorInput) input;
