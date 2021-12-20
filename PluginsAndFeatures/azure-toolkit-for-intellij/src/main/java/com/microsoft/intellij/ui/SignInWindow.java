@@ -26,8 +26,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collections;
 
-import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
-
 public class SignInWindow extends AzureDialogWrapper {
     private static final String DESC = "desc_label";
     private JPanel contentPane;
