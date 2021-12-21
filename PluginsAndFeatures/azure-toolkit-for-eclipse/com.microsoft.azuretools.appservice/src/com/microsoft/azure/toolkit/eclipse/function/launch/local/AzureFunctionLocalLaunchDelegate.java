@@ -26,9 +26,14 @@ import org.eclipse.jdt.launching.sourcelookup.advanced.AdvancedJavaLaunchDelegat
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Arrays;
 
 public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate {
+    private static final int DEFAULT_FUNC_PORT = 7071;
+    private static final int MAX_PORT = 65535;
+
     @Override
     public String verifyMainTypeName(ILaunchConfiguration configuration) throws CoreException {
         return String.format("Run Azure Function Project<%s>", configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "unknown project"));
@@ -79,19 +84,27 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
             throw new CoreException(Status.error("Cannot prepare the staging folder for azure function.", e));
         }
 
+        final int funcPort = findFreePortForApi(DEFAULT_FUNC_PORT);
         IVMInstall vm = getVMInstall(configuration);
-        IVMRunner runner = getVMRunner(vm, mode, config.getFunctionCliPath(), tempFolder.getAbsolutePath());
+        final String[] commandLine = {
+            config.getFunctionCliPath(),
+            "host",
+            "start",
+            "--port", String.valueOf(funcPort)
+        };
+
+        IVMRunner runner = getVMRunner(vm, mode, tempFolder.getAbsolutePath(), commandLine);
         if (runner == null) {
             abort("Local debug Azure Function is not supported by now.", null, IJavaLaunchConfigurationConstants.ERR_VM_RUNNER_DOES_NOT_EXIST);
         }
         return runner;
     }
 
-    private IVMRunner getVMRunner(IVMInstall vm, String mode, String func, String stagingFolder) {
+    private IVMRunner getVMRunner(IVMInstall vm, String mode, String stagingFolder, String[] cmdLines) {
         if (ILaunchManager.RUN_MODE.equals(mode)) {
-            return new AzureFunctionVMRunner(vm, func, stagingFolder);
+            return new AzureFunctionVMRunner(vm, stagingFolder, cmdLines);
         } else if (ILaunchManager.DEBUG_MODE.equals(mode)) {
-            return new AzureFunctionVMDebugger(vm, func, stagingFolder);
+            return new AzureFunctionVMDebugger(vm, stagingFolder, cmdLines);
         }
         return null;
     }
@@ -105,4 +118,24 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
         return false;
     }
 
+    private static int findFreePortForApi(int startPort) {
+        ServerSocket socket = null;
+        for (int port = startPort; port <= MAX_PORT; port++) {
+            try {
+                socket = new ServerSocket(port);
+                return socket.getLocalPort();
+            } catch (IOException e) {
+                // swallow this exception
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        // swallow this exception
+                    }
+                }
+            }
+        }
+        return -1;
+    }
 }

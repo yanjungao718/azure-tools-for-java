@@ -15,19 +15,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class AzureFunctionVMRunner extends StandardVMRunner {
-    private final String funcPath;
     private final String stagingFolder;
-
+    private final String[] funcCommandLineWithoutDebugArgs;
     /**
      * Constructor
      *
      * @param vmInstance the VM
      */
-    public AzureFunctionVMRunner(IVMInstall vmInstance, String funcPath, String stagingFolder) {
-        super(vmInstance);
-        this.funcPath = funcPath;
-        this.stagingFolder = stagingFolder;
 
+    public AzureFunctionVMRunner(IVMInstall vmInstance, String stagingFolder, String [] funcCommandLineWithoutDebugArgs) {
+        super(vmInstance);
+        this.stagingFolder = stagingFolder;
+        this.funcCommandLineWithoutDebugArgs = funcCommandLineWithoutDebugArgs;
     }
 
     @Override
@@ -39,7 +38,7 @@ public class AzureFunctionVMRunner extends StandardVMRunner {
     @Override
     protected String constructProgramString(VMRunnerConfiguration config) {
         // by pass the inner logic of StandardVMRunner
-        return funcPath;
+        return funcCommandLineWithoutDebugArgs[0];
     }
 
     @Override
@@ -54,27 +53,14 @@ public class AzureFunctionVMRunner extends StandardVMRunner {
     }
 
     protected String[] validateCommandLine(ILaunchConfiguration configuration, String[] cmdLine) {
-        if (cmdLine.length > 0 && Objects.equals(new File(cmdLine[0]), new File(funcPath))) {
+        if (cmdLine.length > 0 && Objects.equals(cmdLine[0], "func")) {
             // change the duplicate command line to `func host start`
-            return new String[] {
-                funcPath,
-                "host",
-                "start",
-                "--verbose"
-            };
+            return funcCommandLineWithoutDebugArgs;
         }
         return cmdLine;
     }
 
     protected String[] combineVmArgs(VMRunnerConfiguration configuration, IVMInstall vmInstall) {
         return new String[0];
-    }
-
-    public String getFuncPath() {
-        return funcPath;
-    }
-
-    public String getStagingFolder() {
-        return stagingFolder;
     }
 }

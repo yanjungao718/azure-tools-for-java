@@ -15,15 +15,16 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class AzureFunctionVMDebugger extends StandardVMDebugger {
-    private final String funcPath;
     private final String stagingFolder;
+    private final String[] funcCommandLineWithoutDebugArgs;
 
-    public AzureFunctionVMDebugger(IVMInstall vmInstance, String funcPath, String stagingFolder) {
+    public AzureFunctionVMDebugger(IVMInstall vmInstance, String stagingFolder, String [] funcCommandLineWithoutDebugArgs) {
         super(vmInstance);
-        this.funcPath = funcPath;
         this.stagingFolder = stagingFolder;
+        this.funcCommandLineWithoutDebugArgs = funcCommandLineWithoutDebugArgs;
     }
 
     protected String[] validateCommandLine(ILaunchConfiguration configuration, String[] cmdLine) {
@@ -31,15 +32,8 @@ public class AzureFunctionVMDebugger extends StandardVMDebugger {
             // change the duplicate command line to `func host start`
             String cmd = Arrays.stream(cmdLine).filter(args -> args.contains("-agentlib:jdwp=transport=dt_socket")).findFirst().orElse(null);
             if (cmd != null) {
-                return new String[]{
-                    getFuncPath(),
-                    "host",
-                    "start",
-                    "--verbose",
-                    "--language-worker",
-                    "--",
-                    cmd
-                };
+                return Stream.concat(Arrays.stream(funcCommandLineWithoutDebugArgs),
+                        Stream.of("--language-worker", "--", cmd)).toArray(String[]::new);
             } else {
                 throw new AzureToolkitRuntimeException("Cannot find -agentlib in command line arguments:" + StringUtils.join(cmdLine, " "));
             }
@@ -56,7 +50,7 @@ public class AzureFunctionVMDebugger extends StandardVMDebugger {
     @Override
     protected String constructProgramString(VMRunnerConfiguration config) {
         // by pass the inner logic of StandardVMRunner
-        return funcPath;
+        return funcCommandLineWithoutDebugArgs[0];
     }
 
     @Override
@@ -77,13 +71,5 @@ public class AzureFunctionVMDebugger extends StandardVMDebugger {
 
     protected String[] combineVmArgs(VMRunnerConfiguration configuration, IVMInstall vmInstall) {
         return new String[0];
-    }
-
-    public String getFuncPath() {
-        return funcPath;
-    }
-
-    public String getStagingFolder() {
-        return stagingFolder;
     }
 }
