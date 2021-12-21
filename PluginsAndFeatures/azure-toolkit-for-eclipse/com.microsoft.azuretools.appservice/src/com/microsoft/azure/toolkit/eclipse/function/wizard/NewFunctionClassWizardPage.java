@@ -131,7 +131,7 @@ public class NewFunctionClassWizardPage extends NewClassWizardPage {
     private List<String> listTriggerTypes() {
         try {
             final List<FunctionTemplate> functionTemplates = FunctionUtils.loadAllFunctionTemplates();
-            return functionTemplates.stream().map(t -> t.getMetadata().getName()).collect(Collectors.toList());
+            return functionTemplates.stream().map(t -> t.getMetadata().getName()).filter(temp -> !temp.contains("RabbitMQ")).collect(Collectors.toList());
         } catch (AzureExecutionException e) {
             return Collections.emptyList();
         }
