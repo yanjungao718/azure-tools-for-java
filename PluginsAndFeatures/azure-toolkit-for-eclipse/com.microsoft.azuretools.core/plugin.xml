@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-    <extension-point id="com.microsoft.azure.toolkit.actions" name="actions" schema="schema/com.microsoft.azure.toolkit.actions.exsd" />
+    <extension-point id="com.microsoft.azure.toolkit.eclipse.actions" name="actions" schema="schema/com.microsoft.azure.toolkit.eclipse.actions.exsd" />
     <extension point="org.eclipse.help.contexts">
         <contexts file="contexts.xml" />
     </extension>
@@ -134,7 +134,7 @@
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester id="com.microsoft.ui.webapp.property.testSupportedProj" type="org.eclipse.core.resources.IProject" namespace="com.microsoft.ui.webapp.property" properties="isSupportedProj" class="com.microsoft.azuretools.core.utils.ProjectTypeTester"></propertyTester>
     </extension>
-    <extension point="com.microsoft.azure.toolkit.actions">
+    <extension point="com.microsoft.azure.toolkit.eclipse.actions">
         <actionContributor implementation="com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor"></actionContributor>
         <actionContributor implementation="com.microsoft.azure.toolkit.eclipse.common.action.EclipseActionsContributor"></actionContributor>
     </extension>

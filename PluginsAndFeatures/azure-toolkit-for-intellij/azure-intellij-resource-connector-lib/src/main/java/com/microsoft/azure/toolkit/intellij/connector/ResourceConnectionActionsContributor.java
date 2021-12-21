@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -82,6 +83,11 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 REMOVE_CONNECTION
         );
         am.registerGroup(CONNECTION_ACTIONS, connectionActions);
+    }
+
+    @Override
+    public int getOrder() {
+        return ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
     }
 
     private void openDialog(@Nullable Resource<?> r, @Nullable Resource<?> c, Project project) {

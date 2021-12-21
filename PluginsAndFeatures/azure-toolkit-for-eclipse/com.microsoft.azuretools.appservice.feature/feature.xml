@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="com.microsoft.azuretools.appservice.feature"
-      label="WebApp Plugin for Eclipse"
+      label="App Service Plugin for Eclipse"
       version="3.30.0.qualifier"
       provider-name="Microsoft Corp.">
 
