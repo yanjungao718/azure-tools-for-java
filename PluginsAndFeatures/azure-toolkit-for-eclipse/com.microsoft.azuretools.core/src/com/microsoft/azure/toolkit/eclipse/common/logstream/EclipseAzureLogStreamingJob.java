@@ -25,7 +25,7 @@ public class EclipseAzureLogStreamingJob extends AzureAsyncConsoleJob {
 
     private IStatus showLogStream() {
         final Flux<String> doOnEach = logStreaming
-                .doAfterTerminate(() -> EclipseAzureLogStreamingJob.this.getMessager()
+                .doFinally(ignore -> EclipseAzureLogStreamingJob.this.getMessager()
                         .warning("Disconnected from log-streaming service."))
                 .doOnEach((log) -> EclipseAzureLogStreamingJob.this.getMessager().info(log.get()));
         try {
