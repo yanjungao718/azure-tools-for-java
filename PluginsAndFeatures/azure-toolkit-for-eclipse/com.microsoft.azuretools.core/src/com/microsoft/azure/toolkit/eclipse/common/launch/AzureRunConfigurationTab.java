@@ -15,7 +15,6 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.function.Function;
@@ -96,8 +95,8 @@ public class AzureRunConfigurationTab<T extends BaseRunConfiguration> extends Ab
         if (((Control) panel).isDisposed()) {
             return;
         }
+        // todo: make the validation async
         panel.validateAllInputsAsync()
-                .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(ignore -> AzureTaskManager.getInstance().runLater(this::updateLaunchConfigurationDialog));
     }
 }
