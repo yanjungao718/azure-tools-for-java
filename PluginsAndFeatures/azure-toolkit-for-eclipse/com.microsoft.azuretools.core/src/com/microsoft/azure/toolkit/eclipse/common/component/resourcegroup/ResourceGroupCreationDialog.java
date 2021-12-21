@@ -32,7 +32,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 
 public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup> implements AzureForm<DraftResourceGroup> {
-    private static final Pattern PATTERN = Pattern.compile("[a-z0-9._()-]+[a-z0-9_()-]$");
+    private static final Pattern PATTERN = Pattern.compile("^[-\\w._()]+$");
 
     private AzureTextInput textName;
     private Subscription subscription;
