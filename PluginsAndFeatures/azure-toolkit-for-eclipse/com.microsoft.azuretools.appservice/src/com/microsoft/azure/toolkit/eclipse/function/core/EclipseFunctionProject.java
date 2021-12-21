@@ -5,7 +5,6 @@
 package com.microsoft.azure.toolkit.eclipse.function.core;
 
 import com.microsoft.azure.toolkit.eclipse.function.utils.AnnotationUtils;
-import com.microsoft.azure.toolkit.eclipse.function.utils.JarUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionAnnotation;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionAnnotationClass;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionMethod;
@@ -17,8 +16,10 @@ import com.microsoft.azure.toolkit.lib.legacy.function.handlers.CommandHandler;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.CommandHandlerImpl;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.FunctionCoreToolsHandler;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.FunctionCoreToolsHandlerImpl;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -32,6 +33,7 @@ import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class EclipseFunctionProject extends FunctionProject {
@@ -60,8 +62,11 @@ public class EclipseFunctionProject extends FunctionProject {
         });
         setClassesOutputDirectory(new File(mavenProject.getBuild().getOutputDirectory()));
         setDependencies(jarFiles);
-        final File jarFile = JarUtils.buildJarFileToTempFile(this);
-        this.setArtifactFile(jarFile);
+        buildMavenProject(pom);
+        final Build build = mavenProject.getBuild();
+        if (build != null) {
+            this.setArtifactFile(new File(build.getDirectory() + File.separator + build.getFinalName() + "." + mavenProject.getPackaging()));
+        }
     }
 
     public IJavaProject getEclipseProject() {
@@ -220,6 +225,21 @@ public class EclipseFunctionProject extends FunctionProject {
             res.setAnnotations(Arrays.stream(type.getAnnotations()).map(a -> create(a, false)).collect(Collectors.toList()));
         }
         return res;
+    }
+
+    private static void buildMavenProject(IFile pomFile) {
+        // run `mvn compile` first to generate .class files which are required before generating function staging folder
+        final MavenExecuteAction action = new MavenExecuteAction("package");
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        try {
+            action.launch(pomFile.getParent(), () -> {
+                countDownLatch.countDown();
+                return "ignore";
+            });
+            countDownLatch.await();
+        } catch (CoreException | InterruptedException e) {
+            throw new AzureToolkitRuntimeException("Cannot build maven project: " + pomFile.getLocation().toOSString(), e);
+        }
     }
 
     private String removeGeneric(String signature) {

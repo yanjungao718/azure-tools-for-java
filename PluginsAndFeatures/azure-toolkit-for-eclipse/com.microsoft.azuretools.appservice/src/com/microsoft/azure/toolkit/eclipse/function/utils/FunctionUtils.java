@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.utils.FunctionCliResolver;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import lombok.Lombok;
 import org.apache.commons.io.FileUtils;
@@ -31,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -62,21 +60,6 @@ public class FunctionUtils {
             throw new AzureToolkitRuntimeException("Cannot list projects.", e);
         }
         return projectList;
-    }
-
-    public static void buildMavenProject(IJavaProject project) {
-        // run `mvn compile` first to generate .class files which are required before generating function staging folder
-        final MavenExecuteAction action = new MavenExecuteAction("compile");
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        try {
-            action.launch(MavenUtils.getPomFile(project.getProject()).getParent(), () -> {
-                countDownLatch.countDown();
-                return "ignore";
-            });
-            countDownLatch.await();
-        } catch (CoreException | InterruptedException e) {
-            throw new AzureToolkitRuntimeException("Cannot build maven project: " + project.getElementName(), e);
-        }
     }
 
     public static Path getTempStagingFolder() {

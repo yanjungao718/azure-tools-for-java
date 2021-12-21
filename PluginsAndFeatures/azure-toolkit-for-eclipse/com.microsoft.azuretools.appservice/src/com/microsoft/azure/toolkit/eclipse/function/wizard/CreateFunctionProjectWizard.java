@@ -8,6 +8,7 @@ import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.ide.appservice.model.FunctionArtifactModel;
 import com.microsoft.azure.toolkit.ide.appservice.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -49,7 +50,11 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
     @Override
     public boolean performFinish() {
         final FunctionProjectModel projectModel = projectPage.getValue();
-        final FunctionArtifactModel model = artifactPage.getValue();
+        FunctionArtifactModel model = artifactPage.getValue();
+        if (StringUtils.isBlank(model.getArtifactId())) {
+            model.setArtifactId(projectModel.getProjectName());
+        }
+
         AzureFunctionsUtils.createAzureFunctionProject(projectModel.getLocation(),
                 model.getGroupId()
                 , model.getArtifactId(), model.getVersion(), "maven", projectModel.getTriggers().toArray(new String[0]), model.getPackageName());
