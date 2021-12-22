@@ -227,7 +227,7 @@ public class EclipseFunctionProject extends FunctionProject {
         return res;
     }
 
-    private static void buildMavenProject(IFile pomFile) {
+    public static void buildMavenProject(IFile pomFile) {
         // run `mvn compile` first to generate .class files which are required before generating function staging folder
         final MavenExecuteAction action = new MavenExecuteAction("package");
         final CountDownLatch countDownLatch = new CountDownLatch(1);
