@@ -14,6 +14,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Setter
 @Getter
@@ -22,12 +24,16 @@ public class DraftServicePlan extends AppServicePlanEntity implements Draft {
     @Setter
     private Subscription subscription;
 
-    public DraftServicePlan(@Nonnull Subscription subscription,
+    public DraftServicePlan(@Nullable Subscription subscription,
                             @Nonnull String name,
-                            @Nonnull Region region,
-                            @Nonnull OperatingSystem os,
+                            @Nullable Region region,
+                            @Nullable OperatingSystem os,
                             @Nonnull PricingTier pricingTier) {
-        super(builder().subscriptionId(subscription.getId()).name(name).region(region.getName()).pricingTier(pricingTier).operatingSystem(os));
+        super(builder().subscriptionId(Optional.ofNullable(subscription).map(Subscription::getId).orElse(null))
+                .name(name)
+                .region(Optional.ofNullable(region).map(Region::getName).orElse(null))
+                .pricingTier(pricingTier)
+                .operatingSystem(os));
         this.subscription = subscription;
     }
 }
