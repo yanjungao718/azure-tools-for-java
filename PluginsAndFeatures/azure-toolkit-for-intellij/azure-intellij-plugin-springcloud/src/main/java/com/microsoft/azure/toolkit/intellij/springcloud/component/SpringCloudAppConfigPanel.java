@@ -18,9 +18,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentEntity;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
@@ -37,7 +34,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -115,9 +111,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
 
     public synchronized void updateForm(@Nonnull SpringCloudApp app) {
         AzureTaskManager.getInstance().runInBackground(AzureString.format("load properties of app(%s)", app.name()), () -> {
-            final String testUrl = app.entity().getTestUrl();
-            final SpringCloudPersistentDisk disk = app.entity().getPersistentDisk();
-            final String url = app.entity().getApplicationUrl();
+            final String testUrl = app.getTestUrl();
+            final SpringCloudPersistentDisk disk = app.getPersistentDisk();
+            final String url = app.getApplicationUrl();
             AzureTaskManager.getInstance().runLater(() -> {
                 if (testUrl != null) {
                     this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
@@ -138,7 +134,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
                 }
             }, AzureTask.Modality.ANY);
         });
-        final SpringCloudSku sku = app.getCluster().entity().getSku();
+        final SpringCloudSku sku = app.getParent().getSku();
         final boolean basic = sku.getTier().toLowerCase().startsWith("b");
         final Integer cpu = this.numCpu.getItem();
         final Integer mem = this.numMemory.getItem();
@@ -156,17 +152,18 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.numInstance.setMinimum(0);
         this.numInstance.updateLabels();
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment())
-                    .map(SpringCloudDeployment::entity)
-                    .orElse(new SpringCloudDeploymentEntity("default", app.entity()));
-            final List<SpringCloudDeploymentInstanceEntity> instances = deploymentEntity.getInstances();
-            AzureTaskManager.getInstance().runLater(() -> this.numInstance.setRealMin(Math.min(instances.size(), 1)), AzureTask.Modality.ANY);
+            final int size = Optional.ofNullable(app.getActiveDeployment())
+                .or(() -> Optional.ofNullable(app.deployments().get("default", app.getResourceGroup())))
+                .map(d -> d.getInstances().size()).orElse(0);
+            final Runnable task = () -> this.numInstance.setRealMin(Math.min(size, 1));
+            AzureTaskManager.getInstance().runLater(task, AzureTask.Modality.ANY);
         });
     }
 
     @Contract("_->_")
     public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
-        final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
+        final SpringCloudDeploymentConfig deploymentConfig = Optional.ofNullable(appConfig.getDeployment())
+            .orElse(SpringCloudDeploymentConfig.builder().build());
         final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
         deploymentConfig.setRuntimeVersion(javaVersion);
@@ -176,6 +173,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         deploymentConfig.setInstanceCount(numInstance.getValue());
         deploymentConfig.setJvmOptions(Optional.ofNullable(this.txtJvmOptions.getText()).map(String::trim).orElse(""));
         deploymentConfig.setEnvironment(Optional.ofNullable(envTable.getEnvironmentVariables()).orElse(new HashMap<>()));
+        appConfig.setDeployment(deploymentConfig);
         return appConfig;
     }
 

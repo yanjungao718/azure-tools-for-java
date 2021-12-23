@@ -42,7 +42,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         renderNode(WebAppBaseState.UPDATING);
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             loadActions();
-            renderNode(WebAppBaseState.fromString(((IAppService) appService.refresh()).state()));
+            appService.refresh();
+            renderNode(WebAppBaseState.fromString(appService.state()));
         });
     }
 

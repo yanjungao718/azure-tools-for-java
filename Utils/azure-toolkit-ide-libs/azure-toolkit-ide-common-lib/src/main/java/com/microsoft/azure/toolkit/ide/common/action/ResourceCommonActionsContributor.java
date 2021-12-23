@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.AzureService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -36,7 +37,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> DEPLOY = Action.Id.of("action.resource.deploy");
     public static final Action.Id<IAzureResource<?>> CONNECT = Action.Id.of("action.resource.connect");
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
-    public static final Action.Id<AzureService<?>> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
+    public static final Action.Id<AzService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
     public static final Action.Id<Void> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
 
@@ -46,21 +47,21 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.start_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> startAction = new Action<>(startView);
-        startAction.registerHandler((s) -> s instanceof Startable && ((Startable<?>) s).isStartable(), s -> ((Startable<?>) s).start());
+        startAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isStartable(), s -> ((Startable) s).start());
         am.registerAction(START, startAction);
 
         final ActionView.Builder stopView = new ActionView.Builder("Stop", "/icons/action/stop.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.stop_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> stopAction = new Action<>(stopView);
-        stopAction.registerHandler((s) -> s instanceof Startable && ((Startable<?>) s).isStoppable(), s -> ((Startable<?>) s).stop());
+        stopAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isStoppable(), s -> ((Startable) s).stop());
         am.registerAction(STOP, stopAction);
 
         final ActionView.Builder restartView = new ActionView.Builder("Restart", "/icons/action/restart.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.restart_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> restartAction = new Action<>(restartView);
-        restartAction.registerHandler((s) -> s instanceof Startable && ((Startable<?>) s).isRestartable(), s -> ((Startable<?>) s).restart());
+        restartAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isRestartable(), s -> ((Startable) s).restart());
         am.registerAction(RESTART, restartAction);
 
         final Consumer<IAzureBaseResource<?, ?>> delete = s -> ((Removable) s).remove();
@@ -75,10 +76,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof IAzureBaseResource);
         am.registerAction(REFRESH, new Action<>(refresh, refreshView));
 
-        final Consumer<AzureService<?>> serviceRefresh = AzureService::refresh;
+        final Consumer<AzService> serviceRefresh = AzService::refresh;
         final ActionView.Builder serviceRefreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("service.refresh.service", ((AzureService<?>) r).name())).orElse(null))
-                .enabled(s -> s instanceof AzureService);
+                .title(s -> Optional.ofNullable(s).map(r -> title("service.refresh.service", ((AzService) r).getName())).orElse(null))
+                .enabled(s -> s instanceof AzService);
         am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
 
         final Consumer<IAzureBaseResource<?, ?>> openPortalUrl = s -> am.getAction(OPEN_URL).handle(s.portalUrl());
