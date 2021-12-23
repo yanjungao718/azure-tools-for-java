@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.eclipse.function.launch.local;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.internal.launching.StandardVMRunner;
@@ -12,7 +13,6 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 
 import java.io.File;
 import java.util.List;
-import java.util.Objects;
 
 public class AzureFunctionVMRunner extends StandardVMRunner {
     private final String stagingFolder;
@@ -53,7 +53,7 @@ public class AzureFunctionVMRunner extends StandardVMRunner {
     }
 
     protected String[] validateCommandLine(ILaunchConfiguration configuration, String[] cmdLine) {
-        if (cmdLine.length > 0 && Objects.equals(cmdLine[0], "func")) {
+        if (cmdLine.length > 0 && StringUtils.equals(cmdLine[0], funcCommandLineWithoutDebugArgs[0])) {
             // change the duplicate command line to `func host start`
             return funcCommandLineWithoutDebugArgs;
         }
