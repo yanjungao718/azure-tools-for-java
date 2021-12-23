@@ -9,13 +9,10 @@ import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionAnnotati
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionAnnotationClass;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionMethod;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionProject;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.legacy.function.handlers.CommandHandler;
-import com.microsoft.azure.toolkit.lib.legacy.function.handlers.CommandHandlerImpl;
-import com.microsoft.azure.toolkit.lib.legacy.function.handlers.FunctionCoreToolsHandler;
-import com.microsoft.azure.toolkit.lib.legacy.function.handlers.FunctionCoreToolsHandlerImpl;
 import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +28,11 @@ import org.eclipse.jdt.internal.corext.refactoring.CollectingSearchRequestor;
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory;
 
 import javax.annotation.Nonnull;
-import java.io.File;
+import java.io.*;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class EclipseFunctionProject extends FunctionProject {
@@ -102,12 +101,20 @@ public class EclipseFunctionProject extends FunctionProject {
 
     @Override
     public void installExtension(String funcPath) {
-        // need to refactor this code using 'func path'
-        final CommandHandler commandHandler = new CommandHandlerImpl();
-        final FunctionCoreToolsHandler functionCoreToolsHandler = new FunctionCoreToolsHandlerImpl(commandHandler);
         try {
-            functionCoreToolsHandler.installExtension(getStagingFolder(), getBaseDirectory());
-        } catch (AzureExecutionException e) {
+            final ProcessBuilder processBuilder = new ProcessBuilder();
+            String[] command = new String[]{funcPath, "extensions", "install", "-c",
+                StringUtils.wrap(getBaseDirectory().getAbsolutePath(), "\""),
+                "--java"};
+            processBuilder.command(command);
+            processBuilder.directory(getStagingFolder());
+            final Process installProcess = processBuilder.start();
+            final IAzureMessager messager = AzureMessager.getMessager();
+            readInputStreamByLines(installProcess.getErrorStream(), messager::error);
+            readInputStreamByLines(installProcess.getInputStream(), messager::info);
+
+            installProcess.waitFor();
+        } catch (Exception e) {
             throw new AzureToolkitRuntimeException("Cannot run install on Azure Function staging folder:" + getStagingFolder(), e);
         }
     }
@@ -229,17 +236,20 @@ public class EclipseFunctionProject extends FunctionProject {
 
     public static void buildMavenProject(IFile pomFile) {
         // run `mvn compile` first to generate .class files which are required before generating function staging folder
-        final MavenExecuteAction action = new MavenExecuteAction("package");
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final MavenExecuteAction action = new MavenExecuteAction("package -Dfunctions.skip=true -Dmaven.test.skip=true");
+        final CompletableFuture<Boolean> future = new CompletableFuture<>();
         try {
-            action.launch(pomFile.getParent(), () -> {
-                countDownLatch.countDown();
-                return "ignore";
-            });
-            countDownLatch.await();
-        } catch (CoreException | InterruptedException e) {
+            action.launch(pomFile.getParent(), () -> future.complete(true), () -> future.completeExceptionally(
+                    new AzureToolkitRuntimeException(
+                            String.format("Fail to execute `mvn package -Dfunctions.skip=true -Dmaven.test.skip=true` on maven Pom file: %s", pomFile.getLocation().toOSString()))));
+            future.get();
+        } catch (CoreException | InterruptedException | ExecutionException e) {
             throw new AzureToolkitRuntimeException("Cannot build maven project: " + pomFile.getLocation().toOSString(), e);
         }
+    }
+
+    private void readInputStreamByLines(InputStream inputStream, Consumer<String> stringConsumer) {
+        new ReadStreamLineThread(inputStream, stringConsumer).start();
     }
 
     private String removeGeneric(String signature) {
@@ -249,4 +259,37 @@ public class EclipseFunctionProject extends FunctionProject {
     private boolean isAvailable(ISourceRange range) {
         return range != null && range.getOffset() != -1;
     }
+
+    private static class ReadStreamLineThread extends Thread {
+
+        private InputStream inputStream;
+        private Consumer<String> stringConsumer;
+        private Consumer<IOException> errorHandler;
+
+        public ReadStreamLineThread(InputStream inputStream, Consumer<String> lineConsumer) {
+            this(inputStream, lineConsumer, null);
+        }
+
+        public ReadStreamLineThread(InputStream inputStream, Consumer<String> stringConsumer, Consumer<IOException> errorHandler) {
+            this.inputStream = inputStream;
+            this.stringConsumer = stringConsumer;
+            this.errorHandler = errorHandler;
+        }
+
+        @Override
+        public void run() {
+            try (InputStreamReader isr = new InputStreamReader(inputStream);
+                 BufferedReader br = new BufferedReader(isr)) {
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    stringConsumer.accept(line);
+                }
+            } catch (IOException e) {
+                if (errorHandler != null) {
+                    errorHandler.accept(e);
+                }
+            }
+        }
+    }
+
 }

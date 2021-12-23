@@ -43,7 +43,6 @@ public class PushImageHandler extends AzureAbstractHandler {
                 IContainer container = MavenUtils.getPomFile(project).getParent();
                 action.launch(container, () -> {
                     buildAndRun();
-                    return null;
                 });
             } else {
                 destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
