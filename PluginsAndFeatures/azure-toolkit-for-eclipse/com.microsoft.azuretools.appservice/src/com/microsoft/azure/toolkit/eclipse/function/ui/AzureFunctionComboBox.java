@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 
-public class AzureFunctionComboBox extends AppServiceComboBox<FunctionAppConfig>{
+public class AzureFunctionComboBox extends AppServiceComboBox<FunctionAppConfig> {
 
     public AzureFunctionComboBox(Composite parent) {
         super(parent);

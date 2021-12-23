@@ -19,7 +19,7 @@ public class EclipseActionsContributor implements IActionsContributor {
 
     @Override
     public int getOrder() {
-        return 2; //after azure resource common actions registered
+        return ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
     }
 
     @Override

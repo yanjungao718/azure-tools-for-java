@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -93,13 +94,14 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
             if (StringUtils.equalsIgnoreCase(triggerType, "timertrigger")) {
                 functionApp.triggerFunction(entity.getName(), new Object());
             } else {
-                AzureTaskManager.getInstance().runLater(() -> {
+                final String input = AzureTaskManager.getInstance().runAndWaitAsObservable(new AzureTask<>(() -> {
                     final InputDialog inputDialog = new InputDialog(PluginUtil.getParentShell(), String.format("Trigger function %s", entity.getName()),
                             "Please set the input value: ", null, null);
-                    if (inputDialog.open() == Window.OK) {
-                        functionApp.triggerFunction(entity.getName(), new TriggerRequest(inputDialog.getValue()));
-                    }
-                });
+                    return inputDialog.open() == Window.OK ? inputDialog.getValue() : null;
+                })).toBlocking().single();
+                if (input != null) {
+                    functionApp.triggerFunction(entity.getName(), new TriggerRequest(input));
+                }
             }
         };
         am.registerHandler(FunctionAppActionsContributor.TRIGGER_FUNCTION, triggerPredicate, triggerFunctionHandler);

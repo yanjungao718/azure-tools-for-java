@@ -2,13 +2,13 @@
 <?eclipse version="3.0"?>
 <plugin>
    <extension
-         point="com.microsoft.azure.toolkit.explorer">
+         point="com.microsoft.azure.toolkit.eclipse.explorer">
       <explorerContributor
             implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudExplorerContributor">
       </explorerContributor>
    </extension>
    <extension
-         point="com.microsoft.azure.toolkit.actions">
+         point="com.microsoft.azure.toolkit.eclipse.actions">
       <actionContributor
             implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor">
       </actionContributor>

@@ -67,4 +67,9 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
         });
 
     }
+
+    @Override
+    public int getOrder() {
+        return PostgreSqlActionsContributor.INITIALIZE_ORDER + 1;
+    }
 }

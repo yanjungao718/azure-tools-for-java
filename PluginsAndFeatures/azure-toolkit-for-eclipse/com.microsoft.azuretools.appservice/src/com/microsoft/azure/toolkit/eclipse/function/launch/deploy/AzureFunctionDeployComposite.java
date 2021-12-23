@@ -5,6 +5,23 @@
 
 package com.microsoft.azure.toolkit.eclipse.function.launch.deploy;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureFormPanel;
@@ -15,22 +32,6 @@ import com.microsoft.azure.toolkit.eclipse.function.utils.FunctionUtils;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.jdt.core.IJavaProject;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 public class AzureFunctionDeployComposite extends Composite implements AzureFormPanel<FunctionDeployConfiguration> {
     private FunctionProjectComboBox cbProject;
@@ -139,8 +140,11 @@ public class AzureFunctionDeployComposite extends Composite implements AzureForm
     }
 
     private void setLocalSettingsJsonByProject(final IJavaProject project) {
+        if (project == null) {
+            return;
+        }
         final IFile file = project.getProject().getFile("local.settings.json");
-        if (file.exists() && StringUtils.isEmpty(this.txtLocalSettingsJson.getValue())) {
+        if (file.exists() && !this.txtLocalSettingsJson.isUserInput()) {
             this.txtLocalSettingsJson.setValue(file.getLocation().toFile().toString());
         }
     }

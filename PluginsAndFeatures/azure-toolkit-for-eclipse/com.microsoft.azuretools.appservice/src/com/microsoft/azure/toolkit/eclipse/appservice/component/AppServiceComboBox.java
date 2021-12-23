@@ -59,7 +59,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         }
         return super.getValue();
     }
-    
+
     @Override
     protected String getItemText(final Object item) {
         if (item instanceof AppServiceConfig) {
@@ -90,7 +90,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
             return false;
         }
     }
-    
+
     protected abstract void createResource();
 
     protected abstract List<T> loadAppServiceModels() throws Exception;

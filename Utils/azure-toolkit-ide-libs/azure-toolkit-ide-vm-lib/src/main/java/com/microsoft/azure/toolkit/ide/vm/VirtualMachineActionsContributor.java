@@ -18,6 +18,8 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class VirtualMachineActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
+
     public static final String SERVICE_ACTIONS = "actions.vm.service";
     public static final String VM_ACTIONS = "actions.vm.management";
 
@@ -51,5 +53,10 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(VM_ACTIONS, accountActionGroup);
+    }
+
+    @Override
+    public int getOrder() {
+        return INITIALIZE_ORDER;
     }
 }

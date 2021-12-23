@@ -70,13 +70,13 @@
         <image commandId="com.microsoft.azuretools.appservice.commands.deployToAzure"
                icon="icons/PublishWebApp_16.png"></image>
     </extension>
-    <extension point="com.microsoft.azure.toolkit.explorer">
+    <extension point="com.microsoft.azure.toolkit.eclipse.explorer">
         <explorerContributor
                 implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor"></explorerContributor>
         <explorerContributor
                 implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppExplorerContributor"></explorerContributor>
     </extension>
-    <extension point="com.microsoft.azure.toolkit.actions">
+    <extension point="com.microsoft.azure.toolkit.eclipse.actions">
         <actionContributor
                 implementation="com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor"></actionContributor>
         <actionContributor

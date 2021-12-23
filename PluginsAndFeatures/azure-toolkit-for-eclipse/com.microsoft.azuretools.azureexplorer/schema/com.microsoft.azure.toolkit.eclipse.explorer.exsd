@@ -3,7 +3,7 @@
 <schema targetNamespace="com.microsoft.azuretools.azureexplorer" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="com.microsoft.azuretools.azureexplorer" id="com.microsoft.azure.toolkit.explorer" name="explorer"/>
+         <meta.schema plugin="com.microsoft.azuretools.azureexplorer" id="com.microsoft.azure.toolkit.eclipse.explorer" name="explorer"/>
       </appinfo>
       <documentation>
          [Enter description of this extension point.]

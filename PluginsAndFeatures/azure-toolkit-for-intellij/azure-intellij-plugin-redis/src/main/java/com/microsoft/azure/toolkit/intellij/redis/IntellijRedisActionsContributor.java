@@ -49,4 +49,9 @@ public class IntellijRedisActionsContributor implements IActionsContributor {
         am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(RedisActionsContributor.OPEN_EXPLORER, (r, e) -> r instanceof RedisCache,
             (r, e) -> manager.showEditor(r, Objects.requireNonNull(e.getProject())));
     }
+
+    @Override
+    public int getOrder() {
+        return RedisActionsContributor.INITIALIZE_ORDER + 1;
+    }
 }

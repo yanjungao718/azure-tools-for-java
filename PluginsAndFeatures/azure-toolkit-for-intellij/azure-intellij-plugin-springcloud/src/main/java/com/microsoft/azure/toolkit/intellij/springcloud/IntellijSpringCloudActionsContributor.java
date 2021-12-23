@@ -46,4 +46,9 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogAction.startLogStreaming(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
     }
+
+    @Override
+    public int getOrder() {
+        return SpringCloudActionsContributor.INITIALIZE_ORDER + 1;
+    }
 }

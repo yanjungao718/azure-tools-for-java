@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -35,6 +36,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.core.utils.MavenUtils;
 
 import javax.annotation.Nonnull;
 
@@ -60,8 +62,10 @@ public class AzureFunctionDeployLaunchDelegate extends LaunchConfigurationDelega
                 () -> {
                     final File tempFolder = FunctionUtils.getTempStagingFolder().toFile();
                     try {
-                        // build staging folder
-                        FunctionUtils.buildMavenProject(project);
+                        // build maven project
+                        IFile pom = MavenUtils.getPomFile(project.getProject());
+                        EclipseFunctionProject.buildMavenProject(pom);
+                        // prepare staging folder
                         FileUtils.cleanDirectory(tempFolder);
                         final File file = project.getProject().getFile("host.json").getLocation().toFile();
                         final EclipseFunctionProject eclipseFunctionProject = new EclipseFunctionProject(project,

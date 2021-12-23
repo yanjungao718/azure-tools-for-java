@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.appservice.file;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
@@ -19,6 +20,8 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class AppServiceFileActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
+
     public static final String APP_SERVICE_FILE_ACTIONS = "actions.appservice.file";
     public static final String APP_SERVICE_DIRECTORY_ACTIONS = "actions.appservice.directory";
 
@@ -50,6 +53,6 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     }
 
     public int getOrder() {
-        return 1; //after azure resource common actions registered
+        return INITIALIZE_ORDER; //after azure resource common actions registered
     }
 }
