@@ -33,9 +33,9 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 
 
 public class EclipseAzureActionManager extends AzureActionManager {
-    private static final String ACTIONS_CATEGORY = "com.microsoft.azure.toolkit.actions.category";
-    private static final String EXTENSION_POINT_ID = "com.microsoft.azure.toolkit.actions";
-    private static final String ACTION_ID_PREFIX = "com.microsoft.azure.toolkit.actions.";
+    private static final String ACTIONS_CATEGORY = "com.microsoft.azure.toolkit.eclipse.actions.category";
+    private static final String EXTENSION_POINT_ID = "com.microsoft.azure.toolkit.eclipse.actions";
+    private static final String ACTION_ID_PREFIX = "com.microsoft.azure.toolkit.eclipse.actions.";
     private static final Map<String, ActionGroup> groups = new HashMap<>();
     private static final Map<String, Action<?>> actions = new HashMap<>();
     private static final ICommandService cmdService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);

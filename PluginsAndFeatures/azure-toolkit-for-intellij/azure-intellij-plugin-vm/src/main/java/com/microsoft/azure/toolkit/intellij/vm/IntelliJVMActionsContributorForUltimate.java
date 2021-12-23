@@ -25,6 +25,6 @@ public class IntelliJVMActionsContributorForUltimate implements IActionsContribu
 
     @Override
     public int getOrder() {
-        return IActionsContributor.super.getOrder() + 2;
+        return VirtualMachineActionsContributor.INITIALIZE_ORDER + 1;
     }
 }

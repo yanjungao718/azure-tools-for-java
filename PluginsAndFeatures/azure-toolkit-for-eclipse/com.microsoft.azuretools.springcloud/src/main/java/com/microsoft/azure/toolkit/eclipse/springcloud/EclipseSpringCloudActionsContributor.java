@@ -46,6 +46,6 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
     }
 
     public int getOrder() {
-        return 2;
+        return SpringCloudActionsContributor.INITIALIZE_ORDER + 1;
     }
 }

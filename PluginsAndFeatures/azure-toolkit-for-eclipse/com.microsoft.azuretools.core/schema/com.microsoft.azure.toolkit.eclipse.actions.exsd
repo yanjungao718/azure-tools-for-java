@@ -3,7 +3,7 @@
 <schema targetNamespace="com.microsoft.azuretools.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="com.microsoft.azuretools.core" id="com.microsoft.azure.toolkit.actions" name="actions"/>
+         <meta.schema plugin="com.microsoft.azuretools.core" id="com.microsoft.azure.toolkit.eclipse.actions" name="actions"/>
       </appinfo>
       <documentation>
          Extension point for actions for azure services
