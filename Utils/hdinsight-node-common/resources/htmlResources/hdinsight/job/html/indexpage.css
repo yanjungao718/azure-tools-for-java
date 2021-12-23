@@ -43,7 +43,8 @@ body {
 
 #leftDiv {
     float: left;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     max-width: 40vw;
     max-height: 99vh;
     min-height: 99vh;
@@ -52,6 +53,7 @@ body {
 #rightDiv {
     max-height: 99vh;
     min-height: 99vh;
+    overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
 }
