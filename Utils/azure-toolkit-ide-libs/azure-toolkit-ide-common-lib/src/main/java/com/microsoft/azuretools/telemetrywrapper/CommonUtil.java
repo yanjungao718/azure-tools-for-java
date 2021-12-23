@@ -5,7 +5,6 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
@@ -16,18 +15,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.SERVICE_NAME;
+
 public class CommonUtil {
 
     public static final String DURATION = "duration";
     public static final String OPERATION_ID = "operationId";
     public static final String TIMESTAMP = "timestamp";
-    public static final String OPERATION_NAME = AzureTelemeter.OPERATION_NAME;
-    public static final String SERVICE_NAME = AzureTelemeter.SERVICE_NAME;
-    public static final String ERROR_CODE = AzureTelemeter.ERROR_CODE;
-    public static final String ERROR_MSG = AzureTelemeter.ERROR_MSG;
-    public static final String ERROR_TYPE = AzureTelemeter.ERROR_TYPE;
-    public static final String ERROR_CLASSNAME = AzureTelemeter.ERROR_CLASSNAME;
-    public static final String ERROR_STACKTRACE = AzureTelemeter.ERROR_STACKTRACE;
     public static AzureTelemetryClient client;
     private static List<MutableTriple<EventType, Map, Map>> cachedEvents = new ArrayList<>();
 
