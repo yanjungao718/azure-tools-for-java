@@ -115,6 +115,8 @@ function renderJobGraphOnApplicationLevel(jobs) {
                 default:
                     moveFocusByArrows(d3.event.code, g, d, upDownFocusStack);
             }
+
+           zoomGraph(inner);
         })
         .on('click',function(d) {
             if ( d == '0') {
@@ -334,8 +336,8 @@ function renderJobGraph(job) {
         })
         .on('keydown', function(d) {
             var upDownFocusStack = jobGraphUpDownFocusStacks.jobView;
-
             moveFocusByArrows(d3.event.code, g, d, upDownFocusStack);
+            zoomGraph(inner);
         })
         .each(function(v) {
             $(this).tipsy({
@@ -383,4 +385,23 @@ function calculateVirtualBox(graph) {
          Math.abs((graph.width + document.jobGraphView.tipsWidth - document.jobGraphView.width) / 2))
 
     return minX + " -10 " + document.jobGraphView.width + " " + document.jobGraphView.height;
+}
+
+function zoomGraph(node){
+    var currentx = d3.transform(node.attr("transform")).translate[0];
+    var currenty = d3.transform(node.attr("transform")).translate[1];
+    var currentk = d3.transform(node.attr("transform")).scale[0];
+    if(d3.event.ctrlKey && (d3.event.keyCode == 187 || d3.event.keyCode == 107)){
+        currentk = currentk + 0.05;
+        currentx = currentx + 1;
+        currenty = currenty + 1;
+        node.attr("transform",`translate(${currentx},${currenty}),scale(${currentk})`);
+    }
+    else if(d3.event.ctrlKey && (d3.event.keyCode == 189 || d3.event.keyCode == 109)){
+        if (currentk > 0)
+            currentk = currentk - 0.05;
+        currentx = currentx  - 1;
+        currenty = currenty  - 1;
+        node.attr("transform",`translate(${currentx},${currenty}),scale(${currentk})`);
+    }
 }
