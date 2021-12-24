@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_CLASSNAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_CODE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_MSG;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_STACKTRACE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_TYPE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OPERATION_NAME;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.DURATION;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CLASSNAME;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CODE;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_MSG;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_STACKTRACE;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_TYPE;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_ID;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperties;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
 import static com.microsoft.azuretools.telemetrywrapper.EventUtil.isAbleToCollectErrorStacks;
@@ -40,7 +40,7 @@ public class DefaultOperation implements Operation {
         this.operationId = UUID.randomUUID().toString();
         this.properties = new HashMap<>();
         properties.put(CommonUtil.OPERATION_ID, operationId);
-        properties.put(CommonUtil.OPERATION_NAME, operationName);
+        properties.put(OPERATION_NAME, operationName);
     }
 
     public void logEvent(EventType eventType, Map<String, String> properties, Map<String, Double> metrics) {

@@ -15,6 +15,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_CLASSNAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_CODE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_MSG;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_STACKTRACE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.ERROR_TYPE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OPERATION_NAME;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_ID;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperties;
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
 
@@ -25,8 +32,8 @@ public class EventUtil {
         try {
             // Parameter properties might be a ImmutableMap, which means calling properties.put will lead to UnsupportedOperationException
             Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            mutableProps.put(CommonUtil.OPERATION_NAME, operName);
-            mutableProps.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
+            mutableProps.put(OPERATION_NAME, operName);
+            mutableProps.put(OPERATION_ID, UUID.randomUUID().toString());
             sendTelemetry(eventType, serviceName, mergeProperties(mutableProps), metrics);
         } catch (Exception ignore) {
         }
@@ -207,14 +214,14 @@ public class EventUtil {
                                 Map<String, String> properties, Map<String, Double> metrics, boolean logErrorTraces) {
         try {
             Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            mutableProps.put(CommonUtil.OPERATION_NAME, operName);
-            mutableProps.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
-            mutableProps.put(CommonUtil.ERROR_CODE, "1");
-            mutableProps.put(CommonUtil.ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
-            mutableProps.put(CommonUtil.ERROR_TYPE, errorType.name());
+            mutableProps.put(OPERATION_NAME, operName);
+            mutableProps.put(OPERATION_ID, UUID.randomUUID().toString());
+            mutableProps.put(ERROR_CODE, "1");
+            mutableProps.put(ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
+            mutableProps.put(ERROR_TYPE, errorType.name());
             if (logErrorTraces && isAbleToCollectErrorStacks()) {
-                mutableProps.put(CommonUtil.ERROR_MSG, e != null ? e.getMessage() : "");
-                mutableProps.put(CommonUtil.ERROR_STACKTRACE, ExceptionUtils.getStackTrace(e));
+                mutableProps.put(ERROR_MSG, e != null ? e.getMessage() : "");
+                mutableProps.put(ERROR_STACKTRACE, ExceptionUtils.getStackTrace(e));
             }
             sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), metrics);
         } catch (Exception ignore) {

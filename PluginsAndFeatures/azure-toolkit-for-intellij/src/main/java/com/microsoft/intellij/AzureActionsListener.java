@@ -73,11 +73,11 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OPERATION_NAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.SERVICE_NAME;
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.SERVICE_NAME;
 
 @Slf4j
 public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
