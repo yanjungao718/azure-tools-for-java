@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -274,6 +275,9 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     public boolean isEnabled() {
+        if (SystemUtils.IS_OS_MAC) {
+            return this.enabled;
+        }
         return this.enabled || this.viewer.isEnabled();
     }
 
