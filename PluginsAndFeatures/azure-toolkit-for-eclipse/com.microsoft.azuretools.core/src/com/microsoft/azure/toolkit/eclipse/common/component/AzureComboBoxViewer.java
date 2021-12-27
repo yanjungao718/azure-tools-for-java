@@ -89,7 +89,7 @@ public class AzureComboBoxViewer<T> extends ComboViewer {
     }
 
     public boolean isEnabled() {
-        return super.getControl().isEnabled();
+        return super.getControl().getEnabled();
     }
 
     public void repaint() {
