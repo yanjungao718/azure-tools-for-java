@@ -40,7 +40,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     }
 
     @Override
-    @AzureOperation(name = "account|subscription.select", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "account.select_subscription", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         selectSubscriptions(project).subscribe();
@@ -81,9 +81,9 @@ public class SelectSubscriptionsAction extends AzureAnAction {
         }));
     }
 
-    @AzureOperation(name = "account|subscription.load_all", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "account.load_all_subscriptions", type = AzureOperation.Type.SERVICE)
     public static Observable<List<SubscriptionDetail>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
-        final AzureString title = AzureOperationBundle.title("account|subscription.load_all");
+        final AzureString title = AzureOperationBundle.title("account.load_all_subscriptions");
         return AzureTaskManager.getInstance().runInModalAsObservable(new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             return subscriptionManager.getSubscriptionDetails();

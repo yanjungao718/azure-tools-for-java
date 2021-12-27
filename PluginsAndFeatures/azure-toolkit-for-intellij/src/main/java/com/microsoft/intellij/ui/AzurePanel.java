@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
-import com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox;
+import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -47,7 +47,7 @@ import java.util.Objects;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 
 @Slf4j

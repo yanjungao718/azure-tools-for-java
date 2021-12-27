@@ -92,8 +92,8 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         init();
         initListeners();
 
-        AzureEventBus.after("sqlserver|server.delete", this::onMySqlServerStatusDeleted);
-        AzureEventBus.before("sqlserver|server.delete", this::onMySqlServerStatusDeleting);
+        AzureEventBus.after("sqlserver.delete_server.server", this::onMySqlServerStatusDeleted);
+        AzureEventBus.before("sqlserver.delete_server.server", this::onMySqlServerStatusDeleting);
     }
 
     private void onMySqlServerStatusDeleted(SqlServer server) {
@@ -215,8 +215,8 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     }
 
     private boolean changed() {
-        return originalAllowAccessToAzureServices != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected()
-                || originalAllowAccessToLocal != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
+        return originalAllowAccessToAzureServices != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected() ||
+            originalAllowAccessToLocal != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
     }
 
     @Override

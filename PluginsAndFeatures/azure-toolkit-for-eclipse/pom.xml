@@ -22,8 +22,8 @@
     <module>com.microsoft.azuretools.azureexplorer.feature</module>
     <module>com.microsoft.azuretools.hdinsight</module>
     <module>com.microsoft.azuretools.hdinsight.feature</module>
-    <module>com.microsoft.azuretools.webapp</module>
-    <module>com.microsoft.azuretools.webapp.feature</module>
+    <module>com.microsoft.azuretools.appservice</module>
+    <module>com.microsoft.azuretools.appservice.feature</module>
     <module>com.microsoft.azuretools.container</module>
     <module>com.microsoft.azuretools.container.feature</module>
     <module>com.microsoft.azuretools.springcloud</module>
@@ -32,15 +32,15 @@
   </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho-version>2.4.0</tycho-version>
-    <azuretool.eclipse.version>3.29.0-SNAPSHOT</azuretool.eclipse.version>
+    <tycho-version>2.5.0</tycho-version>
+    <azuretool.eclipse.version>3.30.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 
   <repositories>
     <repository>
-      <id>mars</id>
+      <id>2021-06</id>
       <layout>p2</layout>
-      <url>https://download.eclipse.org/releases/mars/</url>
+      <url>https://download.eclipse.org/releases/2021-06</url>
     </repository>
     <repository>
       <id>scala</id>

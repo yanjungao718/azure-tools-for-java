@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 /**
  * Utility class used to parse and save xml files.

@@ -5,7 +5,7 @@
 
 package com.microsoft.intellij.util;
 
-import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -103,20 +103,20 @@ public class ParseXML {
             if (root.hasChildNodes()) {
                 for (Node child = root.getFirstChild(); child != null;
                      child = child.getNextSibling()) {
-                    NamedNodeMap nMap = child.getAttributes();
-                    if (nMap != null) {
-                        if (nMap.getNamedItem("key").getNodeValue().equalsIgnoreCase(AzureBundle.message("pXMLProjAttr"))) {
-                            nMap.getNamedItem("value").setNodeValue(newName);
-                        } else if (nMap.getNamedItem("key").getNodeValue().equalsIgnoreCase(AzureBundle.message("pXMLAttrLoc"))) {
-                            String value = nMap.getNamedItem("value").getNodeValue();
+                    NamedNodeMap namedNodeMap = child.getAttributes();
+                    if (namedNodeMap != null) {
+                        if (namedNodeMap.getNamedItem("key").getNodeValue().equalsIgnoreCase(AzureBundle.message("pXMLProjAttr"))) {
+                            namedNodeMap.getNamedItem("value").setNodeValue(newName);
+                        } else if (namedNodeMap.getNamedItem("key").getNodeValue().equalsIgnoreCase(AzureBundle.message("pXMLAttrLoc"))) {
+                            String value = namedNodeMap.getNamedItem("value").getNodeValue();
                             String workLoc = AzureBundle.message("pXMLWorkLoc");
                             value = value.replaceFirst(workLoc.concat(oldName), workLoc.concat(newName));
-                            nMap.getNamedItem("value").setNodeValue(value);
-                        } else if (nMap.getNamedItem("key").getNodeValue().equalsIgnoreCase(AzureBundle.message("pXMLAttrDir"))) {
-                            String value = nMap.getNamedItem("value").getNodeValue();
+                            namedNodeMap.getNamedItem("value").setNodeValue(value);
+                        } else if (namedNodeMap.getNamedItem("key").getNodeValue().equalsIgnoreCase(AzureBundle.message("pXMLAttrDir"))) {
+                            String value = namedNodeMap.getNamedItem("value").getNodeValue();
                             String workLoc = AzureBundle.message("pXMLWorkLoc");
                             value = value.replaceFirst(workLoc.concat(oldName), workLoc.concat(newName));
-                            nMap.getNamedItem("value").setNodeValue(value);
+                            namedNodeMap.getNamedItem("value").setNodeValue(value);
                         }
                     }
                 }

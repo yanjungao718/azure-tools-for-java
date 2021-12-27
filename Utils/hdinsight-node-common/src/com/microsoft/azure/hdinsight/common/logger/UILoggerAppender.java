@@ -23,7 +23,7 @@ public class UILoggerAppender extends AppenderSkeleton {
             if (uiHelper != null) {
                 uiHelper.logError(
                         event.getRenderedMessage(),
-                        event.getThrowableInformation().getThrowable());
+                        event.getThrowableInformation() == null ? null : event.getThrowableInformation().getThrowable());
             }
         }
 

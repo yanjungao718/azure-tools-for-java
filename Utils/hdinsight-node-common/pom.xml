@@ -4,7 +4,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.59.0-SNAPSHOT</version>
+        <version>3.60.0</version>
     </parent>
     <artifactId>hdinsight-node-common</artifactId>
     <properties>
@@ -183,6 +183,22 @@
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
+                <exclusion><!--CVE-2014-0114-->
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.struts</groupId>
+                    <artifactId>struts2-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -219,6 +235,8 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -251,12 +269,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>info.cukes</groupId>
+            <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>info.cukes</groupId>
+            <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
             <scope>test</scope>
         </dependency>
@@ -353,6 +371,18 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-module-scala_2.11</artifactId>
                 </exclusion>
+                <exclusion><!--CVE-2017-15288-->
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-compiler</artifactId>
+                </exclusion>
+                <exclusion><!--CVE-2019-9518 and WS-2020-0408-->
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -368,6 +398,10 @@
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-module-scala_2.11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -401,6 +435,10 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-module-scala_2.11</artifactId>
                 </exclusion>
+                <exclusion><!--WS-2019-0065-->
+                    <groupId>org.jpmml</groupId>
+                    <artifactId>pmml-model</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -412,6 +450,11 @@
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>spark-localrun-mock</artifactId>
             <version>0.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.68.Final-redhat-00001</version>
         </dependency>
     </dependencies>
 </project>

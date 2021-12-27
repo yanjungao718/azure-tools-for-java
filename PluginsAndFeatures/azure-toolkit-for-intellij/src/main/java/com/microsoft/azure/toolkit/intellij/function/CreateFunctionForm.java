@@ -21,14 +21,13 @@ import com.microsoft.azure.management.eventhub.EventHub;
 import com.microsoft.azure.management.eventhub.EventHubConsumerGroup;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
+import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionTriggerChooserStep;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.intellij.util.ValidationUtils;
-import com.microsoft.azure.toolkit.intellij.function.wizard.module.FunctionTriggerChooserStep;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +43,8 @@ import java.util.function.Supplier;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class CreateFunctionForm extends DialogWrapper implements TelemetryProperties {
+    private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
+    private static final String APP_SERVICE_NAME_REGEX = "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,58}[a-zA-Z0-9]";
 
     public static final String HTTP_TRIGGER = "HttpTrigger";
     public static final String TIMER_TRIGGER = "TimerTrigger";
@@ -255,8 +256,8 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     @Override
     protected List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
-        validateProperties(res, "Package name", txtPackageName, ValidationUtils::isValidJavaPackageName);
-        validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidAppServiceName);
+        validateProperties(res, "Package name", txtPackageName, CreateFunctionForm::isValidJavaPackageName);
+        validateProperties(res, "Function name", txtFunctionName, CreateFunctionForm::isValidAppServiceName);
 
         final String trigger = (String) cbTriggerType.getSelectedItem();
         if (StringUtils.equals(trigger, EVENT_HUB_TRIGGER)) {
@@ -418,4 +419,13 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             return new TimerCron[]{HOURLY, DAILY, MONTHLY};
         }
     }
+
+    public static boolean isValidJavaPackageName(String packageName) {
+        return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
+    }
+
+    public static boolean isValidAppServiceName(String name) {
+        return name != null && name.matches(APP_SERVICE_NAME_REGEX);
+    }
+
 }

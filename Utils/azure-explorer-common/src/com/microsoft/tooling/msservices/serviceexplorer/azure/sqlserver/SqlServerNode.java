@@ -38,7 +38,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         this.subscriptionId = subscriptionId;
         this.server = server;
         this.loadActions();
-        AzureEventBus.before("sqlserver|server.delete", this::onServerStatusChanging);
+        AzureEventBus.before("sqlserver.delete_server.server", this::onServerStatusChanging);
     }
 
     private void onServerStatusChanging(SqlServer server) {
@@ -78,12 +78,12 @@ public class SqlServerNode extends Node implements TelemetryProperties {
         this.getParent().removeNode(this.subscriptionId, this.getId(), SqlServerNode.this);
     }
 
-    @AzureOperation(name = "sqlserver|server.open_portal", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver.open_portal.server", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.subscriptionId, this.server.entity().getId());
     }
 
-    @AzureOperation(name = "sqlserver|server.show_properties", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver.show_properties.server", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openSqlServerPropertyView(this.getId(), this.getProject());
     }

@@ -5,8 +5,6 @@
 
 package com.microsoft.azuretools.azureexplorer.helpers;
 
-import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor;
-import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotPropertyEditorInput;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
@@ -32,7 +30,6 @@ import org.eclipse.ui.PlatformUI;
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -41,8 +38,6 @@ import com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistr
 import com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditorInput;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
-import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor;
-import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditorInput;
 import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
 import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -387,30 +382,12 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openWebAppPropertyView(WebAppNode node) {
-        if (Utils.isEmptyString(node.getId())) {
-            return;
-        }
-        AzureTaskManager.getInstance().runLater(() -> {
-            IWorkbench workbench = PlatformUI.getWorkbench();
-            WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(node.getSubscriptionId(), node.getId(),
-                    node.getName());
-            IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
-            openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
-        });
+        // moved to Web App action contributor
     }
 
     @Override
     public void openDeploymentSlotPropertyView(final DeploymentSlotNode node) {
-        if (Utils.isEmptyString(node.getId())) {
-            return;
-        }
-        AzureTaskManager.getInstance().runLater(() -> {
-            IWorkbench workbench = PlatformUI.getWorkbench();
-            DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
-                    node.getSubscriptionId(), node.getWebAppId(), node.getName());
-            IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
-            openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
-        });
+        // moved to Web App action contributor
     }
 
     @Override

@@ -45,7 +45,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
-import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -75,7 +75,7 @@ import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitialize
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 
 public class AzurePlugin implements StartupActivity.DumbAware {
@@ -352,6 +352,10 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion;
         }
+        if (AzureStoreManager.getInstance().getIdeStore() == null) {
+            return false;
+        }
+
         String version = AzureStoreManager.getInstance().getIdeStore().getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION);
         firstInstallationByVersion = StringUtils.equalsIgnoreCase(version, PLUGIN_VERSION);
         // update plugin version;

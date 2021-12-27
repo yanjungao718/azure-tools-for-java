@@ -20,6 +20,8 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class PostgreSqlActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
+
     public static final String SERVICE_ACTIONS = "actions.postgre.service";
     public static final String POSTGRE_ACTIONS = "actions.postgre.instance";
 
@@ -29,13 +31,13 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools")
-                .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server", ((IAzureResource<?>) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((IAzureResource<?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof PostgreSqlServer);
         am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
     }
 
     public int getOrder() {
-        return 1;
+        return INITIALIZE_ORDER;
     }
 
     @Override

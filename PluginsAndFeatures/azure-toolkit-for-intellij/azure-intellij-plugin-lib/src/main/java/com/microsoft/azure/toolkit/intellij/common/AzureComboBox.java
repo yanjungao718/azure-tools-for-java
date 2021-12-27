@@ -16,6 +16,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -53,8 +54,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
     private AzureComboBoxEditor inputEditor;
-    private Object value;
     private boolean valueNotSet = true;
+    private boolean isRefreshing = false;
+    protected Object value;
     protected boolean enabled = true;
     @Getter
     @Setter
@@ -69,7 +71,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         super();
         this.init();
         this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
-        this.valueDebouncer = new TailingDebouncer(() -> this.fireValueChangedEvent(this.getValue()), DEBOUNCE_DELAY);
+        this.valueDebouncer = new TailingDebouncer(this::fireValueChangedEvent, DEBOUNCE_DELAY);
         if (refresh) {
             this.refreshItems();
         }
@@ -179,7 +181,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     @AzureOperation(
-            name = "common|combobox.load_items",
+            name = "common.load_combobox_items.type",
             params = {"this.getLabel()"},
             type = AzureOperation.Type.ACTION
     )
@@ -218,10 +220,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     protected void setLoading(final boolean loading) {
         SwingUtilities.invokeLater(() -> {
             if (loading) {
-                super.setEnabled(false);
                 this.toggleLoadingSpinner(true);
             } else {
-                super.setEnabled(this.enabled);
                 this.toggleLoadingSpinner(false);
             }
             this.repaint();
@@ -229,6 +229,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     private void toggleLoadingSpinner(boolean b) {
+        this.isRefreshing = b;
         this.setEditor(b ? this.loadingSpinner : this.inputEditor);
     }
 
@@ -240,7 +241,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public boolean isEnabled() {
-        return this.enabled || super.isEnabled();
+        return !isRefreshing && (this.enabled || super.isEnabled());
     }
 
     protected String getItemText(Object item) {

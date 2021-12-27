@@ -75,7 +75,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRO
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AzureSignInAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
@@ -214,7 +214,7 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     private static AuthConfiguration showSignInWindowAndGetAuthConfiguration(Project project) throws InterruptedException {
-        final SignInWindow dialog = new SignInWindow(new AuthMethodDetails(), project);
+        final SignInWindow dialog = new SignInWindow(project);
         if (!dialog.showAndGet()) {
             throw new InterruptedException("user cancel");
         }

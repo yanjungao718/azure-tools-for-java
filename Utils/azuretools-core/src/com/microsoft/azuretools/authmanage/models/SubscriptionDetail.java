@@ -5,8 +5,8 @@
 
 package com.microsoft.azuretools.authmanage.models;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SubscriptionDetail {
@@ -21,7 +21,8 @@ public class SubscriptionDetail {
 
     // for json mapper
     @SuppressWarnings("unused")
-    private SubscriptionDetail(){}
+    private SubscriptionDetail() {
+    }
 
     public SubscriptionDetail(String subscriptionId, String subscriptionName, String tenantId, boolean selected) {
         this.subscriptionId = subscriptionId;
@@ -57,13 +58,13 @@ public class SubscriptionDetail {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof SubscriptionDetail)) {
+        if (!(obj instanceof SubscriptionDetail)) {
             return false;
         }
-        SubscriptionDetail other =  (SubscriptionDetail)obj;
+        SubscriptionDetail other = (SubscriptionDetail) obj;
         return (this.subscriptionId == null)
-                ? other.subscriptionId == null
-                : this.subscriptionId.toLowerCase().equals(other.subscriptionId.toLowerCase());
+            ? other.subscriptionId == null
+            : this.subscriptionId.toLowerCase().equals(other.subscriptionId.toLowerCase());
     }
 
     @Override

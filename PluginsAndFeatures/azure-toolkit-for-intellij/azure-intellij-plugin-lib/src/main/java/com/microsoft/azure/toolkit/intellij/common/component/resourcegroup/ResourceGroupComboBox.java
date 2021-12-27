@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.Draft;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -58,7 +58,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     @Nonnull
     @Override
     @AzureOperation(
-        name = "arm|rg.list.subscription",
+        name = "arm.list_resource_groups.subscription",
         params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )

@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class ApplicationInsightsPanel implements AzureAbstractPanel {
     private static final String DISPLAY_NAME = "Choose Application Insights Telemetry key";
