@@ -39,7 +39,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -169,9 +168,7 @@ public class Tree extends SimpleTree implements DataProvider {
             tm.runOnPooledThread(() -> {
                 try {
                     final List<Node<?>> children = this.inner.getChildren();
-                    tm.runLater(() -> setChildren(children.stream()
-                        .sorted(Comparator.comparing(o -> o.view().getLabel()))
-                        .map(c -> new TreeNode<>(c, this.tree))));
+                    tm.runLater(() -> setChildren(children.stream().map(c -> new TreeNode<>(c, this.tree))));
                 } catch (final Exception e) {
                     this.setChildren(Stream.empty());
                 }
