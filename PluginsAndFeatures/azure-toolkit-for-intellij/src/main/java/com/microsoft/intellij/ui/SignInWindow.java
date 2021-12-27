@@ -101,7 +101,7 @@ public class SignInWindow extends AzureDialogWrapper {
             Mono.just(az).subscribeOn(Schedulers.boundedElastic())
                 .flatMap(a -> a.checkAvailable().onErrorResume(e -> Mono.just(false)))
                 .doFinally((s) -> {
-                    cliBtn.setText("Azure CLI");
+                    cliBtn.setText(cliBtn.isEnabled() ? "Azure CLI" : "Azure CLI (Not logged in)");
                     cliDesc.setIcon(null);
                     oauthBtn.setSelected(cliBtn.isSelected() && !cliBtn.isEnabled());
                     updateSelection();
