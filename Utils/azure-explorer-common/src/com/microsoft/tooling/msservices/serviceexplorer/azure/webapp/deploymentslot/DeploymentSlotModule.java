@@ -6,8 +6,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -25,9 +25,9 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     private final DeploymentSlotModulePresenter presenter;
     public static final String MODULE_NAME = "Deployment Slots";
     protected final String subscriptionId;
-    protected final IWebApp webapp;
+    protected final WebApp webapp;
 
-    public DeploymentSlotModule(final Node parent, final String subscriptionId, final IWebApp webapp) {
+    public DeploymentSlotModule(final Node parent, final String subscriptionId, final WebApp webapp) {
         super(MODULE_ID, MODULE_NAME, parent, ICON_PATH);
         this.subscriptionId = subscriptionId;
         this.webapp = webapp;
@@ -42,20 +42,20 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     }
 
     @Override
-    @AzureOperation(name = "webapp|deployment.delete", params = {"name", "this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete_deployment.deployment|app", params = {"name", "this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     public void removeNode(final String sid, final String name, Node node) {
         presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
         removeDirectChildNode(node);
     }
 
     @Override
-    @AzureOperation(name = "webapp|deployment.reload", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.list_deployments.app", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
     }
 
     @Override
-    public void renderDeploymentSlots(@NotNull final List<IWebAppDeploymentSlot> slots) {
+    public void renderDeploymentSlots(@NotNull final List<WebAppDeploymentSlot> slots) {
         slots.forEach(slot -> addChildNode(new DeploymentSlotNode(slot, DeploymentSlotModule.this)));
     }
 }

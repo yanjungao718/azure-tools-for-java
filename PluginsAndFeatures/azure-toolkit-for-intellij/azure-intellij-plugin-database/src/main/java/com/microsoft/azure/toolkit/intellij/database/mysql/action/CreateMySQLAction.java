@@ -8,9 +8,8 @@ package com.microsoft.azure.toolkit.intellij.database.mysql.action;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.Draft;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.intellij.database.mysql.creation.MySQLCreationDialog;
-import com.microsoft.azure.toolkit.intellij.database.util.AzureSignInHelper;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -27,6 +26,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -55,7 +55,7 @@ public class CreateMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
-        AzureSignInHelper.requireSignedIn(project, () -> doActionPerformed(project));
+        AzureLoginHelper.requireSignedIn(project, () -> doActionPerformed(project));
     }
 
     private void doActionPerformed(Project project) {
@@ -76,7 +76,7 @@ public class CreateMySQLAction extends NodeActionListener {
     }
 
     @AzureOperation(
-        name = "mysql|server.create.task",
+        name = "mysql.create_server.server|subscription",
         params = {
             "config.getServerName()",
             "config.getSubscription().getName()"

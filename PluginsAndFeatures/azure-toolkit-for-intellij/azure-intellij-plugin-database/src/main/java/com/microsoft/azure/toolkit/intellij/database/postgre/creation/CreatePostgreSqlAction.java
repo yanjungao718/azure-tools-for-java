@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.database.postgre.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.Draft;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -35,9 +35,9 @@ public class CreatePostgreSqlAction {
 
     }
 
-    @AzureOperation(name = "postgre|server.create", params = {"config.getServerName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "postgre.create_server.server", params = {"config.getServerName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final AzurePostgreSqlConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("postgre|server.create", config.getServerName());
+        final AzureString title = AzureOperationBundle.title("postgre.create_server.server", config.getServerName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {

@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 
 
 public class AzureExplorer {
-    private static final String EXTENSION_POINT_ID = "com.microsoft.azure.toolkit.explorer";
+    private static final String EXTENSION_POINT_ID = "com.microsoft.azure.toolkit.eclipse.explorer";
 
     public static Node<?>[] getModules() {
         IConfigurationElement[] configurationElements = Platform.getExtensionRegistry()

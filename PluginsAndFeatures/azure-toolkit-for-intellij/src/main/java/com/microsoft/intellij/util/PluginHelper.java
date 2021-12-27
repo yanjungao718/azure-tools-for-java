@@ -5,14 +5,14 @@
 
 package com.microsoft.intellij.util;
 
-import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.wacommon.utils.WACommonException;
 
 import java.io.File;
 
 public class PluginHelper {
 
-    private static final String AZURE_ARTIFACT = "azure-1.38.0.jar";
+    private static final String AZURE_ARTIFACT = "azure-1.41.2.jar";
 
     /**
      * @return resource filename in plugin's directory

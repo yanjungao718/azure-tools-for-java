@@ -14,7 +14,7 @@ import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 
 import java.io.File;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class MethodUtils {
 

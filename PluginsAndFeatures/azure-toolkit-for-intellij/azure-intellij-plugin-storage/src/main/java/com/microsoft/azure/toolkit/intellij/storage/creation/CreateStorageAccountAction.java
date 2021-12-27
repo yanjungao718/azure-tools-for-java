@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.storage.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.Draft;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -33,9 +33,9 @@ public class CreateStorageAccountAction {
         });
     }
 
-    @AzureOperation(name = "storage|account.create", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "storage.create_account.account", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     public static void create(final StorageAccountConfig config) {
-        final AzureString title = AzureOperationBundle.title("storage|account.create", config.getName());
+        final AzureString title = AzureOperationBundle.title("storage.create_account.account", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> createStorageAccount(config));
     }
 

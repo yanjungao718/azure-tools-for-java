@@ -30,7 +30,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -168,8 +167,8 @@ public class IdentityAzureManager extends AzureManagerBase {
                     entity.setEnvironment(Azure.az(AzureCloud.class).get());
                     entity.setEmail(authMethodDetails.getAccountEmail());
                     entity.setClientId(authMethodDetails.getClientId());
-                    entity.setTenantIds(StringUtils.isNotBlank(authMethodDetails.getTenantId()) ?
-                                        Collections.singletonList(authMethodDetails.getTenantId()) : null);
+                    entity.setTenantIds(authMethodDetails.getTenantIds());
+                    entity.setSubscriptions(authMethodDetails.getSubscriptions());
                     Account account = Azure.az(AzureAccount.class).account(entity);
                     return Mono.just(fromAccountEntity(account.getEntity()));
                 } else {
@@ -178,8 +177,8 @@ public class IdentityAzureManager extends AzureManagerBase {
             }
 
         } catch (Throwable e) {
-            if (StringUtils.isNotBlank(authMethodDetails.getClientId())
-                && authMethodDetails.getAuthType() == AuthType.SERVICE_PRINCIPAL && secureStore != null) {
+            if (StringUtils.isNotBlank(authMethodDetails.getClientId()) && authMethodDetails.getAuthType() == AuthType.SERVICE_PRINCIPAL &&
+                    secureStore != null) {
                 secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, authMethodDetails.getClientId(), null);
             }
             return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
@@ -248,7 +247,8 @@ public class IdentityAzureManager extends AzureManagerBase {
         authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
         authMethodDetails.setAuthType(entity.getType());
         authMethodDetails.setClientId(entity.getClientId());
-        authMethodDetails.setTenantId(CollectionUtils.isEmpty(entity.getTenantIds()) ? "" : entity.getTenantIds().get(0));
+        authMethodDetails.setTenantIds(entity.getTenantIds());
+        authMethodDetails.setSubscriptions(entity.getSubscriptions());
         authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudNameForAzureCli(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());
         return authMethodDetails;

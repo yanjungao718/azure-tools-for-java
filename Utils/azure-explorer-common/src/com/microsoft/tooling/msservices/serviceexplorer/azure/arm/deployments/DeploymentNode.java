@@ -7,7 +7,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments;
 
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -71,13 +70,13 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
         return subscriptionId;
     }
 
-    @AzureOperation(name = "common.show_properties", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "common.show_properties.deployment", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
         DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
     }
 
-    @AzureOperation(name = "arm|deployment.delete", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "arm.delete_deployment.deployment", params = {"this.deployment.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
     }

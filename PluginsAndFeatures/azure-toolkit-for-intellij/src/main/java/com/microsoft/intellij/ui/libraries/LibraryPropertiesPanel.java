@@ -16,7 +16,7 @@ import com.wacommon.utils.WACommonException;
 import javax.swing.*;
 import java.io.*;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 class LibraryPropertiesPanel implements AzureAbstractPanel {
     private static final int BUFF_SIZE = 1024;

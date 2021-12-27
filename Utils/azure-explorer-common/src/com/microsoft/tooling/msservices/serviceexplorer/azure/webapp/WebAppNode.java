@@ -7,7 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -32,14 +32,14 @@ public class WebAppNode extends WebAppBaseNode {
     public static final String SSH_INTO = "SSH into Web App (Preview)";
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
-    private final IWebApp webApp;
+    private final WebApp webApp;
 
-    public WebAppNode(WebAppModule parent, IWebApp webApp) {
+    public WebAppNode(WebAppModule parent, WebApp webApp) {
         super(parent, LABEL, webApp);
         this.webApp = webApp;
     }
 
-    public IWebApp getWebApp() {
+    public WebApp getWebApp() {
         return webApp;
     }
 
@@ -58,7 +58,7 @@ public class WebAppNode extends WebAppBaseNode {
     }
 
     @Override
-    @AzureOperation(name = "webapp.refresh", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.reload_app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         super.refreshItems();
         this.renderSubModules();
@@ -116,7 +116,7 @@ public class WebAppNode extends WebAppBaseNode {
         return super.getNodeActions();
     }
 
-    @AzureOperation(name = "webapp.delete", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete_app.app", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
@@ -139,14 +139,14 @@ public class WebAppNode extends WebAppBaseNode {
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp.open_portal", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_portal.app", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.webApp.subscriptionId(), this.webApp.id());
     }
 
     @AzureOperation(name = "webapp.open_browser", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + this.webApp.hostName());
+        DefaultLoader.getUIHelper().openInBrowser("https://" + this.webApp.hostName());
     }
 
     @AzureOperation(name = "webapp.show_properties", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)

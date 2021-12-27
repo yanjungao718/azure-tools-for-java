@@ -309,12 +309,12 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         public AuthConfiguration getValue() {
             AuthConfiguration data = new AuthConfiguration();
 
-            data.setClient(txtClientId.getText());
-            data.setTenant(txtTenantId.getText());
+            data.setClient(txtClientId.getValue());
+            data.setTenant(txtTenantId.getValue());
             if (radioPassword.getSelection()) {
-                data.setKey(txtPassword.getText());
+                data.setKey(txtPassword.getValue());
             } else {
-                data.setCertificate(this.txtCertificate.getText());
+                data.setCertificate(this.txtCertificate.getValue());
             }
             data.setType(AuthType.SERVICE_PRINCIPAL);
             return data;
@@ -322,12 +322,12 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
         @Override
         public void setValue(AuthConfiguration model) {
-            this.txtTenantId.setText(StringUtils.defaultString(model.getTenant()));
-            this.txtClientId.setText(StringUtils.defaultString(model.getClient()));
+            this.txtTenantId.setValue(StringUtils.defaultString(model.getTenant()));
+            this.txtClientId.setValue(StringUtils.defaultString(model.getClient()));
 
             if (!StringUtils.isAllBlank(model.getCertificate(), model.getKey())) {
                 if (model.getKey() != null) {
-                    this.txtPassword.setText(model.getKey());
+                    this.txtPassword.setValue(model.getKey());
                     this.radioPassword.setSelection(true);
                     this.radioCertificate.setSelection(false);
                 } else {

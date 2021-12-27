@@ -56,10 +56,18 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         this.setValue(new ItemReference<>(artifact -> artifactManager.equalsAzureArtifact(cachedArtifact, artifact)));
     }
 
+    @Override
+    public AzureArtifact getValue() {
+        if (value instanceof ItemReference && ((ItemReference<?>) value).is(cachedArtifact)) {
+            return cachedArtifact;
+        }
+        return super.getValue();
+    }
+
     @Nonnull
     @Override
     @AzureOperation(
-            name = "common|artifact.list.project",
+            name = "common.list_artifacts.project",
             params = {"this.project.getName()"},
             type = AzureOperation.Type.SERVICE
     )

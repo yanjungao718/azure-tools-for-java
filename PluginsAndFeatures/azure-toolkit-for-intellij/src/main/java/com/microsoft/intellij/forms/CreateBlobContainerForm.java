@@ -28,7 +28,7 @@ import java.util.List;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_BLOB_CONTAINER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class CreateBlobContainerForm extends AzureDialogWrapper {
     private JPanel contentPane;
@@ -75,7 +75,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     protected void doOKAction() {
         final String name = nameTextField.getText();
         //Field outerFiele = onCreate.getClass().getDeclaredField("this$0");
-        final AzureString title = AzureOperationBundle.title("blob.create", name);
+        final AzureString title = AzureOperationBundle.title("blob.create_container.container", name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
                 ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);

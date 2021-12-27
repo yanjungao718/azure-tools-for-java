@@ -5,11 +5,12 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.webapp;
 
+import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -26,14 +27,15 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class WebAppActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;
+
     public static final String SERVICE_ACTIONS = "actions.webapp.service";
     public static final String WEBAPP_ACTIONS = "actions.webapp.management";
-    public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployments";
-    public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployments.slot";
+    public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployment_slots";
+    public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployment_slot";
 
-    public static final Action.Id<IAppService> OPEN_IN_BROWSER = Action.Id.of("actions.webapp.open_in_browser");
-    public static final Action.Id<IWebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployments.refresh");
-    public static final Action.Id<IWebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("action.webapp.slot.swap");
+    public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
+    public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -46,14 +48,19 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionGroup webAppActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                WebAppActionsContributor.OPEN_IN_BROWSER,
+                AppServiceActionsContributor.OPEN_IN_BROWSER,
                 ResourceCommonActionsContributor.DEPLOY,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 "---",
                 ResourceCommonActionsContributor.START,
                 ResourceCommonActionsContributor.STOP,
                 ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.DELETE,
+                "---",
+                AppServiceActionsContributor.PROFILE_FLIGHT_RECORD,
+                AppServiceActionsContributor.SSH_INTO_WEBAPP,
+                AppServiceActionsContributor.START_STREAM_LOG,
+                AppServiceActionsContributor.STOP_STREAM_LOG
                 // todo: add profile actions like log streaming
         );
         am.registerGroup(WEBAPP_ACTIONS, webAppActionGroup);
@@ -61,14 +68,17 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionGroup deploymentSlotActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                WebAppActionsContributor.OPEN_IN_BROWSER,
+                AppServiceActionsContributor.OPEN_IN_BROWSER,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 SWAP_DEPLOYMENT_SLOT,
                 "---",
                 ResourceCommonActionsContributor.START,
                 ResourceCommonActionsContributor.STOP,
                 ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.DELETE,
+                "---",
+                AppServiceActionsContributor.START_STREAM_LOG,
+                AppServiceActionsContributor.STOP_STREAM_LOG
         );
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, deploymentSlotActionGroup);
 
@@ -77,25 +87,18 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<IWebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
+        final Consumer<WebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|webapp.slot.refresh", ((IWebApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof IWebApp);
+                .title(s -> Optional.ofNullable(s).map(r -> title("webapp.list_deployments.app", ((WebApp) r).name())).orElse(null))
+                .enabled(s -> s instanceof WebApp);
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, new Action<>(refresh, refreshView));
 
-        final Consumer<IWebAppDeploymentSlot> swap = slot -> slot.webApp().swap(slot.name());
+        final Consumer<WebAppDeploymentSlot> swap = slot -> slot.webApp().swap(slot.name());
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|deployment.swap",
-                        ((IWebAppDeploymentSlot) s).name(), ((IWebAppDeploymentSlot) s).webApp().name())).orElse(null))
-                .enabled(s -> s instanceof IWebAppDeploymentSlot && StringUtils.equals(((IWebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
+                .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
+                        ((WebAppDeploymentSlot) s).name(), ((WebAppDeploymentSlot) s).webApp().name())).orElse(null))
+                .enabled(s -> s instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
-
-        final Consumer<IAppService> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
-                .handle("https://" + appService.hostName());
-        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp.open_browser")).orElse(null))
-                .enabled(s -> s instanceof IAppService);
-        am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));
     }
 
     @Override
@@ -118,6 +121,6 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     @Override
     public int getOrder() {
-        return 1; //after azure resource common actions registered
+        return INITIALIZE_ORDER; //after azure resource common actions registered
     }
 }

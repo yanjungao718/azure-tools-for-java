@@ -46,6 +46,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -362,17 +363,18 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-            name = "appservice|file.open",
+            name = "appservice.open_file.file",
             params = {"target.getName()"},
             type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
     public void openAppServiceFile(AppServiceFile target, Object context) {
+        final com.microsoft.azure.toolkit.lib.common.action.Action<Void> retry = Action.retryFromFailure((() -> this.openAppServiceFile(target, context)));
         final IAppService appService = target.getApp();
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
-        final AzureString title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
+        final AzureString title = AzureOperationBundle.title("appservice.open_file.file", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -402,7 +404,7 @@ public class IDEHelperImpl implements IDEHelper {
                         } catch (final IOException e) {
                             final String error = "failed to load data into editor";
                             final String action = "try later or downloading it first";
-                            throw new AzureToolkitRuntimeException(error, e, action);
+                            throw new AzureToolkitRuntimeException(error, e, action, retry);
                         }
                     }, IDEHelperImpl::onRxException);
         });
@@ -447,12 +449,12 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-            name = "appservice|file.save",
+            name = "appservice.save_file.file",
             params = {"appServiceFile.getName()"},
             type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
-        final AzureString title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
+        final AzureString title = AzureOperationBundle.title("appservice.save_file.file", appServiceFile.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             final IAppService appService = appServiceFile.getApp();
             final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
@@ -476,13 +478,14 @@ public class IDEHelperImpl implements IDEHelper {
     @SneakyThrows
     @Override
     public void saveAppServiceFile(@NotNull AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+        final Action<Void> retry = Action.retryFromFailure((() -> this.saveAppServiceFile(file, context, dest)));
         final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {
             return;
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final AzureString title = AzureOperationBundle.title("appservice|file.download", file.getName());
+        final AzureString title = AzureOperationBundle.title("appservice.download_file.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             file.getApp()
@@ -497,7 +500,7 @@ public class IDEHelperImpl implements IDEHelper {
                         } catch (final IOException e) {
                             final String error = "failed to write data into local file";
                             final String action = "try later";
-                            throw new AzureToolkitRuntimeException(error, e, action);
+                            throw new AzureToolkitRuntimeException(error, e, action, retry);
                         }
                     }, IDEHelperImpl::onRxException);
         });

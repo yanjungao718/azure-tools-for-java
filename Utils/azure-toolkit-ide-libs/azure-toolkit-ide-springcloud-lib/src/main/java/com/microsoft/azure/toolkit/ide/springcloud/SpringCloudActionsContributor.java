@@ -6,12 +6,11 @@
 package com.microsoft.azure.toolkit.ide.springcloud;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 
 import java.util.Optional;
@@ -20,6 +19,7 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class SpringCloudActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
@@ -30,21 +30,20 @@ public class SpringCloudActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final AzureTaskManager tm = AzureTaskManager.getInstance();
         final Consumer<SpringCloudApp> openPublicUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.publicUrl());
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", "/icons/action/browser.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_public_url", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).entity().isPublic());
         am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
 
         final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.testUrl());
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.stream_log", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(STREAM_LOG, new Action<>(streamLogView));
     }
@@ -81,5 +80,10 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
+    }
+
+    @Override
+    public int getOrder() {
+        return INITIALIZE_ORDER;
     }
 }

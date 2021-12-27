@@ -20,6 +20,8 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class RedisActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
+
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
     public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_EXPLORER = Action.Id.of("action.redis.open_explorer");
@@ -27,7 +29,7 @@ public class RedisActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
-            .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_explorer", ((IAzureResource<?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_redis_explorer.redis", ((IAzureResource<?>) r).name())).orElse(null))
             .enabled(s -> s instanceof RedisCache);
         am.registerAction(OPEN_EXPLORER, new Action<>(showExplorerView));
     }
@@ -51,5 +53,10 @@ public class RedisActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.REFRESH
         );
         am.registerGroup(REDIS_ACTIONS, redisActionGroup);
+    }
+
+    @Override
+    public int getOrder() {
+        return INITIALIZE_ORDER;
     }
 }

@@ -6,16 +6,12 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
@@ -25,10 +21,10 @@ public class DeploymentSlotNode extends WebAppBaseNode {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";
     private static final String LABEL = "Slot";
 
-    private final IWebApp webApp;
-    private final IWebAppDeploymentSlot slot;
+    private final WebApp webApp;
+    private final WebAppDeploymentSlot slot;
 
-    public DeploymentSlotNode(final IWebAppDeploymentSlot deploymentSlot, final DeploymentSlotModule parent) {
+    public DeploymentSlotNode(final WebAppDeploymentSlot deploymentSlot, final DeploymentSlotModule parent) {
         super(parent, LABEL, deploymentSlot);
         this.webApp = deploymentSlot.webApp();
         this.slot = deploymentSlot;
@@ -89,7 +85,7 @@ public class DeploymentSlotNode extends WebAppBaseNode {
     }
 
     @Override
-    @AzureOperation(name = "webapp|deployment.refresh", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.refresh_deployment.deployment|app", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         super.refreshItems();
         if (slot.exists()) {
@@ -99,42 +95,42 @@ public class DeploymentSlotNode extends WebAppBaseNode {
         }
     }
 
-    @AzureOperation(name = "webapp|deployment.start", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.start_deployment.deployment|app", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
         slot.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp|deployment.stop", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.stop_deployment.deployment|app", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
         slot.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(name = "webapp|deployment.restart", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.restart_deployment.deployment|app", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
         slot.restart();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(name = "webapp|deployment.delete", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.delete_deployment.deployment|app", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getName(), DeploymentSlotNode.this);
     }
 
-    @AzureOperation(name = "webapp|deployment.swap", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.swap_deployment.deployment|app", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void swap() {
         webApp.swap(slot.name());
     }
 
-    @AzureOperation(name = "webapp|deployment.open_portal", params = {"this.slot.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_portal_deployment.deployment", params = {"this.slot.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.slot.subscriptionId(), this.slot.id());
     }
 
     @AzureOperation(name = "webapp|deployment.open_browser", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + slot.hostName());
+        DefaultLoader.getUIHelper().openInBrowser("https://" + slot.hostName());
     }
 
     @AzureOperation(name = "webapp|deployment.show_properties", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)

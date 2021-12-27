@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.redis.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.Draft;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -33,9 +33,9 @@ public class CreateRedisCacheAction {
         });
     }
 
-    @AzureOperation(name = "redis.create", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "redis.create_redis.redis", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final RedisConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("redis.create", config.getName());
+        final AzureString title = AzureOperationBundle.title("redis.create_redis.redis", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {

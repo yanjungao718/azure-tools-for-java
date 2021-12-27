@@ -7,10 +7,10 @@ package com.microsoft.azure.toolkit.intellij.database.mysql.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
-import com.microsoft.azure.toolkit.intellij.database.util.AzureSignInHelper;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azuretools.ActionConstants;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -41,7 +41,7 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AzureSignInHelper.requireSignedIn(project, () -> doActionPerformed(true, project));
+        AzureLoginHelper.requireSignedIn(project, () -> doActionPerformed(project));
     }
 
     @Override
@@ -54,8 +54,8 @@ public class OpenMySQLByToolsAction extends NodeActionListener {
         return ActionConstants.parse(ActionConstants.MySQL.CONNECT_TO_SERVER).getOperationName();
     }
 
-    @AzureOperation(name = "mysql.connect_server", params = {"this.node.getServer().name()"}, type = AzureOperation.Type.ACTION)
-    private void doActionPerformed(boolean isLoggedIn, Project project) {
+    @AzureOperation(name = "mysql.open_by_database_tools.server", params = {"this.node.getServer().name()"}, type = AzureOperation.Type.ACTION)
+    private void doActionPerformed(Project project) {
         final IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
                 .name(String.format(MYSQL_PATTERN_NAME, node.getServer().name()))
                 .driverClassName(MYSQL_DEFAULT_DRIVER)

@@ -10,7 +10,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardModel;
 import com.microsoft.intellij.ui.components.Validatable;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AddLibraryWizardModel extends WizardModel {
     private SelectLibraryStep selectLibraryStep;

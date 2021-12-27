@@ -12,7 +12,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-database" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-redis" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-service-explorer" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-springcloud" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-storage" />
@@ -32,6 +35,7 @@
           <set>
             <option value="$PROJECT_DIR$/azure-intellij-plugin-base" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-redis" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-service-explorer" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-springcloud" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-storage" />

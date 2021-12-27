@@ -142,13 +142,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     @Override
     public void create() {
         super.create();
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-                System.out.println("refreshSubscriptionsAsync");
-                refreshSubscriptionsAsync();
-                setSubscriptions();
-            }
-        });
+        Display.getDefault().asyncExec(this::setSubscriptions);
     }
 
     public void refreshSubscriptionsAsync() {

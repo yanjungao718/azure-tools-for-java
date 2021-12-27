@@ -7,7 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -35,14 +35,14 @@ public class FunctionModule extends AzureRefreshableNode {
     }
 
     @Override
-    @AzureOperation(name = "function.delete", params = {"nameFromResourceId(id)", "sid"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.delete_app.app", params = {"nameFromResourceId(id)", "sid"}, type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         Azure.az(AzureAppService.class).functionApp(id).delete();
         removeDirectChildNode(node);
     }
 
     @Override
-    @AzureOperation(name = "function.reload_all", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.list_apps", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         Azure.az(AzureAppService.class).functionApps(true)
                 .stream()
@@ -79,6 +79,6 @@ public class FunctionModule extends AzureRefreshableNode {
     }
 
     private static boolean isFunctionModuleEvent(Object eventObject) {
-        return eventObject != null && eventObject instanceof IFunctionApp;
+        return eventObject != null && eventObject instanceof FunctionApp;
     }
 }
