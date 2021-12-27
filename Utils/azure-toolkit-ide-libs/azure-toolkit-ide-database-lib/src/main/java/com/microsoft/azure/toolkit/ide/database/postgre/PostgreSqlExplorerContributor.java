@@ -9,7 +9,14 @@ import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
+import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
+
+import javax.annotation.Nonnull;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -22,8 +29,13 @@ public class PostgreSqlExplorerContributor implements IExplorerContributor {
         final AzurePostgreSql service = az(AzurePostgreSql.class);
         return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(PostgreSqlActionsContributor.SERVICE_ACTIONS)
-                .addChildren(AzurePostgreSql::list, (postgre, serviceNode) -> new Node<>(postgre)
+                .addChildren(this::listPostgreServers, (postgre, serviceNode) -> new Node<>(postgre)
                         .view(new AzureResourceLabelView<>(postgre))
                         .actions(PostgreSqlActionsContributor.POSTGRE_ACTIONS));
+    }
+
+    @Nonnull
+    private List<PostgreSqlServer> listPostgreServers(AzurePostgreSql s) {
+        return s.list().stream().sorted(Comparator.comparing(IAzureResource::name)).collect(Collectors.toList());
     }
 }
