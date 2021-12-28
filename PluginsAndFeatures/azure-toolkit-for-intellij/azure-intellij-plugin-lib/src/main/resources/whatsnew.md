@@ -18,10 +18,10 @@
 - [#5035](https://github.com/microsoft/azure-tools-for-java/issues/5035) Resources Are Not Added To Jar When Debugging With IDEA
 - [#6026](https://github.com/microsoft/azure-tools-for-java/issues/6026) Uncaught Exception java.lang.NullPointerException
 - Azure Explorer: some nodes are not sorted in natural order.
-- Azure explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.
+- Azure Explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.
 - Virtual Machine: Validation info about name of resource group and virtual machine doesn't contain letters length.
 - Storage Account: "open in portal" and "open storage explorer" link to a same page.
-- Spring Cloud: there are No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.
+- Spring Cloud: there is No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.
 - MySQL/SqlServer/PostgreSQL: Test connection result text box has white background color in IntelliJ Light theme.
 - Postgre SQL: No icon in properties view tab title.
 - Some message/icon related bugs.
