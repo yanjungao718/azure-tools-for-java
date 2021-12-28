@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.60.0](#3600)
   - [3.59.0](#3590)
   - [3.58.0](#3580)
   - [3.57.1](#3571)
@@ -74,6 +75,32 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.60.0
+### Added
+- Add dependency support for Azure Functions related libs, so that our plugin can be recommended.
+- Add actions on some error notifications, so that user knows what to do next.
+- Add Azure's account registration link on "Sign in" dialog.
+
+### Changed
+- Performance of restoring-sign-in is improved.
+- MySQL: remove support for v5.6.
+
+### Fixed
+- [#6120](https://github.com/microsoft/azure-tools-for-java/issues/6120): AzureOperationException: list all function modules in project.
+- [#6090](https://github.com/microsoft/azure-tools-for-java/issues/6090): Uncaught Exception java.nio.file.InvalidPathException: Illegal char <:> at index 16: Active code page: 1252.
+- [#5038](https://github.com/microsoft/azure-tools-for-java/issues/5038): Dependent Module Jars Are Not Added When Debugging With IDEA.
+- [#5035](https://github.com/microsoft/azure-tools-for-java/issues/5035): Resources Are Not Added To Jar When Debugging With IDEA.
+- [#6026](https://github.com/microsoft/azure-tools-for-java/issues/6026): Uncaught Exception java.lang.NullPointerException.
+- Azure Explorer: some nodes are not sorted in natural order.
+- Azure explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.
+- Virtual Machine: Validation info about name of resource group and virtual machine doesn't contain letters length.
+- Storage Account: "open in portal" and "open storage explorer" link to a same page.
+- Spring Cloud: there are No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.
+- MySQL/SqlServer/PostgreSQL: Test connection result text box has white background color in IntelliJ Light theme.
+- Postgre SQL: No icon in properties view tab title.
+- Some message/icon related bugs.
+- CVE issues
 
 ## 3.59.0
 ### Added
