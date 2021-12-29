@@ -31,7 +31,6 @@ import com.microsoft.azure.toolkit.eclipse.function.ui.FunctionProjectComboBox;
 import com.microsoft.azure.toolkit.eclipse.function.utils.FunctionUtils;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 
 public class AzureFunctionDeployComposite extends Composite implements AzureFormPanel<FunctionDeployConfiguration> {
     private FunctionProjectComboBox cbProject;
@@ -125,9 +124,12 @@ public class AzureFunctionDeployComposite extends Composite implements AzureForm
             txtFunctionCli.setValue(config.getFunctionCliPath());
         } else {
             try {
-                txtFunctionCli.setValue(FunctionUtils.getFuncPath());
+                final String funcPath = FunctionUtils.getFuncPath();
+                if (StringUtils.isNotBlank(funcPath)) {
+                    txtFunctionCli.setValue(funcPath);
+                }
             } catch (IOException | InterruptedException e) {
-                AzureMessager.getMessager().warning("Cannot find function core tools due to error:" + e.getMessage());
+                // swallow exception for default value
             }
         }
         Optional.ofNullable(config.getFunctionConfig()).ifPresent(functionAppConfig -> {
