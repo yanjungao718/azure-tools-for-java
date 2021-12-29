@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.aad.msal4jextensions.persistence.mac.ISecurityLibrary;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
@@ -26,6 +27,7 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -124,7 +126,18 @@ public class IdentityAzureManager extends AzureManagerBase {
 
     public Mono<AuthMethodDetails> signInOAuth() {
         AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-        return az.loginAsync(AuthType.OAUTH2, true).flatMap(Account::continueLogin).map(account -> fromAccountEntity(account.getEntity()));
+        return az.loginAsync(AuthType.OAUTH2, shallEnablePersistence()).flatMap(Account::continueLogin).map(account -> fromAccountEntity(account.getEntity()));
+    }
+
+    public static boolean shallEnablePersistence() {
+        if (SystemUtils.IS_OS_MAC) {
+            try {
+                ISecurityLibrary.library.CFRelease(null);
+            } catch (Throwable ex) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {

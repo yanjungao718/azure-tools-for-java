@@ -91,6 +91,7 @@ public class AzureModule extends AzureRefreshableNode {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
             AuthMethodManager.getInstance().addSignOutEventListener(signInOutListener);
+            signInOutListener.run();
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
         }
