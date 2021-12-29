@@ -43,7 +43,7 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
         FunctionProjectPage previousPage = (FunctionProjectPage) getWizard().getPreviousPage(this);
 
         if (StringUtils.isBlank(txtArtifact.getValue())) {
-            this.txtArtifact.setValue(previousPage.getProjectName());
+            this.txtArtifact.setValue(previousPage.getProjectName(), true);
         }
     }
 
@@ -82,10 +82,11 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
 
     @Override
     public void setValue(@Nonnull FunctionArtifactModel value) {
-        this.txtGroupId.setValue(value.getGroupId());
-        this.txtArtifact.setValue(value.getArtifactId());
-        this.txtVersion.setValue(value.getVersion());
-        this.txtPackageName.setValue(value.getPackageName());
+        // todo: Diff user input and defualt values in SWT input components
+        this.txtGroupId.setValue(value.getGroupId(), true);
+        this.txtArtifact.setValue(value.getArtifactId(), true);
+        this.txtVersion.setValue(value.getVersion(), true);
+        this.txtPackageName.setValue(value.getPackageName(), true);
     }
 
     @Override
