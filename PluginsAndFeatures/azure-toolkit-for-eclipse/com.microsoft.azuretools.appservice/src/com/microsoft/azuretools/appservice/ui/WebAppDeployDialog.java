@@ -883,7 +883,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         CountDownLatch countDownLatch = new CountDownLatch(1);
                         action.launch(MavenUtils.getPomFile(project).getParent(), () -> {
                             countDownLatch.countDown();
-                            return null;
                         });
                         countDownLatch.await();
                     }

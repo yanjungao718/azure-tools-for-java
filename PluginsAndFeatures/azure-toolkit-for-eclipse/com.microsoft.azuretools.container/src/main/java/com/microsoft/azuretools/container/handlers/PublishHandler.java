@@ -48,7 +48,6 @@ public class PublishHandler extends AzureAbstractHandler {
                     container = MavenUtils.getPomFile(project).getParent();
                     action.launch(container, () -> {
                         buildAndRun(event);
-                        return null;
                     });
                 } else {
                     destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize().toString();

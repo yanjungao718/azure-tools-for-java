@@ -150,6 +150,9 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     private void initializeWhatsNew(Project project) {
         EventUtil.executeWithLog(SYSTEM, SHOW_WHATS_NEW,
                 operation -> {
+                    if (project.isDisposed()) {
+                        return;
+                    }
                     final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);
                     final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
                     AzureTaskManager.getInstance().runLater(() -> ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null));

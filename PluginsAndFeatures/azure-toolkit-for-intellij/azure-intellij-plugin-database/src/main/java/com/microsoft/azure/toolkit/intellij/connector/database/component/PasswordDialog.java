@@ -57,6 +57,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
                 this.database.getJdbcUrl().getServerHost()));
         testConnectionButton.setEnabled(false);
         testConnectionActionPanel.setVisible(false);
+        testResultTextPane.setVisible(false);
         testResultTextPane.setEditable(false);
         testResultTextPane.setText(StringUtils.EMPTY);
         final Dimension lastColumnSize = new Dimension(106, this.passwordSaveComboBox.getPreferredSize().height);
@@ -93,6 +94,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
             final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils
                     .connectWithPing(this.database.getJdbcUrl(), this.database.getUsername(), password);
             testConnectionActionPanel.setVisible(true);
+            testResultTextPane.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
             final Icon icon = connectResult.isConnected() ? AllIcons.General.InspectionsOK : AllIcons.General.BalloonError;
             testConnectionActionPanel.getIconLabel().setIcon(icon);

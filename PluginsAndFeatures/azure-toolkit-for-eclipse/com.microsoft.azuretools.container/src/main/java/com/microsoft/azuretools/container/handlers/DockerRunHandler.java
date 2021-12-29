@@ -67,7 +67,6 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 action.launch(container, () -> {
                     // TODO: callback after mvn package done. IMPORTANT
                     buildAndRun(event);
-                    return null;
                 });
             } else {
                 WarUtil.export(project, destinationPath);

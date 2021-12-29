@@ -69,7 +69,8 @@ public class AzureArtifactManager {
                 try {
                     action.launch(container, () -> {
                         sink.success(Status.OK_STATUS);
-                        return null;
+                    }, () -> {
+                        sink.error(new AzureToolkitRuntimeException("Fail to build the maven project: " + ((MavenProject) ref).getName()));
                     });
                 } catch (CoreException e) {
                     sink.error(e);
