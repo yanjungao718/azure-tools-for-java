@@ -292,7 +292,7 @@ public class AzureSignInAction extends AzureAnAction {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             final AzureAccount az = Azure.az(AzureAccount.class);
-            return (DeviceCodeAccount) checkCanceled(indicator, az.loginAsync(AuthType.DEVICE_CODE, true), () -> {
+            return (DeviceCodeAccount) checkCanceled(indicator, az.loginAsync(AuthType.DEVICE_CODE, IdentityAzureManager.shallEnablePersistence()), () -> {
                 throw Lombok.sneakyThrow(new InterruptedException("user cancel"));
             });
         });
