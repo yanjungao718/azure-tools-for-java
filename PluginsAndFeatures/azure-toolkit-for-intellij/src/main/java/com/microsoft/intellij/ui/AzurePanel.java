@@ -14,7 +14,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
-import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
@@ -31,23 +31,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.Arrays;
 import java.util.Objects;
 
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 
 @Slf4j
@@ -101,10 +92,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             //ignore
             funcCoreToolsPath.setValue(config.getFunctionCoreToolsPath());
         }
-
-        savePasswordComboBox.setValue(Arrays.stream(Password.SaveType.values())
-            .filter(e -> StringUtils.equals(e.name(), config.getDatabasePasswordSaveType())).findAny()
-            .orElse(Password.SaveType.UNTIL_RESTART));
+        savePasswordComboBox.setValue(new AzureComboBox.ItemReference<>(config.getDatabasePasswordSaveType().toLowerCase(), e -> e.name().toLowerCase()));
         allowTelemetryCheckBox.setSelected(config.getTelemetryEnabled());
 
         azureEnvironmentComboBox.setSelectedItem(ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()),
@@ -135,11 +123,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 azureEnvDesc.setIcon(AllIcons.General.Information);
             } else {
                 setTextToLabel(azureEnvDesc,
-                    String.format("You are currently signed in with environment: %s, your change will sign out your account.", currentEnvStr));
+                    String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
                 azureEnvDesc.setIcon(AllIcons.General.Warning);
             }
         } else {
-            setTextToLabel(azureEnvDesc, "You are currently not signed, the environment will be applied when you sign in next time.");
+            setTextToLabel(azureEnvDesc, "You are currently not signed in, the environment will be applied when you sign in next time.");
             azureEnvDesc.setIcon(AllIcons.General.Warning);
         }
     }
@@ -181,7 +169,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         config.setUserAgent(userAgent);
         CommonSettings.setUserAgent(config.getUserAgent());
         // apply changes
-
+        this.originalData = config;
         // we need to get rid of AuthMethodManager, using az.azure_account
         if (AuthMethodManager.getInstance().isSignedIn()) {
             final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
@@ -224,7 +212,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
         final AzureConfiguration data = getData();
 
-        if (!StringUtils.equalsIgnoreCase(data.getCloud(), originalData.getCloud())) {
+        final AzureEnvironment newEnv = AzureEnvironmentUtils.stringToAzureEnvironment(data.getCloud());
+        final AzureEnvironment oldEnv = AzureEnvironmentUtils.stringToAzureEnvironment(originalData.getCloud());
+        if (!Objects.equals(newEnv, oldEnv)) {
             return true;
         }
 
