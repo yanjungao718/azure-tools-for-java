@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -114,11 +115,11 @@ public class AppSettingsTableUtils {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 try {
-                    FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(message("function.appSettings.export.description"), "");
+                    final FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(message("function.appSettings.export.description"), "");
                     final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
                     final VirtualFile userHome = LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"));
                     final VirtualFileWrapper fileWrapper = dialog.save(userHome, LOCAL_SETTINGS_JSON);
-                    final File file = fileWrapper.getFile();
+                    final File file = Optional.ofNullable(fileWrapper).map(VirtualFileWrapper::getFile).orElse(null);
                     if (file != null) {
                         AppSettingsTableUtils.exportLocalSettingsJsonFile(file, appSettingsTable.getAppSettings());
                         AzureMessager.getMessager().info(message("function.appSettings.export.succeed.title"), message("function.appSettings.export.succeed.message"));

@@ -8,11 +8,13 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.ta
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import rx.Observable;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends MvpPresenter<V> {
     public void onLoadFunctionApps() {
@@ -40,16 +42,17 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
     }
 
     public void onLoadLocalSettings(Path localSettingsJsonPath) {
-        Observable.fromCallable(() -> {
+        final AzureTaskManager tm = AzureTaskManager.getInstance();
+        tm.runOnPooledThread(() -> {
             getMvpView().beforeFillAppSettings();
-            return AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(localSettingsJsonPath.toFile());
-        }).subscribeOn(getSchedulerProvider().io())
-                .subscribe(appSettings -> AzureTaskManager.getInstance().runLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    getMvpView().fillFunctionAppSettings(appSettings);
-                }));
+            final Map<String, String> settings = AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(localSettingsJsonPath.toFile());
+            tm.runLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                getMvpView().fillFunctionAppSettings(settings);
+            }, AzureTask.Modality.ANY);
+        });
     }
 
     private void errorHandler(Throwable e) {
