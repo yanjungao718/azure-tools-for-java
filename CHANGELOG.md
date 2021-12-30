@@ -80,11 +80,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ### Added
 - Add dependency support for Azure Functions related libs, so that our plugin can be recommended.
 - Add actions on some error notifications, so that user knows what to do next.
-- Add Azure's account registration link on "Sign in" dialog.
+- Add account registration link in "Sign in" dialog.
 
 ### Changed
 - Performance of restoring-sign-in is improved.
-- MySQL: remove support for v5.6.
 
 ### Fixed
 - [#6120](https://github.com/microsoft/azure-tools-for-java/issues/6120): AzureOperationException: list all function modules in project.
