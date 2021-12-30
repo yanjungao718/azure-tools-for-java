@@ -35,8 +35,6 @@ import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.ResolverConfiguration;
 
-import java.util.concurrent.Callable;
-
 public class MavenExecuteAction {
 
     private final String goalName;
@@ -47,7 +45,11 @@ public class MavenExecuteAction {
         this.goalName = goal;
     }
 
-    public void launch(IContainer basecon, Callable<?> callback) throws CoreException {
+    public void launch(IContainer basecon, Runnable callback) throws CoreException {
+        launch(basecon, callback, null);
+    }
+
+    public void launch(IContainer basecon, Runnable callback, Runnable onError) throws CoreException {
         if (basecon == null) {
             return;
         }
@@ -70,7 +72,9 @@ public class MavenExecuteAction {
                             DebugPlugin.getDefault().removeDebugEventListener(this);
                             try {
                                 if (process.getExitValue() == 0) {
-                                    callback.call();
+                                    callback.run();
+                                } else if (onError != null) {
+                                    onError.run();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();

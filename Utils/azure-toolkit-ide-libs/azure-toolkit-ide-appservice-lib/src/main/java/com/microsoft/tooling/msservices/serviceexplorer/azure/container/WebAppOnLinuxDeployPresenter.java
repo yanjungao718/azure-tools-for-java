@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -51,7 +52,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderWebAppOnLinuxList(webAppList);
-                }));
+                }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -65,7 +66,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderWebAppOnLinuxList(webAppList);
-                }));
+                }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -79,7 +80,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderSubscriptionList(subscriptions);
-                }));
+                }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -95,7 +96,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderResourceGroupList(resourceGroupList);
-                }));
+                }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -111,7 +112,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderLocationList(locationList);
-                }));
+                }, AzureTask.Modality.ANY));
 
     }
 
@@ -128,7 +129,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     getMvpView().renderPricingTierList(pricingTierList.stream()
                             .filter(item -> !item.equals(PricingTier.FREE_F1) && !item.equals(PricingTier.SHARED_D1))
                             .collect(Collectors.toList()));
-                }));
+                }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -147,7 +148,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderAppServicePlanList(appServicePlans);
-                }));
+                }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -166,6 +167,6 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     return;
                 }
                 getMvpView().renderAppServicePlanList(appServicePlans);
-            }));
+            }, AzureTask.Modality.ANY));
     }
 }

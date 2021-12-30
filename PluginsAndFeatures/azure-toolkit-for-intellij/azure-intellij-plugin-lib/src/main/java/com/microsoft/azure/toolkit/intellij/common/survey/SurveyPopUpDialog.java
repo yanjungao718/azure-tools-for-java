@@ -13,8 +13,6 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
 import com.intellij.util.Consumer;
-import com.intellij.util.IconUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -235,8 +233,7 @@ public class SurveyPopUpDialog extends JDialog {
         lblMessage.setFont(new Font(lblMessage.getFont().getName(), Font.BOLD, lblMessage.getFont().getSize()));
 
         lblAzureIcon = new JLabel();
-        final Icon scaledIcon = IconUtil.scale(survey.getIcon(), lblAzureIcon, 50f / survey.getIcon().getIconWidth());
-        lblAzureIcon.setIcon(scaledIcon);
+        lblAzureIcon.setIcon(survey.getIcon());
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

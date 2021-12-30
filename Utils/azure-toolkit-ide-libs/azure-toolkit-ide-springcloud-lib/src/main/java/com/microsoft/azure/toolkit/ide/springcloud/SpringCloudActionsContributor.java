@@ -36,7 +36,10 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).entity().isPublic());
         am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
 
-        final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.testUrl());
+        final Consumer<SpringCloudApp> openTestUrl = s -> {
+            final String testUrl = s.testUrl();
+            am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(testUrl.endsWith("/") ? testUrl.substring(0, testUrl.length() - 1) : testUrl);
+        };
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp);

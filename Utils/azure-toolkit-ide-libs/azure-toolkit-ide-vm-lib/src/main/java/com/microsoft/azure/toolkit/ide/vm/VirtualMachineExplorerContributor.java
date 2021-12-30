@@ -10,7 +10,14 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.compute.AbstractAzureResource;
 import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.vm.VirtualMachine;
+
+import javax.annotation.Nonnull;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class VirtualMachineExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Virtual Machines";
@@ -21,8 +28,13 @@ public class VirtualMachineExplorerContributor implements IExplorerContributor {
         final AzureVirtualMachine service = Azure.az(AzureVirtualMachine.class);
         return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(VirtualMachineActionsContributor.SERVICE_ACTIONS)
-                .addChildren(AzureVirtualMachine::list, (vm, vmNode) -> new Node<>(vm)
+                .addChildren(this::listVirtualMachines, (vm, vmNode) -> new Node<>(vm)
                         .view(new AzureResourceLabelView<>(vm))
                         .actions(VirtualMachineActionsContributor.VM_ACTIONS));
+    }
+
+    @Nonnull
+    private List<VirtualMachine> listVirtualMachines(AzureVirtualMachine s) {
+        return s.list().stream().sorted(Comparator.comparing(AbstractAzureResource::name)).collect(Collectors.toList());
     }
 }

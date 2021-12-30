@@ -21,6 +21,7 @@ public class AzureLongDurationTaskRunnerWithConsole {
     static class AzureLongDurationTaskRunnerWithConsoleHolder {
         static final AzureLongDurationTaskRunnerWithConsole instance = new AzureLongDurationTaskRunnerWithConsole();
     }
+
     public static AzureLongDurationTaskRunnerWithConsole getInstance() {
         return AzureLongDurationTaskRunnerWithConsoleHolder.instance;
     }
@@ -32,7 +33,6 @@ public class AzureLongDurationTaskRunnerWithConsole {
 
         myConsole.activate();
         ConsolePlugin.getDefault().getConsoleManager().addConsoles(new JobConsole[]{myConsole});
-        ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
 
         job.setMessager(messager);
         job.setSupplier(() -> {
@@ -40,19 +40,22 @@ public class AzureLongDurationTaskRunnerWithConsole {
             task.setType(AzureOperation.Type.ACTION.name());
             try {
                 AzureTaskManager.getInstance().runImmediatelyAsObservable(() -> {
+                    ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
                     AzureMessager.getContext().setMessager(messager);
-                    try {
-                        task.getSupplier().get();
-                        messager.info("Done.");
-                        if (removeConsoleAfterSucceed) {
-                            ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[] { myConsole });
-                        }
-                    } catch (Throwable ex) {
-                        if (ExceptionUtils.getRootCause(ex) instanceof InterruptedException) {
-                            messager.error("Cancelled.");
-                        }
+                    task.getSupplier().get();
+                    ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
+                    messager.info("Done.");
+                    if (removeConsoleAfterSucceed) {
+                        ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[]{myConsole});
                     }
-                }).subscribe();
+                }).doOnError(e -> {
+                    ConsolePlugin.getDefault().getConsoleManager().warnOfContentChange(myConsole);
+                    if (ExceptionUtils.getRootCause(e) instanceof InterruptedException) {
+                        messager.error("Cancelled.");
+                    } else {
+                        messager.error(e);
+                    }
+                }).toBlocking().single();
                 return Status.OK_STATUS;
             } catch (Exception ex) {
                 if (ExceptionUtils.hasCause(ex, InterruptedException.class)) {

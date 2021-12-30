@@ -25,41 +25,35 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.59.0</h3>
+        <h3>3.60.0</h3>
         <h4>Added</h4>
         <ul>
-          <li>Add Support for **Azure Database for PostgreSQL**, so that user can create/manage/consume PostgreSQL directly in IntelliJ.
-            <ul>
-              <li>create/manage PostgreSQL server instances</li>
-              <li>connect PostgreSQL with Intellij's DB Tools</li>
-              <li>consume PostgreSQL from local project/Azure WebApp via Resource Connector feature. </li>
-            </ul>
-          </li>
-          <li>Add `Add SSH Configuration` on **Azure Virtual Machine** instance nodes, so that user can add Azure VM to SSH Configurations by one click. </li>
-          <li>Add dependency support for Azure SDK libs, so that our plugin will be suggested if Azure SDK is used but the plugin is not installed. </li>
-          <li>Add support for 2021.3</li>
+          <li>Add dependency support for Azure Functions related libs, so that our plugin can be recommended.</li>
+          <li>Add actions on some error notifications, so that user knows what to do next.</li>
+          <li>Add account registration link in "Sign in" dialog.</li>
         <ul>
 
         <h4>Changed</h4>
         <ul>
-          <li>BeforeRunTask for Azure Resource Connector will show which resources are connected to the run configuration.</li>
+          <li>Performance of restoring-sign-in is improved.</li>
         <ul>
 
         <h4>Fixed</h4>
         <ul>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6120">#6120</a>: AzureOperationException: list all function modules in project.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6090">#6090</a>: Uncaught Exception java.nio.file.InvalidPathException: Illegal char <:> at index 16: Active code page: 1252.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5038">#5038</a>: Dependent Module Jars Are Not Added When Debugging With IDEA.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5035">#5035</a>: Resources Are Not Added To Jar When Debugging With IDEA.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6026">#6026</a>: Uncaught Exception java.lang.NullPointerException.</li>
+          <li>Azure Explorer: some nodes are not sorted in natural order.</li>
+          <li>Azure Explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.</li>
+          <li>Virtual Machine: Validation info about name of resource group and virtual machine doesn't contain letters length.</li>
+          <li>Storage Account: "open in portal" and "open storage explorer" link to a same page.</li>
+          <li>Spring Cloud: there is No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.</li>
+          <li>MySQL/SqlServer/PostgreSQL: Test connection result text box has white background color in IntelliJ Light theme.</li>
+          <li>Postgre SQL: No icon in properties view tab title.</li>
+          <li>Some message/icon related bugs.</li>
           <li>CVE issues</li>
-          <li>progress indicator shows `<unknown>.<unknow>` on menu actions.</li>
-          <li>URL starts with 'http' instead of 'https' in Web App properties window and Open in Browser option</li>
-          <li>Pops up com.azure.core.management.exception.ManagementException while deploying spring cloud with a creating service</li>
-          <li>Local run the project for connector, often pops up the error "java.util.ConcurrentModificationException"</li>
-          <li>No validation for invalid values with VNet and Public IP in Create VM dialog</li>
-          <li>Pops up NPE error with invalid values for Quota and Retention Period in Create Web App dialog</li>
-          <li>Web App name and Function name can't pass if it starts with numbers</li>
-          <li>Unclear validation info for invalid values in Create new Application Insights dialog</li>
-          <li>BeforeRunTask `Azure Resource Connector` will not be added to self-defined run configuration</li>
-          <li>Reopen projects for connector, often pops up the error "java.lang.ClassCastException"</li>
-          <li>Pops up NPE when searching with GET and showing hash typed key value with Redis</li>
-          <li>Creating Web App can be successfully submitted even with an existing name</li>
         <ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

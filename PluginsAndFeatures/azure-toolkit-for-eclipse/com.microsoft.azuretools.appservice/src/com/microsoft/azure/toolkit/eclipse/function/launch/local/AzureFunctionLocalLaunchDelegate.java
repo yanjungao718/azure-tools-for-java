@@ -12,8 +12,10 @@ import com.microsoft.azure.toolkit.eclipse.function.utils.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionPackager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import lombok.Lombok;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -23,12 +25,13 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.sourcelookup.advanced.AdvancedJavaLaunchDelegate;
-import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate {
     private static final int DEFAULT_FUNC_PORT = 7071;
@@ -60,28 +63,46 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
             throw new AzureToolkitRuntimeException("Cannot find function cli:" + config.getFunctionCliPath());
         }
         File tempFolder = FunctionUtils.getTempStagingFolder().toFile();
-
+        final EclipseFunctionProject eclipseFunctionProject = new EclipseFunctionProject(project, tempFolder);
         try {
-            Mono.create(monoSink -> AzureLongDurationTaskRunnerWithConsole.getInstance().runTask("Launching function local run", () -> {
-                try {
-                    FileUtils.cleanDirectory(tempFolder);
-                    File file = project.getProject().getFile("host.json").getLocation().toFile();
-                    final EclipseFunctionProject eclipseFunctionProject = new EclipseFunctionProject(project, tempFolder);
-                    eclipseFunctionProject.setHostJsonFile(file);
-                    if (StringUtils.isNotBlank(config.getLocalSettingsJsonPath())) {
-                        eclipseFunctionProject.setLocalSettingsJsonFile(new File(config.getLocalSettingsJsonPath()));
-                    }
-                    eclipseFunctionProject.buildJar();
-                    AzureFunctionPackager.getInstance().packageProject(eclipseFunctionProject, true, config.getFunctionCliPath());
-                    FileUtils.deleteQuietly(eclipseFunctionProject.getArtifactFile());
-                    monoSink.success(true);
-                } catch (Throwable e) {
-                    monoSink.error(e);
-                }
-            }, true)).block();
+            eclipseFunctionProject.buildJar();
         } catch (Exception e) {
             AzureMessager.getMessager().error(e);
-            throw new CoreException(Status.error("Cannot prepare the staging folder for azure function.", e));
+            throw new CoreException(Status.error("Cannot build the project:" + eclipseFunctionProject.getName(), e));
+        }
+
+        if (eclipseFunctionProject.getArtifactFile() == null || !eclipseFunctionProject.getArtifactFile().exists()) {
+            AzureMessager.getMessager().error("Cannot find target jar file:" + eclipseFunctionProject.getArtifactFile());
+            throw new AzureToolkitRuntimeException("Cannot find target jar file:" + eclipseFunctionProject.getArtifactFile());
+        }
+
+        final CompletableFuture<Boolean> future = new CompletableFuture<>();
+        AzureLongDurationTaskRunnerWithConsole.getInstance().runTask("Launching function local run", () -> {
+            try {
+                FileUtils.cleanDirectory(tempFolder);
+                File file = project.getProject().getFile("host.json").getLocation().toFile();
+                eclipseFunctionProject.setHostJsonFile(file);
+                if (StringUtils.isNotBlank(config.getLocalSettingsJsonPath())) {
+                    eclipseFunctionProject.setLocalSettingsJsonFile(new File(config.getLocalSettingsJsonPath()));
+                }
+                AzureFunctionPackager.getInstance().packageProject(eclipseFunctionProject, true, config.getFunctionCliPath());
+                future.complete(true);
+            } catch (Exception ex) {
+                future.completeExceptionally(ex);
+                throw Lombok.sneakyThrow(ex);
+            }
+        }, true);
+        try {
+            future.get();
+        } catch (InterruptedException ex) {
+            abort("User cancel", ex, IJavaLaunchConfigurationConstants.ERR_VM_LAUNCH_ERROR);
+        } catch (ExecutionException ex) {
+            if (ExceptionUtils.getRootCause(ex) instanceof InterruptedException) {
+                abort("User cancel", ex, IJavaLaunchConfigurationConstants.ERR_VM_LAUNCH_ERROR);
+                return null;
+            }
+            AzureMessager.getMessager().error(ex);
+            throw new CoreException(Status.error("Cannot prepare the staging folder for azure function.", ex));
         }
 
         final int funcPort = findFreePortForApi(DEFAULT_FUNC_PORT);

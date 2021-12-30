@@ -1,6 +1,31 @@
 <!-- Version: 3.58.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.60.0
+### Added
+- Add dependency support for Azure Functions related libs, so that our plugin can be recommended.
+- Add actions on some error notifications, so that user knows what to do next.
+- Add account registration link in "Sign in" dialog.
+
+### Changed
+- Performance of restoring-sign-in is improved.
+
+### Fixed
+- [#6120](https://github.com/microsoft/azure-tools-for-java/issues/6120) AzureOperationException: list all function modules in project
+- [#6090](https://github.com/microsoft/azure-tools-for-java/issues/6090) Uncaught Exception java.nio.file.InvalidPathException: Illegal char <:> at index 16: Active code page: 1252
+- [#5038](https://github.com/microsoft/azure-tools-for-java/issues/5038) Dependent Module Jars Are Not Added When Debugging With IDEA
+- [#5035](https://github.com/microsoft/azure-tools-for-java/issues/5035) Resources Are Not Added To Jar When Debugging With IDEA
+- [#6026](https://github.com/microsoft/azure-tools-for-java/issues/6026) Uncaught Exception java.lang.NullPointerException
+- Azure Explorer: some nodes are not sorted in natural order.
+- Azure Explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.
+- Virtual Machine: Validation info about name of resource group and virtual machine doesn't contain letters length.
+- Storage Account: "open in portal" and "open storage explorer" link to a same page.
+- Spring Cloud: there is No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.
+- MySQL/SqlServer/PostgreSQL: Test connection result text box has white background color in IntelliJ Light theme.
+- Postgre SQL: No icon in properties view tab title.
+- Some message/icon related bugs.
+- CVE issues
+
 ## 3.59.0
 ### Added
 - Add Support for **Azure Database for PostgreSQL**, so that user can create/manage/consume PostgreSQL directly in IntelliJ.
