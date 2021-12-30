@@ -121,11 +121,12 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
             AzureTaskManager.getInstance().runLater(() -> {
                 if (testUrl != null) {
                     this.txtTestEndpoint.setHyperlinkText(testUrl.length() > 60 ? testUrl.substring(0, 60) + "..." : testUrl);
+                    this.txtTestEndpoint.setHyperlinkTarget(testUrl.endsWith("/") ? testUrl.substring(0, testUrl.length() - 1) : testUrl);
                 } else {
                     this.txtTestEndpoint.setVisible(false);
                     this.lblTestEndpoint.setVisible(false);
+                    this.txtTestEndpoint.setHyperlinkTarget(null);
                 }
-                this.txtTestEndpoint.setHyperlinkTarget(testUrl);
                 this.txtStorage.setText(Objects.nonNull(disk) ? disk.toString() : "---");
                 this.txtEndpoint.setHyperlinkTarget(url);
                 this.txtEndpoint.setEnabled(Objects.nonNull(url));
