@@ -13,8 +13,8 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;

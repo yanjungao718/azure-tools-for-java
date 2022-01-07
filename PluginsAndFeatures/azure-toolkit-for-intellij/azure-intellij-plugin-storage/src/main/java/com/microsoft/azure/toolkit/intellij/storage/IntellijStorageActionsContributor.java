@@ -16,8 +16,8 @@ import com.microsoft.azure.toolkit.intellij.storage.creation.CreateStorageAccoun
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
