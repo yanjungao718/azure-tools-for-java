@@ -39,14 +39,14 @@ public class StorageNode extends Node implements TelemetryProperties {
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.entity().getSubscriptionId());
-        properties.put(AppInsightsConstants.Region, this.storageAccount.entity().getRegion().getName());
+        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
+        properties.put(AppInsightsConstants.Region, this.storageAccount.getRegion().getName());
         return properties;
     }
 
     @AzureOperation(name = "storage.open_portal.account", params = {"this.storageAccount.name()"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
-        openResourcesInPortal(this.storageAccount.entity().getSubscriptionId(), storageAccount.id());
+        openResourcesInPortal(this.storageAccount.getSubscriptionId(), storageAccount.id());
     }
 
     @AzureOperation(name = "storage.delete_account.account", params = {"this.storageAccount.name()"}, type = AzureOperation.Type.ACTION)

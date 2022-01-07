@@ -84,7 +84,7 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
     @Override
     protected List<? extends StorageAccountConfig> loadItems() {
         final List<StorageAccountConfig> resources = Optional.ofNullable(subscription)
-                .map(subscription -> Azure.az(AzureStorageAccount.class).subscription(subscription.getId()).list().stream()
+                .map(subscription -> Azure.az(AzureStorageAccount.class).accounts(subscription.getId()).list().stream()
                         .map(account -> StorageAccountConfig.builder().id(account.id()).name(account.name())
                                 .resourceGroup(ResourceGroup.builder().name(account.resourceGroup()).build()).subscription(account.subscription()).build()).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());

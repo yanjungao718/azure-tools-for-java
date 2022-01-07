@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.connection;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -61,7 +62,11 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
 
     @Override
     public StorageAccount getResource(String dataId) {
-        return Azure.az(AzureStorageAccount.class).get(dataId);
+        final ResourceId resourceId = ResourceId.fromString(dataId);
+        final String subscriptionId = resourceId.subscriptionId();
+        final String rg = resourceId.resourceGroupName();
+        final String name = resourceId.name();
+        return Azure.az(AzureStorageAccount.class).forSubscription(subscriptionId).storageAccounts().get(name, rg);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class StorageModule extends AzureRefreshableNode {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        Azure.az(AzureStorageAccount.class).list().stream()
+        Azure.az(AzureStorageAccount.class).list().stream().flatMap(m -> m.storageAccounts().list().stream())
                 .map(account -> new StorageNode(this, account))
                 .forEach(this::addChildNode);
     }

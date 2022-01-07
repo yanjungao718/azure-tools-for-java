@@ -74,7 +74,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
                 .ofNullable(this.subscriptionComboBox)
                 .map(AzureComboBox::getValue)
                 .map(Subscription::getId)
-                .map(id -> Azure.az(AzureStorageAccount.class).list(id))
+                .map(id -> Azure.az(AzureStorageAccount.class).accounts(id).list())
                 .orElse(Collections.emptyList());
         this.accountComboBox = new AzureComboBoxSimple<>(loader) {
             @Override

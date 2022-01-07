@@ -10,12 +10,14 @@ import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccountDraft;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
@@ -47,6 +49,9 @@ public class CreateStorageAccountAction {
                     .subscription(subscriptionId).create(config.getResourceGroup().getName(), config.getRegion().getName());
             config.setResourceGroup(newResourceGroup);
         }
-        return Azure.az(AzureStorageAccount.class).create(config).commit();
+        final AzureStorageAccount az = Azure.az(AzureStorageAccount.class);
+        final StorageAccountDraft draft = az.accounts(config.getSubscriptionId()).create(config.getName(), config.getResourceGroupName());
+        draft.setConfig(config);
+        return draft.commit();
     }
 }

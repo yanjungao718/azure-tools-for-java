@@ -156,7 +156,7 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
         this.regionComboBox = new RegionComboBox() {
             protected List<? extends Region> loadItems() {
                 if (Objects.nonNull(this.subscription)) {
-                    return Azure.az(AzureStorageAccount.class).listSupportedRegions(subscription.getId());
+                    return Azure.az(AzureStorageAccount.class).forSubscription(subscription.getId()).listSupportedRegions();
                 }
                 return Collections.emptyList();
             }
