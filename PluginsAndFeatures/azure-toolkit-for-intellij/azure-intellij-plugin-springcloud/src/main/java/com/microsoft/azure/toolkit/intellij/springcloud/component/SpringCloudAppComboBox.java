@@ -78,7 +78,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private void showAppCreationPopup() {
         final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(this.cluster);
         dialog.setOkActionListener((config) -> {
-            final SpringCloudAppDraft app = cluster.apps().create(config.getAppName(), cluster.getResourceGroup());
+            final SpringCloudAppDraft app = cluster.apps().create(config.getAppName(), cluster.getResourceGroupName());
             app.setConfig(config);
             this.addLocalItem(app);
             dialog.close();

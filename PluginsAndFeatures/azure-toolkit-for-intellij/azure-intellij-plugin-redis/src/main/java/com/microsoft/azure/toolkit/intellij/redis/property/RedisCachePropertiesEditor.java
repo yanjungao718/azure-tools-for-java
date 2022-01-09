@@ -58,7 +58,7 @@ public class RedisCachePropertiesEditor extends BaseEditor {
             secondaryKey = this.redis.getSecondaryKey();
             txtNameValue.setText(this.redis.getName());
             txtTypeValue.setText(this.redis.getType());
-            txtResGrpValue.setText(this.redis.getResourceGroup());
+            txtResGrpValue.setText(this.redis.getResourceGroupName());
             txtSubscriptionValue.setText(this.redis.getSubscriptionId());
             txtRegionValue.setText(Optional.ofNullable(this.redis.getRegion()).map(Region::getName).orElse(""));
             txtHostNameValue.setText(this.redis.getHostName());

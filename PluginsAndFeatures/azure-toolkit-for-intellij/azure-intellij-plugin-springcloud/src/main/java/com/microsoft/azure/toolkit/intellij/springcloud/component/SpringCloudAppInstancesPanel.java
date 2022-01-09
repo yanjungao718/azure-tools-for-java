@@ -46,7 +46,7 @@ public class SpringCloudAppInstancesPanel extends JPanel {
     public void setApp(@Nonnull SpringCloudApp app) {
         final DefaultTableModel model = (DefaultTableModel) this.tableInstances.getModel();
         final List<DeploymentInstance> instances = Optional.ofNullable(app.getActiveDeployment())
-            .or(() -> Optional.ofNullable(app.deployments().get("default", app.getResourceGroup())))
+            .or(() -> Optional.ofNullable(app.deployments().get("default", app.getResourceGroupName())))
             .map(SpringCloudDeployment::getInstances)
             .orElse(new ArrayList<>());
 

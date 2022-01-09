@@ -85,7 +85,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
             final SpringCloudCluster c = this.getSelectorCluster().getValue();
             final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
             if (Objects.nonNull(c)) {
-                final SpringCloudApp app = c.apps().updateOrCreate(appName, c.getResourceGroup());
+                final SpringCloudApp app = c.apps().updateOrCreate(appName, c.getResourceGroupName());
                 this.onAppChanged(app);
             }
         }
@@ -139,7 +139,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
             throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.empty").toString());
         } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
             throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString());
-        } else if (Objects.nonNull(cluster) && Objects.nonNull(cluster.apps().get(name, cluster.getResourceGroup()))) {
+        } else if (Objects.nonNull(cluster) && Objects.nonNull(cluster.apps().get(name, cluster.getResourceGroupName()))) {
             throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString());
         }
     }
