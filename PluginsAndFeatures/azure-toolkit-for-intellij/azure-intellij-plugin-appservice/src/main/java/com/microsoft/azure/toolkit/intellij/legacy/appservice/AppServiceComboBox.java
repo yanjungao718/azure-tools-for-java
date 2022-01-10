@@ -94,20 +94,24 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         public void customize(JList list, Object value, int index, boolean b, boolean b1) {
             if (value instanceof AppServiceComboBoxModel) {
                 final AppServiceComboBoxModel app = (AppServiceComboBoxModel) value;
+                final boolean isJavaApp = app.getRuntime() != null && !Objects.equals(app.getRuntime().getJavaVersion(), JavaVersion.OFF);
+                setEnabled(isJavaApp);
+                setFocusable(isJavaApp);
                 if (index >= 0) {
                     setText(getAppServiceLabel(app));
                 } else {
                     setText(app.getAppName());
                 }
+                this.repaint();
             }
         }
 
         private String getAppServiceLabel(AppServiceComboBoxModel appServiceModel) {
             final String appServiceName = appServiceModel.isNewCreateResource() ?
-                String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
-            final String runtime = WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
+                    String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
+            final String runtime = appServiceModel.getRuntime() == null ? "Loading" :
+                    WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
             final String resourceGroup = appServiceModel.getResourceGroup();
-
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
                 appServiceName, runtime, resourceGroup);
         }

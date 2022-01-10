@@ -122,6 +122,9 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             if (StringUtils.isEmpty(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(message("webapp.deploy.validate.noWebApp"));
             }
+            if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanId())) {
+                throw new ConfigurationException("Loading app service plan meta-data");
+            }
             if (webAppSettingModel.isDeployToSlot()) {
                 if (Constants.CREATE_NEW_SLOT.equals(webAppSettingModel.getSlotName())) {
                     if (StringUtils.isEmpty(webAppSettingModel.getNewSlotName())) {

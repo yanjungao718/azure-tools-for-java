@@ -22,9 +22,11 @@ import rx.Subscription;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
 
@@ -95,21 +97,27 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     public static class AppComboBoxRender extends SimpleListCellRenderer {
 
         @Override
-        public void customize(JList list, Object value, int index, boolean b, boolean b1) {
+        public void customize(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof AppServiceConfig) {
                 final AppServiceConfig app = (AppServiceConfig) value;
+                final boolean isJavaApp = app.getRuntime() != null && !Objects.equals(app.getRuntime().getJavaVersion(), JavaVersion.OFF);
+                setEnabled(isJavaApp);
+                setFocusable(isJavaApp);
+
                 if (index >= 0) {
                     setText(getAppServiceLabel(app));
                 } else {
                     setText(app.getName());
                 }
+                this.repaint();
             }
         }
 
         private String getAppServiceLabel(AppServiceConfig appServiceModel) {
             final String appServiceName = isDraftResource(appServiceModel) ?
                     String.format("(New) %s", appServiceModel.getName()) : appServiceModel.getName();
-            final String runtime = WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
+            final String runtime = appServiceModel.getRuntime() == null ?
+                    "Loading:" : WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
             final String resourceGroup = Optional.ofNullable(appServiceModel.getResourceGroup()).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
                     appServiceName, runtime, resourceGroup);

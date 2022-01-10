@@ -10,7 +10,11 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.util.List;
@@ -25,10 +29,27 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppConfig> {
     protected List<WebAppConfig> loadAppServiceModels() {
         final List<WebApp> webApps = Azure.az(AzureWebApp.class).list();
         return webApps.stream().parallel()
-                .filter(this::isJavaAppService)
                 .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
-                .map(WebAppConfig::fromRemote)
+                .map(this::convertRemoteResourceToWebAppConfig)
                 .collect(Collectors.toList());
+    }
+
+    private WebAppConfig convertRemoteResourceToWebAppConfig(final WebApp webApp) {
+        final WebAppConfig webAppConfig = WebAppConfig.builder()
+                .resourceId(webApp.id())
+                .name(webApp.name())
+                .runtime(null)
+                .subscription(Subscription.builder().id(webApp.subscriptionId()).build())
+                .resourceGroup(ResourceGroup.builder().name(webApp.resourceGroup()).build())
+                .build();
+        AzureTaskManager.getInstance()
+                .runOnPooledThreadAsObservable(new AzureTask<>(webApp::entity))
+                .subscribe(entity -> {
+                    webAppConfig.setRuntime(entity.getRuntime());
+                    webAppConfig.setRegion(entity.getRegion());
+                    webAppConfig.setServicePlan(AppServicePlanEntity.builder().id(entity.getAppServicePlanId()).build());
+                });
+        return webAppConfig;
     }
 
     @Override
