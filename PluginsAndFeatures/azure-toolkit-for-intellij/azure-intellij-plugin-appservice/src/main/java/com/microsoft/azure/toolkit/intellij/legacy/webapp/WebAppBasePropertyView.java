@@ -191,7 +191,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         presenter.onLoadWebAppProperty(app.subscription().getId(), this.resourceId, null);
     }
 
-    private void closeEditor(IAppService app) {
+    protected void closeEditor(IAppService app) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
         AzureMessager.getMessager().info(AzureString.format("The editor for app '%s' is closed.", app.name()),
