@@ -51,6 +51,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             switch (type) {
                 case "resource.refresh.resource":
+                    tm.runLater(this::refreshView);
                     if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                         tm.runLater(this::refreshChildren);
                     }
