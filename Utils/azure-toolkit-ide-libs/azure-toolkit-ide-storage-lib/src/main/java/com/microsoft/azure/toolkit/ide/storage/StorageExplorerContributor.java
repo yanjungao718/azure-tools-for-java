@@ -23,7 +23,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class StorageExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Storage Account";
-    private static final String ICON = "/icons/storageaccount.svg";
+    private static final String ICON = "/icons/Microsoft.Storage/default.svg";
 
     @Override
     public Node<?> getModuleNode() {

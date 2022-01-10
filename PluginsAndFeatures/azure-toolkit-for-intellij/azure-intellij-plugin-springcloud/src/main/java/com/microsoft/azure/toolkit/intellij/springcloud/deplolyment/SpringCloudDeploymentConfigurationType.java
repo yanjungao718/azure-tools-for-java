@@ -34,6 +34,6 @@ public class SpringCloudDeploymentConfigurationType extends ConfigurationTypeBas
 
     @Override
     public Icon getIcon() {
-        return AzureIcons.getIcon("/icons/springcloudcluster.svg");
+        return AzureIcons.getIcon("/icons/Microsoft.AppPlatform/default.svg");
     }
 }

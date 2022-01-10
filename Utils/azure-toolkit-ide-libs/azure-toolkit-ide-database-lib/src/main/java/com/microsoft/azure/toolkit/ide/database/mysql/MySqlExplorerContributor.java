@@ -20,7 +20,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySqlExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Azure MySQL";
-    private static final String ICON = "/icons/mysql.svg";
+    private static final String ICON = "/icons/Microsoft.DBforMySQL/default.svg";
 
     @Override
     public Node<?> getModuleNode() {

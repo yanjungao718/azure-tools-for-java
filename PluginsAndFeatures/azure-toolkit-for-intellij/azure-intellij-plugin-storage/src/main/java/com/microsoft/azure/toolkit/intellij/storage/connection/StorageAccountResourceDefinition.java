@@ -33,7 +33,7 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
 
     private StorageAccountResourceDefinition() {
-        super("Azure.Storage", "Azure Storage Account", "/icons/StorageAccount/StorageAccount.svg");
+        super("Azure.Storage", "Azure Storage Account", "/icons/Microsoft.Storage/default.svg");
     }
 
     @Override

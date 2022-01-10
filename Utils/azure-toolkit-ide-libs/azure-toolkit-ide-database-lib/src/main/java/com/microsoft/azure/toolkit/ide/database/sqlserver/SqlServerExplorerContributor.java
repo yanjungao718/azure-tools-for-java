@@ -20,7 +20,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SqlServerExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Azure SqlServer";
-    private static final String ICON = "/icons/sqlserver.svg";
+    private static final String ICON = "/icons/Microsoft.SQL/default.svg";
 
     @Override
     public Node<?> getModuleNode() {

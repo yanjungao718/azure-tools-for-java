@@ -23,7 +23,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class RedisExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Redis Caches";
-    private static final String ICON = "/icons/rediscache.svg";
+    private static final String ICON = "/icons/Microsoft.Cache/default.svg";
 
     @Override
     public Node<?> getModuleNode() {

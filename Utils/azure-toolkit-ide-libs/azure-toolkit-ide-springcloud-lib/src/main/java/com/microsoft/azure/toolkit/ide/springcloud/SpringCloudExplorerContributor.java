@@ -24,7 +24,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class SpringCloudExplorerContributor implements IExplorerContributor {
 
     private static final String NAME = "Spring Cloud";
-    private static final String ICON = "/icons/springcloud.svg";
+    private static final String ICON = "/icons/Microsoft.AppPlatform/default.svg";
 
     @Override
     public Node<?> getModuleNode() {

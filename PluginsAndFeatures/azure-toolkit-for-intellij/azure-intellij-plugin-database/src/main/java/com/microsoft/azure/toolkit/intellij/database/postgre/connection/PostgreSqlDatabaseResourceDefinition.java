@@ -26,7 +26,7 @@ public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDef
     public static final PostgreSqlDatabaseResourceDefinition INSTANCE = new PostgreSqlDatabaseResourceDefinition();
 
     public PostgreSqlDatabaseResourceDefinition() {
-        super("Azure.PostgreSQL", "Azure Database for PostgreSQL", "/icons/postgre.svg");
+        super("Azure.PostgreSQL", "Azure Database for PostgreSQL", "/icons/Microsoft.DBforPostgreSQL/default.svg");
     }
 
     @Override

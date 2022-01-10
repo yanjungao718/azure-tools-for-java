@@ -34,7 +34,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     public static final RedisResourceDefinition INSTANCE = new RedisResourceDefinition();
 
     private RedisResourceDefinition() {
-        super("Azure.Redis", "Azure Redis Cache", "/icons/rediscache.svg");
+        super("Azure.Redis", "Azure Redis Cache", "/icons/Microsoft.Cache/default.svg");
     }
 
     @Override

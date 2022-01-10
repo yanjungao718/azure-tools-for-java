@@ -20,7 +20,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class PostgreSqlExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Azure Database for PostgreSQL";
-    private static final String ICON = "/icons/postgre.svg";
+    private static final String ICON = "/icons/Microsoft.DBforPostgreSQL/default.svg";
 
     @Override
     public Node<?> getModuleNode() {

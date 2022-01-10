@@ -41,7 +41,7 @@ public class IntellijRedisActionsContributor implements IActionsContributor {
                 dialog.setResource(new AzureServiceResource<>(((RedisCache) r), RedisResourceDefinition.INSTANCE));
                 dialog.show();
             }));
-        final Icon icon = AzureIcons.getIcon("/icons/rediscache.svg");
+        final Icon icon = AzureIcons.getIcon("/icons/Microsoft.Cache/default.svg");
         final String name = RedisCacheExplorerProvider.TYPE;
         final AzureResourceFileType type = new AzureResourceFileType(name, icon);
         final AzureResourceEditorViewManager manager = new AzureResourceEditorViewManager((resource) -> type);
