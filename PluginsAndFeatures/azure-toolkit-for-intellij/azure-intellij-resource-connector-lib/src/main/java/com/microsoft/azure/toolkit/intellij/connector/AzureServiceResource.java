@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.Optional;
  * it's usually An Azure resource or an intellij module
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class AzureServiceResource<T extends IAzureBaseResource<?, ?>> implements Resource<T> {
+public class AzureServiceResource<T extends AzResourceBase> implements Resource<T> {
     @Nonnull
     private final ResourceId id;
     @Getter
@@ -36,7 +36,7 @@ public class AzureServiceResource<T extends IAzureBaseResource<?, ?>> implements
     private T data;
 
     public AzureServiceResource(T data, @Nonnull AzureServiceResource.Definition<T> definition) {
-        this(data.id(), definition);
+        this(data.getId(), definition);
         this.data = data;
     }
 
@@ -81,7 +81,7 @@ public class AzureServiceResource<T extends IAzureBaseResource<?, ?>> implements
     @Getter
     @RequiredArgsConstructor
     @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-    public abstract static class Definition<T extends IAzureBaseResource<?, ?>> implements ResourceDefinition<T> {
+    public abstract static class Definition<T extends AzResourceBase> implements ResourceDefinition<T> {
         @EqualsAndHashCode.Include
         private final String name;
         private final String title;

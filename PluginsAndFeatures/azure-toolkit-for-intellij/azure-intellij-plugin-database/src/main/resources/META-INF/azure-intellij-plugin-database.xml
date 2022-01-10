@@ -3,9 +3,19 @@
         <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlExplorerContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributor"/>
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.database.mysql.IntellijMySqlActionsContributor"/>
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.IntellijSqlServerActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.postgre.property.PostgreSqlPropertiesEditorProvider"/>
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlResourceDefinition$RegisterActivity"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResourceDefinition$RegisterActivity"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.mysql.property.MySqlPropertiesEditorProvider"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.mysql.connection.MySqlDatabaseResourceDefinition$RegisterActivity"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.property.SqlServerPropertiesEditorProvider"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.connection.SqlServerDatabaseResourceDefinition$RegisterActivity"/>
     </extensions>
 </idea-plugin>

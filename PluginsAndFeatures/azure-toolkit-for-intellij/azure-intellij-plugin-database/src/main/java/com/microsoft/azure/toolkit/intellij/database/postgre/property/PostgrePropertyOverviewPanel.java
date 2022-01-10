@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
-import com.microsoft.azure.toolkit.lib.postgre.model.PostgreSqlServerEntity;
 
 import javax.swing.*;
 
@@ -49,26 +48,25 @@ public class PostgrePropertyOverviewPanel extends JPanel {
     }
 
     public void setFormData(PostgreSqlServer server) {
-        final PostgreSqlServerEntity entity = server.entity();
-        final Subscription subscription = az(AzureAccount.class).account().getSubscription(entity.getSubscriptionId());
+        final Subscription subscription = az(AzureAccount.class).account().getSubscription(server.getSubscriptionId());
         if (subscription != null) {
             subscriptionTextField.setText(subscription.getName());
         }
-        resourceGroupTextField.setText(server.entity().getResourceGroupName());
-        statusTextField.setText(server.entity().getState());
-        locationTextField.setText(server.entity().getRegion().getLabel());
-        subscriptionIDTextField.setText(entity.getSubscriptionId());
-        serverNameTextField.setText(server.entity().getFullyQualifiedDomainName());
+        resourceGroupTextField.setText(server.getResourceGroupName());
+        statusTextField.setText(server.getState());
+        locationTextField.setText(server.getRegion().getLabel());
+        subscriptionIDTextField.setText(server.getSubscriptionId());
+        serverNameTextField.setText(server.getFullyQualifiedDomainName());
         serverNameTextField.setCaretPosition(0);
-        serverAdminLoginNameTextField.setText(server.entity().getAdministratorLoginName() + "@" + server.name());
+        serverAdminLoginNameTextField.setText(server.getAdminName() + "@" + server.name());
         serverAdminLoginNameTextField.setCaretPosition(0);
-        postgreSqlVersionTextField.setText(server.entity().getVersion());
-        final String skuTier = server.entity().getSkuTier();
-        final int skuCapacity = server.entity().getVCore();
-        final int storageGB = server.entity().getStorageInMB() / 1024;
+        postgreSqlVersionTextField.setText(server.getVersion());
+        final String skuTier = server.getSkuTier();
+        final int skuCapacity = server.getVCore();
+        final int storageGB = server.getStorageInMB() / 1024;
         final String performanceConfigurations = skuTier + ", " + skuCapacity + " vCore(s), " + storageGB + " GB";
         performanceConfigurationsTextField.setText(performanceConfigurations);
-        sslEnforceStatusTextField.setText(server.entity().getSslEnforceStatus());
+        sslEnforceStatusTextField.setText(server.getSslEnforceStatus());
     }
 
     @Override

@@ -12,11 +12,17 @@ import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.database.*;
+import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.BaseNameValidator;
+import com.microsoft.azure.toolkit.intellij.database.BaseRegionValidator;
+import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
+import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +33,7 @@ import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureFormPanel<AzurePostgreSqlConfig> {
+public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
     private JPanel rootPanel;
     private ConnectionSecurityPanel security;
@@ -51,9 +57,9 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final AzurePostgreSqlConfig config;
+    private final DatabaseServerConfig config;
 
-    PostgreSqlCreationAdvancedPanel(AzurePostgreSqlConfig config) {
+    PostgreSqlCreationAdvancedPanel(DatabaseServerConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -65,10 +71,13 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        regionComboBox.addValidator(new BaseRegionValidator(regionComboBox, (sid, region) -> Azure.az(AzurePostgreSql.class).checkRegionAvailability(sid, region)));
-        regionComboBox.setItemsLoader(() -> Azure.az(AzurePostgreSql.class).listSupportedRegions(this.subscriptionComboBox.getValue().getId()));
         serverNameTextField.setSubscription(config.getSubscription());
-        serverNameTextField.setValidator(new BaseNameValidator(serverNameTextField, (sid, name) -> Azure.az(AzurePostgreSql.class).checkNameAvailability(sid, name)));
+        regionComboBox.setItemsLoader(() ->
+            Azure.az(AzurePostgreSql.class).forSubscription(this.subscriptionComboBox.getValue().getId()).listSupportedRegions());
+        regionComboBox.addValidator(new BaseRegionValidator(regionComboBox, (sid, region) ->
+            Azure.az(AzurePostgreSql.class).forSubscription(sid).checkRegionAvailability(region)));
+        serverNameTextField.addValidator(new BaseNameValidator(serverNameTextField, (sid, name) ->
+            Azure.az(AzurePostgreSql.class).forSubscription(sid).checkNameAvailability(name)));
     }
 
     private void initListeners() {
@@ -99,11 +108,11 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
     }
 
     private void onSecurityAllowAccessFromAzureServicesCheckBoxChanged(final ItemEvent e) {
-        config.setAllowAccessFromAzureServices(e.getStateChange() == ItemEvent.SELECTED);
+        config.setAzureServiceAccessAllowed(e.getStateChange() == ItemEvent.SELECTED);
     }
 
     private void onSecurityAllowAccessFromLocalMachineCheckBoxChanged(final ItemEvent e) {
-        config.setAllowAccessFromLocalMachine(e.getStateChange() == ItemEvent.SELECTED);
+        config.setLocalMachineAccessAllowed(e.getStateChange() == ItemEvent.SELECTED);
     }
 
     @Override
@@ -113,35 +122,31 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
     }
 
     @Override
-    public AzurePostgreSqlConfig getValue() {
-        config.setServerName(serverNameTextField.getText());
-        config.setAdminUsername(adminUsernameTextField.getText());
-        config.setPassword(passwordField.getPassword());
-        config.setConfirmPassword(confirmPasswordField.getPassword());
+    public DatabaseServerConfig getValue() {
+        config.setName(serverNameTextField.getText());
+        config.setAdminName(adminUsernameTextField.getText());
+        config.setAdminPassword(String.valueOf(passwordField.getPassword()));
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setRegion(regionComboBox.getValue());
         if (StringUtils.isNotBlank(versionComboBox.getValue())) {
             config.setVersion(versionComboBox.getValue());
         }
-        config.setAllowAccessFromAzureServices(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
-        config.setAllowAccessFromLocalMachine(security.getAllowAccessFromLocalMachineCheckBox().isSelected());
+        config.setAzureServiceAccessAllowed(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
+        config.setLocalMachineAccessAllowed(security.getAllowAccessFromLocalMachineCheckBox().isSelected());
         return config;
     }
 
     @Override
-    public void setValue(AzurePostgreSqlConfig data) {
-        if (StringUtils.isNotBlank(config.getServerName())) {
-            serverNameTextField.setText(config.getServerName());
+    public void setValue(DatabaseServerConfig data) {
+        if (StringUtils.isNotBlank(config.getName())) {
+            serverNameTextField.setText(config.getName());
         }
-        if (StringUtils.isNotBlank(config.getAdminUsername())) {
-            adminUsernameTextField.setText(config.getAdminUsername());
+        if (StringUtils.isNotBlank(config.getAdminName())) {
+            adminUsernameTextField.setText(config.getAdminName());
         }
-        if (config.getPassword() != null) {
-            passwordField.setText(String.valueOf(config.getPassword()));
-        }
-        if (config.getConfirmPassword() != null) {
-            confirmPasswordField.setText(String.valueOf(config.getConfirmPassword()));
+        if (config.getAdminPassword() != null) {
+            passwordField.setText(String.valueOf(config.getAdminPassword()));
         }
         if (config.getSubscription() != null) {
             subscriptionComboBox.setValue(config.getSubscription());
@@ -155,8 +160,8 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
         if (config.getVersion() != null) {
             versionComboBox.setValue(config.getVersion());
         }
-        security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAllowAccessFromAzureServices());
-        security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isAllowAccessFromLocalMachine());
+        security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAzureServiceAccessAllowed());
+        security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isLocalMachineAccessAllowed());
     }
 
     @Override

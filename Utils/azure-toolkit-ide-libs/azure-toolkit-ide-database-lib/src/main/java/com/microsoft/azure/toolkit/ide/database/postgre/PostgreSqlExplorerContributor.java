@@ -9,13 +9,11 @@ import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
-import javax.annotation.Nonnull;
-import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -27,15 +25,12 @@ public class PostgreSqlExplorerContributor implements IExplorerContributor {
     @Override
     public Node<?> getModuleNode() {
         final AzurePostgreSql service = az(AzurePostgreSql.class);
+        final Function<AzurePostgreSql, List<PostgreSqlServer>> servers = s -> s.list().stream()
+            .flatMap(m -> m.servers().list().stream()).collect(Collectors.toList());
         return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
-                .actions(PostgreSqlActionsContributor.SERVICE_ACTIONS)
-                .addChildren(this::listPostgreServers, (postgre, serviceNode) -> new Node<>(postgre)
-                        .view(new AzureResourceLabelView<>(postgre))
-                        .actions(PostgreSqlActionsContributor.POSTGRE_ACTIONS));
-    }
-
-    @Nonnull
-    private List<PostgreSqlServer> listPostgreServers(AzurePostgreSql s) {
-        return s.list().stream().sorted(Comparator.comparing(IAzureBaseResource::name)).collect(Collectors.toList());
+            .actions(PostgreSqlActionsContributor.SERVICE_ACTIONS)
+            .addChildren(servers, (server, serviceNode) -> new Node<>(server)
+                .view(new AzureResourceLabelView<>(server))
+                .actions(PostgreSqlActionsContributor.POSTGRE_ACTIONS));
     }
 }

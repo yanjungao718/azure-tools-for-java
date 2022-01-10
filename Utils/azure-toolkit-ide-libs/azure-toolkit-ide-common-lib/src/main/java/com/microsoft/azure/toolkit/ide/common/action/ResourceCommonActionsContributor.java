@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 
 import java.util.Optional;
@@ -31,7 +32,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> REFRESH = Action.Id.of("action.resource.refresh");
     public static final Action.Id<IAzureBaseResource<?, ?>> DELETE = Action.Id.of("action.resource.delete");
     public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
-    public static final Action.Id<IAzureBaseResource<?, ?>> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
+    public static final Action.Id<AzResourceBase> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
     public static final Action.Id<IAzureBaseResource<?, ?>> DEPLOY = Action.Id.of("action.resource.deploy");
     public static final Action.Id<IAzureBaseResource<?, ?>> CONNECT = Action.Id.of("action.resource.connect");
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");

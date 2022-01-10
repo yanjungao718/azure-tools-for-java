@@ -7,22 +7,30 @@ package com.microsoft.azure.toolkit.intellij.database.sqlserver.creation;
 
 import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Date;
 import java.util.List;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
-public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
-    private static final String DIALOG_TITLE = "Create SQL Server";
+public class SqlServerCreationDialog extends AzureDialog<DatabaseServerConfig> {
+    private static final String DIALOG_TITLE = "Create Azure Database for SqlServer";
     private JPanel rootPanel;
     private SqlServerCreationBasicPanel basic;
     private SqlServerCreationAdvancedPanel advanced;
@@ -42,7 +50,7 @@ public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
     }
 
     @Override
-    public AzureForm<SqlServerConfig> getForm() {
+    public AzureForm<DatabaseServerConfig> getForm() {
         return this.advancedMode ? advanced : basic;
     }
 
@@ -82,10 +90,25 @@ public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
     }
 
     private void createUIComponents() {
-        List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There is no subscription in your account.");
-        SqlServerConfig config = SqlServerConfig.getDefaultConfig(selectedSubscriptions.get(0));
+        final DatabaseServerConfig config = getDefaultConfig();
         basic = new SqlServerCreationBasicPanel(config);
         advanced = new SqlServerCreationAdvancedPanel(config);
+    }
+
+    public static DatabaseServerConfig getDefaultConfig() {
+        final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
+        final DatabaseServerConfig config = new DatabaseServerConfig();
+        final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
+        final Subscription subscription = selectedSubscriptions.get(0);
+        final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
+        config.setSubscription(subscription);
+        config.setResourceGroup(resourceGroup);
+        config.setName("sqlserver-" + defaultNameSuffix);
+        config.setAdminName(StringUtils.EMPTY);
+        config.setAdminPassword(StringUtils.EMPTY);
+        config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region", Azure.az(AzureSqlServer.class)
+            .forSubscription(subscription.getId()).listSupportedRegions(), Region.US_EAST));
+        return config;
     }
 }

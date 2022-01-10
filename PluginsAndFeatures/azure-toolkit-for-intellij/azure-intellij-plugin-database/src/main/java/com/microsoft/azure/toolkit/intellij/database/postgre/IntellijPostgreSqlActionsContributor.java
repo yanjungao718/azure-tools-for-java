@@ -12,8 +12,8 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
-import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResource;
-import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResource;
+import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.postgre.creation.CreatePostgreSqlAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
@@ -22,8 +22,9 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
-import com.microsoft.azure.toolkit.lib.postgre.model.PostgreSqlServerEntity;
 
+import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -38,33 +39,27 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof PostgreSqlServer,
-                (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
-                    final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
-                    final PostgreSqlServerEntity entity = ((PostgreSqlServer) o).entity();
-                    dialog.setResource(new PostgreSqlDatabaseResource(((PostgreSqlServer) o).databasesV2().get(0),
-                            entity.getAdministratorLoginName() + "@" + entity.getName(),
-                            PostgreSqlResourceDefinition.INSTANCE));
-                    dialog.show();
-                }));
+            (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
+                final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
+                final PostgreSqlServer server = (PostgreSqlServer) o;
+                dialog.setResource(new SqlDatabaseResource<>(server.databases().list().get(0),
+                    server.getAdminName() + "@" + server.getName(), PostgreSqlDatabaseResourceDefinition.INSTANCE));
+                dialog.show();
+            }));
 
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (PostgreSqlServer) c);
         am.registerHandler(PostgreSqlActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
-
     }
 
     @AzureOperation(name = "postgre.open_by_database_tools.server", params = {"server.entity().getName()"}, type = AzureOperation.Type.ACTION)
-    private void openDatabaseTool(Project project, PostgreSqlServer server) {
-        PostgreSqlServerEntity entity = server.entity();
-        IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
-                .name(String.format(NAME_PREFIX, entity.getName()))
-                .driverClassName(DEFAULT_DRIVER_CLASS_NAME)
-                .url(JdbcUrl.postgre(entity.getFullyQualifiedDomainName(), "postgres").toString())
-                .username(entity.getAdministratorLoginName() + "@" + entity.getName())
-                .build();
-        AzureTaskManager.getInstance().runLater(() -> {
-            IntellijDatasourceService.getInstance().openDataSourceManagerDialog(project, properties);
-        });
-
+    private void openDatabaseTool(Project project, @Nonnull PostgreSqlServer server) {
+        final IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
+            .name(String.format(NAME_PREFIX, server.getName()))
+            .driverClassName(DEFAULT_DRIVER_CLASS_NAME)
+            .url(JdbcUrl.postgre(Objects.requireNonNull(server.getFullyQualifiedDomainName()), "postgres").toString())
+            .username(server.getAdminName() + "@" + server.getName())
+            .build();
+        AzureTaskManager.getInstance().runLater(() -> IntellijDatasourceService.getInstance().openDataSourceManagerDialog(project, properties));
     }
 
     @Override

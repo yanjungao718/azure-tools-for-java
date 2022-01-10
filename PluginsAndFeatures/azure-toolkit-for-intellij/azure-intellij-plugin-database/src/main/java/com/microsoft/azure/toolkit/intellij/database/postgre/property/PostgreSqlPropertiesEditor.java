@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
-import com.microsoft.azure.toolkit.intellij.database.DatabaseComboBox;
+import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -20,8 +20,8 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlDatabase;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
-import com.microsoft.azure.toolkit.lib.postgre.model.PostgreSqlDatabaseEntity;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -48,11 +48,11 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
     private JPanel contextPanel;
     private JScrollPane scrollPane;
     private PostgreSqlPropertyActionPanel propertyActionPanel;
-    private DatabaseComboBox databaseComboBox;
+    private DatabaseComboBox<PostgreSqlDatabase> databaseComboBox;
     private JLabel databaseLabel;
     public static final String POSTGRE_SQL_OUTPUT_TEXT_PATTERN_SPRING =
             "spring.datasource.driver-class-name=org.postgresql.Driver" + System.lineSeparator() +
-                    "spring.datasource.url=jdbc:jdbc:postgresql://%s:5432/%s?useSSL=true&requireSSL=false" + System.lineSeparator() +
+                    "spring.datasource.url=jdbc:postgresql://%s:5432/%s?useSSL=true&requireSSL=false" + System.lineSeparator() +
                     "spring.datasource.username=%s" + System.lineSeparator() + "spring.datasource.password={your_password}";
 
     public static final String POSTGRE_SQL_OUTPUT_TEXT_PATTERN_JDBC =
@@ -62,10 +62,9 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
     private final Project project;
-    private final VirtualFile virtualFile;
 
     @Nonnull
-    private PostgreSqlServer server;
+    private final PostgreSqlServer server;
 
     private void rerender() {
         setData(this.server);
@@ -75,7 +74,6 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
         super(virtualFile);
         this.project = project;
         this.server = server;
-        this.virtualFile = virtualFile;
 
 
         overviewSeparator.addContentComponent(overview);
@@ -113,14 +111,14 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
     private void setData(PostgreSqlServer server) {
         this.overview.setFormData(server);
         this.databaseComboBox.setServer(server);
-        if (StringUtils.equalsIgnoreCase("READY", server.entity().getState())) {
+        if (StringUtils.equalsIgnoreCase("READY", server.getState())) {
             connectionSecuritySeparator.expand();
             connectionSecuritySeparator.setEnabled(true);
             connectionStringsSeparator.expand();
             connectionStringsSeparator.setEnabled(true);
-            originalAllowAccessToAzureServices = server.firewallRules().isAzureAccessRuleEnabled();
+            originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-            originalAllowAccessToLocal = server.firewallRules().isLocalMachineAccessRuleEnabled();
+            originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
             connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
         } else {
             connectionSecuritySeparator.collapse();
@@ -182,26 +180,18 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
         PostgreSqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setText(actionName);
         PostgreSqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setEnabled(false);
         final Runnable runnable = () -> {
-            final String subscriptionId = server.entity().getSubscriptionId();
+            final String subscriptionId = server.getSubscriptionId();
             this.server.refresh();
-            originalAllowAccessToAzureServices = server.firewallRules().isAzureAccessRuleEnabled();
-            originalAllowAccessToLocal = server.firewallRules().isLocalMachineAccessRuleEnabled();
+            originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
+            originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
             final boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices)) {
-                if (allowAccessToAzureServices) {
-                    server.firewallRules().enableAzureAccessRule();
-                } else {
-                    server.firewallRules().disableAzureAccessRule();
-                }
+                server.firewallRules().toggleAzureServiceAccess(allowAccessToAzureServices);
                 originalAllowAccessToAzureServices = allowAccessToAzureServices;
             }
             final boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToLocal.equals(allowAccessToLocal)) {
-                if (allowAccessToLocal) {
-                    server.firewallRules().enableLocalMachineAccessRule(server.getPublicIpForLocalMachine());
-                } else {
-                    server.firewallRules().disableLocalMachineAccessRule();
-                }
+                server.firewallRules().toggleLocalMachineAccess(allowAccessToLocal);
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
             PostgreSqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setText(originalText);
@@ -225,13 +215,13 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
     }
 
     private void onDatabaseComboBoxChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof PostgreSqlDatabaseEntity) {
-            final PostgreSqlDatabaseEntity database = (PostgreSqlDatabaseEntity) e.getItem();
-            final String username = server.entity().getAdministratorLoginName() + "@" + server.name();
+        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof PostgreSqlDatabase) {
+            final PostgreSqlDatabase database = (PostgreSqlDatabase) e.getItem();
+            final String username = server.getAdminName() + "@" + server.name();
             connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(POSTGRE_SQL_OUTPUT_TEXT_PATTERN_JDBC,
-                    server.entity().getFullyQualifiedDomainName(), database.getName(), username));
+                    server.getFullyQualifiedDomainName(), database.getName(), username));
             connectionStringsSpring.getOutputTextArea().setText(getConnectionString(POSTGRE_SQL_OUTPUT_TEXT_PATTERN_SPRING,
-                    server.entity().getFullyQualifiedDomainName(), database.getName(), username));
+                    server.getFullyQualifiedDomainName(), database.getName(), username));
         }
     }
 

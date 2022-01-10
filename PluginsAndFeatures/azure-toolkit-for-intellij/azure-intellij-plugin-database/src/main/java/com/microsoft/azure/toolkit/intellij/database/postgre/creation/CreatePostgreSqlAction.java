@@ -14,12 +14,10 @@ import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
-import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
-import com.microsoft.azure.toolkit.lib.postgre.model.PostgreSqlServerConfig;
+import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServerDraft;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
-
-import javax.annotation.Nonnull;
 
 public class CreatePostgreSqlAction {
     public static void create(Project project) {
@@ -36,33 +34,17 @@ public class CreatePostgreSqlAction {
     }
 
     @AzureOperation(name = "postgre.create_server.server", params = {"config.getServerName()"}, type = AzureOperation.Type.ACTION)
-    private static void doCreate(final AzurePostgreSqlConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("postgre.create_server.server", config.getServerName());
+    private static void doCreate(final DatabaseServerConfig config, final Project project) {
+        final AzureString title = AzureOperationBundle.title("postgre.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
-            final PostgreSqlServer server = Azure.az(AzurePostgreSql.class).create(toPostgreSqlServerConfig(config)).commit();
-            if (config.isAllowAccessFromAzureServices()) {
-                server.firewallRules().enableAzureAccessRule();
-            }
-            // update access from local machine
-            if (config.isAllowAccessFromLocalMachine()) {
-                server.firewallRules().enableLocalMachineAccessRule(server.getPublicIpForLocalMachine());
-            }
+            final PostgreSqlServerDraft draft = Azure.az(AzurePostgreSql.class).servers(config.getSubscription().getId())
+                .create(config.getName(), config.getResourceGroup().getName());
+            draft.setConfig(config);
+            draft.commit();
         });
-    }
-
-    private static PostgreSqlServerConfig toPostgreSqlServerConfig(@Nonnull AzurePostgreSqlConfig config) {
-        return PostgreSqlServerConfig.builder()
-                .subscription(config.getSubscription())
-                .resourceGroup(config.getResourceGroup())
-                .region(config.getRegion())
-                .name(config.getServerName())
-                .version(config.getVersion())
-                .administratorLoginName(config.getAdminUsername())
-                .administratorLoginPassword(String.valueOf(config.getPassword()))
-                .build();
     }
 }

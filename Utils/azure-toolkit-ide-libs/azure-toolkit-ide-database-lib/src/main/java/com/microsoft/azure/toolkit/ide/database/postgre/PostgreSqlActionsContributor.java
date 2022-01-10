@@ -47,7 +47,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
-        final ActionGroup postgreActionGroup = new ActionGroup(
+        final ActionGroup serverActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 PostgreSqlActionsContributor.OPEN_DATABASE_TOOL,
@@ -58,6 +58,6 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.REFRESH
         );
-        am.registerGroup(POSTGRE_ACTIONS, postgreActionGroup);
+        am.registerGroup(POSTGRE_ACTIONS, serverActionGroup);
     }
 }

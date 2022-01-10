@@ -112,8 +112,6 @@
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.mysql.MySQLPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.properties.SqlServerPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"
@@ -176,8 +174,6 @@
     <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunConfigurationProducer"/>
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunLineMarkerProvider"/>
-
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceDefinitionRegisterActivity"/>
   </extensions>
 
   <applicationListeners>
