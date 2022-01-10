@@ -51,8 +51,8 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
         final Operation operation = createOperation();
         final Disposable subscribe = Mono.fromCallable(() -> {
-                operation.start();
-                return this.executeSteps(processHandler, operation);
+            operation.start();
+            return this.executeSteps(processHandler, operation);
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(
             (res) -> {
                 this.sendTelemetry(operation, null);
