@@ -29,7 +29,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
 public class IntellijSqlServerActionsContributor implements IActionsContributor {
-    private static final String NAME_PREFIX = "SqlServer - %s";
+    private static final String NAME_PREFIX = "SQL Server - %s";
     private static final String DEFAULT_DRIVER_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 
     @Override
@@ -51,7 +51,7 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
         am.registerHandler(SqlServerActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
     }
 
-    @AzureOperation(name = "sqlserver.open_by_database_tools.server", params = {"server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "sqlserver.open_by_database_tools.server", params = {"server.getName()"}, type = AzureOperation.Type.ACTION)
     private void openDatabaseTool(Project project, @Nonnull MicrosoftSqlServer server) {
         final IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
             .name(String.format(NAME_PREFIX, server.getName()))

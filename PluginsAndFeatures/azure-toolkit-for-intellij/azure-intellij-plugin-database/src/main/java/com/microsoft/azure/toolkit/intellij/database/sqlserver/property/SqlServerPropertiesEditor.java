@@ -90,7 +90,7 @@ public class SqlServerPropertiesEditor extends BaseEditor {
         this.initListeners();
         AzureEventBus.after("sqlserver.delete_server.server", (MicrosoftSqlServer server2) -> {
             if (this.server.name().equals(server2.name())) {
-                AzureMessager.getMessager().info(String.format("SqlServer server(%s) is deleted", this.server.name()), "");
+                AzureMessager.getMessager().info(String.format("SQL server(%s) is deleted", this.server.name()), "");
                 IntellijShowPropertiesViewAction.closePropertiesView(this.server, this.project);
             }
         });
@@ -250,7 +250,7 @@ public class SqlServerPropertiesEditor extends BaseEditor {
     private void refresh() {
         this.propertyActionPanel.getSaveButton().setEnabled(false);
         AzureTaskManager.getInstance().runLater(() -> {
-            final String refreshTitle = String.format("Refreshing SqlServer server(%s)...", Objects.requireNonNull(this.server).name());
+            final String refreshTitle = String.format("Refreshing SQL server(%s)...", Objects.requireNonNull(this.server).name());
             AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
                 this.server.refresh();
                 AzureTaskManager.getInstance().runLater(this::rerender);

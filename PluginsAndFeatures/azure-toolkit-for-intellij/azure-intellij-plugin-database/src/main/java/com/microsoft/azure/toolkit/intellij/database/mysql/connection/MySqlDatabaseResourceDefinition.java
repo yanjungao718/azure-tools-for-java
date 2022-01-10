@@ -26,7 +26,7 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
     public static final MySqlDatabaseResourceDefinition INSTANCE = new MySqlDatabaseResourceDefinition();
 
     public MySqlDatabaseResourceDefinition() {
-        super("Azure.MySQL", "Azure MySQL", "/icons/Microsoft.DBforMySQL/default.svg");
+        super("Azure.MySQL", "Azure Database for MySQL", "/icons/Microsoft.DBforMySQL/default.svg");
     }
 
     @Override

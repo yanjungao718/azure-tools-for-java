@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SqlServerExplorerContributor implements IExplorerContributor {
-    private static final String NAME = "Azure SqlServer";
+    private static final String NAME = "SQL Server";
     private static final String ICON = "/icons/Microsoft.SQL/default.svg";
 
     @Override
@@ -31,6 +31,6 @@ public class SqlServerExplorerContributor implements IExplorerContributor {
             .actions(SqlServerActionsContributor.SERVICE_ACTIONS)
             .addChildren(servers, (server, serviceNode) -> new Node<>(server)
                 .view(new AzureResourceLabelView<>(server))
-                .actions(SqlServerActionsContributor.POSTGRE_ACTIONS));
+                .actions(SqlServerActionsContributor.SERVER_ACTIONS));
     }
 }

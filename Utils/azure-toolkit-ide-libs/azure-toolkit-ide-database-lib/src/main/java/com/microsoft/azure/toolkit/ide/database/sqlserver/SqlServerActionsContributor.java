@@ -22,14 +22,14 @@ public class SqlServerActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final String SERVICE_ACTIONS = "actions.sqlserver.service";
-    public static final String POSTGRE_ACTIONS = "actions.sqlserver.instance";
+    public static final String SERVER_ACTIONS = "actions.sqlserver.server";
 
     private static final String NAME_PREFIX = "SqlServer Server - %s";
-    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.database.open_database_tool");
+    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.sqlserver.open_database_tool");
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools")
+        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", "icons/action/open_database_tool.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("sqlserver.connect_server.server", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof MicrosoftSqlServer);
         am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
@@ -48,15 +48,16 @@ public class SqlServerActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup serverActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                SqlServerActionsContributor.OPEN_DATABASE_TOOL,
-                "---",
-                ResourceCommonActionsContributor.CONNECT,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            SqlServerActionsContributor.OPEN_DATABASE_TOOL,
+            "---",
+            ResourceCommonActionsContributor.CONNECT,
+            "---",
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            ResourceCommonActionsContributor.REFRESH
         );
-        am.registerGroup(POSTGRE_ACTIONS, serverActionGroup);
+        am.registerGroup(SERVER_ACTIONS, serverActionGroup);
     }
 }

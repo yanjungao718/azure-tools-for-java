@@ -33,7 +33,7 @@ public class CreatePostgreSqlAction {
 
     }
 
-    @AzureOperation(name = "postgre.create_server.server", params = {"config.getServerName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "postgre.create_server.server", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final DatabaseServerConfig config, final Project project) {
         final AzureString title = AzureOperationBundle.title("postgre.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {

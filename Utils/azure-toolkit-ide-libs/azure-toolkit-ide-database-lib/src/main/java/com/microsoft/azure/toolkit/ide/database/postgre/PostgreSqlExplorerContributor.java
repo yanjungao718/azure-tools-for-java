@@ -31,6 +31,6 @@ public class PostgreSqlExplorerContributor implements IExplorerContributor {
             .actions(PostgreSqlActionsContributor.SERVICE_ACTIONS)
             .addChildren(servers, (server, serviceNode) -> new Node<>(server)
                 .view(new AzureResourceLabelView<>(server))
-                .actions(PostgreSqlActionsContributor.POSTGRE_ACTIONS));
+                .actions(PostgreSqlActionsContributor.SERVER_ACTIONS));
     }
 }

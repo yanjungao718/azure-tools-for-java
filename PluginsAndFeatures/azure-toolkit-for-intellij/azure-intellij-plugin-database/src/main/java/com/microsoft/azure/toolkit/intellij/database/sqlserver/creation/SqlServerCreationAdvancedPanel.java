@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.database.sqlserver.creation;
 
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
@@ -31,7 +29,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
@@ -46,8 +43,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private ServerNameTextField serverNameTextField;
     @Getter
     private RegionComboBox regionComboBox;
-    @Getter
-    private AzureComboBox<String> versionComboBox;
     @Getter
     private AdminUsernameTextField adminUsernameTextField;
     @Getter
@@ -130,9 +125,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setRegion(regionComboBox.getValue());
-        if (StringUtils.isNotBlank(versionComboBox.getValue())) {
-            config.setVersion(versionComboBox.getValue());
-        }
         config.setAzureServiceAccessAllowed(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
         config.setLocalMachineAccessAllowed(security.getAllowAccessFromLocalMachineCheckBox().isSelected());
         return config;
@@ -158,9 +150,6 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         if (config.getRegion() != null) {
             regionComboBox.setValue(config.getRegion());
         }
-        if (config.getVersion() != null) {
-            versionComboBox.setValue(config.getVersion());
-        }
         security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAzureServiceAccessAllowed());
         security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isLocalMachineAccessAllowed());
     }
@@ -173,14 +162,9 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
             this.subscriptionComboBox,
             this.resourceGroupComboBox,
             this.regionComboBox,
-            this.versionComboBox,
             this.passwordFieldInput,
             this.confirmPasswordFieldInput
         };
         return Arrays.asList(inputs);
-    }
-
-    private void createUIComponents() {
-        this.versionComboBox = new AzureComboBoxSimple<>(() -> Collections.emptyList());
     }
 }

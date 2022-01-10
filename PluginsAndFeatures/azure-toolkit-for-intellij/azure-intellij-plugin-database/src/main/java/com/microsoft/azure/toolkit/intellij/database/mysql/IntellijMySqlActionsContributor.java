@@ -51,7 +51,7 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
         am.registerHandler(MySqlActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
     }
 
-    @AzureOperation(name = "mysql.open_by_database_tools.server", params = {"server.entity().getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "mysql.open_by_database_tools.server", params = {"server.getName()"}, type = AzureOperation.Type.ACTION)
     private void openDatabaseTool(Project project, @Nonnull MySqlServer server) {
         final IntellijDatasourceService.DatasourceProperties properties = IntellijDatasourceService.DatasourceProperties.builder()
             .name(String.format(NAME_PREFIX, server.getName()))

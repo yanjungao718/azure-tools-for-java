@@ -109,7 +109,7 @@ public class MySqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
         config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region",
             az(AzureMySql.class).forSubscription(subscription.getId()).listSupportedRegions(),
             Region.US_EAST));
-        config.setVersion("11"); // default to 11
+        config.setVersion("5.7"); // default to 11
         return config;
     }
 }

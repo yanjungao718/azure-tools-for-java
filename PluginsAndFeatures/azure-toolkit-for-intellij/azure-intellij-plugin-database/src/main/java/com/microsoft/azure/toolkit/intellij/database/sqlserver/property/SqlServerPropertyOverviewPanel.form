@@ -120,7 +120,7 @@
         </constraints>
         <properties>
           <font style="1"/>
-          <text value="SqlServer version:"/>
+          <text value="SQL Server version:"/>
         </properties>
       </component>
       <component id="6395d" class="javax.swing.JTextField" binding="versionTextField">

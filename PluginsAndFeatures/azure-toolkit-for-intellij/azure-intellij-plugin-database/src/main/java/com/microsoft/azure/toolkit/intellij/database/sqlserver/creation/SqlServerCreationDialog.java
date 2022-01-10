@@ -30,7 +30,7 @@ import java.util.List;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SqlServerCreationDialog extends AzureDialog<DatabaseServerConfig> {
-    private static final String DIALOG_TITLE = "Create Azure Database for SqlServer";
+    private static final String DIALOG_TITLE = "Create SQL Server";
     private JPanel rootPanel;
     private SqlServerCreationBasicPanel basic;
     private SqlServerCreationAdvancedPanel advanced;

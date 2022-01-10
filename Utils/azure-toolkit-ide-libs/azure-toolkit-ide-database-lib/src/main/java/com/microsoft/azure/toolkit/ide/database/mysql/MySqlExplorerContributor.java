@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySqlExplorerContributor implements IExplorerContributor {
-    private static final String NAME = "Azure MySQL";
+    private static final String NAME = "Azure Database for MySQL";
     private static final String ICON = "/icons/Microsoft.DBforMySQL/default.svg";
 
     @Override
@@ -31,6 +31,6 @@ public class MySqlExplorerContributor implements IExplorerContributor {
             .actions(MySqlActionsContributor.SERVICE_ACTIONS)
             .addChildren(servers, (server, serviceNode) -> new Node<>(server)
                 .view(new AzureResourceLabelView<>(server))
-                .actions(MySqlActionsContributor.POSTGRE_ACTIONS));
+                .actions(MySqlActionsContributor.SERVER_ACTIONS));
     }
 }

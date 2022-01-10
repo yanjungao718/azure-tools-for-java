@@ -22,14 +22,14 @@ public class MySqlActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final String SERVICE_ACTIONS = "actions.mysql.service";
-    public static final String POSTGRE_ACTIONS = "actions.mysql.instance";
+    public static final String SERVER_ACTIONS = "actions.mysql.server";
 
     private static final String NAME_PREFIX = "MySQL Server - %s";
-    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.database.open_database_tool");
+    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.mysql.open_database_tool");
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools")
+        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", "icons/action/open_database_tool.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("mysql.connect_server.server", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof MySqlServer);
         am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
@@ -53,6 +53,7 @@ public class MySqlActionsContributor implements IActionsContributor {
             MySqlActionsContributor.OPEN_DATABASE_TOOL,
             "---",
             ResourceCommonActionsContributor.CONNECT,
+            "---",
             ResourceCommonActionsContributor.START,
             ResourceCommonActionsContributor.STOP,
             ResourceCommonActionsContributor.RESTART,
@@ -60,6 +61,6 @@ public class MySqlActionsContributor implements IActionsContributor {
             "---",
             ResourceCommonActionsContributor.REFRESH
         );
-        am.registerGroup(POSTGRE_ACTIONS, serverActionGroup);
+        am.registerGroup(SERVER_ACTIONS, serverActionGroup);
     }
 }
