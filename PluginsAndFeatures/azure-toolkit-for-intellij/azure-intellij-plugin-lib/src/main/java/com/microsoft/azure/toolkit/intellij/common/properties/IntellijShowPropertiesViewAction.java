@@ -8,8 +8,8 @@ package com.microsoft.azure.toolkit.intellij.common.properties;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager.AzureResourceFileType;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -23,22 +23,22 @@ public class IntellijShowPropertiesViewAction {
         return new AzureResourceFileType(name, icon);
     });
 
-    public static void showPropertyView(@Nonnull IAzureBaseResource<?, ?> resource, @Nonnull Project project) {
+    public static void showPropertyView(@Nonnull AzResourceBase resource, @Nonnull Project project) {
         manager.showEditor(resource, project);
     }
 
-    public static void closePropertiesView(@Nonnull IAzureBaseResource<?, ?> resource, @Nonnull Project project) {
+    public static void closePropertiesView(@Nonnull AzResourceBase resource, @Nonnull Project project) {
         manager.closeEditor(resource, project);
     }
 
-    private static String getFileTypeName(@Nonnull IAzureBaseResource<?, ?> resource) {
+    private static String getFileTypeName(@Nonnull AzResourceBase resource) {
         if (resource instanceof AzResource) {
             return getNewFileTypeName((AzResource<?, ?, ?>) resource);
         }
         return String.format("%s_FILE_TYPE", resource.getClass().getSimpleName().toUpperCase());
     }
 
-    private static Icon getFileTypeIcon(@Nonnull IAzureBaseResource<?, ?> resource) {
+    private static Icon getFileTypeIcon(@Nonnull AzResourceBase resource) {
         if (resource instanceof AzResource) {
             return AzureIcons.getIcon(getNewFileTypeIcon((AzResource<?, ?, ?>) resource));
         }
