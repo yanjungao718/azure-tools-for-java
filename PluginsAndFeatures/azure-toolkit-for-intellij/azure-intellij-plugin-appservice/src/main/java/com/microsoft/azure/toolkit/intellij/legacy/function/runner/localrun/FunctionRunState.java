@@ -41,6 +41,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.intellij.util.ReadStreamLineThread;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -55,6 +56,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -63,6 +65,7 @@ import java.util.regex.Pattern;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.CONFIG_CORE_TOOLS;
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
+import static org.apache.commons.exec.Executor.INVALID_EXITVALUE;
 
 public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
@@ -161,6 +164,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                     DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
         } catch (IOException e) {
+            if (e instanceof ExecuteException && ((ExecuteException) e).getExitValue() == INVALID_EXITVALUE) {
+                return; // if process is interrupted Apache Executor will use this constant as exit code, ignore in this case
+            }
             throw new AzureToolkitRuntimeException(e.getMessage(),
                 message("function.run.error.runtimeNotFound.tips"),
                 DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
@@ -174,10 +180,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     )
     private ComparableVersion getFuncVersion() throws IOException {
         final String funcVersion = CommandUtils.exec("func -v", Paths.get(functionRunConfiguration.getFuncPath()).getParent().toString());
-        if (StringUtils.isEmpty(funcVersion)) {
-            return null;
-        }
-        return new ComparableVersion(funcVersion);
+        return StringUtils.isEmpty(funcVersion) ? null : new ComparableVersion(funcVersion);
     }
 
     // Get java runtime version following the strategy of function core tools
