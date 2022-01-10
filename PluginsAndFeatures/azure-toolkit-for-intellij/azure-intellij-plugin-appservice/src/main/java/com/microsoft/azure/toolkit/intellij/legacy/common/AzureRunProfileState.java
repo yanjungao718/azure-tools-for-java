@@ -51,13 +51,8 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
         final Operation operation = createOperation();
         final Disposable subscribe = Mono.fromCallable(() -> {
-            try {
                 operation.start();
                 return this.executeSteps(processHandler, operation);
-            } finally {
-                // Once the operation done, whether success or not, `setText` should not throw new exception
-                processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
-            }
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(
             (res) -> {
                 this.sendTelemetry(operation, null);
