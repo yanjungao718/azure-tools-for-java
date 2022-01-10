@@ -94,16 +94,24 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private AnActionButton btnRemove;
     private AnActionButton btnEdit;
 
-    private String resourceId;
-    private Project project;
-    private VirtualFile virtualFile;
+    protected String subscriptionId;
+    protected String resourceId;
+    protected String appServiceId;
+    protected String slotName;
+    protected Project project;
+    protected VirtualFile virtualFile;
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
 
     protected WebAppBasePropertyView(@Nonnull Project project, @Nonnull String sid,
-                                     @Nonnull String resId, @Nullable String slotName, @Nonnull final VirtualFile virtualFile) {
+                                     @Nonnull String appServiceId, @Nullable String slotName, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
         this.id = getId();
-        this.resourceId = resId;
+        this.subscriptionId = sid;
+        this.appServiceId = appServiceId;
+        // workaround to get the resource id of deployment slot
+        // todo: @hanli Refactor properties interface to use AppServiceResource directly
+        this.resourceId = StringUtils.isEmpty(slotName) ? appServiceId : String.format("%s/slots/%s", appServiceId, slotName);
+        this.slotName = slotName;
         this.virtualFile = virtualFile;
         this.project = project;
         this.presenter = createPresenter();
@@ -140,7 +148,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                     fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
                     final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
                     if (file != null) {
-                        presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, slotName, file.getPath());
+                        presenter.onGetPublishingProfileXmlWithSecrets(sid, appServiceId, slotName, file.getPath());
                     }
                 });
             }
@@ -163,7 +171,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             public void actionPerformedFunc(ActionEvent event) {
                 EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.SAVE_APP_SERVICE, operation -> {
                     setBtnEnableStatus(false);
-                    presenter.onUpdateWebAppProperty(sid, resId, slotName, cachedAppSettings, editedAppSettings);
+                    presenter.onUpdateWebAppProperty(sid, appServiceId, slotName, cachedAppSettings, editedAppSettings);
                 });
             }
         });
@@ -188,7 +196,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             closeEditor(app);
             return;
         }
-        presenter.onLoadWebAppProperty(app.subscription().getId(), this.resourceId, null);
+        // todo: @hanli refactor to load property directly from app in Azure event
+        presenter.onLoadWebAppProperty(this.subscriptionId, this.appServiceId, this.slotName);
     }
 
     protected void closeEditor(IAppService app) {

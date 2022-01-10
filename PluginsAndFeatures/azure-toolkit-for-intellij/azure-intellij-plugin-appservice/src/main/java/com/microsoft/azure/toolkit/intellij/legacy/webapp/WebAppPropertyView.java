@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 
 public class WebAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> resourceDeleteListener;
 
     /**
      * Initialize the Web App Property View and return it.
@@ -36,7 +36,7 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
                                @Nonnull final String webAppId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, webAppId, null, virtualFile);
 
-        listener = new AzureEventBus.EventListener<>(event -> {
+        resourceDeleteListener = new AzureEventBus.EventListener<>(event -> {
             // only invoke close listener after close operation was done
             // todo: investigate to remove duplicate within app service properties view
             if (event instanceof AzureOperationEvent && ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER &&
@@ -44,7 +44,7 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
                 closeEditor((IAppService) event.getSource());
             }
         });
-        AzureEventBus.on("webapp.delete_app.app", listener);
+        AzureEventBus.on("webapp.delete_app.app", resourceDeleteListener);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
     @Override
     public void dispose() {
         super.dispose();
-        AzureEventBus.off("webapp.delete_app.app", listener);
+        AzureEventBus.off("webapp.delete_app.app", resourceDeleteListener);
     }
 
     @Override

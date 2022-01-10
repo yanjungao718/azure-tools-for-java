@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 
 public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> resourceDeleteListener;
 
     /**
      * Initialize the Web App Property View and return it.
@@ -35,14 +35,13 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private DeploymentSlotPropertyView(@Nonnull final Project project, @Nonnull final String sid,
                                        @Nonnull final String webAppId, @Nonnull final String slotName, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, webAppId, slotName, virtualFile);
-        listener = new AzureEventBus.EventListener<>(event -> {
+        resourceDeleteListener = new AzureEventBus.EventListener<>(event -> {
             if (event instanceof AzureOperationEvent && ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER &&
-                    event.getSource() instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) event.getSource()).webApp().id(), webAppId)
-                    && StringUtils.equals(((WebAppDeploymentSlot) event.getSource()).name(), slotName)) {
+                    event.getSource() instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) event.getSource()).id(), resourceId)) {
                 closeEditor((IAppService) event.getSource());
             }
         });
-        AzureEventBus.on("webapp.delete_slot.slot|app", listener);
+        AzureEventBus.on("webapp.delete_slot.slot|app", resourceDeleteListener);
     }
 
     @Override
@@ -53,7 +52,7 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     @Override
     public void dispose() {
         super.dispose();
-        AzureEventBus.off("webapp.delete_slot.slot|app", listener);
+        AzureEventBus.off("webapp.delete_slot.slot|app", resourceDeleteListener);
     }
 
     @Override
