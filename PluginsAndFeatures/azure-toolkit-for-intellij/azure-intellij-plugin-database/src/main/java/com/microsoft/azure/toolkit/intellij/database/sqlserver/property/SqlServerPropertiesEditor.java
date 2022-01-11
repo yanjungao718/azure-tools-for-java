@@ -62,8 +62,9 @@ public class SqlServerPropertiesEditor extends AzResourcePropertiesEditor<Micros
     @Nonnull
     private final MicrosoftSqlServer server;
 
-    private void rerender() {
-        setData(this.server);
+    @Override
+    protected void rerender() {
+        AzureTaskManager.getInstance().runLater(() -> this.setData(this.server));
     }
 
     SqlServerPropertiesEditor(@Nonnull Project project, @Nonnull MicrosoftSqlServer server, @Nonnull final VirtualFile virtualFile) {
@@ -100,10 +101,14 @@ public class SqlServerPropertiesEditor extends AzResourcePropertiesEditor<Micros
             connectionSecuritySeparator.setEnabled(true);
             connectionStringsSeparator.expand();
             connectionStringsSeparator.setEnabled(true);
-            originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
-            connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-            originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
-            connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
+            AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
+                originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
+                AzureTaskManager.getInstance().runLater(() -> {
+                    connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
+                    connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
+                });
+            });
         } else {
             connectionSecuritySeparator.collapse();
             connectionSecuritySeparator.setEnabled(false);

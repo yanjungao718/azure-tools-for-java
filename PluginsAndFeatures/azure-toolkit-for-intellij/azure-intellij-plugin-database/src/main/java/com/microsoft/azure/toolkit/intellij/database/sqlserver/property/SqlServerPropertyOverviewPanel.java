@@ -7,11 +7,14 @@ package com.microsoft.azure.toolkit.intellij.database.sqlserver.property;
 
 import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -49,7 +52,7 @@ public class SqlServerPropertyOverviewPanel extends JPanel {
         }
         resourceGroupTextField.setText(server.getResourceGroupName());
         statusTextField.setText(server.getStatus());
-        locationTextField.setText(server.getRegion().getLabel());
+        locationTextField.setText(Optional.ofNullable(server.getRegion()).map(Region::getLabel).orElse(""));
         subscriptionIDTextField.setText(server.getSubscriptionId());
         serverNameTextField.setText(StringUtils.firstNonBlank(server.getFullyQualifiedDomainName(), server.getName()));
         serverNameTextField.setCaretPosition(0);

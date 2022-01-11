@@ -36,7 +36,7 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
             if (StringUtils.equalsAnyIgnoreCase(((AzResourceBase) source).getStatus(), "deleted", "removed")) {
                 IntellijShowPropertiesViewAction.closePropertiesView(resource, project);
             } else {
-                this.refresh();
+                this.rerender();
             }
         }
     }
@@ -46,5 +46,5 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
         AzureEventBus.off("resource.status_changed.resource", listener);
     }
 
-    protected abstract void refresh();
+    protected abstract void rerender();
 }

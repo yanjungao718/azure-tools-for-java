@@ -8,8 +8,8 @@ package com.microsoft.azure.toolkit.intellij.database.postgre.property;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
@@ -62,8 +62,9 @@ public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<Postg
     @Nonnull
     private final PostgreSqlServer server;
 
-    private void rerender() {
-        setData(this.server);
+    @Override
+    protected void rerender() {
+        AzureTaskManager.getInstance().runLater(() -> this.setData(this.server));
     }
 
     PostgreSqlPropertiesEditor(@Nonnull Project project, @Nonnull PostgreSqlServer server, @Nonnull final VirtualFile virtualFile) {
@@ -100,10 +101,14 @@ public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<Postg
             connectionSecuritySeparator.setEnabled(true);
             connectionStringsSeparator.expand();
             connectionStringsSeparator.setEnabled(true);
-            originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
-            connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-            originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
-            connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
+            AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
+                originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
+                AzureTaskManager.getInstance().runLater(() -> {
+                    connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
+                    connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
+                });
+            });
         } else {
             connectionSecuritySeparator.collapse();
             connectionSecuritySeparator.setEnabled(false);

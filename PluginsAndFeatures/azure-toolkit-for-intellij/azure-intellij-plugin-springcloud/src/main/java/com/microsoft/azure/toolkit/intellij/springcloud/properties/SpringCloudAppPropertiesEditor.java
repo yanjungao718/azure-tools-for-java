@@ -55,7 +55,8 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
         this.initListeners();
     }
 
-    private void rerender() {
+    @Override
+    protected void rerender() {
         AzureTaskManager.getInstance().runLater(() -> {
             this.reset.setVisible(false);
             this.saveButton.setEnabled(false);

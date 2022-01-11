@@ -50,7 +50,8 @@ public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<Redis
         this.initListeners();
     }
 
-    private void rerender() {
+    @Override
+    protected void rerender() {
         AzureTaskManager.getInstance().runLater(() -> {
             disableTxtBoard();
             makeTxtOpaque();
@@ -115,7 +116,6 @@ public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<Redis
     public void dispose() {
     }
 
-    @Override
     protected void refresh() {
         final String refreshTitle = String.format("Refreshing Redis cache(%s)...", this.redis.getName());
         AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
