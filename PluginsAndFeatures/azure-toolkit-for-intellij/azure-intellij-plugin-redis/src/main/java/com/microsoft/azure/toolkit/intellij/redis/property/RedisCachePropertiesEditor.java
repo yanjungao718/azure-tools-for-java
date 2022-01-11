@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.redis.property;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
@@ -18,7 +18,7 @@ import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.Optional;
 
-public class RedisCachePropertiesEditor extends BaseEditor {
+public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<RedisCache> {
 
     public static final String ID = "com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView";
 
@@ -44,7 +44,7 @@ public class RedisCachePropertiesEditor extends BaseEditor {
     private final RedisCache redis;
 
     public RedisCachePropertiesEditor(@Nonnull Project project, @Nonnull RedisCache redis, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+        super(virtualFile, redis, project);
         this.redis = redis;
         this.rerender();
         this.initListeners();
@@ -113,5 +113,14 @@ public class RedisCachePropertiesEditor extends BaseEditor {
 
     @Override
     public void dispose() {
+    }
+
+    @Override
+    protected void refresh() {
+        final String refreshTitle = String.format("Refreshing Redis cache(%s)...", this.redis.getName());
+        AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
+            this.redis.refresh();
+            this.rerender();
+        });
     }
 }

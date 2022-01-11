@@ -8,15 +8,12 @@ package com.microsoft.azure.toolkit.intellij.database.sqlserver.property;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.common.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
@@ -31,9 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-public class SqlServerPropertiesEditor extends BaseEditor {
+public class SqlServerPropertiesEditor extends AzResourcePropertiesEditor<MicrosoftSqlServer> {
 
     public static final String ID = "com.microsoft.azure.toolkit.intellij.sqlserver.property.SqlServerPropertiesEditor";
 
@@ -51,13 +47,13 @@ public class SqlServerPropertiesEditor extends BaseEditor {
     private DatabaseComboBox<MicrosoftSqlDatabase> databaseComboBox;
     private JLabel databaseLabel;
     public static final String SQL_SERVER_OUTPUT_TEXT_PATTERN_SPRING =
-            "spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver" + System.lineSeparator() +
-                    "spring.datasource.url=jdbc:sqlserver://%s:1433;encrypt=true;trustServerCertificate=false;loginTimeout=30;database=%s;" + System.lineSeparator() +
-                    "spring.datasource.username=%s" + System.lineSeparator() + "spring.datasource.password={your_password}";
+        "spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver" + System.lineSeparator() +
+            "spring.datasource.url=jdbc:sqlserver://%s:1433;encrypt=true;trustServerCertificate=false;loginTimeout=30;database=%s;" + System.lineSeparator() +
+            "spring.datasource.username=%s" + System.lineSeparator() + "spring.datasource.password={your_password}";
 
     public static final String SQL_SERVER_OUTPUT_TEXT_PATTERN_JDBC =
-            "String url =\"jdbc:sqlserver://%s:1433;encrypt=true;trustServerCertificate=false;loginTimeout=30;database=%s;\";" + System.lineSeparator() +
-                    "myDbConn = DriverManager.getConnection(url, \"%s\", {your_password});";
+        "String url =\"jdbc:sqlserver://%s:1433;encrypt=true;trustServerCertificate=false;loginTimeout=30;database=%s;\";" + System.lineSeparator() +
+            "myDbConn = DriverManager.getConnection(url, \"%s\", {your_password});";
 
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
@@ -71,10 +67,9 @@ public class SqlServerPropertiesEditor extends BaseEditor {
     }
 
     SqlServerPropertiesEditor(@Nonnull Project project, @Nonnull MicrosoftSqlServer server, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+        super(virtualFile, server, project);
         this.project = project;
         this.server = server;
-
 
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
@@ -88,17 +83,6 @@ public class SqlServerPropertiesEditor extends BaseEditor {
         connectionStringsSpring.getOutputTextArea().setText(getConnectionString(SQL_SERVER_OUTPUT_TEXT_PATTERN_SPRING, null, null, null));
         this.rerender();
         this.initListeners();
-        AzureEventBus.after("sqlserver.delete_server.server", (MicrosoftSqlServer server2) -> {
-            if (this.server.name().equals(server2.name())) {
-                AzureMessager.getMessager().info(String.format("SQL server(%s) is deleted", this.server.name()), "");
-                IntellijShowPropertiesViewAction.closePropertiesView(this.server, this.project);
-            }
-        });
-        AzureEventBus.after("sqlserver.restart_server.server", (MicrosoftSqlServer server2) -> {
-            if (this.server.name().equals(server2.name())) {
-                this.refresh();
-            }
-        });
     }
 
     private String getConnectionString(final String pattern, final String hostname, final String database, final String username) {
@@ -219,15 +203,15 @@ public class SqlServerPropertiesEditor extends BaseEditor {
             final MicrosoftSqlDatabase database = (MicrosoftSqlDatabase) e.getItem();
             final String username = server.getAdminName() + "@" + server.name();
             connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(SQL_SERVER_OUTPUT_TEXT_PATTERN_JDBC,
-                    server.getFullyQualifiedDomainName(), database.getName(), username));
+                server.getFullyQualifiedDomainName(), database.getName(), username));
             connectionStringsSpring.getOutputTextArea().setText(getConnectionString(SQL_SERVER_OUTPUT_TEXT_PATTERN_SPRING,
-                    server.getFullyQualifiedDomainName(), database.getName(), username));
+                server.getFullyQualifiedDomainName(), database.getName(), username));
         }
     }
 
     private boolean changed() {
         return originalAllowAccessToAzureServices != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected() ||
-                originalAllowAccessToLocal != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
+            originalAllowAccessToLocal != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
     }
 
     @Override
@@ -247,14 +231,12 @@ public class SqlServerPropertiesEditor extends BaseEditor {
 
     }
 
-    private void refresh() {
+    protected void refresh() {
         this.propertyActionPanel.getSaveButton().setEnabled(false);
-        AzureTaskManager.getInstance().runLater(() -> {
-            final String refreshTitle = String.format("Refreshing SQL server(%s)...", Objects.requireNonNull(this.server).name());
-            AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-                this.server.refresh();
-                AzureTaskManager.getInstance().runLater(this::rerender);
-            });
+        final String refreshTitle = String.format("Refreshing SQL server(%s)...", this.server.getName());
+        AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
+            this.server.refresh();
+            AzureTaskManager.getInstance().runLater(this::rerender);
         });
     }
 }

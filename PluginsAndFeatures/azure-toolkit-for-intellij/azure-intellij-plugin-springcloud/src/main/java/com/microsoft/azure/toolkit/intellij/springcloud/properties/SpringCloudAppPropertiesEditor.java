@@ -9,11 +9,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -26,7 +25,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
 
-public class SpringCloudAppPropertiesEditor extends BaseEditor {
+public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<SpringCloudApp> {
     private JButton refreshButton;
     private JButton startButton;
     private JButton stopButton;
@@ -49,7 +48,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private SpringCloudAppConfig originalConfig;
 
     public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudApp app, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+        super(virtualFile, app, project);
         this.project = project;
         this.app = app;
         this.rerender();
@@ -120,17 +119,6 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.reset.setVisible(changedFromOrigin);
             this.saveButton.setEnabled(changedFromOrigin);
         });
-        AzureEventBus.after("springcloud.remove_app.app", (SpringCloudApp app) -> {
-            if (this.app.name().equals(app.name())) {
-                AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.app.name()), "");
-                IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
-            }
-        });
-        AzureEventBus.after("springcloud.update_app.app", (SpringCloudApp app) -> {
-            if (this.app.name().equals(app.name())) {
-                this.refresh();
-            }
-        });
     }
 
     @Nonnull
@@ -142,19 +130,13 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         return config;
     }
 
-    private void refresh() {
+    protected void refresh() {
         this.reset.setVisible(false);
         this.saveButton.setEnabled(false);
-        AzureTaskManager.getInstance().runLater(() -> {
-            final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
-            AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-                this.app.refresh();
-                final SpringCloudDeployment deployment = this.app.getActiveDeployment();
-                if (Objects.nonNull(deployment)) {
-                    deployment.refresh();
-                }
-                AzureTaskManager.getInstance().runLater(this::rerender);
-            });
+        final String refreshTitle = String.format("Refreshing app(%s)...", this.app.getName());
+        AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
+            this.app.refresh();
+            AzureTaskManager.getInstance().runLater(this::rerender);
         });
     }
 

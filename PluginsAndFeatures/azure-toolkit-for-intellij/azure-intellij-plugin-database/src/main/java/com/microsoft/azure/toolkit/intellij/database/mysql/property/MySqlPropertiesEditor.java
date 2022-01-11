@@ -8,15 +8,12 @@ package com.microsoft.azure.toolkit.intellij.database.mysql.property;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.common.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
@@ -31,9 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-public class MySqlPropertiesEditor extends BaseEditor {
+public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServer> {
 
     public static final String ID = "com.microsoft.azure.toolkit.intellij.mysql.property.MySqlPropertiesEditor";
 
@@ -71,10 +67,9 @@ public class MySqlPropertiesEditor extends BaseEditor {
     }
 
     MySqlPropertiesEditor(@Nonnull Project project, @Nonnull MySqlServer server, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+        super(virtualFile, server, project);
         this.project = project;
         this.server = server;
-
 
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
@@ -88,17 +83,6 @@ public class MySqlPropertiesEditor extends BaseEditor {
         connectionStringsSpring.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_SPRING, null, null, null));
         this.rerender();
         this.initListeners();
-        AzureEventBus.after("mysql.delete_server.server", (MySqlServer server2) -> {
-            if (this.server.name().equals(server2.name())) {
-                AzureMessager.getMessager().info(String.format("MySQL server(%s) is deleted", this.server.name()), "");
-                IntellijShowPropertiesViewAction.closePropertiesView(this.server, this.project);
-            }
-        });
-        AzureEventBus.after("mysql.restart_server.server", (MySqlServer server2) -> {
-            if (this.server.name().equals(server2.name())) {
-                this.refresh();
-            }
-        });
     }
 
     private String getConnectionString(final String pattern, final String hostname, final String database, final String username) {
@@ -247,14 +231,12 @@ public class MySqlPropertiesEditor extends BaseEditor {
 
     }
 
-    private void refresh() {
+    protected void refresh() {
         this.propertyActionPanel.getSaveButton().setEnabled(false);
-        AzureTaskManager.getInstance().runLater(() -> {
-            final String refreshTitle = String.format("Refreshing MySQL server(%s)...", Objects.requireNonNull(this.server).name());
-            AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-                this.server.refresh();
-                AzureTaskManager.getInstance().runLater(this::rerender);
-            });
+        final String refreshTitle = String.format("Refreshing MySQL server(%s)...", this.server.getName());
+        AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
+            this.server.refresh();
+            AzureTaskManager.getInstance().runLater(this::rerender);
         });
     }
 }
