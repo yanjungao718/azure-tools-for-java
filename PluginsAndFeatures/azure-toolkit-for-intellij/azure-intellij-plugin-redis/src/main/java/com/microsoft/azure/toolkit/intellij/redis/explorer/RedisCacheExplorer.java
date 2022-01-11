@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.redis.explorer;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.common.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.apache.commons.lang3.tuple.Pair;
