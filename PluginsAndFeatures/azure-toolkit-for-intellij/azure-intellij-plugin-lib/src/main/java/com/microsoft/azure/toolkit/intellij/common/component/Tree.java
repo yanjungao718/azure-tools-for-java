@@ -69,8 +69,29 @@ public class Tree extends SimpleTree implements DataProvider {
         TreeUIHelper.getInstance().installEditSourceOnEnterKeyHandler(this);
         this.setCellRenderer(new NodeRenderer());
         this.setModel(new DefaultTreeModel(new TreeNode<>(root, this)));
-        this.addTreeWillExpandListener(new ExpandListener());
+        installExpandListener(this);
         installPopupMenu(this);
+    }
+
+    public static void installExpandListener(JTree tree) {
+        final TreeWillExpandListener listener = new TreeWillExpandListener() {
+            @Override
+            public void treeWillExpand(TreeExpansionEvent event) {
+                final Object component = event.getPath().getLastPathComponent();
+                if (component instanceof TreeNode) {
+                    final TreeNode<?> treeNode = (TreeNode<?>) component;
+                    if (treeNode.getAllowsChildren()) {
+                        treeNode.loadChildren();
+                    }
+                }
+            }
+
+            @Override
+            public void treeWillCollapse(TreeExpansionEvent event) {
+
+            }
+        };
+        tree.addTreeWillExpandListener(listener);
     }
 
     public static void installPopupMenu(JTree tree) {
@@ -83,12 +104,7 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
                 final Object node = path.getLastPathComponent();
                 if (node instanceof TreeNode) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        if (((TreeNode<?>) node).inner.hasChildren() && ((TreeNode<?>) node).loaded == null) {
-                            ((TreeNode<?>) node).refreshChildren();
-                            tree.expandPath(path);
-                        }
-                    } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+                    if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
@@ -134,6 +150,9 @@ public class Tree extends SimpleTree implements DataProvider {
             super(n.data(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
+            if (this.getAllowsChildren()) {
+                this.add(new LoadingNode());
+            }
             if (!this.inner.lazy()) {
                 this.loadChildren();
             }
@@ -185,6 +204,9 @@ public class Tree extends SimpleTree implements DataProvider {
         public synchronized void clearChildren() {
             this.removeAllChildren();
             this.loaded = null;
+            if (this.getAllowsChildren()) {
+                this.add(new LoadingNode());
+            }
             ((DefaultTreeModel) this.tree.getModel()).reload(this);
         }
 
@@ -217,25 +239,6 @@ public class Tree extends SimpleTree implements DataProvider {
         public void customizeCellRenderer(@Nonnull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             final Object node = renderNode(value, this);
             super.customizeCellRenderer(tree, node, selected, expanded, leaf, row, hasFocus);
-        }
-    }
-
-    public static class ExpandListener implements TreeWillExpandListener {
-
-        @Override
-        public void treeWillExpand(TreeExpansionEvent event) {
-            final Object component = event.getPath().getLastPathComponent();
-            if (component instanceof TreeNode) {
-                final TreeNode<?> treeNode = (TreeNode<?>) component;
-                if (treeNode.getAllowsChildren()) {
-                    treeNode.loadChildren();
-                }
-            }
-        }
-
-        @Override
-        public void treeWillCollapse(TreeExpansionEvent event) {
-
         }
     }
 }

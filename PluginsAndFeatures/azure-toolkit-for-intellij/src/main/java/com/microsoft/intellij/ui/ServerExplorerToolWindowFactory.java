@@ -11,6 +11,7 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -114,6 +115,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.forEach(azureRoot::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
+        com.microsoft.azure.toolkit.intellij.common.component.Tree.installExpandListener(tree);
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {
