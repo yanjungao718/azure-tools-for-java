@@ -41,7 +41,7 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
     @Nonnull
     @Override
     protected List<? extends T> loadItems() {
-        if (Objects.isNull(server) || !StringUtils.equalsIgnoreCase("READY", server.getState())) {
+        if (Objects.isNull(server) || !StringUtils.equalsIgnoreCase("READY", server.getStatus())) {
             return new ArrayList<>();
         }
         return server.listDatabases();

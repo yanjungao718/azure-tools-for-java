@@ -95,7 +95,7 @@ public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<Postg
     private void setData(PostgreSqlServer server) {
         this.overview.setFormData(server);
         this.databaseComboBox.setServer(server);
-        if (StringUtils.equalsIgnoreCase("READY", server.getState())) {
+        if (StringUtils.equalsIgnoreCase("READY", server.getStatus())) {
             connectionSecuritySeparator.expand();
             connectionSecuritySeparator.setEnabled(true);
             connectionStringsSeparator.expand();

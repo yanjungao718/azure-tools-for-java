@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 
@@ -47,10 +48,10 @@ public class SqlServerPropertyOverviewPanel extends JPanel {
             subscriptionTextField.setText(subscription.getName());
         }
         resourceGroupTextField.setText(server.getResourceGroupName());
-        statusTextField.setText(server.getState());
+        statusTextField.setText(server.getStatus());
         locationTextField.setText(server.getRegion().getLabel());
         subscriptionIDTextField.setText(server.getSubscriptionId());
-        serverNameTextField.setText(server.getFullyQualifiedDomainName());
+        serverNameTextField.setText(StringUtils.firstNonBlank(server.getFullyQualifiedDomainName(), server.getName()));
         serverNameTextField.setCaretPosition(0);
         serverAdminLoginNameTextField.setText(server.getAdminName() + "@" + server.name());
         serverAdminLoginNameTextField.setCaretPosition(0);
