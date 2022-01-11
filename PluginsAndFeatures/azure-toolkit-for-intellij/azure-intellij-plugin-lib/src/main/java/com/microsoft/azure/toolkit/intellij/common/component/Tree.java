@@ -12,6 +12,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.SimpleColoredComponent;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -42,6 +43,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -223,25 +225,24 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     public static class NodeRenderer extends com.intellij.ide.util.treeView.NodeRenderer {
-        public static Object renderNode(Object node, SimpleColoredComponent renderer) {
-            Object value = node;
-            if (node instanceof TreeNode) {
-                final IView.Label view = ((TreeNode<?>) node).inner.view();
-                if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {
-                    renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-                } else if (StringUtils.isNotBlank(view.getIconPath())) {
-                    renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
-                }
-                value = view.getLabel();
-                renderer.setToolTipText(view.getDescription());
+        public static void renderMyTreeNode(@Nonnull TreeNode<?> node, @Nonnull SimpleColoredComponent renderer) {
+            final IView.Label view = node.inner.view();
+            if (BooleanUtils.isFalse(node.loaded)) {
+                renderer.setIcon(AnimatedIcon.Default.INSTANCE);
+            } else if (StringUtils.isNotBlank(view.getIconPath())) {
+                renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
             }
-            return value;
+            renderer.append(view.getLabel());
+            renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ATTRIBUTES, true);
         }
 
         @Override
         public void customizeCellRenderer(@Nonnull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            final Object node = renderNode(value, this);
-            super.customizeCellRenderer(tree, node, selected, expanded, leaf, row, hasFocus);
+            if (value instanceof TreeNode) {
+                renderMyTreeNode((TreeNode<?>) value, this);
+            } else {
+                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
+            }
         }
     }
 }

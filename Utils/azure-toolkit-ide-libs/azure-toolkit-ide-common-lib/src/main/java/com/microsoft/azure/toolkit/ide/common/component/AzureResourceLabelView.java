@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
     @Nonnull
@@ -25,16 +26,28 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     @Getter
     private final String label;
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final Function<T, String> iconLoader;
+    private final Function<T, String> descriptionLoader;
     @Getter
     private String description;
+    @Getter
+    private String iconPath;
     @Nullable
     @Setter
     @Getter
     private Refresher refresher;
 
     public AzureResourceLabelView(@Nonnull T resource) {
+        this(resource, r -> initIconPath(resource), r -> resource.getStatus());
+    }
+
+    public AzureResourceLabelView(@Nonnull T resource, Function<T, String> iconLoader, Function<T, String> descriptionLoader) {
         this.resource = resource;
         this.label = resource.name();
+        this.iconLoader = iconLoader;
+        this.descriptionLoader = descriptionLoader;
+        this.iconPath = iconLoader.apply(resource);
+        this.description = descriptionLoader.apply(resource);
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("resource.refresh.resource", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
@@ -58,7 +71,11 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
                     break;
                 case "common|resource.status_changed":
                 case "resource.status_changed.resource":
-                    tm.runLater(this::refreshView);
+                    tm.runOnPooledThread(() -> {
+                        this.description = descriptionLoader.apply(resource);
+                        this.iconPath = iconLoader.apply(resource);
+                        tm.runLater(this::refreshView);
+                    });
                     break;
                 case "resource.children_changed.resource":
                 case "module.children_changed.module":
@@ -77,7 +94,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.refresher = null;
     }
 
-    public String getIconPath() {
+    public static String initIconPath(IAzureBaseResource<?, ?> resource) {
         final String formalStatus = resource.getFormalStatus();
         if (resource instanceof AzResource) {
             return getIconPath((AzResource<?, ?, ?>) resource);
@@ -88,7 +105,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     }
 
     @Nonnull
-    private String getIconPath(AzResource<?, ?, ?> resource) {
+    private static String getIconPath(AzResource<?, ?, ?> resource) {
         final String status = resource.getStatus();
         AzResource<?, ?, ?> current = resource;
         final StringBuilder modulePath = new StringBuilder();

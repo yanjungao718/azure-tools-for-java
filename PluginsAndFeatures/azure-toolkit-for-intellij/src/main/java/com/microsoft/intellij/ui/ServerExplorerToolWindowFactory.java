@@ -418,9 +418,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           int row,
                                           boolean focused) {
             Object value = v;
-            if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || value instanceof LoadingNode) {
-                // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
-                value = com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer.renderNode(value, this);
+            if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
+                com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer
+                    .renderMyTreeNode((com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value, this);
+                return;
+            } else if( value instanceof LoadingNode){
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
                 return;
             }
