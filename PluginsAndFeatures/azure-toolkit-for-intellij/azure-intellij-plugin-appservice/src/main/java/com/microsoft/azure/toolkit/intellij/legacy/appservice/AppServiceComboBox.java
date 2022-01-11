@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.slimui;
+package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
@@ -12,8 +12,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import lombok.Setter;
@@ -22,11 +21,9 @@ import rx.Subscription;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
 
@@ -81,17 +78,6 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         }
     }
 
-    protected boolean isJavaAppService(IAppService<?> appService) {
-        try {
-            return Optional.ofNullable(appService.getRuntime()).map(Runtime::getJavaVersion)
-                    .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF))
-                    .orElse(false);
-        } catch (final RuntimeException e) {
-            // app service may have been removed while parsing, return false in this case
-            return false;
-        }
-    }
-
     protected abstract void createResource();
 
     public static class AppComboBoxRender extends SimpleListCellRenderer {
@@ -100,7 +86,8 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         public void customize(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof AppServiceConfig) {
                 final AppServiceConfig app = (AppServiceConfig) value;
-                final boolean isJavaApp = app.getRuntime() != null && !Objects.equals(app.getRuntime().getJavaVersion(), JavaVersion.OFF);
+                final boolean isJavaApp = app.getRuntime() != null && !Objects.equals(app.getRuntime().getJavaVersion(), JavaVersion.OFF) &&
+                        app.getRuntime().getOperatingSystem() != OperatingSystem.DOCKER;
                 setEnabled(isJavaApp);
                 setFocusable(isJavaApp);
 

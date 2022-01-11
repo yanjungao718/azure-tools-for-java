@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.s
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;

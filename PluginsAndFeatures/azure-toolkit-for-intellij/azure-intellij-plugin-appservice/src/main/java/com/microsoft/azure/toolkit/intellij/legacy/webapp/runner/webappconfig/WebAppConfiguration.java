@@ -22,6 +22,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import lombok.Getter;
@@ -120,7 +122,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                 throw new ConfigurationException(message("webapp.deploy.validate.noWebApp"));
             }
             if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanId())) {
-                throw new ConfigurationException("Loading app service plan meta-data");
+                // Service plan could be null as lazy loading, throw exception in this case
+                throw new ConfigurationException(message("webapp.deploy.validate.loading"));
             }
             if (webAppSettingModel.isDeployToSlot()) {
                 if (Constants.CREATE_NEW_SLOT.equals(webAppSettingModel.getSlotName())) {
@@ -137,7 +140,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         }
         // validate runtime with artifact
         final Runtime runtime = webAppSettingModel.getRuntime();
-        if (runtime == null) {
+        final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
+        final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
+        if (operatingSystem == OperatingSystem.DOCKER) {
+            throw new ConfigurationException(message("webapp.deploy.validate.dockerRuntime"));
+        }
+        if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
             throw new ConfigurationException(message("webapp.deploy.validate.invalidRuntime"));
         }
         final String webContainer = runtime.getWebContainer().getValue();

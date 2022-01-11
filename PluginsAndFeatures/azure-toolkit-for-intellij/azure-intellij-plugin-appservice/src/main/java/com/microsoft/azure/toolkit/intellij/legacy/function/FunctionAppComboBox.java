@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.function;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.slimui.AppServiceComboBox;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
