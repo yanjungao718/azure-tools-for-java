@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.aad.msal4j.MsalClientException;
@@ -77,7 +78,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHO
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class AzureSignInAction extends AzureAnAction {
+public class AzureSignInAction extends AzureAnAction implements DumbAware {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
     private static final String SIGN_IN = "Azure Sign In...";
     private static final String SIGN_OUT = "Azure Sign Out...";

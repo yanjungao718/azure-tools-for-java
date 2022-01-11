@@ -82,7 +82,7 @@ import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 
-public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
+public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener, DumbAware {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
 
     private final Map<Project, DefaultTreeModel> treeModelMap = new HashMap<>();
