@@ -19,14 +19,11 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -345,40 +342,5 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void saveRuntime(final Runtime runtime) {
         webAppSettingModel.saveRuntime(runtime);
-    }
-
-    public void saveModel(final WebAppComboBoxModel webAppComboBoxModel) {
-        setWebAppId(webAppComboBoxModel.getResourceId());
-        setWebAppName(webAppComboBoxModel.getAppName());
-        setResourceGroup(webAppComboBoxModel.getResourceGroup());
-        setSubscriptionId(webAppComboBoxModel.getSubscriptionId());
-        if (webAppComboBoxModel.isNewCreateResource()) {
-            setCreatingNew(true);
-            final WebAppSettingModel settingModel = webAppComboBoxModel.getWebAppSettingModel();
-            setCreatingResGrp(settingModel.isCreatingResGrp());
-            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
-            setAppServicePlanName(settingModel.getAppServicePlanName());
-            setRegion(settingModel.getRegion());
-            setPricing(settingModel.getPricing());
-            setAppServicePlanId(settingModel.getAppServicePlanId());
-            saveRuntime(settingModel.getRuntime());
-            setCreatingResGrp(settingModel.isCreatingResGrp());
-            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
-            webAppSettingModel.setEnableApplicationLog(settingModel.isEnableApplicationLog());
-            webAppSettingModel.setApplicationLogLevel(settingModel.getApplicationLogLevel());
-            webAppSettingModel.setEnableWebServerLogging(settingModel.isEnableWebServerLogging());
-            webAppSettingModel.setWebServerLogQuota(settingModel.getWebServerLogQuota());
-            webAppSettingModel.setWebServerRetentionPeriod(settingModel.getWebServerRetentionPeriod());
-            webAppSettingModel.setEnableDetailedErrorMessage(settingModel.isEnableDetailedErrorMessage());
-            webAppSettingModel.setEnableFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
-        } else {
-            setCreatingNew(false);
-            final WebApp webApp = webAppComboBoxModel.getResource();
-            if (webApp != null) {
-                saveRuntime(webApp.getRuntime());
-                setAppServicePlanId(webApp.entity().getAppServicePlanId());
-                setRegion(webApp.entity().getRegion().getName());
-            }
-        }
     }
 }
