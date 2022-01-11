@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
@@ -190,6 +191,7 @@ public class Tree extends SimpleTree implements DataProvider {
                     tm.runLater(() -> setChildren(children.stream().map(c -> new TreeNode<>(c, this.tree))));
                 } catch (final Exception e) {
                     this.setChildren(Stream.empty());
+                    AzureMessager.getMessager().error(e);
                 }
             });
         }
@@ -206,6 +208,7 @@ public class Tree extends SimpleTree implements DataProvider {
             this.loaded = null;
             if (this.getAllowsChildren()) {
                 this.add(new LoadingNode());
+                this.tree.collapsePath(new TreePath(this.getPath()));
             }
             ((DefaultTreeModel) this.tree.getModel()).reload(this);
         }
