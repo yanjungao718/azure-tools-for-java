@@ -5,7 +5,6 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;

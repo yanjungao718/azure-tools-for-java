@@ -422,7 +422,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer
                     .renderMyTreeNode((com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value, this);
                 return;
-            } else if( value instanceof LoadingNode){
+            } else if (value instanceof LoadingNode) {
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
                 return;
             }
