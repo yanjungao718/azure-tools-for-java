@@ -68,7 +68,6 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         processHandler.startNotify();
-        processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
         final ConsoleMessager messager = new ConsoleMessager(processHandler);
         final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         consoleView.attachToProcess(processHandler);
