@@ -51,7 +51,7 @@ public class AccountNameTextField extends AzureTextInput {
         // validate availability
         CheckNameAvailabilityResultEntity resultEntity;
         try {
-            resultEntity = Azure.az(AzureStorageAccount.class).checkNameAvailability(subscriptionId, this.getValue());
+            resultEntity = Azure.az(AzureStorageAccount.class).forSubscription(subscriptionId).checkNameAvailability(this.getValue());
         } catch (ManagementException e) {
             return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }
