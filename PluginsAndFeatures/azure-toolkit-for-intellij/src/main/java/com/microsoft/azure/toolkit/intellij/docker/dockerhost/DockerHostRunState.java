@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.docker.dockerhost;
 
-import com.google.common.collect.ImmutableList;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
@@ -14,15 +13,16 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.intellij.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.docker.utils.DockerProgressHandler;
 import com.microsoft.azure.toolkit.intellij.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
+import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
