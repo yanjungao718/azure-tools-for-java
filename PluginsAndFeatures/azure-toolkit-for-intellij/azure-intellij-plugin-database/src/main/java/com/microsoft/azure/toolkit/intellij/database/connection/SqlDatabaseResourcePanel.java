@@ -69,7 +69,6 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
         init();
         initListeners();
 
-        this.jdbcUrl = JdbcUrl.postgre(StringUtils.EMPTY, StringUtils.EMPTY);
         this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
             serversLoader.apply(this.serverComboBox.getSubscription().getId()));
     }
@@ -117,7 +116,7 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
         final String username = usernameComboBox.getValue();
         final String password = String.valueOf(inputPasswordField.getPassword());
-        final String title = String.format("Connecting to Azure Database for PostgreSQL (%s)...", jdbcUrl.getServerHost());
+        final String title = String.format("Connecting to Database (%s)...", jdbcUrl.getServerHost());
         AzureTaskManager.getInstance().runInBackground(title, false, () -> {
             final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils.connectWithPing(this.jdbcUrl, username, password);
             // show result info
@@ -168,8 +167,8 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
             final String server = Optional.ofNullable(this.databaseComboBox.getServer())
                 .map(IDatabaseServer::getFullyQualifiedDomainName).orElse(null);
             final String database = Optional.ofNullable((IDatabase) e.getItem()).map(IDatabase::getName).orElse(null);
-            this.jdbcUrl.setServerHost(server).setDatabase(database);
-            this.urlTextField.setText(this.jdbcUrl.toString());
+            this.jdbcUrl = Optional.ofNullable((IDatabase) e.getItem()).map(IDatabase::getJdbcUrl).orElse(null);
+            this.urlTextField.setText(Optional.ofNullable(this.jdbcUrl).map(JdbcUrl::toString).orElse(""));
             this.urlTextField.setCaretPosition(0);
         }
     }
