@@ -11,6 +11,7 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -81,7 +82,7 @@ import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 
-public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
+public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener, DumbAware {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
 
     private final Map<Project, DefaultTreeModel> treeModelMap = new HashMap<>();
@@ -114,6 +115,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.forEach(azureRoot::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
+        com.microsoft.azure.toolkit.intellij.common.component.Tree.installExpandListener(tree);
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {
@@ -416,9 +418,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           int row,
                                           boolean focused) {
             Object value = v;
-            if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || value instanceof LoadingNode) {
-                // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
-                value = com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer.renderNode(value, this);
+            if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
+                com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer
+                    .renderMyTreeNode((com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value, this);
+                return;
+            } else if (value instanceof LoadingNode) {
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
                 return;
             }

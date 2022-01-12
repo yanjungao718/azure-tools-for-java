@@ -14,8 +14,8 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -74,7 +74,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
                 .ofNullable(this.subscriptionComboBox)
                 .map(AzureComboBox::getValue)
                 .map(Subscription::getId)
-                .map(id -> Azure.az(AzureStorageAccount.class).list(id))
+                .map(id -> Azure.az(AzureStorageAccount.class).accounts(id).list())
                 .orElse(Collections.emptyList());
         this.accountComboBox = new AzureComboBoxSimple<>(loader) {
             @Override

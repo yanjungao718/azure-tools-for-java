@@ -31,7 +31,7 @@ public class RedisCacheExplorerProvider implements FileEditorProvider, DumbAware
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final RedisCache redis = (RedisCache) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
-        return new RedisCacheExplorer(redis, virtualFile);
+        return new RedisCacheExplorer(redis, virtualFile, project);
     }
 
     @NotNull

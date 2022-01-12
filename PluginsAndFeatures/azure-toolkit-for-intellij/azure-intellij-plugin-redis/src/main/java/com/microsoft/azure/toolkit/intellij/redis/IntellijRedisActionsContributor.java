@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.intellij.redis.creation.CreateRedisCacheActio
 import com.microsoft.azure.toolkit.intellij.redis.explorer.RedisCacheExplorerProvider;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
@@ -36,13 +35,13 @@ public class IntellijRedisActionsContributor implements IActionsContributor {
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateRedisCacheAction.createRedisCache((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<IAzureResource<?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof RedisCache,
+        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof RedisCache,
             (r, e) -> AzureTaskManager.getInstance().runLater(() -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 dialog.setResource(new AzureServiceResource<>(((RedisCache) r), RedisResourceDefinition.INSTANCE));
                 dialog.show();
             }));
-        final Icon icon = AzureIcons.getIcon("/icons/rediscache.svg");
+        final Icon icon = AzureIcons.getIcon("/icons/Microsoft.Cache/default.svg");
         final String name = RedisCacheExplorerProvider.TYPE;
         final AzureResourceFileType type = new AzureResourceFileType(name, icon);
         final AzureResourceEditorViewManager manager = new AzureResourceEditorViewManager((resource) -> type);

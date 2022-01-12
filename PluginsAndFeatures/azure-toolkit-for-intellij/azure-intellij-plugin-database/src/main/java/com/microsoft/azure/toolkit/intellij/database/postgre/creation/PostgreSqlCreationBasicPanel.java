@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +24,7 @@ import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
 
-public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPanel<AzurePostgreSqlConfig> {
+public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
     private JPanel rootPanel;
     @Getter
@@ -38,9 +39,9 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final AzurePostgreSqlConfig config;
+    private final DatabaseServerConfig config;
 
-    PostgreSqlCreationBasicPanel(AzurePostgreSqlConfig config) {
+    PostgreSqlCreationBasicPanel(DatabaseServerConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -53,7 +54,8 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
         serverNameTextField.setSubscription(config.getSubscription());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        serverNameTextField.addValidator(new BaseNameValidator(serverNameTextField, (sid, name) -> Azure.az(AzurePostgreSql.class).checkNameAvailability(sid, name)));
+        serverNameTextField.addValidator(new BaseNameValidator(serverNameTextField, (sid, name) ->
+            Azure.az(AzurePostgreSql.class).forSubscription(sid).checkNameAvailability(name)));
     }
 
     private void initListeners() {
@@ -78,27 +80,23 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
     }
 
     @Override
-    public AzurePostgreSqlConfig getValue() {
-        config.setServerName(serverNameTextField.getText());
-        config.setAdminUsername(adminUsernameTextField.getText());
-        config.setPassword(passwordField.getPassword());
-        config.setConfirmPassword(confirmPasswordField.getPassword());
+    public DatabaseServerConfig getValue() {
+        config.setName(serverNameTextField.getText());
+        config.setAdminName(adminUsernameTextField.getText());
+        config.setAdminPassword(String.valueOf(passwordField.getPassword()));
         return config;
     }
 
     @Override
-    public void setValue(AzurePostgreSqlConfig data) {
-        if (StringUtils.isNotBlank(config.getServerName())) {
-            serverNameTextField.setText(config.getServerName());
+    public void setValue(DatabaseServerConfig data) {
+        if (StringUtils.isNotBlank(config.getName())) {
+            serverNameTextField.setText(config.getName());
         }
-        if (StringUtils.isNotBlank(config.getAdminUsername())) {
-            adminUsernameTextField.setText(config.getAdminUsername());
+        if (StringUtils.isNotBlank(config.getAdminName())) {
+            adminUsernameTextField.setText(config.getAdminName());
         }
-        if (config.getPassword() != null) {
-            passwordField.setText(String.valueOf(config.getPassword()));
-        }
-        if (config.getConfirmPassword() != null) {
-            confirmPasswordField.setText(String.valueOf(config.getConfirmPassword()));
+        if (config.getAdminPassword() != null) {
+            passwordField.setText(config.getAdminPassword());
         }
     }
 

@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.connection;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -16,8 +17,8 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +33,7 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
 
     private StorageAccountResourceDefinition() {
-        super("Azure.Storage", "Azure Storage Account", "/icons/StorageAccount/StorageAccount.svg");
+        super("Azure.Storage", "Azure Storage Account", "/icons/Microsoft.Storage/default.svg");
     }
 
     @Override
@@ -61,7 +62,11 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
 
     @Override
     public StorageAccount getResource(String dataId) {
-        return Azure.az(AzureStorageAccount.class).get(dataId);
+        final ResourceId resourceId = ResourceId.fromString(dataId);
+        final String subscriptionId = resourceId.subscriptionId();
+        final String rg = resourceId.resourceGroupName();
+        final String name = resourceId.name();
+        return Azure.az(AzureStorageAccount.class).forSubscription(subscriptionId).storageAccounts().get(name, rg);
     }
 
     @Override

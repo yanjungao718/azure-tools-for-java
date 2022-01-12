@@ -9,27 +9,23 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
-import com.microsoft.azure.toolkit.lib.common.entity.AbstractAzureResource;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudDeploymentStatus;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
-import java.util.Optional;
 
-public class SpringCloudAppPropertiesEditor extends BaseEditor {
+public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<SpringCloudApp> {
     private JButton refreshButton;
     private JButton startButton;
     private JButton stopButton;
@@ -52,23 +48,24 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private SpringCloudAppConfig originalConfig;
 
     public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudApp app, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+        super(virtualFile, app, project);
         this.project = project;
         this.app = app;
         this.rerender();
         this.initListeners();
     }
 
-    private void rerender() {
+    @Override
+    protected void rerender() {
         AzureTaskManager.getInstance().runLater(() -> {
             this.reset.setVisible(false);
             this.saveButton.setEnabled(false);
             this.lblSubscription.setText(this.app.subscription().getName());
-            this.lblCluster.setText(this.app.getCluster().name());
-            this.lblApp.setText(this.app.name());
+            this.lblCluster.setText(this.app.getParent().getName());
+            this.lblApp.setText(this.app.getName());
             AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
             AzureTaskManager.getInstance().runOnPooledThread((() -> {
-                final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).orElse(null);
+                final SpringCloudDeployment deployment = this.app.getActiveDeployment();
                 AzureTaskManager.getInstance().runLater(() -> this.resetToolbar(deployment));
             }));
             AzureTaskManager.getInstance().runOnPooledThread((() -> {
@@ -89,7 +86,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                 AzureTaskManager.getInstance().runInModal(deleteTitle, () -> {
                     this.setEnabled(false);
                     IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
-                    this.app.remove();
+                    this.app.delete();
                 });
             }
         });
@@ -123,38 +120,24 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.reset.setVisible(changedFromOrigin);
             this.saveButton.setEnabled(changedFromOrigin);
         });
-        AzureEventBus.after("springcloud.remove_app.app", (SpringCloudApp app) -> {
-            if (this.app.name().equals(app.name())) {
-                AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.app.name()), "");
-                IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
-            }
-        });
-        AzureEventBus.after("springcloud.update_app.app", (SpringCloudApp app) -> {
-            if (this.app.name().equals(app.name())) {
-                this.refresh();
-            }
-        });
     }
 
     @Nonnull
     private SpringCloudAppConfig getConfig() {
         final SpringCloudAppConfig config = this.formConfig.getValue();
         config.setSubscriptionId(this.app.subscriptionId());
-        config.setClusterName(this.app.getCluster().name());
+        config.setClusterName(this.app.getParent().name());
         config.setAppName(this.app.name());
         return config;
     }
 
-    private void refresh() {
+    protected void refresh() {
         this.reset.setVisible(false);
         this.saveButton.setEnabled(false);
-        AzureTaskManager.getInstance().runLater(() -> {
-            final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
-            AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-                this.app.refresh();
-                final SpringCloudDeployment deployment = Optional.ofNullable(this.app.activeDeployment()).map(AbstractAzureResource::refresh).orElse(null);
-                AzureTaskManager.getInstance().runLater(this::rerender);
-            });
+        final String refreshTitle = String.format("Refreshing app(%s)...", this.app.getName());
+        AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
+            this.app.refresh();
+            AzureTaskManager.getInstance().runLater(this::rerender);
         });
     }
 
@@ -174,25 +157,25 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             this.setEnabled(false);
             return;
         }
-        final SpringCloudDeploymentStatus status = deployment.entity().getStatus();
-        switch (status) {
-            case STOPPED:
+        final String status = deployment.getStatus();
+        switch (status.toUpperCase()) {
+            case "STOPPED":
                 this.setEnabled(true);
                 this.stopButton.setEnabled(false);
                 this.restartButton.setEnabled(false);
                 break;
-            case RUNNING:
+            case "RUNNING":
                 this.setEnabled(true);
                 this.startButton.setEnabled(false);
                 break;
-            case FAILED:
+            case "FAILED":
                 this.setEnabled(false);
                 this.deleteButton.setEnabled(true);
                 break;
-            case ALLOCATING:
-            case UPGRADING:
-            case COMPILING:
-            case UNKNOWN:
+            case "ALLOCATING":
+            case "UPGRADING":
+            case "COMPILING":
+            case "UNKNOWN":
                 this.setEnabled(false);
                 break;
             default:

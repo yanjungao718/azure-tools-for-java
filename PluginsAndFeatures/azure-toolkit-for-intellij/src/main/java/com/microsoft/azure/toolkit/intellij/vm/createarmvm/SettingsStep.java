@@ -25,8 +25,8 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -321,7 +321,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (storageAccounts == null) {
-                List<StorageAccount> accounts = Azure.az(AzureStorageAccount.class).subscription(model.getSubscription().getId()).list();
+                List<StorageAccount> accounts = Azure.az(AzureStorageAccount.class).accounts(model.getSubscription().getId()).list();
                 storageAccounts = new TreeMap<>();
                 for (StorageAccount storageAccount : accounts) {
                     storageAccounts.put(storageAccount.name(), storageAccount);
@@ -404,8 +404,8 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         for (StorageAccount storageAccount : storageAccounts.values()) {
             // only general purpose accounts support page blobs, so only they can be used to create vm;
             // zone-redundant acounts not supported for vm
-            if ((Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE) || Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE_V2))
-                    && !Objects.equals(storageAccount.entity().getRedundancy(), Redundancy.STANDARD_ZRS)) {
+            if ((Objects.equals(storageAccount.getKind(), Kind.STORAGE) || Objects.equals(storageAccount.getKind(), Kind.STORAGE_V2))
+                    && !Objects.equals(storageAccount.getRedundancy(), Redundancy.STANDARD_ZRS)) {
                 filteredStorageAccounts.add(storageAccount);
             }
         }

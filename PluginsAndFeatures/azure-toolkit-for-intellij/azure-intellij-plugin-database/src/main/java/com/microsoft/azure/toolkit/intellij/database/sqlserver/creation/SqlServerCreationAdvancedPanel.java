@@ -11,17 +11,17 @@ import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldI
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.BaseNameValidator;
+import com.microsoft.azure.toolkit.intellij.database.BaseRegionValidator;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.common.SqlServerRegionValidator;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.common.SqlServerNameValidator;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +31,7 @@ import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormPanel<SqlServerConfig> {
+public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
     private JPanel rootPanel;
     private ConnectionSecurityPanel security;
@@ -53,9 +53,9 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final SqlServerConfig config;
+    private final DatabaseServerConfig config;
 
-    SqlServerCreationAdvancedPanel(SqlServerConfig config) {
+    SqlServerCreationAdvancedPanel(DatabaseServerConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -67,15 +67,20 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        regionComboBox.setItemsLoader(() -> Azure.az(AzureSqlServer.class).listSupportedRegions(this.subscriptionComboBox.getValue().getId()));
-        regionComboBox.setValidator(new SqlServerRegionValidator(regionComboBox));
         serverNameTextField.setSubscription(config.getSubscription());
-        serverNameTextField.setValidator(new SqlServerNameValidator(serverNameTextField));
+        regionComboBox.setItemsLoader(() ->
+            Azure.az(AzureSqlServer.class).forSubscription(this.subscriptionComboBox.getValue().getId()).listSupportedRegions());
+        regionComboBox.addValidator(new BaseRegionValidator(regionComboBox, (sid, region) ->
+            Azure.az(AzureSqlServer.class).forSubscription(sid).checkRegionAvailability(region)));
+        serverNameTextField.addValidator(new BaseNameValidator(serverNameTextField, (sid, name) ->
+            Azure.az(AzureSqlServer.class).forSubscription(sid).checkNameAvailability(name)));
     }
 
     private void initListeners() {
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
-        this.adminUsernameTextField.getDocument().addDocumentListener(this.onAdminUsernameChanged());
+        this.adminUsernameTextField.getDocument().addDocumentListener(generateAdminUsernameListener());
+        this.security.getAllowAccessFromAzureServicesCheckBox().addItemListener(this::onSecurityAllowAccessFromAzureServicesCheckBoxChanged);
+        this.security.getAllowAccessFromLocalMachineCheckBox().addItemListener(this::onSecurityAllowAccessFromLocalMachineCheckBoxChanged);
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
@@ -87,7 +92,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         }
     }
 
-    private DocumentListener onAdminUsernameChanged() {
+    private DocumentListener generateAdminUsernameListener() {
         return new TextDocumentListenerAdapter() {
             @Override
             public void onDocumentChanged() {
@@ -98,6 +103,14 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         };
     }
 
+    private void onSecurityAllowAccessFromAzureServicesCheckBoxChanged(final ItemEvent e) {
+        config.setAzureServiceAccessAllowed(e.getStateChange() == ItemEvent.SELECTED);
+    }
+
+    private void onSecurityAllowAccessFromLocalMachineCheckBoxChanged(final ItemEvent e) {
+        config.setLocalMachineAccessAllowed(e.getStateChange() == ItemEvent.SELECTED);
+    }
+
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
@@ -105,32 +118,28 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     }
 
     @Override
-    public SqlServerConfig getValue() {
-        config.setServerName(serverNameTextField.getText());
-        config.setAdminUsername(adminUsernameTextField.getText());
-        config.setPassword(passwordField.getPassword());
-        config.setConfirmPassword(confirmPasswordField.getPassword());
+    public DatabaseServerConfig getValue() {
+        config.setName(serverNameTextField.getText());
+        config.setAdminName(adminUsernameTextField.getText());
+        config.setAdminPassword(String.valueOf(passwordField.getPassword()));
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setRegion(regionComboBox.getValue());
-        config.setAllowAccessFromAzureServices(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
-        config.setAllowAccessFromLocalMachine(security.getAllowAccessFromLocalMachineCheckBox().isSelected());
+        config.setAzureServiceAccessAllowed(security.getAllowAccessFromAzureServicesCheckBox().isSelected());
+        config.setLocalMachineAccessAllowed(security.getAllowAccessFromLocalMachineCheckBox().isSelected());
         return config;
     }
 
     @Override
-    public void setValue(SqlServerConfig data) {
-        if (StringUtils.isNotBlank(config.getServerName())) {
-            serverNameTextField.setText(config.getServerName());
+    public void setValue(DatabaseServerConfig data) {
+        if (StringUtils.isNotBlank(config.getName())) {
+            serverNameTextField.setText(config.getName());
         }
-        if (StringUtils.isNotBlank(config.getAdminUsername())) {
-            adminUsernameTextField.setText(config.getAdminUsername());
+        if (StringUtils.isNotBlank(config.getAdminName())) {
+            adminUsernameTextField.setText(config.getAdminName());
         }
-        if (config.getPassword() != null) {
-            passwordField.setText(String.valueOf(config.getPassword()));
-        }
-        if (config.getConfirmPassword() != null) {
-            confirmPasswordField.setText(String.valueOf(config.getConfirmPassword()));
+        if (config.getAdminPassword() != null) {
+            passwordField.setText(String.valueOf(config.getAdminPassword()));
         }
         if (config.getSubscription() != null) {
             subscriptionComboBox.setValue(config.getSubscription());
@@ -141,8 +150,8 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         if (config.getRegion() != null) {
             regionComboBox.setValue(config.getRegion());
         }
-        security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAllowAccessFromAzureServices());
-        security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isAllowAccessFromLocalMachine());
+        security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAzureServiceAccessAllowed());
+        security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isLocalMachineAccessAllowed());
     }
 
     @Override
@@ -158,5 +167,4 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         };
         return Arrays.asList(inputs);
     }
-
 }

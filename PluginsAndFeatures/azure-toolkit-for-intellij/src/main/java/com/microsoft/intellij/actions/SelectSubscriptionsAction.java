@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SelectSubscriptionsAction extends AzureAnAction {
+public class SelectSubscriptionsAction extends AzureAnAction implements DumbAware {
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
 
     public SelectSubscriptionsAction() {

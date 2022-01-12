@@ -22,9 +22,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -64,10 +62,6 @@ public class AzureModule extends AzureRefreshableNode {
     private ResourceManagementModule resourceManagementModule;
     @NotNull
     private FunctionModule functionModule;
-    @NotNull
-    private MySQLModule mysqlModule;
-    @NotNull
-    private SqlServerModule sqlServerModule;
 
     /**
      * Constructor.
@@ -85,8 +79,6 @@ public class AzureModule extends AzureRefreshableNode {
         containerRegistryModule = new ContainerRegistryModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
-        mysqlModule = new MySQLModule(this);
-        sqlServerModule = new SqlServerModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -161,12 +153,6 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(functionModule)) {
             addChildNode(functionModule);
         }
-        if (!isDirectChild(mysqlModule)) {
-            addChildNode(mysqlModule);
-        }
-        if (!isDirectChild(sqlServerModule)) {
-            addChildNode(sqlServerModule);
-        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
@@ -196,8 +182,6 @@ public class AzureModule extends AzureRefreshableNode {
                 webAppModule.load(true);
                 resourceManagementModule.load(true);
                 functionModule.load(true);
-                mysqlModule.load(true);
-                sqlServerModule.load(true);
 
                 if (hdInsightModule != null) {
                     hdInsightModule.load(true);

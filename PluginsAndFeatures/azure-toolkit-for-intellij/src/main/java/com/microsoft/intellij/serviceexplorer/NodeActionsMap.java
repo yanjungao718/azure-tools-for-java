@@ -14,12 +14,6 @@ import com.microsoft.azure.toolkit.intellij.arm.action.EditDeploymentAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.ExportParameterAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.ExportTemplateAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction;
-import com.microsoft.azure.toolkit.intellij.connector.database.ConnectToMySQLAction;
-import com.microsoft.azure.toolkit.intellij.connector.database.ConnectToSQLAction;
-import com.microsoft.azure.toolkit.intellij.database.mysql.action.CreateMySQLAction;
-import com.microsoft.azure.toolkit.intellij.database.mysql.action.OpenMySQLByToolsAction;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.CreateSqlServerAction;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.OpenSqlServerByToolsAction;
 import com.microsoft.azure.toolkit.intellij.docker.action.PushToContainerRegistryAction;
 import com.microsoft.azure.toolkit.intellij.vm.CreateVMAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
@@ -33,10 +27,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManage
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
@@ -60,10 +50,6 @@ public class NodeActionsMap {
                 .add(CreateTableAction.class).build());
         NODE_ACTIONS.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
-        NODE_ACTIONS.put(MySQLModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateMySQLAction.class).build());
-        NODE_ACTIONS.put(SqlServerModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateSqlServerAction.class).build());
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         NODE_ACTIONS.put(ExternalStorageNode.class,
@@ -87,11 +73,5 @@ public class NodeActionsMap {
 
         NODE_ACTIONS.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(CreateDeploymentAction.class).build());
-
-        NODE_ACTIONS.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(OpenMySQLByToolsAction.class).add(ConnectToMySQLAction.class).build());
-
-        NODE_ACTIONS.put(SqlServerNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(OpenSqlServerByToolsAction.class).add(ConnectToSQLAction.class).build());
     }
 }

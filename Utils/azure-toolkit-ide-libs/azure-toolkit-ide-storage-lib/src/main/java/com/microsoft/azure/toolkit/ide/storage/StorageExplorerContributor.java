@@ -6,26 +6,24 @@
 package com.microsoft.azure.toolkit.ide.storage;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
-import javax.annotation.Nonnull;
-import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class StorageExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Storage Account";
-    private static final String ICON = "/icons/storageaccount.svg";
+    private static final String ICON = "/icons/Microsoft.Storage/default.svg";
 
     @Override
     public Node<?> getModuleNode() {
@@ -33,15 +31,12 @@ public class StorageExplorerContributor implements IExplorerContributor {
         final IAzureMessager messager = AzureMessager.getDefaultMessager();
 
         final AzureStorageAccount service = az(AzureStorageAccount.class);
+        final Function<AzureStorageAccount, List<StorageAccount>> accounts = asc -> asc.list().stream().flatMap(m -> m.storageAccounts().list().stream())
+            .collect(Collectors.toList());
         return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
-                .actions(StorageActionsContributor.SERVICE_ACTIONS)
-                .addChildren(this::listStorageAccounts, (account, storageNode) -> new Node<>(account)
-                        .view(new AzureResourceLabelView<>(account))
-                        .actions(StorageActionsContributor.ACCOUNT_ACTIONS));
-    }
-
-    @Nonnull
-    private List<StorageAccount> listStorageAccounts(AzureStorageAccount s) {
-        return s.list().stream().sorted(Comparator.comparing(IAzureResource::name)).collect(Collectors.toList());
+            .actions(StorageActionsContributor.SERVICE_ACTIONS)
+            .addChildren(accounts, (account, storageNode) -> new Node<>(account)
+                .view(new AzureResourceLabelView<>(account))
+                .actions(StorageActionsContributor.ACCOUNT_ACTIONS));
     }
 }

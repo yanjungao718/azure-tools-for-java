@@ -5,8 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.redis.explorer;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,7 +34,7 @@ import java.util.function.Function;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 
-public class RedisCacheExplorer extends BaseEditor {
+public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
 
     public static final String ID = "com.microsoft.intellij.helpers.rediscache.RedisCacheExplorer";
     public static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.RedisCacheExplorer";
@@ -78,8 +79,8 @@ public class RedisCacheExplorer extends BaseEditor {
     private JSplitPane splitPane;
     private JPanel pnlProgressBar;
 
-    public RedisCacheExplorer(RedisCache redis, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+    public RedisCacheExplorer(RedisCache redis, @Nonnull final VirtualFile virtualFile, @Nonnull Project project) {
+        super(virtualFile, redis, project);
         this.redis = redis;
         final AzureTaskManager manager = AzureTaskManager.getInstance();
 
@@ -307,6 +308,11 @@ public class RedisCacheExplorer extends BaseEditor {
             currentCursor = SCAN_POINTER_START;
         }
         lastChosenKey = "";
+    }
+
+    @Override
+    protected void rerender() {
+
     }
 
     private static class ReadOnlyTableModel extends DefaultTableModel {

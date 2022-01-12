@@ -5,16 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
+import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentEntity;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,13 +45,13 @@ public class SpringCloudAppInstancesPanel extends JPanel {
 
     public void setApp(@Nonnull SpringCloudApp app) {
         final DefaultTableModel model = (DefaultTableModel) this.tableInstances.getModel();
-        final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment())
-                .map(SpringCloudDeployment::entity)
-                .orElse(new SpringCloudDeploymentEntity("default", app.entity()));
-        final List<SpringCloudDeploymentInstanceEntity> instances = deploymentEntity.getInstances();
+        final List<DeploymentInstance> instances = Optional.ofNullable(app.getActiveDeployment())
+            .or(() -> Optional.ofNullable(app.deployments().get("default", app.getResourceGroupName())))
+            .map(SpringCloudDeployment::getInstances)
+            .orElse(new ArrayList<>());
 
         model.setRowCount(0);
-        instances.forEach(i -> model.addRow(new Object[]{i.getName(), i.status(), i.discoveryStatus()}));
+        instances.forEach(i -> model.addRow(new Object[]{i.name(), i.status(), i.discoveryStatus()}));
         final int rows = model.getRowCount() < 5 ? 5 : instances.size();
         model.setRowCount(rows);
         this.tableInstances.setVisibleRowCount(rows);
