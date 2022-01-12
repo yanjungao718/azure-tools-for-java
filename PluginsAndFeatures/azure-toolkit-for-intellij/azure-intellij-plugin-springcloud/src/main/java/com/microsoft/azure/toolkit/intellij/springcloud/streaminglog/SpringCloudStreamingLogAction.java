@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,8 +59,8 @@ public class SpringCloudStreamingLogAction {
         AzureTaskManager.getInstance().runLater(() -> {
             final SpringCloudStreamingLogDialog dialog = new SpringCloudStreamingLogDialog(project, instances);
             if (dialog.showAndGet()) {
-                final SpringCloudDeploymentInstanceEntity target = dialog.getInstance();
-                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, app, target.getName());
+                final DeploymentInstance target = dialog.getInstance();
+                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, app, target.name());
             }
         });
     }

@@ -20,7 +20,7 @@ public class SpringCloudStreamingLogDialog extends DialogWrapper {
     private JPanel pnlRoot;
     private JComboBox<DeploymentInstance> cbInstances;
 
-    private SpringCloudDeploymentInstanceEntity instance;
+    private DeploymentInstance instance;
 
     public SpringCloudStreamingLogDialog(@Nullable final Project project, List<DeploymentInstance> instances) {
         super(project, false);
@@ -36,13 +36,13 @@ public class SpringCloudStreamingLogDialog extends DialogWrapper {
         init();
     }
 
-    public SpringCloudDeploymentInstanceEntity getInstance() {
+    public DeploymentInstance getInstance() {
         return instance;
     }
 
     @Override
     protected void doOKAction() {
-        instance = (SpringCloudDeploymentInstanceEntity) cbInstances.getSelectedItem();
+        instance = (DeploymentInstance) cbInstances.getSelectedItem();
         super.doOKAction();
     }
 
