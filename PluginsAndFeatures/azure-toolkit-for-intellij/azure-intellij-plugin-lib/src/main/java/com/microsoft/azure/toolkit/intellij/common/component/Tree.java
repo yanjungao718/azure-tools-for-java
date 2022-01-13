@@ -234,6 +234,7 @@ public class Tree extends SimpleTree implements DataProvider {
             }
             renderer.append(view.getLabel());
             renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ATTRIBUTES, true);
+            renderer.setToolTipText(Optional.ofNullable(view.getDescription()).map(d -> view.getLabel() + ":" + d).orElse(view.getLabel()));
         }
 
         @Override
