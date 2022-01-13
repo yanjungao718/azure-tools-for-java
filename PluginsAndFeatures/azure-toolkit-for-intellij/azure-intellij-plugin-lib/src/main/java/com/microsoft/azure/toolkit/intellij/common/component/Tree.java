@@ -163,6 +163,14 @@ public class Tree extends SimpleTree implements DataProvider {
             view.setRefresher(this);
         }
 
+        public T getData() {
+            return this.inner.data();
+        }
+
+        public String getLabel() {
+            return this.inner.view().getLabel();
+        }
+
         @Override
         public void refreshView() {
             if (this.getParent() != null) {
