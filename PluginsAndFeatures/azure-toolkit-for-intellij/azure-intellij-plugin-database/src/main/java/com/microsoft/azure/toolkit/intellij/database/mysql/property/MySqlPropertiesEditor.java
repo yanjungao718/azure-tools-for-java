@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlDatabase;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServerDraft;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -26,12 +27,16 @@ import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServer> {
 
     public static final String ID = "com.microsoft.azure.toolkit.intellij.mysql.property.MySqlPropertiesEditor";
+    private final Project project;
+
+    @Nonnull
+    private final MySqlServer origin;
+    @Nonnull
+    private final MySqlServerDraft server;
 
     private AzureHideableTitledSeparator overviewSeparator;
     private MySqlPropertyOverviewPanel overview;
@@ -55,13 +60,6 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         "String url =\"jdbc:mysql://%s:3306/%s?serverTimezone=UTC&useSSL=true&requireSSL=false\";" + System.lineSeparator() +
             "myDbConn = DriverManager.getConnection(url, \"%s\", {your_password});";
 
-    private Boolean originalAllowAccessToAzureServices;
-    private Boolean originalAllowAccessToLocal;
-    private final Project project;
-
-    @Nonnull
-    private final MySqlServer server;
-
     @Override
     protected void rerender() {
         AzureTaskManager.getInstance().runLater(() -> this.setData(this.server));
@@ -70,7 +68,8 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
     MySqlPropertiesEditor(@Nonnull Project project, @Nonnull MySqlServer server, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile, server, project);
         this.project = project;
-        this.server = server;
+        this.origin = server;
+        this.server = (MySqlServerDraft) server.update();
 
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
@@ -96,14 +95,15 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
     private void setData(MySqlServer server) {
         this.overview.setFormData(server);
         this.databaseComboBox.setServer(server);
+        this.refreshButtons();
         if (StringUtils.equalsIgnoreCase("READY", server.getStatus())) {
             connectionSecuritySeparator.expand();
             connectionSecuritySeparator.setEnabled(true);
             connectionStringsSeparator.expand();
             connectionStringsSeparator.setEnabled(true);
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
-                originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
+                final boolean originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
+                final boolean originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
                 AzureTaskManager.getInstance().runLater(() -> {
                     connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
                     connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
@@ -125,18 +125,14 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         connectionStringsJDBC.getCopyButton().addActionListener(this::onJDBCCopyButtonClicked);
         connectionStringsSpring.getCopyButton().addActionListener(this::onSpringCopyButtonClicked);
         // save/discard buttons
-        propertyActionPanel.getSaveButton().addActionListener(this::onSaveButtonClicked);
-        propertyActionPanel.getDiscardButton().addActionListener(this::onDiscardButtonClicked);
+        propertyActionPanel.getSaveButton().addActionListener(this::apply);
+        propertyActionPanel.getDiscardButton().addActionListener(this::reset);
         // database combobox changed
         databaseComboBox.addItemListener(this::onDatabaseComboBoxChanged);
     }
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
-        if (itemEvent.getStateChange() == ItemEvent.SELECTED || itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-            final boolean changed = MySqlPropertiesEditor.this.changed();
-            MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setEnabled(changed);
-            MySqlPropertiesEditor.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
-        }
+        this.refreshButtons();
     }
 
     private void onJDBCCopyButtonClicked(ActionEvent e) {
@@ -163,44 +159,34 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         }
     }
 
-    private void onSaveButtonClicked(ActionEvent e) {
-        final String actionName = "Save";
-        final String originalText = MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().getText();
-        MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setText(actionName);
-        MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setEnabled(false);
+    private void apply(ActionEvent e) {
+        this.propertyActionPanel.getSaveButton().setEnabled(false);
+        this.propertyActionPanel.getDiscardButton().setEnabled(false);
         final Runnable runnable = () -> {
             final String subscriptionId = server.getSubscriptionId();
-            this.server.refresh();
-            originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
-            originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
             final boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
-            if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices)) {
-                server.firewallRules().toggleAzureServiceAccess(allowAccessToAzureServices);
-                originalAllowAccessToAzureServices = allowAccessToAzureServices;
-            }
             final boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
-            if (!originalAllowAccessToLocal.equals(allowAccessToLocal)) {
-                server.firewallRules().toggleLocalMachineAccess(allowAccessToLocal);
-                originalAllowAccessToLocal = allowAccessToLocal;
-            }
-            MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setText(originalText);
-            final boolean changed = MySqlPropertiesEditor.this.changed();
-            MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setEnabled(changed);
-            MySqlPropertiesEditor.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
-            final Map<String, String> properties = new HashMap<>();
-            properties.put("subscriptionId", subscriptionId);
-            properties.put("allowAccessToLocal", String.valueOf(allowAccessToLocal));
-            properties.put("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
-            AzureTelemetry.getActionContext().setProperties(properties);
+            this.server.setAzureServiceAccessAllowed(allowAccessToAzureServices);
+            this.server.setLocalMachineAccessAllowed(allowAccessToLocal);
+            final AzureTelemetry.Context context = AzureTelemetry.getActionContext();
+            context.setProperty("subscriptionId", subscriptionId);
+            context.setProperty("allowAccessToLocal", String.valueOf(allowAccessToLocal));
+            context.setProperty("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
+            this.server.commit();
+            this.refreshButtons();
         };
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, String.format("%s...", actionName), false, runnable));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, "Saving updates", false, runnable));
     }
 
-    private void onDiscardButtonClicked(ActionEvent e) {
-        MySqlPropertiesEditor.this.propertyActionPanel.getSaveButton().setEnabled(false);
-        MySqlPropertiesEditor.this.propertyActionPanel.getDiscardButton().setEnabled(false);
-        connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-        connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
+    private void refreshButtons() {
+        final boolean modified = this.isModified();
+        this.propertyActionPanel.getSaveButton().setEnabled(modified);
+        this.propertyActionPanel.getDiscardButton().setEnabled(modified);
+    }
+
+    private void reset(ActionEvent e) {
+        this.server.reset();
+        this.rerender();
     }
 
     private void onDatabaseComboBoxChanged(ItemEvent e) {
@@ -214,9 +200,10 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         }
     }
 
-    private boolean changed() {
-        return originalAllowAccessToAzureServices != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected() ||
-            originalAllowAccessToLocal != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
+    @Override
+    public boolean isModified() {
+        return this.origin.isAzureServiceAccessAllowed() != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected() ||
+            this.origin.isLocalMachineAccessAllowed() != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
     }
 
     @Override
