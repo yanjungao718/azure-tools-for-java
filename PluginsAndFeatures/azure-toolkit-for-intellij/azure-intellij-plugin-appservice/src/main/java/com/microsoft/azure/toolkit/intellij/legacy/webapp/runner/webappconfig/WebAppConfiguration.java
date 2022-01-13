@@ -123,7 +123,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             }
             if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanId())) {
                 // Service plan could be null as lazy loading, throw exception in this case
-                throw new ConfigurationException(message("webapp.deploy.validate.loading"));
+                throw new ConfigurationException(message("webapp.validate_deploy_configuration.loading"));
             }
             if (webAppSettingModel.isDeployToSlot()) {
                 if (Constants.CREATE_NEW_SLOT.equals(webAppSettingModel.getSlotName())) {
@@ -143,10 +143,10 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
         final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
         if (operatingSystem == OperatingSystem.DOCKER) {
-            throw new ConfigurationException(message("webapp.deploy.validate.dockerRuntime"));
+            throw new ConfigurationException(message("webapp.validate_deploy_configuration.dockerRuntime"));
         }
         if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
-            throw new ConfigurationException(message("webapp.deploy.validate.invalidRuntime"));
+            throw new ConfigurationException(message("webapp.validate_deploy_configuration.invalidRuntime"));
         }
         final String webContainer = runtime.getWebContainer().getValue();
         final String artifactPackage = webAppSettingModel.getPackaging();

@@ -121,14 +121,14 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
         final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
         if (operatingSystem == OperatingSystem.DOCKER) {
-            throw new ConfigurationException(message("function.deploy.validate.dockerRuntime"));
+            throw new ConfigurationException(message("function.validate_deploy_configuration.dockerRuntime"));
         }
         if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
-            throw new ConfigurationException(message("function.deploy.validate.invalidRuntime"));
+            throw new ConfigurationException(message("function.validate_deploy_configuration.invalidRuntime"));
         }
         if (functionAppConfig.getServicePlan() == null) {
             // Service plan could be null as lazy loading, throw exception in this case
-            throw new ConfigurationException(message("function.deploy.validate.loading"));
+            throw new ConfigurationException(message("function.validate_deploy_configuration.loading"));
         }
     }
 
