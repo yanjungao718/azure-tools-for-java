@@ -11,9 +11,13 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +28,7 @@ import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
 
@@ -50,6 +55,23 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
             }
         }
         return items;
+    }
+
+    protected T convertAppServiceToConfig(final Supplier<T> supplier, IAppService<?> appService) {
+        final T config = supplier.get();
+        config.setResourceId(appService.id());
+        config.setName(appService.name());
+        config.setRuntime(null);
+        config.setSubscription(com.microsoft.azure.toolkit.lib.common.model.Subscription.builder().id(appService.getSubscriptionId()).build());
+        config.setResourceGroup(ResourceGroup.builder().name(appService.getResourceGroupName()).build());
+        AzureTaskManager.getInstance()
+                .runOnPooledThreadAsObservable(new AzureTask<>(appService::entity))
+                .subscribe(entity -> {
+                    config.setRuntime(entity.getRuntime());
+                    config.setRegion(entity.getRegion());
+                    config.setServicePlan(AppServicePlanEntity.builder().id(entity.getAppServicePlanId()).build());
+                });
+        return config;
     }
 
     @Override
@@ -80,14 +102,13 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
 
     protected abstract void createResource();
 
-    public static class AppComboBoxRender extends SimpleListCellRenderer {
+    public static class AppComboBoxRender extends SimpleListCellRenderer<AppServiceConfig> {
 
         @Override
-        public void customize(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof AppServiceConfig) {
-                final AppServiceConfig app = (AppServiceConfig) value;
-                final boolean isJavaApp = app.getRuntime() != null && !Objects.equals(app.getRuntime().getJavaVersion(), JavaVersion.OFF) &&
-                        app.getRuntime().getOperatingSystem() != OperatingSystem.DOCKER;
+        public void customize(JList<? extends AppServiceConfig> list, AppServiceConfig app, int index, boolean isSelected, boolean cellHasFocus) {
+            if (app != null) {
+                final boolean isJavaApp = Optional.ofNullable(app.getRuntime()).map(Runtime::getJavaVersion)
+                        .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF)).orElse(false);
                 setEnabled(isJavaApp);
                 setFocusable(isJavaApp);
 
