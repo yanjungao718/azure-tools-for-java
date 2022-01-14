@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
@@ -92,6 +93,9 @@ public class WebAppService {
     }
 
     public String getRuntimeDisplayName(@Nonnull final Runtime runtime) {
+        if (runtime.getOperatingSystem() == OperatingSystem.DOCKER) {
+            return "Docker";
+        }
         final String os = runtime.getOperatingSystem().getValue();
         final String javaVersion = Objects.equals(runtime.getJavaVersion(), JavaVersion.OFF) ?
                 null : String.format("Java %s", runtime.getJavaVersion().getValue());

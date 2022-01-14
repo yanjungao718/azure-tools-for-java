@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.s
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
@@ -25,16 +26,15 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppConfig> {
     protected List<WebAppConfig> loadAppServiceModels() {
         final List<WebApp> webApps = Azure.az(AzureWebApp.class).list();
         return webApps.stream().parallel()
-                .filter(this::isJavaAppService)
                 .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
-                .map(WebAppConfig::fromRemote)
+                .map(webApp -> convertAppServiceToConfig(WebAppConfig::new, webApp))
                 .collect(Collectors.toList());
     }
 
     @Override
     protected void createResource() {
         // todo: hide deployment part in creation dialog
-        WebAppCreationDialog webAppCreationDialog = new WebAppCreationDialog(project);
+        final WebAppCreationDialog webAppCreationDialog = new WebAppCreationDialog(project);
         webAppCreationDialog.setDeploymentVisible(false);
         webAppCreationDialog.setOkActionListener(webAppConfig -> {
             WebAppComboBox.this.addItem(webAppConfig);

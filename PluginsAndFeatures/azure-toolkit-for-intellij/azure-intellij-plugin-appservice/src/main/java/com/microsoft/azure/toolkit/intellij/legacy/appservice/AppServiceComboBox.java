@@ -9,27 +9,34 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
-public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> extends AzureComboBox<T> {
+public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
 
     protected Project project;
     protected Subscription subscription;
 
-    private T configModel;
+    @Setter
+    protected T configModel;
 
     public AppServiceComboBox(final Project project) {
         super(false);
@@ -37,79 +44,96 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         this.setRenderer(new AppComboBoxRender());
     }
 
-    public void setConfigModel(T configModel) {
-        this.configModel = configModel;
-        setValue(new ItemReference<>(item -> AppServiceComboBoxModel.isSameApp(item, configModel)));
-    }
-
     @Nonnull
     @Override
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
-        if (configModel != null && configModel.isNewCreateResource()) {
-            final boolean exist = items.stream().anyMatch(item -> AppServiceComboBoxModel.isSameApp(item, configModel));
-            if (!exist) {
-                items.add(configModel);
-            }
+        final boolean isConfigResourceCreated = !isDraftResource(configModel) ||
+                items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
+        if (isConfigResourceCreated) {
+            this.configModel = null;
+        } else {
+            items.add(configModel);
         }
         return items;
     }
 
+    protected T convertAppServiceToConfig(final Supplier<T> supplier, IAppService<?> appService) {
+        final T config = supplier.get();
+        config.setResourceId(appService.id());
+        config.setName(appService.name());
+        config.setRuntime(null);
+        config.setSubscription(com.microsoft.azure.toolkit.lib.common.model.Subscription.builder().id(appService.getSubscriptionId()).build());
+        config.setResourceGroup(ResourceGroup.builder().name(appService.getResourceGroupName()).build());
+        AzureTaskManager.getInstance()
+                .runOnPooledThreadAsObservable(new AzureTask<>(appService::entity))
+                .subscribe(entity -> {
+                    config.setRuntime(entity.getRuntime());
+                    config.setRegion(entity.getRegion());
+                    config.setServicePlan(AppServicePlanEntity.builder().id(entity.getAppServicePlanId()).build());
+                });
+        return config;
+    }
+
+    @Override
+    public T getValue() {
+        if (value instanceof ItemReference && ((ItemReference<?>) value).is(configModel)) {
+            return configModel;
+        }
+        return super.getValue();
+    }
+
     protected abstract List<T> loadAppServiceModels() throws Exception;
 
-    @Nullable
+    @Nonnull
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, "Create", this::createResource);
+        return ExtendableTextComponent.Extension.create(AllIcons.General.Add, "Create", this::createResource);
     }
 
     @Override
     protected String getItemText(final Object item) {
-        if (item instanceof AppServiceComboBoxModel) {
-            final AppServiceComboBoxModel selectedItem = (AppServiceComboBoxModel) item;
-            return selectedItem.isNewCreateResource() ?
-                String.format("(New) %s", selectedItem.getAppName()) : selectedItem.getAppName();
+        if (item instanceof AppServiceConfig) {
+            final AppServiceConfig selectedItem = (AppServiceConfig) item;
+            return isDraftResource(selectedItem) ? String.format("(New) %s", selectedItem.getName()) : selectedItem.getName();
         } else {
             return Objects.toString(item, StringUtils.EMPTY);
         }
     }
 
-    protected boolean isJavaAppService(IAppService appService) {
-        try {
-            return Optional.ofNullable(appService.getRuntime()).map(Runtime::getJavaVersion)
-                    .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF))
-                    .orElse(false);
-        } catch (final RuntimeException e) {
-            // app service may have been removed while parsing, return false in this case
-            return false;
-        }
-    }
-
     protected abstract void createResource();
 
-    public static class AppComboBoxRender extends SimpleListCellRenderer {
+    public static class AppComboBoxRender extends SimpleListCellRenderer<AppServiceConfig> {
 
         @Override
-        public void customize(JList list, Object value, int index, boolean b, boolean b1) {
-            if (value instanceof AppServiceComboBoxModel) {
-                final AppServiceComboBoxModel app = (AppServiceComboBoxModel) value;
+        public void customize(JList<? extends AppServiceConfig> list, AppServiceConfig app, int index, boolean isSelected, boolean cellHasFocus) {
+            if (app != null) {
+                final boolean isJavaApp = Optional.ofNullable(app.getRuntime()).map(Runtime::getJavaVersion)
+                        .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF)).orElse(false);
+                setEnabled(isJavaApp);
+                setFocusable(isJavaApp);
+
                 if (index >= 0) {
                     setText(getAppServiceLabel(app));
                 } else {
-                    setText(app.getAppName());
+                    setText(app.getName());
                 }
+                this.repaint();
             }
         }
 
-        private String getAppServiceLabel(AppServiceComboBoxModel appServiceModel) {
-            final String appServiceName = appServiceModel.isNewCreateResource() ?
-                String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
-            final String runtime = WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
-            final String resourceGroup = appServiceModel.getResourceGroup();
-
+        private String getAppServiceLabel(AppServiceConfig appServiceModel) {
+            final String appServiceName = isDraftResource(appServiceModel) ?
+                    String.format("(New) %s", appServiceModel.getName()) : appServiceModel.getName();
+            final String runtime = appServiceModel.getRuntime() == null ?
+                    "Loading:" : WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
+            final String resourceGroup = Optional.ofNullable(appServiceModel.getResourceGroup()).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
-                appServiceName, runtime, resourceGroup);
+                    appServiceName, runtime, resourceGroup);
         }
+    }
+
+    private static boolean isDraftResource(final AppServiceConfig config) {
+        return config != null && StringUtils.isEmpty(config.getResourceId());
     }
 }
