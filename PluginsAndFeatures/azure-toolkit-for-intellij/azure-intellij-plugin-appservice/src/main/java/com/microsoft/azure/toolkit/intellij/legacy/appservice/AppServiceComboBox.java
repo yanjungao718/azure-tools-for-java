@@ -48,11 +48,12 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     @Override
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
-        if (isDraftResource(configModel)) {
-            final boolean exist = items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
-            if (!exist) {
-                items.add(configModel);
-            }
+        final boolean isConfigResourceCreated = !isDraftResource(configModel) ||
+                items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
+        if (isConfigResourceCreated) {
+            this.configModel = null;
+        } else {
+            items.add(configModel);
         }
         return items;
     }
