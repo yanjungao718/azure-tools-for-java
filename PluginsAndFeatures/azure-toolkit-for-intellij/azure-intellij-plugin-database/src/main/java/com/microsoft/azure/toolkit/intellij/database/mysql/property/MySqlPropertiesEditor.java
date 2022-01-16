@@ -34,9 +34,9 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
     private final Project project;
 
     @Nonnull
-    private final MySqlServer origin;
+    private final MySqlServer server;
     @Nonnull
-    private final MySqlServerDraft server;
+    private final MySqlServerDraft draft;
 
     private AzureHideableTitledSeparator overviewSeparator;
     private MySqlPropertyOverviewPanel overview;
@@ -62,14 +62,14 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
 
     @Override
     protected void rerender() {
-        AzureTaskManager.getInstance().runLater(() -> this.setData(this.server));
+        AzureTaskManager.getInstance().runLater(() -> this.setData(this.draft));
     }
 
     MySqlPropertiesEditor(@Nonnull Project project, @Nonnull MySqlServer server, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile, server, project);
         this.project = project;
-        this.origin = server;
-        this.server = (MySqlServerDraft) server.update();
+        this.server = server;
+        this.draft = (MySqlServerDraft) server.update();
 
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
@@ -93,28 +93,24 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
     }
 
     private void setData(MySqlServer server) {
-        this.overview.setFormData(server);
-        this.databaseComboBox.setServer(server);
+        this.overview.setFormData(this.server);
+        this.databaseComboBox.setServer(this.server);
         this.refreshButtons();
-        if (StringUtils.equalsIgnoreCase("READY", server.getStatus())) {
-            connectionSecuritySeparator.expand();
-            connectionSecuritySeparator.setEnabled(true);
-            connectionStringsSeparator.expand();
-            connectionStringsSeparator.setEnabled(true);
-            AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                final boolean originalAllowAccessToAzureServices = server.isAzureServiceAccessAllowed();
-                final boolean originalAllowAccessToLocal = server.isLocalMachineAccessAllowed();
-                AzureTaskManager.getInstance().runLater(() -> {
-                    connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
-                    connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
-                });
+        final boolean ready = StringUtils.equalsIgnoreCase("READY", this.server.getStatus());
+        connectionSecuritySeparator.expand();
+        connectionStringsSeparator.expand();
+        connectionSecuritySeparator.setEnabled(!ready);
+        connectionStringsSeparator.setEnabled(!ready);
+        connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setEnabled(ready);
+        connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setEnabled(ready);
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final boolean originalAllowAccessToAzureServices = this.draft.isAzureServiceAccessAllowed();
+            final boolean originalAllowAccessToLocal = this.draft.isLocalMachineAccessAllowed();
+            AzureTaskManager.getInstance().runLater(() -> {
+                connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);
+                connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setSelected(originalAllowAccessToLocal);
             });
-        } else {
-            connectionSecuritySeparator.collapse();
-            connectionSecuritySeparator.setEnabled(false);
-            connectionStringsSeparator.collapse();
-            connectionStringsSeparator.setEnabled(false);
-        }
+        });
     }
 
     private void initListeners() {
@@ -125,8 +121,8 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         connectionStringsJDBC.getCopyButton().addActionListener(this::onJDBCCopyButtonClicked);
         connectionStringsSpring.getCopyButton().addActionListener(this::onSpringCopyButtonClicked);
         // save/discard buttons
-        propertyActionPanel.getSaveButton().addActionListener(this::apply);
-        propertyActionPanel.getDiscardButton().addActionListener(this::reset);
+        propertyActionPanel.getSaveButton().addActionListener(e -> this.apply());
+        propertyActionPanel.getDiscardButton().addActionListener(e -> this.reset());
         // database combobox changed
         databaseComboBox.addItemListener(this::onDatabaseComboBoxChanged);
     }
@@ -159,51 +155,55 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         }
     }
 
-    private void apply(ActionEvent e) {
+    private void apply() {
         this.propertyActionPanel.getSaveButton().setEnabled(false);
         this.propertyActionPanel.getDiscardButton().setEnabled(false);
         final Runnable runnable = () -> {
-            final String subscriptionId = server.getSubscriptionId();
+            final String subscriptionId = draft.getSubscriptionId();
             final boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
             final boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
-            this.server.setAzureServiceAccessAllowed(allowAccessToAzureServices);
-            this.server.setLocalMachineAccessAllowed(allowAccessToLocal);
+            this.draft.setAzureServiceAccessAllowed(allowAccessToAzureServices);
+            this.draft.setLocalMachineAccessAllowed(allowAccessToLocal);
             final AzureTelemetry.Context context = AzureTelemetry.getActionContext();
             context.setProperty("subscriptionId", subscriptionId);
             context.setProperty("allowAccessToLocal", String.valueOf(allowAccessToLocal));
             context.setProperty("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
-            this.server.commit();
+            this.draft.commit();
             this.refreshButtons();
         };
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, "Saving updates", false, runnable));
     }
 
     private void refreshButtons() {
-        final boolean modified = this.isModified();
-        this.propertyActionPanel.getSaveButton().setEnabled(modified);
-        this.propertyActionPanel.getDiscardButton().setEnabled(modified);
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final boolean modified = this.isModified();
+            AzureTaskManager.getInstance().runLater(() -> {
+                this.propertyActionPanel.getSaveButton().setEnabled(modified);
+                this.propertyActionPanel.getDiscardButton().setEnabled(modified);
+            });
+        });
     }
 
-    private void reset(ActionEvent e) {
-        this.server.reset();
+    private void reset() {
+        this.draft.reset();
         this.rerender();
     }
 
     private void onDatabaseComboBoxChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof MySqlDatabase) {
             final MySqlDatabase database = (MySqlDatabase) e.getItem();
-            final String username = server.getAdminName() + "@" + server.name();
+            final String username = this.draft.getAdminName() + "@" + this.draft.getName();
             connectionStringsJDBC.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_JDBC,
-                server.getFullyQualifiedDomainName(), database.getName(), username));
+                draft.getFullyQualifiedDomainName(), database.getName(), username));
             connectionStringsSpring.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_SPRING,
-                server.getFullyQualifiedDomainName(), database.getName(), username));
+                draft.getFullyQualifiedDomainName(), database.getName(), username));
         }
     }
 
     @Override
     public boolean isModified() {
-        return this.origin.isAzureServiceAccessAllowed() != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected() ||
-            this.origin.isLocalMachineAccessAllowed() != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
+        return this.draft.isAzureServiceAccessAllowed() != connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected() ||
+            this.draft.isLocalMachineAccessAllowed() != connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
     }
 
     @Override
@@ -213,11 +213,13 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
     }
 
     protected void refresh() {
+        this.propertyActionPanel.getDiscardButton().setEnabled(false);
         this.propertyActionPanel.getSaveButton().setEnabled(false);
-        final String refreshTitle = String.format("Refreshing MySQL server(%s)...", this.server.getName());
+        final String refreshTitle = String.format("Refreshing MySQL server(%s)...", this.draft.getName());
         AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-            this.server.refresh();
-            AzureTaskManager.getInstance().runLater(this::rerender);
+            this.draft.reset();
+            this.draft.refresh();
+            this.rerender();
         });
     }
 }
