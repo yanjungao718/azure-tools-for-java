@@ -106,16 +106,6 @@ public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<Redis
         return contentPanel;
     }
 
-    @Nonnull
-    @Override
-    public String getName() {
-        return this.redis.getName();
-    }
-
-    @Override
-    public void dispose() {
-    }
-
     protected void refresh() {
         final String refreshTitle = String.format("Refreshing Redis cache(%s)...", this.redis.getName());
         AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {

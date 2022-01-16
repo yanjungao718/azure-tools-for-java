@@ -211,17 +211,6 @@ public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<Postg
         return rootPanel;
     }
 
-    @Override
-    public @Nonnull
-    String getName() {
-        return this.server.name();
-    }
-
-    @Override
-    public void dispose() {
-
-    }
-
     protected void refresh() {
         this.propertyActionPanel.getSaveButton().setEnabled(false);
         final String refreshTitle = String.format("Refreshing PostgreSQL server(%s)...", this.server.getName());

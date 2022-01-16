@@ -188,16 +188,6 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
         return contentPanel;
     }
 
-    @Nonnull
-    @Override
-    public String getName() {
-        return this.app.name();
-    }
-
-    @Override
-    public void dispose() {
-    }
-
     private void createUIComponents() {
     }
 }

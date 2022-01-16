@@ -165,15 +165,6 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
         return pnlMain;
     }
 
-    @Nonnull
-    @Override
-    public String getName() {
-        return ID;
-    }
-
-    public void dispose() {
-    }
-
     public void renderDbCombo(int num) {
         for (int i = 0; i < num; i++) {
             cbDatabase.addItem(String.valueOf(i));

@@ -212,17 +212,6 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         return rootPanel;
     }
 
-    @Override
-    public @Nonnull
-    String getName() {
-        return this.server.name();
-    }
-
-    @Override
-    public void dispose() {
-
-    }
-
     protected void refresh() {
         this.propertyActionPanel.getSaveButton().setEnabled(false);
         final String refreshTitle = String.format("Refreshing MySQL server(%s)...", this.server.getName());
