@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +45,8 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
         if (source instanceof AzResourceBase && ((AzResourceBase) source).getId().equals(this.resource.getId())) {
             if (StringUtils.equalsAnyIgnoreCase(((AzResourceBase) source).getStatus(), "deleted", "removed")) {
                 IntellijShowPropertiesViewAction.closePropertiesView(resource, project);
+                final String message = String.format("Close properties view of \"%s\" because the resource is deleted.", this.resource.getName());
+                AzureMessager.getMessager().warning(message);
             } else {
                 this.debouncer.debounce();
             }
