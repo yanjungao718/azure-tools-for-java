@@ -99,8 +99,8 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
         final boolean ready = StringUtils.equalsIgnoreCase("READY", this.server.getStatus());
         connectionSecuritySeparator.expand();
         connectionStringsSeparator.expand();
-        connectionSecuritySeparator.setEnabled(!ready);
-        connectionStringsSeparator.setEnabled(!ready);
+        connectionSecuritySeparator.setEnabled(ready);
+        connectionStringsSeparator.setEnabled(ready);
         connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setEnabled(ready);
         connectionSecurity.getAllowAccessFromLocalMachineCheckBox().setEnabled(ready);
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
