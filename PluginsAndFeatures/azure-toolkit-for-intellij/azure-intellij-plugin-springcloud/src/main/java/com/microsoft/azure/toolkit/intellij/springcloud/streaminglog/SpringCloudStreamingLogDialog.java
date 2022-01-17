@@ -9,7 +9,6 @@ import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.ListCellRendererWithRightAlignedComponent;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

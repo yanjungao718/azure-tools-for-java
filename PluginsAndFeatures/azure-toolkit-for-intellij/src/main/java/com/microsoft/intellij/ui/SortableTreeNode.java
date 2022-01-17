@@ -7,11 +7,9 @@ package com.microsoft.intellij.ui;
 
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-import java.util.Comparator;
 
 public class SortableTreeNode extends DefaultMutableTreeNode implements Sortable {
 
