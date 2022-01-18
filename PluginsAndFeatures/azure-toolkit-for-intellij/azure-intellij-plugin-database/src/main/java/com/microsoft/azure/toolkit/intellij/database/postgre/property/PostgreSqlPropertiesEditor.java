@@ -10,9 +10,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.intellij.database.component.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.database.component.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
-import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
-import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
+import com.microsoft.azure.toolkit.intellij.database.component.DatabaseServerPropertyActionPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -47,7 +48,7 @@ public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<Postg
     private JPanel rootPanel;
     private JPanel contextPanel;
     private JScrollPane scrollPane;
-    private PostgreSqlPropertyActionPanel propertyActionPanel;
+    private DatabaseServerPropertyActionPanel propertyActionPanel;
     private DatabaseComboBox<PostgreSqlDatabase> databaseComboBox;
     private JLabel databaseLabel;
     public static final String POSTGRE_SQL_OUTPUT_TEXT_PATTERN_SPRING =
