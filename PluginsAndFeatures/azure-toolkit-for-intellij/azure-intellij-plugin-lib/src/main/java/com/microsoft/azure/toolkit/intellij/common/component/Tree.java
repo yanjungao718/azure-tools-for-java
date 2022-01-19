@@ -229,6 +229,8 @@ public class Tree extends SimpleTree implements DataProvider {
             final IView.Label view = node.inner.view();
             if (BooleanUtils.isFalse(node.loaded)) {
                 renderer.setIcon(AnimatedIcon.Default.INSTANCE);
+            } else if (view instanceof NodeView) {
+                renderer.setIcon(AzureIcons.getIcon(((NodeView) view).getIcon()));
             } else if (StringUtils.isNotBlank(view.getIconPath())) {
                 renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
             }
