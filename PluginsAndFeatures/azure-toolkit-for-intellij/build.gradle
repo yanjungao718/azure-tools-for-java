@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.16.0-SNAPSHOT"
+    azureToolkitVersion = "0.16.0"
 }
 
 compileKotlin {
@@ -82,7 +82,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     ext {
-        azureToolkitVersion = "0.16.0-SNAPSHOT"
+        azureToolkitVersion = "0.16.0"
     }
 
     sourceCompatibility = javaVersion
@@ -207,17 +207,17 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.61.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.61.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.61.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.61.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.61.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.61.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
