@@ -12,6 +12,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.SimpleColoredComponent;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -21,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
@@ -41,6 +43,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -69,8 +72,29 @@ public class Tree extends SimpleTree implements DataProvider {
         TreeUIHelper.getInstance().installEditSourceOnEnterKeyHandler(this);
         this.setCellRenderer(new NodeRenderer());
         this.setModel(new DefaultTreeModel(new TreeNode<>(root, this)));
-        this.addTreeWillExpandListener(new ExpandListener());
+        installExpandListener(this);
         installPopupMenu(this);
+    }
+
+    public static void installExpandListener(JTree tree) {
+        final TreeWillExpandListener listener = new TreeWillExpandListener() {
+            @Override
+            public void treeWillExpand(TreeExpansionEvent event) {
+                final Object component = event.getPath().getLastPathComponent();
+                if (component instanceof TreeNode) {
+                    final TreeNode<?> treeNode = (TreeNode<?>) component;
+                    if (treeNode.getAllowsChildren()) {
+                        treeNode.loadChildren();
+                    }
+                }
+            }
+
+            @Override
+            public void treeWillCollapse(TreeExpansionEvent event) {
+
+            }
+        };
+        tree.addTreeWillExpandListener(listener);
     }
 
     public static void installPopupMenu(JTree tree) {
@@ -83,12 +107,7 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
                 final Object node = path.getLastPathComponent();
                 if (node instanceof TreeNode) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        if (((TreeNode<?>) node).inner.hasChildren() && ((TreeNode<?>) node).loaded == null) {
-                            ((TreeNode<?>) node).refreshChildren();
-                            tree.expandPath(path);
-                        }
-                    } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+                    if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
@@ -134,11 +153,22 @@ public class Tree extends SimpleTree implements DataProvider {
             super(n.data(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
+            if (this.getAllowsChildren()) {
+                this.add(new LoadingNode());
+            }
             if (!this.inner.lazy()) {
                 this.loadChildren();
             }
             final NodeView view = this.inner.view();
             view.setRefresher(this);
+        }
+
+        public T getData() {
+            return this.inner.data();
+        }
+
+        public String getLabel() {
+            return this.inner.view().getLabel();
         }
 
         @Override
@@ -171,6 +201,7 @@ public class Tree extends SimpleTree implements DataProvider {
                     tm.runLater(() -> setChildren(children.stream().map(c -> new TreeNode<>(c, this.tree))));
                 } catch (final Exception e) {
                     this.setChildren(Stream.empty());
+                    AzureMessager.getMessager().error(e);
                 }
             });
         }
@@ -185,6 +216,10 @@ public class Tree extends SimpleTree implements DataProvider {
         public synchronized void clearChildren() {
             this.removeAllChildren();
             this.loaded = null;
+            if (this.getAllowsChildren()) {
+                this.add(new LoadingNode());
+                this.tree.collapsePath(new TreePath(this.getPath()));
+            }
             ((DefaultTreeModel) this.tree.getModel()).reload(this);
         }
 
@@ -198,44 +233,25 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     public static class NodeRenderer extends com.intellij.ide.util.treeView.NodeRenderer {
-        public static Object renderNode(Object node, SimpleColoredComponent renderer) {
-            Object value = node;
-            if (node instanceof TreeNode) {
-                final IView.Label view = ((TreeNode<?>) node).inner.view();
-                if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {
-                    renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-                } else if (StringUtils.isNotBlank(view.getIconPath())) {
-                    renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
-                }
-                value = view.getLabel();
-                renderer.setToolTipText(view.getDescription());
+        public static void renderMyTreeNode(@Nonnull TreeNode<?> node, @Nonnull SimpleColoredComponent renderer) {
+            final IView.Label view = node.inner.view();
+            if (BooleanUtils.isFalse(node.loaded)) {
+                renderer.setIcon(AnimatedIcon.Default.INSTANCE);
+            } else if (StringUtils.isNotBlank(view.getIconPath())) {
+                renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
             }
-            return value;
+            renderer.append(view.getLabel());
+            renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ATTRIBUTES, true);
+            renderer.setToolTipText(Optional.ofNullable(view.getDescription()).map(d -> view.getLabel() + ":" + d).orElse(view.getLabel()));
         }
 
         @Override
         public void customizeCellRenderer(@Nonnull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            final Object node = renderNode(value, this);
-            super.customizeCellRenderer(tree, node, selected, expanded, leaf, row, hasFocus);
-        }
-    }
-
-    public static class ExpandListener implements TreeWillExpandListener {
-
-        @Override
-        public void treeWillExpand(TreeExpansionEvent event) {
-            final Object component = event.getPath().getLastPathComponent();
-            if (component instanceof TreeNode) {
-                final TreeNode<?> treeNode = (TreeNode<?>) component;
-                if (treeNode.getAllowsChildren()) {
-                    treeNode.loadChildren();
-                }
+            if (value instanceof TreeNode) {
+                renderMyTreeNode((TreeNode<?>) value, this);
+            } else {
+                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
             }
-        }
-
-        @Override
-        public void treeWillCollapse(TreeExpansionEvent event) {
-
         }
     }
 }

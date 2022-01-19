@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.project.DumbAware;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -79,7 +80,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Getter
-    private static class AnActionWrapper<T> extends AnAction {
+    private static class AnActionWrapper<T> extends AnAction implements DumbAware {
         @Nonnull
         private final Action<T> action;
 
@@ -120,7 +121,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Getter
-    public static class ActionGroupWrapper extends DefaultActionGroup {
+    public static class ActionGroupWrapper extends DefaultActionGroup implements DumbAware {
 
         private final ActionGroup group;
 

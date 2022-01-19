@@ -8,16 +8,17 @@ package com.microsoft.azure.toolkit.intellij.redis.property;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
-import com.microsoft.azure.toolkit.redis.model.RedisCacheEntity;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
+import java.util.Optional;
 
-public class RedisCachePropertiesEditor extends BaseEditor {
+public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<RedisCache> {
 
     public static final String ID = "com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView";
 
@@ -43,28 +44,28 @@ public class RedisCachePropertiesEditor extends BaseEditor {
     private final RedisCache redis;
 
     public RedisCachePropertiesEditor(@Nonnull Project project, @Nonnull RedisCache redis, @Nonnull final VirtualFile virtualFile) {
-        super(virtualFile);
+        super(virtualFile, redis, project);
         this.redis = redis;
         this.rerender();
         this.initListeners();
     }
 
-    private void rerender() {
+    @Override
+    protected void rerender() {
         AzureTaskManager.getInstance().runLater(() -> {
             disableTxtBoard();
             makeTxtOpaque();
-            final RedisCacheEntity entity = this.redis.entity();
-            primaryKey = entity.getPrimaryKey();
-            secondaryKey = entity.getSecondaryKey();
-            txtNameValue.setText(entity.getName());
-            txtTypeValue.setText(entity.getType());
-            txtResGrpValue.setText(entity.getResourceGroupName());
-            txtSubscriptionValue.setText(entity.getSubscriptionId());
-            txtRegionValue.setText(entity.getRegion().getName());
-            txtHostNameValue.setText(entity.getHostName());
-            txtSslPortValue.setText(String.valueOf(entity.getSSLPort()));
-            txtNonSslPortValue.setText(String.valueOf(entity.getNonSslPortEnabled()));
-            txtVersionValue.setText(entity.getRedisVersion());
+            primaryKey = this.redis.getPrimaryKey();
+            secondaryKey = this.redis.getSecondaryKey();
+            txtNameValue.setText(this.redis.getName());
+            txtTypeValue.setText(this.redis.getType());
+            txtResGrpValue.setText(this.redis.getResourceGroupName());
+            txtSubscriptionValue.setText(this.redis.getSubscriptionId());
+            txtRegionValue.setText(Optional.ofNullable(this.redis.getRegion()).map(Region::getName).orElse(""));
+            txtHostNameValue.setText(this.redis.getHostName());
+            txtSslPortValue.setText(String.valueOf(this.redis.getSSLPort()));
+            txtNonSslPortValue.setText(String.valueOf(this.redis.isNonSslPortEnabled()));
+            txtVersionValue.setText(this.redis.getRedisVersion());
             btnPrimaryKey.setEnabled(true);
             btnSecondaryKey.setEnabled(true);
         });
@@ -105,13 +106,11 @@ public class RedisCachePropertiesEditor extends BaseEditor {
         return contentPanel;
     }
 
-    @Nonnull
-    @Override
-    public String getName() {
-        return this.redis.name();
-    }
-
-    @Override
-    public void dispose() {
+    protected void refresh() {
+        final String refreshTitle = String.format("Refreshing Redis cache(%s)...", this.redis.getName());
+        AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
+            this.redis.refresh();
+            this.rerender();
+        });
     }
 }

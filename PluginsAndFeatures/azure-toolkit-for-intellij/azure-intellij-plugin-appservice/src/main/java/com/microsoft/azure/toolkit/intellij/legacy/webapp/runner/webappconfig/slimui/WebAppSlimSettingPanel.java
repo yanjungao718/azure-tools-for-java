@@ -168,7 +168,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                     configuration.getModel().setEnableFailedRequestTracing(diagnosticConfig.isEnableFailedRequestTracing());
                 });
             } else {
-                configuration.setAppServicePlanId(webAppConfig.getServicePlan().getId());
+                configuration.setCreatingResGrp(false);
+                configuration.setCreatingAppServicePlan(false);
+                configuration.setAppServicePlanId(Optional.ofNullable(webAppConfig.getServicePlan()).map(AppServicePlanEntity::getId).orElse(null));
             }
             configuration.setDeployToSlot(webAppConfig.getDeploymentSlot() != null);
             Optional.ofNullable(webAppConfig.getDeploymentSlot()).ifPresent(slot -> {

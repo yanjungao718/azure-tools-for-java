@@ -106,7 +106,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
 
         if (subscriptionComboBox.getValue() != null) {
             final CheckNameAvailabilityResultEntity resultEntity =
-                    Azure.az(AzureRedis.class).checkNameAvailability(subscriptionComboBox.getValue().getId(), name);
+                    Azure.az(AzureRedis.class).forSubscription(subscriptionComboBox.getValue().getId()).checkNameAvailability(name);
             if (!resultEntity.isAvailable()) {
                 final String message = resultEntity.getUnavailabilityReason();
                 throw new AzureToolkitRuntimeException(message);
@@ -132,7 +132,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
         this.regionComboBox = new RegionComboBox() {
             protected List<? extends Region> loadItems() {
                 if (Objects.nonNull(this.subscription)) {
-                    return Azure.az(AzureRedis.class).listSupportedRegions(subscription.getId());
+                    return Azure.az(AzureRedis.class).forSubscription(subscription.getId()).listSupportedRegions();
                 }
                 return Collections.emptyList();
             }

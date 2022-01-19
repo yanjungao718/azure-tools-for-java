@@ -7,11 +7,14 @@ package com.microsoft.azure.toolkit.intellij.database.postgre.property;
 
 import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
-import com.microsoft.azure.toolkit.lib.postgre.model.PostgreSqlServerEntity;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -49,26 +52,25 @@ public class PostgrePropertyOverviewPanel extends JPanel {
     }
 
     public void setFormData(PostgreSqlServer server) {
-        final PostgreSqlServerEntity entity = server.entity();
-        final Subscription subscription = az(AzureAccount.class).account().getSubscription(entity.getSubscriptionId());
+        final Subscription subscription = az(AzureAccount.class).account().getSubscription(server.getSubscriptionId());
         if (subscription != null) {
             subscriptionTextField.setText(subscription.getName());
         }
-        resourceGroupTextField.setText(server.entity().getResourceGroupName());
-        statusTextField.setText(server.entity().getState());
-        locationTextField.setText(server.entity().getRegion().getLabel());
-        subscriptionIDTextField.setText(entity.getSubscriptionId());
-        serverNameTextField.setText(server.entity().getFullyQualifiedDomainName());
+        resourceGroupTextField.setText(server.getResourceGroupName());
+        statusTextField.setText(server.getStatus());
+        locationTextField.setText(Optional.ofNullable(server.getRegion()).map(Region::getLabel).orElse(""));
+        subscriptionIDTextField.setText(server.getSubscriptionId());
+        serverNameTextField.setText(StringUtils.firstNonBlank(server.getFullyQualifiedDomainName(), server.getName()));
         serverNameTextField.setCaretPosition(0);
-        serverAdminLoginNameTextField.setText(server.entity().getAdministratorLoginName() + "@" + server.name());
+        serverAdminLoginNameTextField.setText(server.getAdminName() + "@" + server.name());
         serverAdminLoginNameTextField.setCaretPosition(0);
-        postgreSqlVersionTextField.setText(server.entity().getVersion());
-        final String skuTier = server.entity().getSkuTier();
-        final int skuCapacity = server.entity().getVCore();
-        final int storageGB = server.entity().getStorageInMB() / 1024;
+        postgreSqlVersionTextField.setText(server.getVersion());
+        final String skuTier = server.getSkuTier();
+        final int skuCapacity = server.getVCore();
+        final int storageGB = server.getStorageInMB() / 1024;
         final String performanceConfigurations = skuTier + ", " + skuCapacity + " vCore(s), " + storageGB + " GB";
         performanceConfigurationsTextField.setText(performanceConfigurations);
-        sslEnforceStatusTextField.setText(server.entity().getSslEnforceStatus());
+        sslEnforceStatusTextField.setText(server.getSslEnforceStatus());
     }
 
     @Override

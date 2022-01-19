@@ -19,14 +19,13 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -122,6 +121,10 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             if (StringUtils.isEmpty(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(message("webapp.deploy.validate.noWebApp"));
             }
+            if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanId())) {
+                // Service plan could be null as lazy loading, throw exception in this case
+                throw new ConfigurationException(message("webapp.validate_deploy_configuration.loading"));
+            }
             if (webAppSettingModel.isDeployToSlot()) {
                 if (Constants.CREATE_NEW_SLOT.equals(webAppSettingModel.getSlotName())) {
                     if (StringUtils.isEmpty(webAppSettingModel.getNewSlotName())) {
@@ -137,8 +140,13 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         }
         // validate runtime with artifact
         final Runtime runtime = webAppSettingModel.getRuntime();
-        if (runtime == null) {
-            throw new ConfigurationException(message("webapp.deploy.validate.invalidRuntime"));
+        final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
+        final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
+        if (operatingSystem == OperatingSystem.DOCKER) {
+            throw new ConfigurationException(message("webapp.validate_deploy_configuration.dockerRuntime"));
+        }
+        if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
+            throw new ConfigurationException(message("webapp.validate_deploy_configuration.invalidRuntime"));
         }
         final String webContainer = runtime.getWebContainer().getValue();
         final String artifactPackage = webAppSettingModel.getPackaging();
@@ -342,40 +350,5 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void saveRuntime(final Runtime runtime) {
         webAppSettingModel.saveRuntime(runtime);
-    }
-
-    public void saveModel(final WebAppComboBoxModel webAppComboBoxModel) {
-        setWebAppId(webAppComboBoxModel.getResourceId());
-        setWebAppName(webAppComboBoxModel.getAppName());
-        setResourceGroup(webAppComboBoxModel.getResourceGroup());
-        setSubscriptionId(webAppComboBoxModel.getSubscriptionId());
-        if (webAppComboBoxModel.isNewCreateResource()) {
-            setCreatingNew(true);
-            final WebAppSettingModel settingModel = webAppComboBoxModel.getWebAppSettingModel();
-            setCreatingResGrp(settingModel.isCreatingResGrp());
-            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
-            setAppServicePlanName(settingModel.getAppServicePlanName());
-            setRegion(settingModel.getRegion());
-            setPricing(settingModel.getPricing());
-            setAppServicePlanId(settingModel.getAppServicePlanId());
-            saveRuntime(settingModel.getRuntime());
-            setCreatingResGrp(settingModel.isCreatingResGrp());
-            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
-            webAppSettingModel.setEnableApplicationLog(settingModel.isEnableApplicationLog());
-            webAppSettingModel.setApplicationLogLevel(settingModel.getApplicationLogLevel());
-            webAppSettingModel.setEnableWebServerLogging(settingModel.isEnableWebServerLogging());
-            webAppSettingModel.setWebServerLogQuota(settingModel.getWebServerLogQuota());
-            webAppSettingModel.setWebServerRetentionPeriod(settingModel.getWebServerRetentionPeriod());
-            webAppSettingModel.setEnableDetailedErrorMessage(settingModel.isEnableDetailedErrorMessage());
-            webAppSettingModel.setEnableFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
-        } else {
-            setCreatingNew(false);
-            final WebApp webApp = webAppComboBoxModel.getResource();
-            if (webApp != null) {
-                saveRuntime(webApp.getRuntime());
-                setAppServicePlanId(webApp.entity().getAppServicePlanId());
-                setRegion(webApp.entity().getRegion().getName());
-            }
-        }
     }
 }

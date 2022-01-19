@@ -24,15 +24,15 @@ import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
-import com.sun.tools.sjavac.Log;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
@@ -66,7 +66,7 @@ public class AzureSDKManager {
         if (isKnownImage) {
             isWindows = knownImage instanceof KnownWindowsVirtualMachineImage;
         } else {
-            isWindows = vmImage.osDiskImage().operatingSystem().equals(OperatingSystemTypes.WINDOWS);
+            isWindows = vmImage.osDiskImage().operatingSystem() == OperatingSystemTypes.WINDOWS;
         }
         // ------ Resource Group ------
         VirtualMachine.DefinitionStages.WithGroup withGroup = azure.virtualMachines().define(name)

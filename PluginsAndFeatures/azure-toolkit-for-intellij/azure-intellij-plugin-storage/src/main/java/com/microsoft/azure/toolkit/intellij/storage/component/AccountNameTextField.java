@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +51,7 @@ public class AccountNameTextField extends AzureTextInput {
         // validate availability
         CheckNameAvailabilityResultEntity resultEntity;
         try {
-            resultEntity = Azure.az(AzureStorageAccount.class).checkNameAvailability(subscriptionId, this.getValue());
+            resultEntity = Azure.az(AzureStorageAccount.class).forSubscription(subscriptionId).checkNameAvailability(this.getValue());
         } catch (ManagementException e) {
             return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
         }

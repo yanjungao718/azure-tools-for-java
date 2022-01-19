@@ -5,15 +5,30 @@
 
 package com.microsoft.azure.toolkit.intellij.database.postgre.creation;
 
+import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
+import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Date;
+import java.util.List;
 
-public class PostgreSqlCreationDialog extends AzureDialog<AzurePostgreSqlConfig> {
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
+public class PostgreSqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
     private static final String DIALOG_TITLE = "Create Azure Database for PostgreSQL";
     private JPanel rootPanel;
     private PostgreSqlCreationBasicPanel basic;
@@ -34,7 +49,7 @@ public class PostgreSqlCreationDialog extends AzureDialog<AzurePostgreSqlConfig>
     }
 
     @Override
-    public AzureForm<AzurePostgreSqlConfig> getForm() {
+    public AzureForm<DatabaseServerConfig> getForm() {
         return this.advancedMode ? advanced : basic;
     }
 
@@ -74,8 +89,27 @@ public class PostgreSqlCreationDialog extends AzureDialog<AzurePostgreSqlConfig>
     }
 
     private void createUIComponents() {
-        AzurePostgreSqlConfig config = AzurePostgreSqlConfig.getDefaultPostgreSQLConfig();
+        final DatabaseServerConfig config = getDefaultConfig();
         basic = new PostgreSqlCreationBasicPanel(config);
         advanced = new PostgreSqlCreationAdvancedPanel(config);
+    }
+
+    public static DatabaseServerConfig getDefaultConfig() {
+        final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
+        final DatabaseServerConfig config = new DatabaseServerConfig();
+        final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
+        final Subscription subscription = selectedSubscriptions.get(0);
+        final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
+        config.setSubscription(subscription);
+        config.setResourceGroup(resourceGroup);
+        config.setName("postgresql-" + defaultNameSuffix);
+        config.setAdminName(StringUtils.EMPTY);
+        config.setAdminPassword(StringUtils.EMPTY);
+        config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region",
+            az(AzurePostgreSql.class).forSubscription(subscription.getId()).listSupportedRegions(),
+            Region.US_EAST));
+        config.setVersion("11"); // default to 11
+        return config;
     }
 }

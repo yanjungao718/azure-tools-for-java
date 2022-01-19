@@ -21,6 +21,9 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -30,12 +33,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
-    implements RunProfileWithCompileBeforeLaunchOption {
+        implements RunProfileWithCompileBeforeLaunchOption {
 
     private FunctionDeployModel functionDeployModel;
     private Module module;
@@ -112,6 +116,19 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         final FunctionAppConfig functionAppConfig = functionDeployModel.getFunctionAppConfig();
         if (StringUtils.isAllEmpty(functionAppConfig.getResourceId(), functionAppConfig.getName())) {
             throw new ConfigurationException(message("function.deploy.validate.noTarget"));
+        }
+        final Runtime runtime = functionAppConfig.getRuntime();
+        final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
+        final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
+        if (operatingSystem == OperatingSystem.DOCKER) {
+            throw new ConfigurationException(message("function.validate_deploy_configuration.dockerRuntime"));
+        }
+        if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
+            throw new ConfigurationException(message("function.validate_deploy_configuration.invalidRuntime"));
+        }
+        if (functionAppConfig.getServicePlan() == null) {
+            // Service plan could be null as lazy loading, throw exception in this case
+            throw new ConfigurationException(message("function.validate_deploy_configuration.loading"));
         }
     }
 

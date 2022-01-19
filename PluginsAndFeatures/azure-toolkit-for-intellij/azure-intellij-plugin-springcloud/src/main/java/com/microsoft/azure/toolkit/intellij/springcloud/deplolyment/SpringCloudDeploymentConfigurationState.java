@@ -68,7 +68,6 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         processHandler.startNotify();
-        processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
         final ConsoleMessager messager = new ConsoleMessager(processHandler);
         final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         consoleView.attachToProcess(processHandler);
@@ -107,8 +106,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         }
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
-        final SpringCloudApp app = deployment.app();
-        final SpringCloudCluster cluster = app.getCluster();
+        final SpringCloudApp app = deployment.getParent();
+        final SpringCloudCluster cluster = app.getParent();
         if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
             messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
@@ -118,13 +117,16 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
 
     private void printPublicUrl(final SpringCloudApp app) {
         final IAzureMessager messager = AzureMessager.getMessager();
-        if (!app.entity().isPublic()) {
+        if (!app.isPublicEndpointEnabled()) {
             return;
         }
         messager.info(String.format("Getting public url of app(%s)...", app.name()));
-        String publicUrl = app.entity().getApplicationUrl();
+        String publicUrl = app.getApplicationUrl();
         if (StringUtils.isEmpty(publicUrl)) {
-            publicUrl = Utils.pollUntil(() -> app.refresh().entity().getApplicationUrl(), StringUtils::isNotBlank, GET_URL_TIMEOUT);
+            publicUrl = Utils.pollUntil(() -> {
+                app.refresh();
+                return app.getApplicationUrl();
+            }, StringUtils::isNotBlank, GET_URL_TIMEOUT);
         }
         if (StringUtils.isEmpty(publicUrl)) {
             messager.warning("Failed to get application url", NOTIFICATION_TITLE);

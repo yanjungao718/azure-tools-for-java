@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SpringCloudAppPropertiesEditorProvider implements FileEditorProvider, DumbAware {
 
-    public static final String SPRING_CLOUD_APP_PROPERTY_TYPE = "SPRINGCLOUDAPP_FILE_TYPE";
+    public static final String SPRING_CLOUD_APP_PROPERTY_TYPE = "Microsoft.AppPlatform.Spring.apps";
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {

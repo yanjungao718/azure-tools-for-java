@@ -17,7 +17,7 @@ import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.MachineSettingsStep;
 import com.microsoft.azure.toolkit.intellij.vm.createarmvm.SelectImageStep;

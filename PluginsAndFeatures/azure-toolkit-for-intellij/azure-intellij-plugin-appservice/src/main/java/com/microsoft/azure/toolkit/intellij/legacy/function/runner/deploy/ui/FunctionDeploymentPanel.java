@@ -12,14 +12,15 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox;
-import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.CommonConst;
@@ -33,6 +34,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -48,7 +50,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JComboBox<Module> cbFunctionModule;
     private FunctionAppComboBox functionAppComboBox;
     private AppSettingsTable appSettingsTable;
-    private FunctionAppComboBoxModel appSettingsFunctionApp;
+    private FunctionAppConfig appSettingsFunctionApp;
     private String appSettingsKey = UUID.randomUUID().toString();
 
 
@@ -133,9 +135,8 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
         if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
-            final FunctionAppComboBoxModel configModel = new FunctionAppComboBoxModel(configuration.getConfig());
-            appSettingsFunctionApp = configModel;
-            functionAppComboBox.setConfigModel(configModel);
+            appSettingsFunctionApp = configuration.getConfig();
+            functionAppComboBox.setConfigModel(configuration.getConfig());
         }
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
@@ -155,10 +156,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
         // save app settings storage key instead of real value
         configuration.setAppSettingsKey(appSettingsKey);
-        final FunctionAppComboBoxModel functionModel = functionAppComboBox.getValue();
-        if (functionModel != null) {
-            configuration.saveConfig(functionModel.getConfig());
-        }
+        Optional.ofNullable(functionAppComboBox.getValue()).ifPresent(configuration::saveConfig);
     }
 
     private void createUIComponents() {
@@ -172,25 +170,25 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     }
 
     private void onSelectFunctionApp() {
-        final FunctionAppComboBoxModel model = getSelectedFunctionApp();
+        final FunctionAppConfig model = getSelectedFunctionApp();
         if (model == null) {
             return;
-        } else if (model.getResource() == null) { // For new create function or template model from configuration
-            if (model.isNewCreateResource() && appSettingsFunctionApp != null && !appSettingsFunctionApp.isNewCreateResource()) {
+        } else if (StringUtils.isEmpty(model.getResourceId())) { // For new create function or template model from configuration
+            if (appSettingsFunctionApp != null && StringUtils.isNotEmpty(appSettingsFunctionApp.getResourceId())) {
                 // Clear app settings table when user first choose create new function app
-                this.fillAppSettings(Collections.EMPTY_MAP);
+                this.fillAppSettings(Collections.emptyMap());
             }
         } else { // For existing Functions
-            if (!AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {
+            if (!FunctionAppConfig.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {
                 // Do not refresh if selected function app is not changed except create run configuration from azure explorer
                 this.beforeFillAppSettings();
-                presenter.loadAppSettings(model.getResource());
+                presenter.loadAppSettings(Azure.az(AzureFunction.class).get(model.getResourceId()));
             }
         }
         appSettingsFunctionApp = model;
     }
 
-    private FunctionAppComboBoxModel getSelectedFunctionApp() {
+    private FunctionAppConfig getSelectedFunctionApp() {
         return functionAppComboBox.getValue();
     }
 

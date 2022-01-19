@@ -6,14 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.database.sqlserver.creation;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
+import com.microsoft.azure.toolkit.intellij.database.BaseNameValidator;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.common.SqlServerNameValidator;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,7 +24,7 @@ import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
 
-public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPanel<SqlServerConfig> {
+public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
     private JPanel rootPanel;
     @Getter
@@ -37,9 +39,9 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final SqlServerConfig config;
+    private final DatabaseServerConfig config;
 
-    SqlServerCreationBasicPanel(SqlServerConfig config) {
+    SqlServerCreationBasicPanel(DatabaseServerConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -52,7 +54,8 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
         serverNameTextField.setSubscription(config.getSubscription());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
-        serverNameTextField.setValidator(new SqlServerNameValidator(serverNameTextField));
+        serverNameTextField.addValidator(new BaseNameValidator(serverNameTextField, (sid, name) ->
+            Azure.az(AzureSqlServer.class).forSubscription(sid).checkNameAvailability(name)));
     }
 
     private void initListeners() {
@@ -77,33 +80,35 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
     }
 
     @Override
-    public SqlServerConfig getValue() {
-        config.setServerName(serverNameTextField.getText());
-        config.setAdminUsername(adminUsernameTextField.getText());
-        config.setPassword(passwordField.getPassword());
-        config.setConfirmPassword(confirmPasswordField.getPassword());
+    public DatabaseServerConfig getValue() {
+        config.setName(serverNameTextField.getText());
+        config.setAdminName(adminUsernameTextField.getText());
+        config.setAdminPassword(String.valueOf(passwordField.getPassword()));
         return config;
     }
 
     @Override
-    public void setValue(SqlServerConfig data) {
-        if (StringUtils.isNotBlank(config.getServerName())) {
-            serverNameTextField.setText(config.getServerName());
+    public void setValue(DatabaseServerConfig data) {
+        if (StringUtils.isNotBlank(config.getName())) {
+            serverNameTextField.setText(config.getName());
         }
-        if (StringUtils.isNotBlank(config.getAdminUsername())) {
-            adminUsernameTextField.setText(config.getAdminUsername());
+        if (StringUtils.isNotBlank(config.getAdminName())) {
+            adminUsernameTextField.setText(config.getAdminName());
         }
-        if (config.getPassword() != null) {
-            passwordField.setText(String.valueOf(config.getPassword()));
-        }
-        if (config.getConfirmPassword() != null) {
-            confirmPasswordField.setText(String.valueOf(config.getConfirmPassword()));
+        if (config.getAdminPassword() != null) {
+            passwordField.setText(config.getAdminPassword());
         }
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(serverNameTextField, adminUsernameTextField, passwordFieldInput, confirmPasswordFieldInput);
+        final AzureFormInput<?>[] inputs = {
+            serverNameTextField,
+            adminUsernameTextField,
+            passwordFieldInput,
+            confirmPasswordFieldInput
+        };
+        return Arrays.asList(inputs);
     }
 
 }

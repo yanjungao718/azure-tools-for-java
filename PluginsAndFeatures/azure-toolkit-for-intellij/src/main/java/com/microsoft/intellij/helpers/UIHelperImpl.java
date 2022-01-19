@@ -5,7 +5,6 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -29,19 +28,13 @@ import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
 import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
 import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
-import com.microsoft.azure.toolkit.intellij.database.mysql.MySQLPropertyView;
-import com.microsoft.azure.toolkit.intellij.database.mysql.MySQLPropertyViewProvider;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.properties.SqlServerPropertyView;
-import com.microsoft.azure.toolkit.intellij.database.sqlserver.properties.SqlServerPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
@@ -387,50 +380,6 @@ public class UIHelperImpl implements UIHelper {
             return null;
         }
         return fileEditorManager;
-    }
-
-    @Override
-    public void openMySQLPropertyView(@NotNull String id, @NotNull Object project) {
-        EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
-            final ResourceId resourceId = ResourceId.fromString(id);
-            final FileEditorManager fileEditorManager = getFileEditorManager(resourceId.subscriptionId(), resourceId.id(), (Project) project);
-            if (fileEditorManager == null) {
-                return;
-            }
-            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, resourceId.id());
-            if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(resourceId.name(), resourceId.subscriptionId(), resourceId.id());
-                itemVirtualFile.setFileType(new AzureFileType(MySQLPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE)));
-            }
-            final FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
-            for (final FileEditor editor : editors) {
-                if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
-                    ((MySQLPropertyView) editor).onReadProperty(resourceId.subscriptionId(), resourceId.resourceGroupName(), resourceId.name());
-                }
-            }
-        });
-    }
-
-    @Override
-    public void openSqlServerPropertyView(@NotNull String id, @NotNull Object project) {
-        EventUtil.executeWithLog(ActionConstants.SqlServer.SHOW_PROPERTIES, (operation) -> {
-            final ResourceId resourceId = ResourceId.fromString(id);
-            final FileEditorManager fileEditorManager = getFileEditorManager(resourceId.subscriptionId(), resourceId.id(), (Project) project);
-            if (fileEditorManager == null) {
-                return;
-            }
-            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SqlServerPropertyViewProvider.TYPE, resourceId.id());
-            if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(resourceId.name(), resourceId.subscriptionId(), resourceId.id());
-                itemVirtualFile.setFileType(new AzureFileType(SqlServerPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SqlServer.MODULE)));
-            }
-            final FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
-            for (final FileEditor editor : editors) {
-                if (editor.getName().equals(SqlServerPropertyView.ID) && editor instanceof SqlServerPropertyView) {
-                    ((SqlServerPropertyView) editor).onReadProperty(resourceId.subscriptionId(), resourceId.resourceGroupName(), resourceId.name());
-                }
-            }
-        });
     }
 
     @Nullable

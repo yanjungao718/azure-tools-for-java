@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 
 public class PostgreSqlPropertiesEditorProvider implements FileEditorProvider, DumbAware {
 
-    public static final String TYPE = "POSTGRESQLSERVER_FILE_TYPE";
+    public static final String TYPE = "Microsoft.DBforPostgreSQL.servers";
 
     @Override
     public boolean accept(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {

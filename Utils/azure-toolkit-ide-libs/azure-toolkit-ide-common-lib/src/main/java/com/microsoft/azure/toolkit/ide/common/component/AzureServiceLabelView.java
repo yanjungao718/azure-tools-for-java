@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
-import com.microsoft.azure.toolkit.lib.AzureService;
+import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
@@ -16,7 +16,7 @@ import lombok.Setter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AzureServiceLabelView<T extends AzureService> implements NodeView {
+public class AzureServiceLabelView<T extends AzService> implements NodeView {
     @Nonnull
     @Getter
     private final T service;
@@ -33,7 +33,7 @@ public class AzureServiceLabelView<T extends AzureService> implements NodeView {
     private Refresher refresher;
 
     public AzureServiceLabelView(@Nonnull T service) {
-        this(service, service.name());
+        this(service, service.getName());
     }
 
     public AzureServiceLabelView(@Nonnull T service, String label) {
@@ -46,22 +46,30 @@ public class AzureServiceLabelView<T extends AzureService> implements NodeView {
         this.iconPath = iconPath;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("service.refresh.service", listener);
+        AzureEventBus.on("service.children_changed.service", listener);
         this.refreshView();
     }
 
     public void dispose() {
         AzureEventBus.off("service.refresh.service", listener);
+        AzureEventBus.off("service.children_changed.service", listener);
         this.refresher = null;
     }
 
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if ("service.refresh.service".equals(type)
-                && source instanceof AzureService
-                && ((AzureService) source).name().equals(this.service.name())) {
-            if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                AzureTaskManager.getInstance().runLater(this::refreshChildren);
+        if (source instanceof AzService && ((AzService) source).getName().equals(this.service.getName())) {
+            final AzureTaskManager tm = AzureTaskManager.getInstance();
+            switch (type) {
+                case "service.refresh.service":
+                    if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
+                        tm.runLater(this::refreshChildren);
+                    }
+                    break;
+                case "service.children_changed.service":
+                    tm.runLater(this::refreshChildren);
+                    break;
             }
         }
     }

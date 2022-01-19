@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.60.0</version>
+  <version>3.61.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -112,8 +112,6 @@
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.mysql.MySQLPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.properties.SqlServerPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"
@@ -176,8 +174,6 @@
     <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunConfigurationProducer"/>
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunLineMarkerProvider"/>
-
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceDefinitionRegisterActivity"/>
   </extensions>
 
   <applicationListeners>
