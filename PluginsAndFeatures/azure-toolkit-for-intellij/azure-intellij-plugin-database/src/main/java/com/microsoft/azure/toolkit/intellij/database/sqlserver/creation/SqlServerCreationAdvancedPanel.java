@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.intellij.database.BaseRegionValidator;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
-import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
+import com.microsoft.azure.toolkit.intellij.database.component.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;

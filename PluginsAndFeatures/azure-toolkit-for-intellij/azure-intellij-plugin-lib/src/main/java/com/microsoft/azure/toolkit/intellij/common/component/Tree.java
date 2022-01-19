@@ -163,6 +163,14 @@ public class Tree extends SimpleTree implements DataProvider {
             view.setRefresher(this);
         }
 
+        public T getData() {
+            return this.inner.data();
+        }
+
+        public String getLabel() {
+            return this.inner.view().getLabel();
+        }
+
         @Override
         public void refreshView() {
             if (this.getParent() != null) {
@@ -236,6 +244,7 @@ public class Tree extends SimpleTree implements DataProvider {
             }
             renderer.append(view.getLabel());
             renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ATTRIBUTES, true);
+            renderer.setToolTipText(Optional.ofNullable(view.getDescription()).map(d -> view.getLabel() + ":" + d).orElse(view.getLabel()));
         }
 
         @Override

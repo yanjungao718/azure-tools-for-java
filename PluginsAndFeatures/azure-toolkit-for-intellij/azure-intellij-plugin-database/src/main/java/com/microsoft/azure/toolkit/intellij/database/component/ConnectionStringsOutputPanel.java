@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.database.ui;
+package com.microsoft.azure.toolkit.intellij.database.component;
 
 import lombok.Getter;
 

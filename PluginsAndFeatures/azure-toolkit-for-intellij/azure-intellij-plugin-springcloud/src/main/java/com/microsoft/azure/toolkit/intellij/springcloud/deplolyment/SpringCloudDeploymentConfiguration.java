@@ -22,6 +22,7 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -57,8 +58,8 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     public SpringCloudDeploymentConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         this.appConfig = SpringCloudAppConfig.builder()
-                .deployment(SpringCloudDeploymentConfig.builder().build())
-                .build();
+            .deployment(SpringCloudDeploymentConfig.builder().build())
+            .build();
     }
 
     @Override
@@ -66,13 +67,13 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         super.readExternal(element);
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.getProject());
         this.appConfig = Optional.ofNullable(element.getChild("SpringCloudAppConfig"))
-                .map(e -> XmlSerializer.deserialize(e, SpringCloudAppConfig.class))
-                .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
+            .map(e -> XmlSerializer.deserialize(e, SpringCloudAppConfig.class))
+            .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
         Optional.ofNullable(element.getChild("Artifact"))
-                .map(e -> e.getAttributeValue("identifier"))
-                .map(manager::getAzureArtifactById)
-                .map(a -> new WrappedAzureArtifact(a, this.getProject()))
-                .ifPresent(a -> this.appConfig.getDeployment().setArtifact(a));
+            .map(e -> e.getAttributeValue("identifier"))
+            .map(manager::getAzureArtifactById)
+            .map(a -> new WrappedAzureArtifact(a, this.getProject()))
+            .ifPresent(a -> this.appConfig.getDeployment().setArtifact(a));
     }
 
     @Override
@@ -82,13 +83,13 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         final Element appConfigElement = XmlSerializer.serialize(this.appConfig, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName()));
         final IArtifact artifact = this.appConfig.getDeployment().getArtifact();
         Optional.ofNullable(this.appConfig)
-                .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName())))
-                .ifPresent(element::addContent);
+            .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName())))
+            .ifPresent(element::addContent);
         Optional.ofNullable(this.appConfig)
-                .map(config -> (WrappedAzureArtifact) config.getDeployment().getArtifact())
-                .map((a) -> manager.getArtifactIdentifier(a.getArtifact()))
-                .map(id -> new Element("Artifact").setAttribute("identifier", id))
-                .ifPresent(element::addContent);
+            .map(config -> (WrappedAzureArtifact) config.getDeployment().getArtifact())
+            .map((a) -> manager.getArtifactIdentifier(a.getArtifact()))
+            .map(id -> new Element("Artifact").setAttribute("identifier", id))
+            .ifPresent(element::addContent);
     }
 
     @NotNull
@@ -163,10 +164,11 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         protected void applyEditorTo(@NotNull SpringCloudDeploymentConfiguration config) throws ConfigurationException {
             final List<AzureValidationInfo> infos = this.panel.getAllValidationInfos(true);
             final AzureValidationInfo error = infos.stream()
-                    .filter(i -> !i.isValid())
-                    .findAny().orElse(null);
+                .filter(i -> !i.isValid())
+                .findAny().orElse(null);
             if (Objects.nonNull(error)) {
-                throw new ConfigurationException(error.getMessage());
+                final String message = error.getType() == Type.PENDING ? "Please try later after validation" : error.getMessage();
+                throw new ConfigurationException(message);
             }
             config.appConfig = this.panel.getValue();
         }

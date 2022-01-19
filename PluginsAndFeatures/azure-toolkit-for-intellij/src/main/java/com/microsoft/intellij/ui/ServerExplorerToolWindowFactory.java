@@ -113,7 +113,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final DefaultMutableTreeNode azureRoot = (DefaultMutableTreeNode) root.getChildAt(0);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
                 .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
-        modules.forEach(azureRoot::add);
+        modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRoot::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installExpandListener(tree);
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);

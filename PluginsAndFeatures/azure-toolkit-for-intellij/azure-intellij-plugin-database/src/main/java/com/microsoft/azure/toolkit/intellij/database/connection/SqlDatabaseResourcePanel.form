@@ -146,7 +146,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value="Editting connection URL will override settings above"/>
+              <text value="Editing connection URL will override settings above"/>
             </properties>
           </component>
           <component id="e6a3f" class="javax.swing.JButton" binding="testConnectionButton" default-binding="true">

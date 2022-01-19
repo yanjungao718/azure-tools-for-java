@@ -106,7 +106,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
 
         if (subscriptionComboBox.getValue() != null) {
             final CheckNameAvailabilityResultEntity resultEntity =
-                    Azure.az(AzureRedis.class).checkNameAvailability(subscriptionComboBox.getValue().getId(), name);
+                    Azure.az(AzureRedis.class).forSubscription(subscriptionComboBox.getValue().getId()).checkNameAvailability(name);
             if (!resultEntity.isAvailable()) {
                 final String message = resultEntity.getUnavailabilityReason();
                 throw new AzureToolkitRuntimeException(message);

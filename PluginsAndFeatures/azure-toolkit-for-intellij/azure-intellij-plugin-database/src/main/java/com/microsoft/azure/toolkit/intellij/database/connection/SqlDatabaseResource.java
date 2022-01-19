@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.database.component.PasswordDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -90,7 +91,8 @@ public class SqlDatabaseResource<T extends IDatabase> extends AzureServiceResour
 
     public String inputPassword(@Nonnull final Project project) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
-        AzureTaskManager.getInstance().runAndWait(AzureOperationBundle.title("postgre.update_password"), () -> {
+        final AzureString title = AzureOperationBundle.title("connector.update_database_password.database", this.database.getName());
+        AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(project, this.database);
             if (dialog.showAndGet()) {
                 final Password password = dialog.getValue();

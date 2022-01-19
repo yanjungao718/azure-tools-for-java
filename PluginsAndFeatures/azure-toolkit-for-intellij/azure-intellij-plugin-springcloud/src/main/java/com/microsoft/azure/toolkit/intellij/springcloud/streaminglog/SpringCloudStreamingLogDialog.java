@@ -9,7 +9,6 @@ import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.ListCellRendererWithRightAlignedComponent;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -20,7 +19,7 @@ public class SpringCloudStreamingLogDialog extends DialogWrapper {
     private JPanel pnlRoot;
     private JComboBox<DeploymentInstance> cbInstances;
 
-    private SpringCloudDeploymentInstanceEntity instance;
+    private DeploymentInstance instance;
 
     public SpringCloudStreamingLogDialog(@Nullable final Project project, List<DeploymentInstance> instances) {
         super(project, false);
@@ -36,13 +35,13 @@ public class SpringCloudStreamingLogDialog extends DialogWrapper {
         init();
     }
 
-    public SpringCloudDeploymentInstanceEntity getInstance() {
+    public DeploymentInstance getInstance() {
         return instance;
     }
 
     @Override
     protected void doOKAction() {
-        instance = (SpringCloudDeploymentInstanceEntity) cbInstances.getSelectedItem();
+        instance = (DeploymentInstance) cbInstances.getSelectedItem();
         super.doOKAction();
     }
 
