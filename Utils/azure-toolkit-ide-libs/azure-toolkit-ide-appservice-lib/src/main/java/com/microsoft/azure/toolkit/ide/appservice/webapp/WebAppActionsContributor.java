@@ -61,7 +61,6 @@ public class WebAppActionsContributor implements IActionsContributor {
                 AppServiceActionsContributor.SSH_INTO_WEBAPP,
                 AppServiceActionsContributor.START_STREAM_LOG,
                 AppServiceActionsContributor.STOP_STREAM_LOG
-                // todo: add profile actions like log streaming
         );
         am.registerGroup(WEBAPP_ACTIONS, webAppActionGroup);
 
