@@ -24,7 +24,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
-@Slf4j
+@Log4j2
 public class AuthMethodManager {
     public static final String AUTH_METHOD_DETAIL = "auth_method_detail";
     private AuthMethodDetails authMethodDetails;
