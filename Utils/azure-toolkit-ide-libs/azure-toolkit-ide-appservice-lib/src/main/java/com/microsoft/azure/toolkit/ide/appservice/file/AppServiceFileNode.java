@@ -20,6 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.DateTimeException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -117,9 +120,18 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
         @Override
         public String getDescription() {
-            return file.getType() == AppServiceFile.Type.DIRECTORY ?
-                    String.format("Type: %s Date modified: %s", file.getMime(), file.getMtime()) :
-                    String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), file.getMtime());
+            final String modifiedDateTime = formatDateTime(file.getMtime());
+            return file.getType() == AppServiceFile.Type.DIRECTORY ? String.format("Type: %s Date modified: %s", file.getMime(), modifiedDateTime) :
+                    String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), modifiedDateTime);
+        }
+
+        private static String formatDateTime(@Nullable final String dateTime) {
+            try {
+                return StringUtils.isEmpty(dateTime) ? "Unknown" : DateTimeFormatter.RFC_1123_DATE_TIME.format(OffsetDateTime.parse(dateTime));
+            } catch (DateTimeException dateTimeException) {
+                // swallow exception for parse datetime, return unknown in this case
+                return "Unknown";
+            }
         }
 
         @Override
