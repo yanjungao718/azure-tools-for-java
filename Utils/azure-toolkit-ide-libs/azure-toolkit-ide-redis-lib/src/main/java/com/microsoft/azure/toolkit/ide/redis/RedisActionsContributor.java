@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.redis.RedisCache;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 

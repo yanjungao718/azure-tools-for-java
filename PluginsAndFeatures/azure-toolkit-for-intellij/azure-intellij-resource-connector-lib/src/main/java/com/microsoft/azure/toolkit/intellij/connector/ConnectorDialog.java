@@ -20,9 +20,9 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -132,11 +132,12 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     @Override
-    protected @Nullable JComponent createCenterPanel() {
+    @Nullable
+    protected JComponent createCenterPanel() {
         return this.contentPane;
     }
 
-    @javax.annotation.Nullable
+    @Nullable
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Connection<?, ?> getValue() {

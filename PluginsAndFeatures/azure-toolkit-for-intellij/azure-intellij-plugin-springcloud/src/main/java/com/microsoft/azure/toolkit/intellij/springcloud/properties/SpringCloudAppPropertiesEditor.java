@@ -158,9 +158,10 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
             }
             AzureTaskManager.getInstance().runLater(() -> {
                 final AzResourceBase.FormalStatus formalStatus = this.app.getFormalStatus();
-                this.setEnabled(formalStatus.isRunning() || formalStatus.isStopped());
-                this.resetButton.setVisible(modified && !formalStatus.isWriting());
-                this.saveButton.setEnabled(modified && !formalStatus.isWriting());
+                final boolean normal = formalStatus.isRunning() || formalStatus.isStopped();
+                this.setEnabled(normal);
+                this.resetButton.setVisible(modified && normal);
+                this.saveButton.setEnabled(modified && normal);
                 this.startButton.setEnabled(formalStatus.isStopped());
                 this.stopButton.setEnabled(formalStatus.isRunning());
                 this.restartButton.setEnabled(formalStatus.isRunning());
