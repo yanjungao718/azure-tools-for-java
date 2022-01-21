@@ -155,7 +155,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
             final int size = Optional.ofNullable(app.getActiveDeployment())
                 .or(() -> Optional.ofNullable(app.deployments().get("default", app.getResourceGroupName())))
                 .map(d -> d.getInstances().size()).orElse(0);
-            final Runnable task = () -> this.numInstance.setRealMin(Math.min(size, 1));
+            final Runnable task = () -> this.numInstance.setRealMin(Math.min(size, app.getFormalStatus().isStopped() ? 0 : 1));
             AzureTaskManager.getInstance().runLater(task, AzureTask.Modality.ANY);
         });
     }
@@ -191,9 +191,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final Map<String, String> env = deployment.getEnvironment();
         this.envTable.setEnvironmentVariables(ObjectUtils.firstNonNull(env, Collections.emptyMap()));
 
-        this.numCpu.setItem(Optional.ofNullable(deployment.getCpu()).orElse(1));
-        this.numMemory.setItem(Optional.ofNullable(deployment.getMemoryInGB()).orElse(1));
-        this.numInstance.setValue(Optional.ofNullable(deployment.getInstanceCount()).orElse(1));
+        this.numCpu.setItem(deployment.getCpu());
+        this.numMemory.setItem(deployment.getMemoryInGB());
+        this.numInstance.setValue(deployment.getInstanceCount());
     }
 
     @Nonnull
