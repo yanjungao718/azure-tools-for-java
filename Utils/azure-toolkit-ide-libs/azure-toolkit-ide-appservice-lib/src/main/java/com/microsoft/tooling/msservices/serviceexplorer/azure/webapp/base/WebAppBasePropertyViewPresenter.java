@@ -6,10 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -62,9 +59,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             if (!appService.exists()) {
                 return new WebAppProperty(new HashMap<>());
             }
-            final AppServicePlan plan = Azure.az(AzureAppService.class).appServicePlan(appService.entity().getAppServicePlanId());
-
-            return generateProperty(appService, plan);
+            return generateProperty(appService, appService.getAppServicePlan());
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(property -> AzureTaskManager.getInstance().runLater(() -> {
             if (isViewDetached()) {
                 return;
@@ -74,18 +69,16 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     }
 
     protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final IAppService<T> appService, @Nonnull final AppServicePlan plan) {
-        final AppServiceBaseEntity appServiceEntity = appService.entity();
-        final AppServicePlanEntity planEntity = plan.entity();
-        final Map<String, String> appSettingsMap = appServiceEntity.getAppSettings();
+        final Map<String, String> appSettingsMap = appService.getAppSettings();
         final Map<String, Object> propertyMap = new HashMap<>();
-        propertyMap.put(KEY_NAME, appServiceEntity.getName());
-        propertyMap.put(KEY_RESOURCE_GRP, appServiceEntity.getResourceGroup());
-        propertyMap.put(KEY_LOCATION, appServiceEntity.getRegion().getLabel());
-        propertyMap.put(KEY_SUB_ID, appService.subscriptionId());
+        propertyMap.put(KEY_NAME, appService.getName());
+        propertyMap.put(KEY_RESOURCE_GRP, appService.getResourceGroupName());
+        propertyMap.put(KEY_LOCATION, appService.getRegion().getLabel());
+        propertyMap.put(KEY_SUB_ID, appService.getSubscriptionId());
         propertyMap.put(KEY_STATUS, StringUtils.capitalize(StringUtils.lowerCase(appService.status())));
         propertyMap.put(KEY_PLAN, plan.name());
         propertyMap.put(KEY_URL, appService.hostName());
-        final PricingTier pricingTier = planEntity.getPricingTier();
+        final PricingTier pricingTier = plan.getPricingTier();
         propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
         final JavaVersion javaVersion = runtime.getJavaVersion();

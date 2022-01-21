@@ -75,7 +75,7 @@ public class FunctionAppNode extends WebAppBaseNode {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.functionApp.entity().getRegion().getName());
+        properties.put(AppInsightsConstants.Region, this.functionApp.getRegion().getName());
         return properties;
     }
 
@@ -88,7 +88,7 @@ public class FunctionAppNode extends WebAppBaseNode {
     }
 
     public String getRegion() {
-        return this.functionApp.entity().getRegion().getName();
+        return this.functionApp.getRegion().getName();
     }
 
     @AzureOperation(name = "function.start_app.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.ACTION)

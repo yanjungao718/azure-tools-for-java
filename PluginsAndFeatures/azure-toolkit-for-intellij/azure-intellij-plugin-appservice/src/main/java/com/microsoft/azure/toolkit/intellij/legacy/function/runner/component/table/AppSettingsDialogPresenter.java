@@ -31,7 +31,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
     public void onLoadFunctionAppSettings(FunctionApp functionApp) {
         Observable.fromCallable(() -> {
             getMvpView().beforeFillAppSettings();
-            return functionApp.entity().getAppSettings();
+            return functionApp.getAppSettings();
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(appSettings -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {

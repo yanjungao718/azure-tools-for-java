@@ -85,11 +85,11 @@ public class WebAppConfig extends AppServiceConfig {
         return WebAppConfig.builder()
                 .name(webApp.name())
                 .resourceId(webApp.id())
-                .servicePlan(AppServicePlanEntity.builder().id(webApp.entity().getAppServicePlanId()).build())
+                .servicePlan(AppServicePlanEntity.builder().id(webApp.getAppServicePlan().id()).build())
                 .subscription(Subscription.builder().id(webApp.subscriptionId()).build())
                 .resourceGroup(ResourceGroup.builder().name(webApp.resourceGroup()).build())
                 .runtime(webApp.getRuntime())
-                .region(webApp.entity().getRegion())
+                .region(webApp.getRegion())
                 .build();
     }
 }

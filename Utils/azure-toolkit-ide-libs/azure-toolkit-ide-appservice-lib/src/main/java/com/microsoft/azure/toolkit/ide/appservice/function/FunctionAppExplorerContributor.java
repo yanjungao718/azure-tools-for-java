@@ -32,6 +32,7 @@ public class FunctionAppExplorerContributor implements IExplorerContributor {
                 .actions(FunctionAppActionsContributor.SERVICE_ACTIONS)
                 .addChildren(FunctionAppExplorerContributor::listFunctionApps, (functionApp, functionAppModule) -> new Node<>(functionApp)
                         .view(new AzureResourceLabelView<>(functionApp))
+                        .actions(FunctionAppActionsContributor.FUNCTION_APP_ACTIONS)
                         .addChildren(Arrays::asList, (app, webAppNode) -> new FunctionsNode(app))
                         .addChildren(app -> Collections.singletonList(AppServiceFileNode.getRootFileNodeForAppService(app)),
                                 (file, webAppNode) -> new AppServiceFileNode(file)) // Files

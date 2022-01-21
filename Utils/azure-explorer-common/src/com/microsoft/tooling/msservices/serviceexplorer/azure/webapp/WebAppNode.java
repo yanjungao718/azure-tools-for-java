@@ -92,7 +92,7 @@ public class WebAppNode extends WebAppBaseNode {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.webApp.entity().getRegion().getName());
+        properties.put(AppInsightsConstants.Region, this.webApp.getRegion().getName());
         return properties;
     }
 
