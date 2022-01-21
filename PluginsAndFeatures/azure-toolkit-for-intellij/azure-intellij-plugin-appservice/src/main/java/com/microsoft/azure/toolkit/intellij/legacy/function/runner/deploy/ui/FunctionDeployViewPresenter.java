@@ -29,7 +29,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
         }
         RxJavaUtils.unsubscribeSubscription(loadAppSettingsSubscription);
         loadAppSettingsSubscription =
-            Observable.fromCallable(() -> functionApp.entity().getAppSettings()).subscribeOn(getSchedulerProvider().io())
+            Observable.fromCallable(() -> functionApp.getAppSettings()).subscribeOn(getSchedulerProvider().io())
                       .subscribe(appSettings -> AzureTaskManager.getInstance().runLater(() -> {
                           if (isViewDetached()) {
                               return;

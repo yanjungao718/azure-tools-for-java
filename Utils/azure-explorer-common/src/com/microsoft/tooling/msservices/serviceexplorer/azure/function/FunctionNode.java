@@ -68,7 +68,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, Utils.getSubscriptionId(functionApp.id()));
-        properties.put(AppInsightsConstants.Region, functionApp.entity().getRegion().getName());
+        properties.put(AppInsightsConstants.Region, functionApp.getRegion().getName());
         return properties;
     }
 

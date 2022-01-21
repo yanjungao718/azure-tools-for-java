@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
 import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
@@ -96,16 +95,16 @@ public class FunctionAppConfig extends AppServiceConfig {
     }
 
     public static FunctionAppConfig fromRemote(FunctionApp functionApp) {
-        final AppServicePlan plan = Azure.az(AzureAppServicePlan.class).get(functionApp.entity().getAppServicePlanId());
+        final AppServicePlan plan = functionApp.getAppServicePlan();
         return FunctionAppConfig.builder()
                 .name(functionApp.name())
                 .resourceId(functionApp.id())
-                .servicePlan(AppServicePlanEntity.builder().id(plan.id()).name(plan.name()).resourceGroup(plan.resourceGroup()).build())
+                .servicePlan(AppServicePlanEntity.builder().id(plan.id()).name(plan.name()).resourceGroup(plan.getResourceGroupName()).build())
                 .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
                 .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
                 .runtime(functionApp.getRuntime())
-                .region(functionApp.entity().getRegion())
-                .appSettings(functionApp.entity().getAppSettings())
+                .region(functionApp.getRegion())
+                .appSettings(functionApp.getAppSettings())
                 .build();
     }
 }
