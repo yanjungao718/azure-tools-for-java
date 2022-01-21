@@ -6,6 +6,8 @@
 package com.microsoft.azure.toolkit.ide.appservice.function;
 
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
 import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -59,6 +61,8 @@ public class FunctionAppConfig extends AppServiceConfig {
         final String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
         final DraftServicePlan plan = new DraftServicePlan(subscription, planName, region, FunctionAppConfig.DEFAULT_RUNTIME.getOperatingSystem(),
                 PricingTier.CONSUMPTION);
+        final ApplicationInsightsConfig insightsConfig = ApplicationInsightsConfig.builder().name(appName).newCreate(true).build();
+        final MonitorConfig monitorConfig = MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build();
         return FunctionAppConfig.builder()
                 .subscription(subscription)
                 .resourceGroup(group)
@@ -66,6 +70,7 @@ public class FunctionAppConfig extends AppServiceConfig {
                 .servicePlan(plan)
                 .runtime(FunctionAppConfig.DEFAULT_RUNTIME)
                 .pricingTier(PricingTier.CONSUMPTION)
+                .monitorConfig(monitorConfig)
                 .region(region).build();
     }
 
@@ -82,6 +87,12 @@ public class FunctionAppConfig extends AppServiceConfig {
                 .map(AppServicePlanEntity::getResourceGroup).orElseGet(config::getResourceGroupName));
         Optional.ofNullable(config.getRuntime()).ifPresent(runtime -> result.runtime(
                 new RuntimeConfig().os(runtime.getOperatingSystem()).javaVersion(runtime.getJavaVersion()).webContainer(runtime.getWebContainer())));
+        final ApplicationInsightsConfig insightsConfig = Optional.ofNullable(config.getMonitorConfig()).map(MonitorConfig::getApplicationInsightsConfig).orElse(null);
+        result.disableAppInsights(insightsConfig == null);
+        if (insightsConfig != null) {
+            result.appInsightsInstance(insightsConfig.getName());
+            result.appInsightsKey(insightsConfig.getInstrumentationKey());
+        }
         result.appSettings(config.getAppSettings());
         return result;
     }

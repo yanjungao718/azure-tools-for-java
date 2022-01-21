@@ -6,10 +6,12 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.action;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.TunnelProxy;
@@ -57,6 +59,10 @@ public class SSHIntoWebAppAction {
         final AzureString title = title("webapp.connect_ssh.app", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false,
             () -> {
+                if (webApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
+                    AzureMessager.getMessager().warning(message("webapp.ssh.windowsNotSupport"));
+                    return;
+                }
                 final TunnelProxy proxy = new TunnelProxy(webApp);
 
                 int localPort;

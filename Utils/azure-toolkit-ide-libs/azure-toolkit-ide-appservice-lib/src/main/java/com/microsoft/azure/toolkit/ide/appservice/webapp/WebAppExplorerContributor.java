@@ -58,7 +58,7 @@ public class WebAppExplorerContributor implements IExplorerContributor {
                     .subscribe(ignore -> AzureEventBus.emit("resource.status_changed.resource", resource));
             return null;
         }
-        return resource.getRuntime().getOperatingSystem() == OperatingSystem.LINUX ? AzureIcon.Modifier.LINUX : null;
+        return resource.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
     }
 
     private static List<WebApp> listWebApps(AzureWebApp webAppModule) {
