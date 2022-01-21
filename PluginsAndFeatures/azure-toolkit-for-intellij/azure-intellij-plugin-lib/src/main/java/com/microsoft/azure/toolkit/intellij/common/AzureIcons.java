@@ -11,7 +11,7 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j
+@Log4j2
 public class AzureIcons {
     public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
 
