@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 
 import java.util.Optional;
@@ -44,7 +45,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof SpringCloudApp);
+                .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(STREAM_LOG, new Action<>(streamLogView));
     }
 

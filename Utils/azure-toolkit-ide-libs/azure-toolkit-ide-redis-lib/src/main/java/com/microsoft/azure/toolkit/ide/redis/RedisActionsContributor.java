@@ -12,7 +12,9 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.redis.RedisCache;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 
@@ -28,8 +30,8 @@ public class RedisActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
-            .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_redis_explorer.redis", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof RedisCache);
+            .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
+            .enabled(s -> s instanceof RedisCache && ((RedisCache) s).getFormalStatus().isRunning());
         am.registerAction(OPEN_EXPLORER, new Action<>(showExplorerView));
     }
 

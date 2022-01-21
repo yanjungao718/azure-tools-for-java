@@ -67,7 +67,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final Consumer<IAzureBaseResource<?, ?>> delete = s -> ((Removable) s).remove();
         final ActionView.Builder deleteView = new ActionView.Builder("Delete", "/icons/action/delete.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.delete_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof Removable && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING));
+            .enabled(s -> s instanceof Removable && !((AzResourceBase) s).getFormalStatus().isWriting());
         am.registerAction(DELETE, new Action<>(delete, deleteView));
 
         final Consumer<IAzureBaseResource<?, ?>> refresh = IAzureBaseResource::refresh;
@@ -97,7 +97,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING));
+            .enabled(s -> ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(CONNECT, new Action<>(connectView));
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
@@ -107,7 +107,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.deploy_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING));
+            .enabled(s -> ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(DEPLOY, new Action<>(deployView));
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
