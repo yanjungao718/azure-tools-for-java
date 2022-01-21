@@ -13,17 +13,20 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -38,6 +41,8 @@ public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>>
     }
 
     private void init() {
+        this.redisComboBox.setRequired(true);
+        this.redisComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 this.redisComboBox.refreshItems();
@@ -56,9 +61,15 @@ public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>>
         }));
     }
 
+    @Nullable
     @Override
     public Resource<RedisCache> getValue() {
-        return RedisResourceDefinition.INSTANCE.define(this.redisComboBox.getValue());
+        final RedisCache cache = this.redisComboBox.getValue();
+        final AzureValidationInfo info = this.getValidationInfo(true);
+        if (!info.isValid()) {
+            return null;
+        }
+        return RedisResourceDefinition.INSTANCE.define(cache);
     }
 
     @Override

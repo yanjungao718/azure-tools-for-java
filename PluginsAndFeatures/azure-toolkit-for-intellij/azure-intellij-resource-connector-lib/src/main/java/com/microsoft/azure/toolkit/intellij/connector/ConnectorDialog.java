@@ -105,6 +105,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     protected void saveConnection(Connection<?, ?> connection) {
+        if (connection == null) {
+            return;
+        }
         AzureTaskManager.getInstance().runLater(() -> {
             this.close(0);
             final Resource<?> resource = connection.getResource();
@@ -133,6 +136,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         return this.contentPane;
     }
 
+    @javax.annotation.Nullable
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Connection<?, ?> getValue() {
@@ -140,6 +144,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         final ResourceDefinition consumerDef = this.consumerTypeSelector.getValue();
         final Resource resource = (Resource<?>) this.resourcePanel.getValue();
         final Resource consumer = (Resource<?>) this.consumerPanel.getValue();
+        if (Objects.isNull(resource) || Objects.isNull(consumer)) {
+            return null;
+        }
         final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
         connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         return connection;
