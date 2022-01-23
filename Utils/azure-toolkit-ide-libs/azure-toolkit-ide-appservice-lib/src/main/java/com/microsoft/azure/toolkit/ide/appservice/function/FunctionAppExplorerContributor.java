@@ -21,6 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor.APP_SERVICE_ICON_PROVIDER;
+
 public class FunctionAppExplorerContributor implements IExplorerContributor {
     private static final String NAME = "Function App";
     private static final String ICON = "/icons/functionapp.png";
@@ -31,7 +33,7 @@ public class FunctionAppExplorerContributor implements IExplorerContributor {
         return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(FunctionAppActionsContributor.SERVICE_ACTIONS)
                 .addChildren(FunctionAppExplorerContributor::listFunctionApps, (functionApp, functionAppModule) -> new Node<>(functionApp)
-                        .view(new AzureResourceLabelView<>(functionApp))
+                        .view(new AzureResourceLabelView<>(functionApp, FunctionApp::getStatus, APP_SERVICE_ICON_PROVIDER))
                         .actions(FunctionAppActionsContributor.FUNCTION_APP_ACTIONS)
                         .addChildren(Arrays::asList, (app, webAppNode) -> new FunctionsNode(app))
                         .addChildren(app -> Collections.singletonList(AppServiceFileNode.getRootFileNodeForAppService(app)),

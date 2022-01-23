@@ -46,7 +46,11 @@ public class AzureIcons {
             put("/icons/error", AllIcons.General.Error);
         }
     };
-    private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>();
+    private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>() {
+        {
+            put(AzureIcon.REFRESH_ICON, AnimatedIcon.Default.INSTANCE);
+        }
+    };
 
     public static Icon getIcon(@Nonnull String iconPathOrName) {
         return getIcon(iconPathOrName, AzureIcons.class);

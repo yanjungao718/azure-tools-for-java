@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,10 +21,9 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
+import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 
-    public static final AzureIconProvider<IAzureBaseResource<?, ?>> DEFAULT_RESOURCE_ICON_PROVIDER =
-            new AzureIconProvider<>(AzureResourceLabelView::getAzureBaseResourceIconPath, AzureResourceLabelView::getStatusModifier);
+public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
 
     @Nonnull
     @Getter
@@ -46,7 +44,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     private final AzureIconProvider<? super T> iconProvider;
 
     public AzureResourceLabelView(@Nonnull T resource) {
-        this(resource, IAzureBaseResource::getStatus, DEFAULT_RESOURCE_ICON_PROVIDER);
+        this(resource, IAzureBaseResource::getStatus, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
     }
 
     public AzureResourceLabelView(@Nonnull T resource, @Nonnull Function<T, String> descriptionLoader,
@@ -101,27 +99,6 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         AzureEventBus.off("resource.status_changed.resource", listener);
         AzureEventBus.off("module.children_changed.module", listener);
         this.refresher = null;
-    }
-
-    public static <T extends AzResource<?, ?, ?>> String getAzResourceIconPath(T resource) {
-        AzResource<?, ?, ?> current = resource;
-        final StringBuilder modulePath = new StringBuilder();
-        while (!(current instanceof AzResource.None)) {
-            modulePath.insert(0, "/" + current.getModule().getName());
-            current = current.getParent();
-        }
-        return String.format("/icons%s/default.svg", modulePath);
-    }
-
-    public static <T extends IAzureBaseResource<?, ?>> String getAzureBaseResourceIconPath(T resource) {
-        if (resource instanceof AzResource) {
-            return getAzResourceIconPath((AzResource) resource);
-        }
-        return String.format("/icons/%s/default.svg", resource.getClass().getSimpleName().toLowerCase());
-    }
-
-    public static <T extends IAzureBaseResource<?, ?>> AzureIcon.Modifier getStatusModifier(T resource) {
-        return new AzureIcon.Modifier(resource.status().toLowerCase(), AzureIcon.ModifierLocation.BOTTOM_RIGHT);
     }
 
     @Override

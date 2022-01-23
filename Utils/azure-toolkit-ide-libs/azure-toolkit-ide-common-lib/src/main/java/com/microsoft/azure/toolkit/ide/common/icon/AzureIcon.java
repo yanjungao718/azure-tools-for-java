@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 @Builder(toBuilder = true)
 @EqualsAndHashCode
 public class AzureIcon {
+    public static final AzureIcon REFRESH_ICON = AzureIcon.builder().iconPath("/icons/refresh").build();
+
     private String iconPath;
     private List<Modifier> modifierList;
 
@@ -37,7 +39,12 @@ public class AzureIcon {
     @Getter
     @EqualsAndHashCode
     public static class Modifier {
-        public static final Modifier LINUX = new AzureIcon.Modifier("linux", AzureIcon.ModifierLocation.BOTTOM_LEFT);
+        public static final Modifier LINUX = new AzureIcon.Modifier("linux", ModifierLocation.BOTTOM_LEFT);
+        public static final Modifier RUNNING = new AzureIcon.Modifier("running", ModifierLocation.BOTTOM_RIGHT);
+        public static final Modifier STOPPED = new AzureIcon.Modifier("stopped", ModifierLocation.BOTTOM_RIGHT);
+        public static final Modifier FAILED = new AzureIcon.Modifier("failed", ModifierLocation.BOTTOM_RIGHT);
+        public static final Modifier UNKNOWN = new AzureIcon.Modifier("unknown", ModifierLocation.BOTTOM_RIGHT);
+        public static final Modifier REFRESHING = new AzureIcon.Modifier("refreshing", ModifierLocation.BOTTOM_RIGHT);
 
         private final String iconPath;
         private final ModifierLocation location;
