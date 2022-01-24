@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 // todo: Refactor to tasks in app service library
 @Deprecated
@@ -223,8 +224,8 @@ public class AzureWebAppMvpModel {
         String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
         progressIndicator.setText(stopMessage);
         deployTarget.stop();
-
-        final DeployType deployType = getDeployTypeByWebContainer(deployTarget.getRuntime().getWebContainer());
+        // todo: @hanli migrate to use WebAppDeployTask
+        final DeployType deployType = Optional.ofNullable(DeployType.fromString(FilenameUtils.getExtension(file.getName()))).orElse(DeployType.ZIP);
         // java se runtime will always deploy to root
         if (isDeployToRoot ||
                 Objects.equals(deployTarget.getRuntime().getWebContainer(), WebContainer.JAVA_SE)) {
@@ -237,17 +238,6 @@ public class AzureWebAppMvpModel {
         String successMessage = deployTarget instanceof WebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
         progressIndicator.setText(successMessage);
         deployTarget.start();
-    }
-
-    // todo: get deploy type with runtime&artifact
-    private static DeployType getDeployTypeByWebContainer(WebContainer webContainer) {
-        if (Objects.equals(webContainer, WebContainer.JAVA_SE)) {
-            return DeployType.JAR;
-        }
-        if (Objects.equals(webContainer, WebContainer.JBOSS_7)) {
-            return DeployType.EAR;
-        }
-        return DeployType.WAR;
     }
 
     /**
