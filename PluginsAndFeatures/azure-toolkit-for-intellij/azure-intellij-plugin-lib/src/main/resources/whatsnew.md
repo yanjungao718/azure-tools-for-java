@@ -1,6 +1,37 @@
 <!-- Version: 3.58.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.61.0
+### Added
+- Add a placeholder tree node in Azure Explorer for resource that is being created.
+- Show the status of resources explicitly on Azure Explorer node(right after the name).
+
+### Changed
+- Details of items in combo box are now loaded lazily, so that user needn't to wait too long 
+  for the items to be ready to be selected when deploy a WebApp/Function App
+- Nodes in Azure Explorer are now ordered alphabetically.
+
+### Fixed
+- NPE when connecting storage account/redis cache if there is no such resources in the selected subscription.
+- No default Offer/Sku/Image are selected in "Select VM Image" dialog.
+- Validation passed in Create VM dialog even Maximum price per hour is empty.
+- Some modified values will be changed to default when switch back to "More settings" in "Create App Service" dialog
+- Can't create new security group from "Create VM" dialog
+- Validation message is not right when selected subscription has no spring cloud service
+- Tooltips on nodes in azure explorer are not correct.
+- Error occurs when Docker Run.
+- Error occurs when run or deploy after docker support is added.
+- Icon of action "Open by Database Tools" for PostgreSQL is missing.
+
+## 3.60.2
+### Changed
+- upgrade log4j to the latest v2.17.1
+
+## 3.60.1
+### Fixed
+- [#6294](https://github.com/microsoft/azure-tools-for-java/issues/6294): Uncaught Exception cannot create configurable component java.lang.NullPointerException
+- Signin status will not keep after restarting if user signed in with Service Principal
+
 ## 3.60.0
 ### Added
 - Add dependency support for Azure Functions related libs, so that our plugin can be recommended.
