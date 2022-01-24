@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.appservice.webapp;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.node.WebAppDeploymentSlotsNode;
 import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
+import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -29,8 +30,7 @@ import java.util.stream.Collectors;
 
 public class WebAppExplorerContributor implements IExplorerContributor {
     public static final AzureIconProvider<IAppService<?>> APP_SERVICE_ICON_PROVIDER =
-            new AzureIconProvider<>(AzureResourceLabelView::getAzureBaseResourceIconPath,
-                    AzureResourceLabelView::getStatusModifier, WebAppExplorerContributor::getOperatingSystemModifier);
+            new AzureResourceIconProvider<IAppService<?>>().withModifier(WebAppExplorerContributor::getOperatingSystemModifier);
 
     private static final String NAME = "Web Apps";
     private static final String ICON = "/icons/webapp.svg";
@@ -51,7 +51,7 @@ public class WebAppExplorerContributor implements IExplorerContributor {
                 );
     }
 
-    public static AzureIcon.Modifier getOperatingSystemModifier(IAppService<?> resource) {
+    private static AzureIcon.Modifier getOperatingSystemModifier(IAppService<?> resource) {
         if (resource.getRawEntity() == null) {
             // do not add os modifier in loading status as runtime request may have high cost
             AzureTaskManager.getInstance().runOnPooledThreadAsObservable(resource::getRuntime)
