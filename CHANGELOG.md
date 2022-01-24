@@ -94,10 +94,8 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - No default Offer/Sku/Image are selected in "Select VM Image" dialog.
 - Validation passed in Create VM dialog even Maximum price per hour is empty.
 - Some modified values will be changed to default when switch back to "More settings" in "Create App Service" dialog.
-- Can't create new security group from "Create VM" dialog.
 - Validation message is not right when selected subscription has no spring cloud service.
 - Tooltips on nodes in azure explorer are not correct.
-- Error occurs when Docker Run.
 - Error occurs when run or deploy after docker support is added.
 - Icon of action "Open by Database Tools" for PostgreSQL is missing.
 

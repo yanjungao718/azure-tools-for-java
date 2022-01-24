@@ -102,18 +102,23 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     @Override
-    public synchronized void setValue(SpringCloudAppConfig appConfig) {
+    public synchronized void setValue(@Nonnull SpringCloudAppConfig appConfig) {
+        final String clusterName = appConfig.getClusterName();
+        final String appName = appConfig.getAppName();
+        final String resourceGroup = appConfig.getResourceGroup();
+        if (StringUtils.isAnyBlank(clusterName, appName)) {
+            return;
+        }
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final String resourceGroup = appConfig.getResourceGroup();
             final SpringCloudCluster cluster = Optional.of(Azure.az(AzureSpringCloud.class))
                 .map(az -> az.clusters(appConfig.getSubscriptionId()))
-                .map(cs -> cs.get(appConfig.getClusterName(), appConfig.getResourceGroup()))
+                .map(cs -> cs.get(clusterName, resourceGroup))
                 .orElse(null);
             final SpringCloudApp app = Optional.ofNullable(cluster)
-                .map(c -> c.apps().get(appConfig.getAppName(), resourceGroup))
+                .map(c -> c.apps().get(appName, resourceGroup))
                 .orElse(null);
             if (Objects.nonNull(cluster) && Objects.isNull(app)) {
-                final SpringCloudAppDraft draft = cluster.apps().create(appConfig.getAppName(), appConfig.getResourceGroup());
+                final SpringCloudAppDraft draft = cluster.apps().create(appName, resourceGroup);
                 draft.setConfig(appConfig);
                 this.selectorApp.addLocalItem(draft);
             }
@@ -124,7 +129,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             .ifPresent((a -> this.selectorArtifact.setArtifact(a.getArtifact())));
         Optional.ofNullable(appConfig.getSubscriptionId())
             .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
-        Optional.ofNullable(appConfig.getClusterName())
+        Optional.ofNullable(clusterName)
             .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
         Optional.ofNullable(appConfig.getAppName())
             .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
