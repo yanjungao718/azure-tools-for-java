@@ -19,8 +19,6 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,13 +50,8 @@ public class WebAppExplorerContributor implements IExplorerContributor {
     }
 
     private static AzureIcon.Modifier getOperatingSystemModifier(IAppService<?> resource) {
-        if (resource.getRawEntity() == null) {
-            // do not add os modifier in loading status as runtime request may have high cost
-            AzureTaskManager.getInstance().runOnPooledThreadAsObservable(resource::getRuntime)
-                    .subscribe(ignore -> AzureEventBus.emit("resource.status_changed.resource", resource));
-            return null;
-        }
-        return resource.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
+        return resource.getFormalStatus().isWaiting() ? null :
+                resource.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
     }
 
     private static List<WebApp> listWebApps(AzureWebApp webAppModule) {

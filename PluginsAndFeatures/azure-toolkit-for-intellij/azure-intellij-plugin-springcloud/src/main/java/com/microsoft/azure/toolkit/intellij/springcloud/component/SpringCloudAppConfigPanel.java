@@ -151,13 +151,6 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
         this.numInstance.setMinimum(0);
         this.numInstance.updateLabels();
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final int size = Optional.ofNullable(app.getActiveDeployment())
-                .or(() -> Optional.ofNullable(app.deployments().get("default", app.getResourceGroupName())))
-                .map(d -> d.getInstances().size()).orElse(0);
-            final Runnable task = () -> this.numInstance.setRealMin(Math.min(size, app.getFormalStatus().isStopped() ? 0 : 1));
-            AzureTaskManager.getInstance().runLater(task, AzureTask.Modality.ANY);
-        });
     }
 
     @Contract("_->_")
