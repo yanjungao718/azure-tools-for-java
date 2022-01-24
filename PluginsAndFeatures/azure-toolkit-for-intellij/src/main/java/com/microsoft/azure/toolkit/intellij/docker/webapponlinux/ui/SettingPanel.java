@@ -306,9 +306,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (event.getStateChange() == ItemEvent.SELECTED) {
             final AppServicePlan asp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
             if (asp != null) {
-                lblLocation.setText(asp.entity().getRegion());
+                lblLocation.setText(asp.getRegion().getLabel());
                 // TODO(andxu): change to toString
-                lblPricing.setText(asp.entity().getPricingTier().getSize());
+                lblPricing.setText(asp.getPricingTier().getSize());
             }
         }
     }

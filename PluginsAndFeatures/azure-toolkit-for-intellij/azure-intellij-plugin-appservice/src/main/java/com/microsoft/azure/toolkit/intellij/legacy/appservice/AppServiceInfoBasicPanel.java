@@ -102,6 +102,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     @Override
     public void setValue(final T config) {
+        this.config = config;
         this.textName.setValue(config.getName());
         this.selectorRuntime.setValue(config.getRuntime());
     }

@@ -13,12 +13,14 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
@@ -38,6 +40,8 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
     }
 
     private void init() {
+        this.accountComboBox.setRequired(true);
+        this.accountComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 this.accountComboBox.refreshItems();
@@ -56,9 +60,15 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
         }));
     }
 
+    @Nullable
     @Override
     public Resource<StorageAccount> getValue() {
-        return StorageAccountResourceDefinition.INSTANCE.define(this.accountComboBox.getValue());
+        final StorageAccount account = this.accountComboBox.getValue();
+        final AzureValidationInfo info = this.getValidationInfo(true);
+        if (!info.isValid()) {
+            return null;
+        }
+        return StorageAccountResourceDefinition.INSTANCE.define(account);
     }
 
     @Override

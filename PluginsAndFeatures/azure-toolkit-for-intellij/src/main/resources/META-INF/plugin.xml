@@ -28,32 +28,29 @@
         <h3>3.60.0</h3>
         <h4>Added</h4>
         <ul>
-          <li>Add dependency support for Azure Functions related libs, so that our plugin can be recommended.</li>
-          <li>Add actions on some error notifications, so that user knows what to do next.</li>
-          <li>Add account registration link in "Sign in" dialog.</li>
+          <li>Add a placeholder tree node in Azure Explorer for resource that is being created.</li>
+          <li>Show the status of resources explicitly on Azure Explorer node(right after the name).</li>
         <ul>
 
         <h4>Changed</h4>
         <ul>
-          <li>Performance of restoring-sign-in is improved.</li>
+          <li>Details of items in combo box are now loaded lazily, so that user needn't to wait too long.
+               for the items to be ready to be selected when deploy a WebApp/Function App.</li>
+          <li>Nodes in Azure Explorer are now ordered alphabetically.</li>
         <ul>
 
         <h4>Fixed</h4>
         <ul>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6120">#6120</a>: AzureOperationException: list all function modules in project.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6090">#6090</a>: Uncaught Exception java.nio.file.InvalidPathException: Illegal char <:> at index 16: Active code page: 1252.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5038">#5038</a>: Dependent Module Jars Are Not Added When Debugging With IDEA.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5035">#5035</a>: Resources Are Not Added To Jar When Debugging With IDEA.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6026">#6026</a>: Uncaught Exception java.lang.NullPointerException.</li>
-          <li>Azure Explorer: some nodes are not sorted in natural order.</li>
-          <li>Azure Explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.</li>
-          <li>Virtual Machine: Validation info about name of resource group and virtual machine doesn't contain letters length.</li>
-          <li>Storage Account: "open in portal" and "open storage explorer" link to a same page.</li>
-          <li>Spring Cloud: there is No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.</li>
-          <li>MySQL/SqlServer/PostgreSQL: Test connection result text box has white background color in IntelliJ Light theme.</li>
-          <li>Postgre SQL: No icon in properties view tab title.</li>
-          <li>Some message/icon related bugs.</li>
-          <li>CVE issues</li>
+          <li>NPE when connecting storage account/redis cache if there is no such resources in the selected subscription.</li>
+          <li>No default Offer/Sku/Image are selected in "Select VM Image" dialog.</li>
+          <li>Validation passed in Create VM dialog even Maximum price per hour is empty.</li>
+          <li>Some modified values will be changed to default when switch back to "More settings" in "Create App Service" dialog.</li>
+          <li>Can't create new security group from "Create VM" dialog.</li>
+          <li>Validation message is not right when selected subscription has no spring cloud service.</li>
+          <li>Tooltips on nodes in azure explorer are not correct.</li>
+          <li>Error occurs when Docker Run.</li>
+          <li>Error occurs when run or deploy after docker support is added.</li>
+          <li>Icon of action "Open by Database Tools" for PostgreSQL is missing.</li>
         <ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

@@ -16,10 +16,12 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FunctionsNode extends Node<FunctionApp> {
@@ -33,8 +35,12 @@ public class FunctionsNode extends Node<FunctionApp> {
         this.addChildren(ignore -> functionApp.listFunctions().stream()
                         .sorted(Comparator.comparing(FunctionEntity::getName)).collect(Collectors.toList()),
                 (function, functionsNode) -> new Node<>(function)
-                        .view(new NodeView.Static(function.getName(), "/icons/function-trigger.png"))
+                        .view(new NodeView.Static(function.getName(), "/icons/function-trigger.png", getFunctionTriggerType(function)))
                         .actions(FunctionAppActionsContributor.FUNCTION_ACTION));
+    }
+
+    private static String getFunctionTriggerType(@Nonnull FunctionEntity functionEntity) {
+        return Optional.ofNullable(functionEntity.getTrigger()).map(FunctionEntity.BindingEntity::getType).map(StringUtils::capitalize).orElse("Unknown");
     }
 
     static class FunctionsNodeView implements NodeView {
