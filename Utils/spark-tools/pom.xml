@@ -38,6 +38,10 @@
                         <groupId>jdk.tools</groupId>
                         <artifactId>jdk.tools</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java2.5.0</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
