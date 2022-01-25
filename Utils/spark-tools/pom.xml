@@ -40,7 +40,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>com.google.protobuf</groupId>
-                        <artifactId>protobuf-java2.5.0</artifactId>
+                        <artifactId>protobuf-java</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
