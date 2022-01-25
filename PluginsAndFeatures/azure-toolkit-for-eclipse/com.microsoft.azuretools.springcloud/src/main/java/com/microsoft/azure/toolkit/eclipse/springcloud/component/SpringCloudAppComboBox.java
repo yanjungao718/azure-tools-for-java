@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.eclipse.springcloud.creation.SpringCloudAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
@@ -68,7 +69,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
             if (!this.localItems.isEmpty()) {
                 apps.add(this.localItems.get(this.cluster.name()));
             }
-            apps.addAll(cluster.apps());
+            apps.addAll(cluster.apps().list());
         }
         return apps;
     }
@@ -86,7 +87,8 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private void showAppCreationPopup() {
         final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(this.cluster, this.getParent().getShell());
         dialog.setOkActionListener((config) -> {
-            final SpringCloudApp app = cluster.app(config);
+            final SpringCloudAppDraft app = cluster.apps().create(config.getAppName(), cluster.getResourceGroupName());
+            app.setConfig(config);
             this.addLocalItem(app);
             dialog.close();
             this.setValue(app);
@@ -95,9 +97,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     }
 
     public void addLocalItem(SpringCloudApp app) {
-        final SpringCloudApp cached = this.localItems.get(app.getCluster().name());
+        final SpringCloudApp cached = this.localItems.get(app.getParent().name());
         if (Objects.isNull(cached) || !Objects.equals(app.name(), cached.name())) {
-            this.localItems.put(app.getCluster().name(), app);
+            this.localItems.put(app.getParent().name(), app);
             final List<SpringCloudApp> items = this.getItems();
             items.add(0, app);
             this.setItems(items);

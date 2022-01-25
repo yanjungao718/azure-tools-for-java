@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
 import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.forms.common.DraftResourceGroup;

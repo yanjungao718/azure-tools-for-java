@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -53,11 +54,11 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
                 .runLater(() -> CreateFunctionAppHandler.create());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> isFunctionApp = (r, e) -> r instanceof FunctionApp;
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> openWebAppPropertyViewHandler = (c, e) -> AzureTaskManager
+        final BiPredicate<AzResourceBase, Object> isFunctionApp = (r, e) -> r instanceof FunctionApp;
+        final BiConsumer<AzResourceBase, Object> openWebAppPropertyViewHandler = (c, e) -> AzureTaskManager
                 .getInstance().runLater(() -> {
                     IWorkbench workbench = PlatformUI.getWorkbench();
-                    AppServicePropertyEditorInput input = new AppServicePropertyEditorInput(c.id());
+                    AppServicePropertyEditorInput input = new AppServicePropertyEditorInput(c.getId());
                     IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(FunctionAppPropertyEditor.ID);
                     openEditor(input, descriptor);
                 });
@@ -70,7 +71,7 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
                 AzureMessager.getMessager().error(exception);
             }
         });
-        am.registerHandler(ResourceCommonActionsContributor.DEPLOY, isFunctionApp, deployHandler);
+        am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof FunctionApp, deployHandler);
 
         final BiPredicate<IAppService<?>, Object> logStreamingPredicate = (r, e) -> r instanceof IFunctionAppBase<?>;
         final BiConsumer<IAppService<?>, Object> startLogStreamingHandler = (c, e) -> FunctionAppLogStreamingHandler
