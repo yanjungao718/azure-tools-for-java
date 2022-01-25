@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 
 import java.util.Optional;
@@ -31,7 +32,7 @@ public class SqlServerActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", "icons/action/open_database_tool.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("sqlserver.connect_server.server", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-                .enabled(s -> s instanceof MicrosoftSqlServer);
+                .enabled(s -> s instanceof MicrosoftSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
     }
 

@@ -141,7 +141,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     public void onLoadAppServicePlan(String sid, String rg) {
         Mono.fromCallable(() -> Azure.az(AzureAppService.class)
             .subscription(sid).appServicePlansByResourceGroup(rg)).flatMapMany(Flux::fromIterable)
-                .filter(asp -> OperatingSystem.LINUX.equals(asp.entity().getOperatingSystem()))
+                .filter(asp -> OperatingSystem.LINUX.equals(asp.getOperatingSystem()))
                 .subscribeOn(Schedulers.boundedElastic())
                 .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
@@ -160,7 +160,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     public void onLoadAppServicePlan(String sid) {
         Mono.fromCallable(() -> Azure.az(AzureAppService.class)
             .subscription(sid).appServicePlans()).flatMapMany(Flux::fromIterable)
-            .filter(asp -> OperatingSystem.LINUX.equals(asp.entity().getOperatingSystem()))
+            .filter(asp -> OperatingSystem.LINUX.equals(asp.getOperatingSystem()))
             .subscribeOn(Schedulers.boundedElastic())
             .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
                 if (isViewDetached()) {

@@ -274,17 +274,12 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-toolkit-common-lib</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-auth-lib</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-appservice-lib</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-resource-lib</artifactId>
@@ -333,11 +328,6 @@
         <dependency>
             <groupId>org.jtwig</groupId>
             <artifactId>jtwig-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-toolkit-ide-common-lib</artifactId>
-            <version>${azure-toolkit-ide-common-lib.version}</version>
         </dependency>
     </dependencies>
 </project>

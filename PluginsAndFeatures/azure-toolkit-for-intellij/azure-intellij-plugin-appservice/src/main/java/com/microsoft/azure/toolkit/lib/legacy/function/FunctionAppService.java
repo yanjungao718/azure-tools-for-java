@@ -77,10 +77,10 @@ public class FunctionAppService {
         return FunctionAppConfig.builder()
                 .resourceId(functionApp.id())
                 .name(functionApp.name())
-                .region(functionApp.entity().getRegion())
+                .region(functionApp.getRegion())
                 .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
                 .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
-                .servicePlan(AppServicePlanEntity.builder().id(functionApp.entity().getAppServicePlanId()).build()).build();
+                .servicePlan(AppServicePlanEntity.builder().id(functionApp.getAppServicePlan().id()).build()).build();
     }
 
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {
@@ -217,7 +217,7 @@ public class FunctionAppService {
         if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
             return FunctionDeployType.RUN_FROM_ZIP;
         }
-        final PricingTier pricingTier = functionApp.plan().entity().getPricingTier();
+        final PricingTier pricingTier = functionApp.plan().getPricingTier();
         return StringUtils.equalsAnyIgnoreCase(pricingTier.getTier(), "Dynamic", "ElasticPremium") ?
                 FunctionDeployType.RUN_FROM_BLOB : FunctionDeployType.RUN_FROM_ZIP;
     }

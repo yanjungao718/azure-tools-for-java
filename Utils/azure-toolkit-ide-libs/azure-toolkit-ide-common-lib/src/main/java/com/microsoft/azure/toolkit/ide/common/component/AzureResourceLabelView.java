@@ -5,11 +5,12 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,38 +18,44 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Function;
 
+import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
+
 public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
+
     @Nonnull
     @Getter
     private final T resource;
     @Getter
     private final String label;
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
-    private final Function<T, String> iconLoader;
-    private final Function<T, String> descriptionLoader;
     @Getter
     private String description;
     @Getter
-    private String iconPath;
+    private AzureIcon icon;
     @Nullable
     @Setter
     @Getter
     private Refresher refresher;
 
+    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final Function<T, String> descriptionLoader;
+    private final AzureIconProvider<? super T> iconProvider;
+
     public AzureResourceLabelView(@Nonnull T resource) {
-        this(resource, r -> initIconPath(resource), r -> resource.getStatus());
+        this(resource, IAzureBaseResource::getStatus, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
     }
 
-    public AzureResourceLabelView(@Nonnull T resource, Function<T, String> iconLoader, Function<T, String> descriptionLoader) {
+    public AzureResourceLabelView(@Nonnull T resource, @Nonnull Function<T, String> descriptionLoader,
+                                  @Nonnull final AzureIconProvider<? super T> iconProvider) {
         this.resource = resource;
-        this.label = resource.name();
-        this.iconLoader = iconLoader;
-        this.descriptionLoader = descriptionLoader;
-        this.iconPath = iconLoader.apply(resource);
-        this.description = descriptionLoader.apply(resource);
+        this.label = resource.getName();
+        this.iconProvider = iconProvider;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        this.descriptionLoader = descriptionLoader;
+        this.description = descriptionLoader.apply(resource);
+        this.icon = iconProvider.getIcon(resource);
         AzureEventBus.on("resource.refresh.resource", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);
@@ -60,7 +67,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.resource.id())) {
+        if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).getId().equals(this.resource.getId())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             switch (type) {
                 case "resource.refresh.resource":
@@ -72,8 +79,8 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
                 case "common|resource.status_changed":
                 case "resource.status_changed.resource":
                     tm.runOnPooledThread(() -> {
+                        this.icon = iconProvider.getIcon(resource);
                         this.description = descriptionLoader.apply(resource);
-                        this.iconPath = iconLoader.apply(resource);
                         tm.runLater(this::refreshView);
                     });
                     break;
@@ -94,32 +101,8 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.refresher = null;
     }
 
-    public static String initIconPath(IAzureBaseResource<?, ?> resource) {
-        final String formalStatus = resource.getFormalStatus();
-        if (resource instanceof AzResource) {
-            return getIconPath((AzResource<?, ?, ?>) resource);
-        }
-        final String type = resource.getClass().getSimpleName().toLowerCase();
-        final String icon = StringUtils.isBlank(formalStatus) ? type : String.format("%s-%s", type, formalStatus.toLowerCase().trim());
-        return String.format("/icons/%s.svg", icon);
-    }
-
-    @Nonnull
-    private static String getIconPath(AzResource<?, ?, ?> resource) {
-        final String status = resource.getStatus();
-        AzResource<?, ?, ?> current = resource;
-        final StringBuilder modulePath = new StringBuilder();
-        while (!(current instanceof AzResource.None)) {
-            modulePath.insert(0, "/" + current.getModule().getName());
-            current = current.getParent();
-        }
-        String fallback = String.format("/icons%s/default.svg", modulePath);
-        if (status.toLowerCase().endsWith("ing")) {
-            fallback = "/icons/spinner";
-        } else if (status.toLowerCase().endsWith("ed")) {
-            fallback = "/icons/error";
-        }
-        final String iconPath = String.format("/icons%s/%s.svg", modulePath, status.toLowerCase());
-        return iconPath + ":" + fallback;
+    @Override
+    public String getIconPath() {
+        return Optional.ofNullable(getIcon()).map(AzureIcon::getIconPath).orElse(StringUtils.EMPTY);
     }
 }

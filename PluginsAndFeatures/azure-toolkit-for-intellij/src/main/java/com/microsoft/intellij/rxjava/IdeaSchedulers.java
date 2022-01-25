@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action1;
@@ -36,6 +36,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static rx.schedulers.Schedulers.computation;
 import static rx.schedulers.Schedulers.from;
 
+@Log4j2
 public class IdeaSchedulers implements IdeSchedulers, ILogger {
     @Nullable
     private final Project project;
@@ -120,9 +121,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
         final ProgressIndicator indicator = thread2Indicator.get(currentThread);
 
         if (indicator == null) {
-            LoggerFactory.getLogger(IdeaSchedulers.class)
-                         .warn("No ProgressIndicator found for thread " + currentThread.getName());
-
+            log.warn("No ProgressIndicator found for thread " + currentThread.getName());
             return;
         }
 

@@ -56,7 +56,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
 
         final ActionView.Builder sshView = new ActionView.Builder("SSH into Web App")
                 .title(s -> Optional.ofNullable(s).map(r -> title("webapp.connect_ssh.app", ((IAppService) r).name())).orElse(null))
-                .enabled(s -> s instanceof IAppService<?>);
+                .enabled(s -> s instanceof IAppService<?> && StringUtils.equalsIgnoreCase(((IAppService<?>) s).getStatus(), IAzureBaseResource.Status.RUNNING));
         am.registerAction(SSH_INTO_WEBAPP, new Action<>(sshView));
     }
 
