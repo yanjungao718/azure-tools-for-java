@@ -17,9 +17,12 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -68,12 +71,24 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
     }
 
     public synchronized void setValue(SpringCloudAppConfig appConfig) {
+        final String clusterName = appConfig.getClusterName();
+        final String appName = appConfig.getAppName();
+        final String resourceGroup = appConfig.getResourceGroup();
+        if (StringUtils.isAnyBlank(clusterName, appName)) {
+            return;
+        }
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
-            if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
-                AzureTaskManager.getInstance().runLater(() -> {
-                    this.selectorApp.addLocalItem(cluster.app(appConfig));
-                });
+            final SpringCloudCluster cluster = Optional.of(Azure.az(AzureSpringCloud.class))
+                .map(az -> az.clusters(appConfig.getSubscriptionId()))
+                .map(cs -> cs.get(clusterName, resourceGroup))
+                .orElse(null);
+            final SpringCloudApp app = Optional.ofNullable(cluster)
+                .map(c -> c.apps().get(appName, resourceGroup))
+                .orElse(null);
+            if (Objects.nonNull(cluster) && Objects.isNull(app)) {
+                final SpringCloudAppDraft draft = cluster.apps().create(appName, resourceGroup);
+                draft.setConfig(appConfig);
+                this.selectorApp.addLocalItem(draft);
             }
         });
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
@@ -89,7 +104,10 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
 
     @Nullable
     public SpringCloudAppConfig getValue() {
-        SpringCloudAppConfig appConfig = this.selectorApp.getValue().entity().getConfig();
+        SpringCloudAppConfig appConfig = Optional.ofNullable(this.selectorApp.getValue())
+                .filter(a -> a instanceof SpringCloudAppDraft)
+                .map(a -> ((SpringCloudAppDraft) a).getConfig())
+                .orElse(null);
         if (Objects.isNull(appConfig)) {
             appConfig = SpringCloudAppConfig.builder()
                 .deployment(SpringCloudDeploymentConfig.builder().build())
