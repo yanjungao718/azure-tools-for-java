@@ -58,6 +58,7 @@ public abstract class AppServiceConfig {
         final Map<String, String> result = new HashMap<>();
         result.put("subscriptionId", Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY));
         result.put("region", Optional.ofNullable(region).map(Region::getName).orElse(StringUtils.EMPTY));
+        final PricingTier pricingTier = Optional.ofNullable(getServicePlan()).map(AppServicePlanEntity::getPricingTier).orElse(getPricingTier());
         result.put("pricingTier", Optional.ofNullable(pricingTier).map(PricingTier::getSize).orElse(StringUtils.EMPTY));
         return result;
     }

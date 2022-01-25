@@ -146,6 +146,6 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> 
     private void updateConfigurationDataModel(WebApp app) {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.id());
-        deployModel.setResourceGroupName(app.entity().getResourceGroup());
+        deployModel.setResourceGroupName(app.getResourceGroupName());
     }
 }

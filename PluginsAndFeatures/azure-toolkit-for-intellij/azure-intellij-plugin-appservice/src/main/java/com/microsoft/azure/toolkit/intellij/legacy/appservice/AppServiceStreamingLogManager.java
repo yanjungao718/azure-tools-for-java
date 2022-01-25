@@ -181,7 +181,7 @@ public enum AppServiceStreamingLogManager {
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
         // commands/logstream/startStreamingLogs.ts#L53
         private void openLiveMetricsStream() throws IOException {
-            final String aiKey = functionApp.entity().getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
+            final String aiKey = functionApp.getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
             if (StringUtils.isEmpty(aiKey)) {
                 throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }

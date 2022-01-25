@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudApp
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
@@ -156,27 +157,15 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
                 AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.getName()), null);
             }
             AzureTaskManager.getInstance().runLater(() -> {
-                switch (status.toUpperCase()) {
-                    case "STOPPED":
-                    case "RUNNING":
-                        this.setEnabled(true);
-                        this.resetButton.setVisible(modified);
-                        this.saveButton.setEnabled(modified);
-                        this.startButton.setEnabled(this.app.isStartable());
-                        this.stopButton.setEnabled(this.app.isStoppable());
-                        this.restartButton.setEnabled(this.app.isStoppable());
-                        break;
-                    case "FAILED":
-                    case "INACTIVE":
-                    case "ALLOCATING":
-                    case "UPGRADING":
-                    case "COMPILING":
-                    case "UNKNOWN":
-                        this.setEnabled(false);
-                        this.deleteButton.setEnabled(true);
-                        break;
-                    default:
-                }
+                final AzResourceBase.FormalStatus formalStatus = this.app.getFormalStatus();
+                final boolean normal = formalStatus.isRunning() || formalStatus.isStopped();
+                this.setEnabled(normal);
+                this.resetButton.setVisible(modified && normal);
+                this.saveButton.setEnabled(modified && normal);
+                this.startButton.setEnabled(formalStatus.isStopped());
+                this.stopButton.setEnabled(formalStatus.isRunning());
+                this.restartButton.setEnabled(formalStatus.isRunning());
+                this.deleteButton.setEnabled(!formalStatus.isWriting());
             });
         }));
     }

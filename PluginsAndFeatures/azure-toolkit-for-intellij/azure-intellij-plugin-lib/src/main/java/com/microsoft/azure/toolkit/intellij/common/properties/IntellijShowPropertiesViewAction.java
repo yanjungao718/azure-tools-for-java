@@ -54,14 +54,7 @@ public class IntellijShowPropertiesViewAction {
             modulePath.insert(0, "/" + current.getModule().getName());
             current = current.getParent();
         }
-        String fallback = String.format("/icons%s/default.svg", modulePath);
-        if (status.toLowerCase().endsWith("ing")) {
-            fallback = "/icons/spinner";
-        } else if (status.toLowerCase().endsWith("ed")) {
-            fallback = "/icons/error";
-        }
-        final String iconPath = String.format("/icons%s/%s.svg", modulePath, status.toLowerCase());
-        return iconPath + ":" + fallback;
+        return String.format("/icons%s/default.svg", modulePath);
     }
 
     @Nonnull

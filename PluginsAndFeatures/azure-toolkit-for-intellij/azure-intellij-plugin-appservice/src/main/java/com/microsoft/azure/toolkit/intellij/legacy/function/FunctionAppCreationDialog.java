@@ -6,16 +6,17 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -54,14 +55,16 @@ public class FunctionAppCreationDialog extends ConfigDialog<FunctionAppConfig> {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project, () -> FunctionAppConfig.getFunctionAppDefaultConfig(project.getName())) {
+        basicPanel = new AppServiceInfoBasicPanel<>(project, () -> FunctionAppConfig.getFunctionAppDefaultConfig(project.getName())) {
             @Override
             public FunctionAppConfig getValue() {
                 // Create AI instance with same name by default
                 final FunctionAppConfig config = super.getValue();
-                final MonitorConfig monitorConfig = MonitorConfig.builder().build();
-                monitorConfig.setApplicationInsightsConfig(ApplicationInsightsConfig.builder().name(config.getName()).newCreate(true).build());
-                config.setMonitorConfig(monitorConfig);
+                Optional.ofNullable(config.getMonitorConfig()).map(MonitorConfig::getApplicationInsightsConfig).ifPresent(insightConfig -> {
+                    if (insightConfig.isNewCreate() && !StringUtils.equals(insightConfig.getName(), config.getName())) {
+                        insightConfig.setName(config.getName());
+                    }
+                });
                 return config;
             }
         };

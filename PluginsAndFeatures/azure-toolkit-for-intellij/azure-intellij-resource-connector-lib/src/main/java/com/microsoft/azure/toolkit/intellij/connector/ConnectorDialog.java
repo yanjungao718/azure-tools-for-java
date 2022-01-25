@@ -20,9 +20,9 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -105,6 +105,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     protected void saveConnection(Connection<?, ?> connection) {
+        if (connection == null) {
+            return;
+        }
         AzureTaskManager.getInstance().runLater(() -> {
             this.close(0);
             final Resource<?> resource = connection.getResource();
@@ -129,10 +132,12 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     @Override
-    protected @Nullable JComponent createCenterPanel() {
+    @Nullable
+    protected JComponent createCenterPanel() {
         return this.contentPane;
     }
 
+    @Nullable
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Connection<?, ?> getValue() {
@@ -140,6 +145,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         final ResourceDefinition consumerDef = this.consumerTypeSelector.getValue();
         final Resource resource = (Resource<?>) this.resourcePanel.getValue();
         final Resource consumer = (Resource<?>) this.consumerPanel.getValue();
+        if (Objects.isNull(resource) || Objects.isNull(consumer)) {
+            return null;
+        }
         final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
         connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         return connection;
