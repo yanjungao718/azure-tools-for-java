@@ -101,6 +101,10 @@
                         <groupId>com.sun.jersey.contribs</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
         </dependencies>
