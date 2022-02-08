@@ -29,10 +29,11 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 
 public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup> implements AzureForm<DraftResourceGroup> {
     private static final Pattern PATTERN = Pattern.compile("^[-\\w._()]+$");
+    public static final String CONFLICT_NAME = "A resource group with the same name already exists in the selected subscription %s";
 
     private AzureTextInput textName;
     private Subscription subscription;
@@ -137,8 +138,8 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         }
         // validate availability
         try {
-            if (!Azure.az(AzureGroup.class).checkNameAvailability(subscription.getId(), value)) {
-                return AzureValidationInfo.builder().input(this).message(value + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
+            if (Azure.az(AzureResources.class).groups(subscription.getId()).exists(value)) {
+                return AzureValidationInfo.error(String.format(CONFLICT_NAME, subscription.getName()), this);
             }
         } catch (CloudException e) {
             return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();

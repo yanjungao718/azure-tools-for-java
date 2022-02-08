@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.model.PricingTier;
@@ -473,7 +473,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         redisConfig.setSubscription(this.currentSub);
         redisConfig.setRegion(Region.fromName(selectedLocationValue));
         redisConfig.setResourceGroup(newResGrp ? new DraftResourceGroup(this.currentSub, selectedResGrpValue) :
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureGroup.class).get(this.currentSub.getId(), selectedResGrpValue));
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureResources.class).groups(this.currentSub.getId()).get(selectedResGrpValue, selectedResGrpValue).toPojo());
         redisConfig.setEnableNonSslPort(noSSLPort);
         redisConfig.setPricingTier(PricingTier.values().stream()
                 .filter(pricingTier -> StringUtils.equalsIgnoreCase(pricingTier.toString(), selectedPriceTierValue)).findFirst().orElse(null));
