@@ -13,6 +13,7 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
+import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
@@ -389,7 +390,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static void stopProcessIfAlive(final Process proc) {
         if (proc != null && proc.isAlive()) {
-            proc.destroy();
+            OSProcessUtil.killProcessTree(proc);
         }
     }
 }
