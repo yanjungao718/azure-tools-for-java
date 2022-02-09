@@ -54,6 +54,7 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,6 +70,8 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionUtils {
+    private static final int MAX_PORT = 65535;
+
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
             "com.microsoft.azure.functions.annotation.FunctionName";
@@ -543,5 +546,26 @@ public class FunctionUtils {
             return false;
         }
         return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
+    }
+
+    public static int findFreePortForApi(int startPort) {
+        ServerSocket socket = null;
+        for (int port = startPort; port <= MAX_PORT; port++) {
+            try {
+                socket = new ServerSocket(port);
+                return socket.getLocalPort();
+            } catch (IOException e) {
+                // swallow this exception
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        // swallow this exception
+                    }
+                }
+            }
+        }
+        return -1;
     }
 }

@@ -16,6 +16,7 @@ public class FunctionRunModel extends IntelliJFunctionContext {
     private String funcPath;
     private String hostJsonPath;
     private String localSettingsJsonPath;
+    private int funcPort;
 
     public Artifact getArtifact() {
         return artifact;
@@ -65,4 +66,11 @@ public class FunctionRunModel extends IntelliJFunctionContext {
         this.localSettingsJsonPath = localSettingsJsonPath;
     }
 
+    public int getFuncPort() {
+        return funcPort;
+    }
+
+    public void setFuncPort(int funcPort) {
+        this.funcPort = funcPort;
+    }
 }

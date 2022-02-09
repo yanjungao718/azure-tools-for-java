@@ -15,18 +15,15 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.tab
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfiguration;
-import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,12 +32,13 @@ import java.util.UUID;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration> {
-
+    private static final int DEFAULT_FUNC_PORT = 7071;
     private JPanel settings;
     private JPanel pnlMain;
     private FunctionCoreToolsCombobox txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
+    private JTextField txtPort;
     private AppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
@@ -95,6 +93,8 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 break;
             }
         }
+        int funcPort = configuration.getFuncPort() <= 0 ? FunctionUtils.findFreePortForApi(DEFAULT_FUNC_PORT) : configuration.getFuncPort();
+        txtPort.setText(String.valueOf(funcPort));
     }
 
     @Override
@@ -105,6 +105,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         // save app settings storage key instead of real value
         configuration.setAppSettings(Collections.EMPTY_MAP);
         configuration.setAppSettingsKey(appSettingsKey);
+        try {
+            configuration.setFuncPort(Integer.valueOf(txtPort.getText()));
+        } catch (final NumberFormatException e) {
+            configuration.setFuncPort(-1);
+        }
     }
 
     @NotNull

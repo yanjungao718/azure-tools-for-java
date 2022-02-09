@@ -50,7 +50,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -70,7 +69,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static final int DEFAULT_FUNC_PORT = 7071;
     private static final int DEFAULT_DEBUG_PORT = 5005;
-    private static final int MAX_PORT = 65535;
     private static final String DEBUG_PARAMETERS =
             "\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"";
     private static final String HOST_JSON = "host.json";
@@ -209,8 +207,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
             throws IOException, InterruptedException {
         isDebuggerLaunched = false;
-        final int debugPort = findFreePortForApi(DEFAULT_DEBUG_PORT);
-        final int funcPort = findFreePortForApi(Math.max(DEFAULT_FUNC_PORT, debugPort + 1));
+        final int funcPort = functionRunConfiguration.getFuncPort();
+        final int debugPort = FunctionUtils.findFreePortForApi(Math.max(DEFAULT_DEBUG_PORT, funcPort));
         processHandler.println(message("function.run.hint.port", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Redirect function cli output to console
@@ -325,27 +323,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private boolean isDebugMode() {
         return executor instanceof DefaultDebugExecutor;
-    }
-
-    private static int findFreePortForApi(int startPort) {
-        ServerSocket socket = null;
-        for (int port = startPort; port <= MAX_PORT; port++) {
-            try {
-                socket = new ServerSocket(port);
-                return socket.getLocalPort();
-            } catch (IOException e) {
-                // swallow this exception
-            } finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        // swallow this exception
-                    }
-                }
-            }
-        }
-        return -1;
     }
 
     @Override
