@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import lombok.AccessLevel;
@@ -39,6 +40,7 @@ public class Node<D> {
     @Nullable
     private ActionGroup actions;
     private int order;
+    private Action<D> doubleClickAction;
 
     public Node(@Nonnull D data) {
         this(data, null);
@@ -74,6 +76,17 @@ public class Node<D> {
 
     public boolean hasChildren() {
         return !this.childrenBuilders.isEmpty();
+    }
+
+    public void doubleClick(final Object event) {
+        if (this.doubleClickAction != null) {
+            this.doubleClickAction.handle(this.data, event);
+        }
+    }
+
+    public Node<D> doubleClickAction(Action.Id<D> actionId) {
+        this.doubleClickAction = AzureActionManager.getInstance().getAction(actionId);
+        return this;
     }
 
     public Node<D> actions(String groupId) {
