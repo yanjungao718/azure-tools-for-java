@@ -8,9 +8,12 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun;
 import com.google.gson.JsonObject;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ExecutorRegistry;
+import com.intellij.execution.ProgramRunnerUtil;
+import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
 import com.intellij.execution.process.OSProcessUtil;
@@ -20,14 +23,16 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
 import com.intellij.execution.runners.ExecutionUtil;
+import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.ide.appservice.util.JsonUtils;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -45,6 +50,7 @@ import com.microsoft.intellij.util.ReadStreamLineThread;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,12 +67,13 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.CONFIG_CORE_TOOLS;
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static org.apache.commons.exec.Executor.INVALID_EXITVALUE;
 
-public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
+
+public class FunctionRunState extends AzureRunProfileState<Boolean> {
 
     private static final int DEFAULT_FUNC_PORT = 7071;
     private static final int DEFAULT_DEBUG_PORT = 5005;
@@ -76,18 +83,18 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private static final String EXTENSION_BUNDLE = "extensionBundle";
     private static final String EXTENSION_BUNDLE_ID = "Microsoft.Azure.Functions.ExtensionBundle";
     private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("version \"(.*)\"");
+    private static final Pattern PORT_EXCEPTION_PATTERN = Pattern.compile("Port \\d+ is unavailable");
     private static final ComparableVersion JAVA_9 = new ComparableVersion("9");
     private static final ComparableVersion FUNC_3 = new ComparableVersion("3");
     private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION = new ComparableVersion("3.0.2630");
     private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION_V2 = new ComparableVersion("2.7.2628");
-    private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = { BindingEnum.HttpOutput,
-                                                                               BindingEnum.HttpTrigger };
+    private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = {BindingEnum.HttpOutput, BindingEnum.HttpTrigger};
     private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process installProcess;
     private Process process;
-    private Executor executor;
-    private FunctionRunConfiguration functionRunConfiguration;
+    private final Executor executor;
+    private final FunctionRunConfiguration functionRunConfiguration;
 
     public FunctionRunState(@NotNull Project project, FunctionRunConfiguration functionRunConfiguration, Executor executor) {
         super(project);
@@ -116,7 +123,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @Override
     @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
-    protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    protected Boolean executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
         validateFunctionRuntime(processHandler);
         stagingFolder = FunctionUtils.getTempStagingFolder();
@@ -124,7 +131,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         prepareStagingFolder(stagingFolder, processHandler, operation);
         // Run Function Host
         runFunctionCli(processHandler, stagingFolder);
-        return null;
+        return true;
     }
 
     @AzureOperation(name = "function.validate_runtime", type = AzureOperation.Type.TASK)
@@ -133,16 +140,16 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final String funcPath = functionRunConfiguration.getFuncPath();
             if (StringUtils.isEmpty(funcPath)) {
                 throw new AzureToolkitRuntimeException(
-                    message("function.run.error.runtimeNotFound"),
-                    message("function.run.error.runtimeNotFound.tips"),
-                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                        message("function.run.error.runtimeNotFound"),
+                        message("function.run.error.runtimeNotFound.tips"),
+                        DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
             final ComparableVersion funcVersion = getFuncVersion();
             if (funcVersion == null) {
                 throw new AzureToolkitRuntimeException(
-                    message("function.run.error.runtimeNotFound"),
-                    message("function.run.error.runtimeNotFound.tips"),
-                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                        message("function.run.error.runtimeNotFound"),
+                        message("function.run.error.runtimeNotFound.tips"),
+                        DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
             final ComparableVersion javaVersion = getJavaVersion();
             if (javaVersion == null) {
@@ -154,27 +161,27 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 return;
             }
             final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0 ? MINIMUM_JAVA_9_SUPPORTED_VERSION
-                                                     : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
+                    : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
             if (funcVersion.compareTo(minimumVersion) < 0) {
                 throw new AzureToolkitRuntimeException(
-                    message("function.run.error.funcOutOfDate"),
-                    message("function.run.error.funcOutOfDate.tips"),
-                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                        message("function.run.error.funcOutOfDate"),
+                        message("function.run.error.funcOutOfDate.tips"),
+                        DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             if (e instanceof ExecuteException && ((ExecuteException) e).getExitValue() == INVALID_EXITVALUE) {
                 return; // if process is interrupted Apache Executor will use this constant as exit code, ignore in this case
             }
             throw new AzureToolkitRuntimeException(e.getMessage(),
-                message("function.run.error.runtimeNotFound.tips"),
-                DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+                    message("function.run.error.runtimeNotFound.tips"),
+                    DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
         }
     }
 
     @AzureOperation(
-        name = "function.get_version.func",
-        params = {"this.functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.TASK
+            name = "function.get_version.func",
+            params = {"this.functionRunConfiguration.getFuncPath()"},
+            type = AzureOperation.Type.TASK
     )
     private ComparableVersion getFuncVersion() throws IOException {
         final String funcVersion = CommandUtils.exec("func -v", Paths.get(functionRunConfiguration.getFuncPath()).getParent().toString());
@@ -184,8 +191,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     // Get java runtime version following the strategy of function core tools
     // Get java version of JAVA_HOME first, fall back to use PATH if JAVA_HOME not exists
     @AzureOperation(
-        name = "function.validate_jre",
-        type = AzureOperation.Type.TASK
+            name = "function.validate_jre",
+            type = AzureOperation.Type.TASK
     )
     private static ComparableVersion getJavaVersion() throws IOException {
         final String javaHome = System.getenv("JAVA_HOME");
@@ -201,11 +208,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     @AzureOperation(
-        name = "function.run_cli.folder",
-        params = {"stagingFolder.getName()"},
-        type = AzureOperation.Type.SERVICE
+            name = "function.run_cli.folder",
+            params = {"stagingFolder.getName()"},
+            type = AzureOperation.Type.SERVICE
     )
-    private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
+    private int runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
             throws IOException, InterruptedException {
         isDebuggerLaunched = false;
         final int funcPort = functionRunConfiguration.getFuncPort();
@@ -223,18 +230,24 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 processHandler.setText(inputLine);
             }
         });
+        final String[] error = new String[1];
         readInputStreamByLines(process.getErrorStream(), inputLine -> {
+            error[0] = inputLine;
             if (processHandler.isProcessRunning()) {
                 processHandler.println(inputLine, ProcessOutputTypes.STDERR);
             }
         });
         // Pending for function cli
-        process.waitFor();
+        int result = process.waitFor();
+        if (result != 0) {
+            throw new AzureToolkitRuntimeException(error[0]);
+        }
+        return result;
     }
 
     private boolean isFuncInitialized(String input) {
         return StringUtils.containsIgnoreCase(input, "Job host started") ||
-            StringUtils.containsIgnoreCase(input, "Listening for transport dt_socket at address");
+                StringUtils.containsIgnoreCase(input, "Listening for transport dt_socket at address");
     }
 
     private void readInputStreamByLines(InputStream inputStream, Consumer<String> stringConsumer) {
@@ -257,7 +270,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         String[] command = new String[]{funcPath, "host", "start", "--port", String.valueOf(funcPort)};
         if (isDebugMode()) {
             final String debugConfiguration = String.format(DEBUG_PARAMETERS, debugPort);
-            command = ArrayUtils.addAll(command, new String[]{"--language-worker", "--", debugConfiguration});
+            command = ArrayUtils.addAll(command, "--language-worker", "--", debugConfiguration);
         }
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
@@ -267,16 +280,16 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private ProcessBuilder getRunFunctionCliExtensionInstallProcessBuilder(File stagingFolder) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
         final String funcPath = functionRunConfiguration.getFuncPath();
-        String[] command = new String[]{funcPath, "extensions", "install", "--java"};
+        final String[] command = new String[]{funcPath, "extensions", "install", "--java"};
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
         return processBuilder;
     }
 
     @AzureOperation(
-        name = "function.prepare_staging_folder.folder|app",
-        params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.SERVICE
+            name = "function.prepare_staging_folder.folder|app",
+            params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"},
+            type = AzureOperation.Type.SERVICE
     )
     private void prepareStagingFolder(File stagingFolder,
                                       RunProcessHandler processHandler,
@@ -289,8 +302,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule());
             final Path folder = stagingFolder.toPath();
             try {
-                Map<String, FunctionConfiguration> configMap =
-                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
+                final Map<String, FunctionConfiguration> configMap =
+                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
                 final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
                 FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
@@ -299,7 +312,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
                     installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
                 }
-            } catch (AzureExecutionException | IOException e) {
+            } catch (final AzureExecutionException | IOException e) {
                 final String error = String.format("failed prepare staging folder[%s]", folder);
                 throw new AzureToolkitRuntimeException(error, e);
             }
@@ -315,7 +328,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                     processHandler.setText(inputLine);
                 }
             });
-            int exitCode = installProcess.waitFor();
+            final int exitCode = installProcess.waitFor();
             if (exitCode != 0) {
                 throw new AzureExecutionException(message("function.run.error.installFuncFailed"));
             }
@@ -338,11 +351,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @Override
     @AzureOperation(
-        name = "function.complete_run.func",
-        params = {"this.functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.TASK
+            name = "function.complete_run.func",
+            params = {"this.functionRunConfiguration.getFuncPath()"},
+            type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
+    protected void onSuccess(Boolean result, RunProcessHandler processHandler) {
         stopProcessIfAlive(process);
 
         if (!processHandler.isProcessTerminated()) {
@@ -359,6 +372,19 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 
+    @Override
+    protected Action<Void>[] getErrorActions(Executor executor, @NotNull ProgramRunner programRunner, Throwable throwable) {
+        final Consumer<Void> consumer = v -> {
+            final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).findSettings(functionRunConfiguration);
+            functionRunConfiguration.setFuncPort(FunctionUtils.getFreePort());
+            AzureTaskManager.getInstance().runLater(() -> ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance()));
+        };
+        final Action<Void> retryAction = new Action(consumer, new ActionView.Builder("Retry with free port")).authRequired(false);
+        final String errorMessage = ExceptionUtils.getRootCause(throwable).getMessage();
+        return StringUtils.isNotEmpty(errorMessage) && PORT_EXCEPTION_PATTERN.matcher(errorMessage).find() ?
+                new Action[]{retryAction} : super.getErrorActions(executor, programRunner, throwable);
+    }
+
     private boolean isInstallingExtensionNeeded(Set<BindingEnum> bindingTypes, RunProcessHandler processHandler) {
         final JsonObject hostJson = readHostJson(stagingFolder.getAbsolutePath());
         final JsonObject extensionBundle = hostJson == null ? null : hostJson.getAsJsonObject(EXTENSION_BUNDLE);
@@ -368,7 +394,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             return false;
         }
         final boolean isNonHttpTriggersExist = bindingTypes.stream().anyMatch(binding ->
-                                                                                      !Arrays.asList(FUNCTION_WITHOUT_FUNCTION_EXTENSION).contains(binding));
+                !Arrays.asList(FUNCTION_WITHOUT_FUNCTION_EXTENSION).contains(binding));
         if (!isNonHttpTriggersExist) {
             processHandler.println(message("function.run.hint.skipInstallExtensionHttp"), ProcessOutputTypes.STDOUT);
             return false;

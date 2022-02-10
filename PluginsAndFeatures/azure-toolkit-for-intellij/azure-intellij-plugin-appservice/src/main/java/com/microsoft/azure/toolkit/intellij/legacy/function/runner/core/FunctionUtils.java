@@ -568,4 +568,14 @@ public class FunctionUtils {
         }
         return -1;
     }
+
+    public static int getFreePort() {
+        try {
+            ServerSocket serverSocket = new ServerSocket(0);
+            serverSocket.close();
+            return serverSocket.getLocalPort();
+        } catch (IOException e) {
+            return -1;
+        }
+    }
 }
