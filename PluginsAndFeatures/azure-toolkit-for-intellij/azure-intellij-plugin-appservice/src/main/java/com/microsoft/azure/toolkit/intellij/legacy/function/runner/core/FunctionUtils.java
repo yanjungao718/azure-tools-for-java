@@ -54,6 +54,8 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -551,19 +553,15 @@ public class FunctionUtils {
     public static int findFreePortForApi(int startPort) {
         ServerSocket socket = null;
         for (int port = startPort; port <= MAX_PORT; port++) {
-            try {
-                socket = new ServerSocket(port);
-                return socket.getLocalPort();
-            } catch (IOException e) {
-                // swallow this exception
-            } finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        // swallow this exception
-                    }
-                }
+            try (ServerSocket serverSocket = new ServerSocket()) {
+                // setReuseAddress(false) is required only on OSX,
+                // otherwise the code will not work correctly on that platform
+                serverSocket.setReuseAddress(false);
+                serverSocket.bind(new InetSocketAddress(InetAddress.getByName("localhost"), port), 1);
+                serverSocket.close();
+                return serverSocket.getLocalPort();
+            } catch (Exception ex) {
+                continue;
             }
         }
         return -1;
