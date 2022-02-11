@@ -23,7 +23,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -129,16 +129,9 @@ public class FunctionAppService {
     }
 
     private ResourceGroup getOrCreateResourceGroup(final FunctionAppConfig config) {
-        try {
-            return Azure.az(AzureGroup.class).subscription(config.getSubscription()).getByName(config.getResourceGroup().getName());
-        } catch (final ManagementException e) {
-            AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP, config.getResourceGroup().getName(), config.getRegion().getName()));
-            AzureTelemetry.getActionContext().setProperty(CREATE_NEW_RESOURCE_GROUP, String.valueOf(true));
-            final ResourceGroup result = Azure.az(AzureGroup.class).subscription(config.getSubscription())
-                    .create(config.getResourceGroup().getName(), config.getRegion().getName());
-            AzureMessager.getMessager().info(String.format(CREATE_RESOURCE_GROUP_DONE, result.getName()));
-            return result;
-        }
+        final String rgName = config.getResourceGroup().getName();
+        return Azure.az(AzureResources.class).groups(config.getSubscription().getId())
+            .createResourceGroupIfNotExist(rgName, config.getRegion());
     }
 
     private AppServicePlan getOrCreateAppServicePlan(final FunctionAppConfig config) {

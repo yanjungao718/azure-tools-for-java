@@ -13,7 +13,8 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -89,7 +90,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param sid Subscription Id.
      */
     public void onLoadResourceGroup(String sid) {
-        Observable.fromCallable(() -> new ArrayList<>(az(AzureGroup.class).list(sid)))
+        Observable.fromCallable(() -> az(AzureResources.class).groups(sid).list().stream().map(ResourceGroup::toPojo).collect(Collectors.toList()))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(resourceGroupList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
