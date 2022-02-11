@@ -16,7 +16,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import lombok.val;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
@@ -27,7 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -169,11 +168,9 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
-        final val rg = az(AzureResources.class).groups(sid).get(name, name);
-        if (Objects.isNull(rg)) {
-            throw new Exception(CANNOT_GET_RESOURCE_GROUP);
-        }
-        return rg.toPojo();
+        return Optional.ofNullable(az(AzureResources.class).groups(sid).get(name, name))
+            .map(com.microsoft.azure.toolkit.lib.resource.ResourceGroup::toPojo)
+            .orElseThrow(() -> new Exception(CANNOT_GET_RESOURCE_GROUP));
     }
 
     @AzureOperation(
