@@ -31,7 +31,7 @@ import java.util.Objects;
 
 public class IntellijAzureActionManager extends AzureActionManager {
     private static final ExtensionPointName<IActionsContributor> actionsExtensionPoint =
-            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.actions");
+        ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.actions");
 
     /**
      * register {@code ACTION_SOURCE} as data key, so that PreCachedDataContext can pre cache it.
@@ -64,19 +64,21 @@ public class IntellijAzureActionManager extends AzureActionManager {
             return (Action<D>) ((AnActionWrapper<?>) origin).getAction();
         } else {
             final ActionView.Builder view = new ActionView.Builder(origin.getTemplateText());
-            return new Action<>((D d, AnActionEvent e) -> origin.actionPerformed(e), view).authRequired(false);
+            return new Action<>((D d, AnActionEvent e) -> origin.actionPerformed(e), view).setAuthRequired(false);
         }
     }
 
     @Override
     public void registerGroup(String id, ActionGroup group) {
-        ActionManager.getInstance().registerAction(id, new ActionGroupWrapper(group));
+        final ActionGroupWrapper nativeGroup = new ActionGroupWrapper(group);
+        group.setOrigin(nativeGroup);
+        ActionManager.getInstance().registerAction(id, nativeGroup);
     }
 
     @Override
     public ActionGroup getGroup(String id) {
         final ActionGroupWrapper group = (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
-        return new ActionGroup.Proxy(group.getGroup(), id);
+        return group.getGroup();
     }
 
     @Getter
@@ -87,7 +89,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         private AnActionWrapper(@Nonnull Action<T> action) {
             super();
             this.action = action;
-            final IView.Label view = action.view(null);
+            final IView.Label view = action.getView(null);
             applyView(view, this.getTemplatePresentation());
         }
 
@@ -100,8 +102,8 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Override
         public void update(@NotNull AnActionEvent e) {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
-            final IView.Label view = this.action.view(source);
-            final boolean visible = Objects.nonNull(view) && view.isEnabled() && Objects.nonNull(action.handler(source, e));
+            final IView.Label view = this.action.getView(source);
+            final boolean visible = Objects.nonNull(view) && view.isEnabled() && Objects.nonNull(action.getHandler(source, e));
             e.getPresentation().setVisible(visible);
             if (visible) {
                 applyView(view, e.getPresentation());
@@ -130,14 +132,14 @@ public class IntellijAzureActionManager extends AzureActionManager {
             this.group = group;
             this.setSearchable(true);
             this.setPopup(true);
-            final IView.Label view = this.group.view();
+            final IView.Label view = this.group.getView();
             final Presentation template = this.getTemplatePresentation();
             if (Objects.nonNull(view)) {
                 AnActionWrapper.applyView(view, template);
             } else {
                 template.setText("Action Group");
             }
-            this.addActions(group.actions());
+            this.addActions(group.getActions());
         }
 
         private void addActions(List<Object> actions) {
@@ -150,8 +152,11 @@ public class IntellijAzureActionManager extends AzureActionManager {
                     final String actionId = (String) raw;
                     if (actionId.startsWith("-")) {
                         final String title = actionId.replaceAll("-", "").trim();
-                        if (StringUtils.isBlank(title)) this.addSeparator();
-                        else this.addSeparator(title);
+                        if (StringUtils.isBlank(title)) {
+                            this.addSeparator();
+                        } else {
+                            this.addSeparator(title);
+                        }
                     } else if (StringUtils.isNotBlank(actionId)) {
                         final AnAction action = am.getAction(actionId);
                         if (Objects.nonNull(action)) {

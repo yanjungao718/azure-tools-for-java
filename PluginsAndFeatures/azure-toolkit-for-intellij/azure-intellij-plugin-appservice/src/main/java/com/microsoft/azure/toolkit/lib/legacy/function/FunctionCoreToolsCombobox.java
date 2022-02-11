@@ -63,8 +63,8 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         this.includeSettings = includeSettings;
         final List<String> exePostfix = Arrays.asList("exe|bat|cmd|sh|bin|run".split("\\|"));
         this.fileFilter = file ->
-            Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive())
-                && (file.getExtension() == null || exePostfix.contains(
+            Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive()) &&
+                (file.getExtension() == null || exePostfix.contains(
                 file.isCaseSensitive() ? file.getExtension() : StringUtils.lowerCase(file.getExtension())
             )
 
@@ -102,7 +102,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private void openAzureSettingsPanel() {
         final Action<Void> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
         final AnActionEvent event = AnActionEvent.createFromInputEvent(null, ActionPlaces.UNKNOWN, null, DataManager.getInstance().getDataContext(FunctionCoreToolsCombobox.this));
-        openSettingsAction.handler(null, event).accept(null, event); // Open Azure Settings Panel sync
+        openSettingsAction.getHandler(null, event).accept(null, event); // Open Azure Settings Panel sync
     }
 
     public void reset() {
@@ -140,8 +140,8 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
             fileDescriptor.withFileFilter(fileFilter);
         }
         fileDescriptor.withTitle("Select Path to Azure Functions Core Tools");
-        final VirtualFile lastFile = lastFilePath != null && new File(lastFilePath).exists()
-            ? LocalFileSystem.getInstance().findFileByIoFile(new File(lastFilePath)) : null;
+        final VirtualFile lastFile = lastFilePath != null && new File(lastFilePath).exists() ?
+            LocalFileSystem.getInstance().findFileByIoFile(new File(lastFilePath)) : null;
         FileChooser.chooseFile(fileDescriptor, project, this, lastFile, (file) -> {
             if (file != null && file.exists()) {
                 addOrSelectExistingVirtualFile(file);

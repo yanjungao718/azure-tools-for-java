@@ -97,7 +97,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final Action<String> action = new Action<>((s) -> {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
         });
-        action.authRequired(false);
+        action.setAuthRequired(false);
         am.registerAction(OPEN_URL, action);
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
@@ -117,7 +117,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
             .title((s) -> AzureOperationBundle.title("common.open_azure_settings"));
-        am.registerAction(OPEN_AZURE_SETTINGS, new Action<Void>(openSettingsView).authRequired(false));
+        am.registerAction(OPEN_AZURE_SETTINGS, new Action<Void>(openSettingsView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
             .title(s -> Optional.ofNullable(s).map(r -> {

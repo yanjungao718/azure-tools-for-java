@@ -128,13 +128,10 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
             }
 
-            private com.intellij.openapi.actionSystem.ActionGroup toIntellijActionGroup(ActionGroup actions) {
+            private IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(ActionGroup actions) {
                 final ActionManager am = ActionManager.getInstance();
-                if (actions instanceof ActionGroup.Proxy) {
-                    final String id = ((ActionGroup.Proxy) actions).id();
-                    if (Objects.nonNull(id)) {
-                        return (com.intellij.openapi.actionSystem.ActionGroup) am.getAction(id);
-                    }
+                if (actions.getOrigin() != null) {
+                    return (IntellijAzureActionManager.ActionGroupWrapper) actions.getOrigin();
                 }
                 return new IntellijAzureActionManager.ActionGroupWrapper(actions);
             }

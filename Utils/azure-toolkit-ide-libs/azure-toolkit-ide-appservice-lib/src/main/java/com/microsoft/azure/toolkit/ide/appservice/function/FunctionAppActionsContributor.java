@@ -93,13 +93,13 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         final Action<Void> downloadCliAction = new Action<>((v) -> {
             am.getAction(OPEN_URL).handle(CORE_TOOLS_URL);
         }, downloadCliView);
-        downloadCliAction.authRequired(false);
+        downloadCliAction.setAuthRequired(false);
         am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
                 .title(s -> title("function.config_core_tools"));
         final Action<Void> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
-        configCliAction.authRequired(false);
+        configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
     }
 
