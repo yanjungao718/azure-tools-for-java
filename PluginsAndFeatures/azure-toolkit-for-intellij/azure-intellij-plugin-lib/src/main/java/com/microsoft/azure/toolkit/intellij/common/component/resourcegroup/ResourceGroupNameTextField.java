@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +46,7 @@ public class ResourceGroupNameTextField extends AzureTextInput {
         }
         // validate availability
         try {
-            if (!Azure.az(AzureGroup.class).checkNameAvailability(subscription.getId(), value)) {
+            if (Azure.az(AzureResources.class).groups(subscription.getId()).exists(value)) {
                 return AzureValidationInfo.error(String.format(CONFLICT_NAME, subscription.getName()), this);
             }
         } catch (final CloudException e) {

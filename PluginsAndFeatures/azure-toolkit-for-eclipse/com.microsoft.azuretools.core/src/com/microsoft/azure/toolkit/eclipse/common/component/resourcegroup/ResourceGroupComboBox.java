@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -27,7 +28,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private Subscription subscription;
@@ -76,8 +77,8 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
         }
         if (Objects.nonNull(this.subscription)) {
             final String sid = subscription.getId();
-            final List<ResourceGroup> remoteGroups = Azure.az(AzureGroup.class).list(sid);
-            remoteGroups.sort(Comparator.comparing(ResourceGroup::getName));
+            final List<ResourceGroup> remoteGroups = Azure.az(AzureResources.class).groups(sid).list().stream().map(r -> r.toPojo())
+                    .sorted(Comparator.comparing(ResourceGroup::getName)).collect(Collectors.toList());
             groups.addAll(remoteGroups);
         }
         return groups;
