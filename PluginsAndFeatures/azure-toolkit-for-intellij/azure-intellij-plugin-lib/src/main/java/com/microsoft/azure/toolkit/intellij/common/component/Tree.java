@@ -5,9 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.common.component;
 
+import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataProvider;
+import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
@@ -115,6 +120,10 @@ public class Tree extends SimpleTree implements DataProvider {
                             menu.setTargetComponent(tree);
                             menu.getComponent().show(tree, e.getX(), e.getY());
                         }
+                    } else if (e.getClickCount() == 2) {
+                        final DataContext context = DataManager.getInstance().getDataContext(tree);
+                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.UNKNOWN, context);
+                        ((TreeNode<?>) node).inner.doubleClick(event);
                     }
                 }
             }

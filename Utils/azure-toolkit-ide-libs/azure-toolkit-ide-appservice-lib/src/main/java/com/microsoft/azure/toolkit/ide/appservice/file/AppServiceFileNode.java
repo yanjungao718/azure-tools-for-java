@@ -58,8 +58,11 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         this.file = data;
         this.appService = data.getApp();
         final String actionGroupId = data.getType() == AppServiceFile.Type.DIRECTORY ?
-                AppServiceFileActionsContributor.APP_SERVICE_DIRECTORY_ACTIONS : AppServiceFileActionsContributor.APP_SERVICE_FILE_ACTIONS;
+            AppServiceFileActionsContributor.APP_SERVICE_DIRECTORY_ACTIONS : AppServiceFileActionsContributor.APP_SERVICE_FILE_ACTIONS;
         this.actions(actionGroupId);
+        if (data.getType() != AppServiceFile.Type.DIRECTORY) {
+            this.doubleClickAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_VIEW);
+        }
         this.view(new AppServiceFileLabelView(data));
     }
 
