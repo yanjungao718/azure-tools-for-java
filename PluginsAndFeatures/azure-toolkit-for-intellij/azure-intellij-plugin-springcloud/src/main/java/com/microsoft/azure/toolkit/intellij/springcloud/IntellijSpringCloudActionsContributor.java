@@ -6,14 +6,19 @@
 package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.CreateSpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 
@@ -24,9 +29,20 @@ import java.util.function.BiPredicate;
 public class IntellijSpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
+        this.registerCreateServiceActionHandler(am);
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
         this.registerStreamLogActionHandler(am);
+    }
+
+    private void registerCreateServiceActionHandler(AzureActionManager am) {
+        final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzureSpringCloud;
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> {
+            final IAccount account = Azure.az(IAzureAccount.class).account();
+            final String url = String.format("%s/#create/Microsoft.AppPlatform", account.portalUrl());
+            am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
+        };
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
     }
 
     private void registerCreateAppActionHandler(AzureActionManager am) {
@@ -37,7 +53,10 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
         final BiPredicate<IAzureBaseResource<?, ?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
-        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> handler = (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getProject());
+        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> handler = (c, e) -> {
+            final Project project = Objects.requireNonNull(e.getProject());
+            DeploySpringCloudAppAction.deploy((SpringCloudApp) c, project);
+        };
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, condition, handler);
     }
 
