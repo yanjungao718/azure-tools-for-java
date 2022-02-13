@@ -90,7 +90,14 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
         deployment.getParameters().stream().map(DefaultMutableTreeNode::new).forEach(nodeParameters::add);
         deployment.getVariables().stream().map(DefaultMutableTreeNode::new).forEach(nodeVariables::add);
         deployment.getResources().stream().map(DefaultMutableTreeNode::new).forEach(nodeResources::add);
-        IntStream.range(0, templateTree.getRowCount()).forEach(i -> templateTree.expandRow(i));
+        expandTree(templateTree, 0, templateTree.getRowCount());
+    }
+
+    private void expandTree(JTree tree, int startingIndex, int rowCount) {
+        IntStream.range(0, rowCount).forEach(tree::expandRow);
+        if (tree.getRowCount() != rowCount) {
+            expandTree(tree, rowCount, tree.getRowCount());
+        }
     }
 
     @Nonnull
