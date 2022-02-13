@@ -52,8 +52,8 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
         overviewDecorator.setOn(true);
         pnlOverview.setName(PNL_OVERVIEW);
         pnlOverview.setBorder(BorderFactory.createCompoundBorder());
-        exportTemplateFileButton.addActionListener((e) -> DeploymentActions.exportTemplate(deployment));
-        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(deployment));
+        exportTemplateFileButton.addActionListener((e) -> DeploymentActions.exportTemplate(this.project, deployment));
+        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(this.project, deployment));
         this.rerender();
     }
 

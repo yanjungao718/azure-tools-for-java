@@ -69,8 +69,8 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     }
 
     private void initListeners() {
-        exportTemplateButton.addActionListener((e) -> DeploymentActions.exportTemplate(deployment));
-        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(deployment));
+        exportTemplateButton.addActionListener((e) -> DeploymentActions.exportTemplate(this.project, deployment));
+        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(this.project, deployment));
         updateDeploymentButton.addActionListener((e) -> {
             if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_UPDATE_DEPLOYMENT)) {
                 apply();
