@@ -22,6 +22,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class DeploymentPropertiesView extends AzResourcePropertiesEditor<ResourceDeployment> {
@@ -63,7 +64,7 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
 
     private void setData(ResourceDeployment deployment) {
         deploymentNameLabel.setText(deployment.getName());
-        lastModifiedLabel.setText(deployment.getTimestamp().format(DATETIME_FORMATTER));
+        lastModifiedLabel.setText(Optional.ofNullable(deployment.getTimestamp()).map(t -> t.format(DATETIME_FORMATTER)).orElse(""));
         statusLabel.setText(deployment.getStatus());
         deploymentModeLabel.setText(deployment.getMode());
         final StringBuilder statusReason = new StringBuilder();
