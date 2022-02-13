@@ -59,8 +59,6 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     private FileEditor templateEditor;
     private FileEditor parameterEditor;
 
-    private MessageBusConnection messageBusConnection;
-
     public ResourceTemplateView(@Nonnull Project project, @Nonnull ResourceDeployment deployment, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile, deployment, project);
         this.project = project;
@@ -78,25 +76,21 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
                 apply();
             }
         });
-        if (messageBusConnection == null) {
-            messageBusConnection = project.getMessageBus().connect(this);
-            messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
-                @Override
-                public void beforeFileClosed(@Nonnull FileEditorManager source, @Nonnull VirtualFile file) {
-                    if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) && file.getName().equals(deployment.getName())) {
-                        try {
-                            if (isModified() && UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
-                                apply();
-                            }
-                        } finally {
-                            PsiAwareTextEditorProvider.getInstance().disposeEditor(templateEditor);
-                            PsiAwareTextEditorProvider.getInstance().disposeEditor(parameterEditor);
-                            messageBusConnection.disconnect();
+        final MessageBusConnection connection = project.getMessageBus().connect(this);
+        connection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
+            @Override
+            public void beforeFileClosed(@Nonnull FileEditorManager source, @Nonnull VirtualFile file) {
+                if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) && file.getName().equals(deployment.getName())) {
+                    try {
+                        if (isModified() && UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
+                            apply();
                         }
+                    } finally {
+                        connection.disconnect();
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     @Override
@@ -184,6 +178,11 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     @Override
     public void dispose() {
         super.dispose();
-        templateEditor.dispose();
+        if (Objects.nonNull(templateEditor)) {
+            PsiAwareTextEditorProvider.getInstance().disposeEditor(templateEditor);
+        }
+        if (Objects.nonNull(parameterEditor)) {
+            PsiAwareTextEditorProvider.getInstance().disposeEditor(parameterEditor);
+        }
     }
 }
