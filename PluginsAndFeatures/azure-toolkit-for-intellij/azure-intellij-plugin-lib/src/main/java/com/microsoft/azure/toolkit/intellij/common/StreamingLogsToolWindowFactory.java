@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.appservice;
+package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
