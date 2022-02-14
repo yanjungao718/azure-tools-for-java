@@ -558,7 +558,6 @@ public class FunctionUtils {
                 // otherwise the code will not work correctly on that platform
                 serverSocket.setReuseAddress(false);
                 serverSocket.bind(new InetSocketAddress(InetAddress.getByName("localhost"), port), 1);
-                serverSocket.close();
                 return serverSocket.getLocalPort();
             } catch (Exception ex) {
                 continue;
@@ -568,9 +567,7 @@ public class FunctionUtils {
     }
 
     public static int getFreePort() {
-        try {
-            ServerSocket serverSocket = new ServerSocket(0);
-            serverSocket.close();
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
             return serverSocket.getLocalPort();
         } catch (IOException e) {
             return -1;

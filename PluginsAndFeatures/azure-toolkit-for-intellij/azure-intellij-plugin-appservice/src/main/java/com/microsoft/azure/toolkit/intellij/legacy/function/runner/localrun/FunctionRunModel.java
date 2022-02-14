@@ -7,7 +7,11 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun;
 
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.IntelliJFunctionContext;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class FunctionRunModel extends IntelliJFunctionContext {
 
     private Artifact artifact;
@@ -17,60 +21,4 @@ public class FunctionRunModel extends IntelliJFunctionContext {
     private String hostJsonPath;
     private String localSettingsJsonPath;
     private int funcPort;
-
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
-    public void setArtifact(Artifact artifact) {
-        this.artifact = artifact;
-    }
-
-    public String getDebugOptions() {
-        return debugOptions;
-    }
-
-    public void setDebugOptions(String debugOptions) {
-        this.debugOptions = debugOptions;
-    }
-
-    public String getStagingFolder() {
-        return stagingFolder;
-    }
-
-    public void setStagingFolder(String stagingFolder) {
-        this.stagingFolder = stagingFolder;
-    }
-
-    public String getFuncPath() {
-        return funcPath;
-    }
-
-    public void setFuncPath(String funcPath) {
-        this.funcPath = funcPath;
-    }
-
-    public String getHostJsonPath() {
-        return hostJsonPath;
-    }
-
-    public void setHostJsonPath(String hostJsonPath) {
-        this.hostJsonPath = hostJsonPath;
-    }
-
-    public String getLocalSettingsJsonPath() {
-        return localSettingsJsonPath;
-    }
-
-    public void setLocalSettingsJsonPath(String localSettingsJsonPath) {
-        this.localSettingsJsonPath = localSettingsJsonPath;
-    }
-
-    public int getFuncPort() {
-        return funcPort;
-    }
-
-    public void setFuncPort(int funcPort) {
-        this.funcPort = funcPort;
-    }
 }
