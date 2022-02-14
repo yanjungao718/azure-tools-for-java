@@ -5,7 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.arm.action;
 
+import com.intellij.ide.actions.RevealFileAction;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.arm.creation.CreateDeploymentDialog;
 import com.microsoft.azure.toolkit.intellij.arm.template.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.arm.update.UpdateDeploymentDialog;
@@ -14,7 +18,11 @@ import com.microsoft.azure.toolkit.intellij.common.FileChooser;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -25,8 +33,8 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 public class DeploymentActions {
     private static final String TEMPLATE_SELECTOR_TITLE = "Choose Where to Save the ARM Template File.";
@@ -61,7 +69,7 @@ public class DeploymentActions {
         AzureTaskManager.getInstance().runLater(() -> new UpdateDeploymentDialog(project, deployment).show());
     }
 
-    public static void exportTemplate(@Nonnull final ResourceDeployment deployment) {
+    public static void exportTemplate(@Nonnull final Project project, @Nonnull final ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final File file = FileChooser.showFileSaver(TEMPLATE_SELECTOR_TITLE, String.format(TEMPLATE_FILE_NAME, deployment.getName()));
@@ -69,14 +77,17 @@ public class DeploymentActions {
                 final String template = deployment.getTemplateAsJson();
                 try {
                     IOUtils.write(template, new FileOutputStream(file), Charset.defaultCharset());
-                } catch (final IOException e) {
+                    final String pattern = "Template of Resource {0} is successfully exported to file {1}.";
+                    final AzureString msg = AzureString.format(pattern, deployment.getName(), file.getName());
+                    AzureMessager.getMessager().success(msg, null, newOpenInEditorAction(file, project), newShowInExplorerAction(file));
+                } catch (final Throwable e) {
                     throw new AzureToolkitRuntimeException(String.format("failed to write template to file \"%s\"", file.getName()), e);
                 }
             }
         });
     }
 
-    public static void exportParameters(final ResourceDeployment deployment) {
+    public static void exportParameters(@Nonnull final Project project, final ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final File file = FileChooser.showFileSaver(PARAMETERS_SELECTOR_TITLE, String.format(PARAMETERS_FILE_NAME, deployment.getName()));
@@ -84,10 +95,27 @@ public class DeploymentActions {
                 final String parameters = deployment.getParametersAsJson();
                 try {
                     IOUtils.write(parameters, new FileOutputStream(file), Charset.defaultCharset());
-                } catch (final IOException e) {
+                    final String pattern = "Parameters of Resource {0} is successfully exported to file {1}.";
+                    final AzureString msg = AzureString.format(pattern, deployment.getName(), file.getName());
+                    AzureMessager.getMessager().success(msg, null, newOpenInEditorAction(file, project), newShowInExplorerAction(file));
+                } catch (final Throwable e) {
                     throw new AzureToolkitRuntimeException(String.format("failed to write parameters to file \"%s\"", file.getName()), e);
                 }
             }
         });
+    }
+
+    private static Action<Void> newShowInExplorerAction(@Nonnull final File dest) {
+        return new Action<>(v -> RevealFileAction.openFile(dest), new ActionView.Builder(RevealFileAction.getActionName()));
+    }
+
+    private static Action<Void> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
+        return new Action<>(v -> {
+            final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+            final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
+            if (Objects.nonNull(virtualFile)) {
+                fileEditorManager.openFile(virtualFile, true, true);
+            }
+        }, new ActionView.Builder("Open In Editor"));
     }
 }
