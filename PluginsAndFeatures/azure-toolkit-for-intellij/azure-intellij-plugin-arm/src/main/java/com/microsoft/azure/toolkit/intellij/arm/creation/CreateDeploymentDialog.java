@@ -10,7 +10,6 @@ import com.google.gson.JsonElement;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
@@ -22,6 +21,8 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -39,7 +40,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Objects;
 
 public class CreateDeploymentDialog extends AzureDialogWrapper {
@@ -151,10 +151,10 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
                 draft.setTemplateAsJson(template);
                 draft.setParametersAsJson(parameters);
                 draft.commit();
-            } catch (final IOException e) {
-                UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + e.getMessage(), MessageType.ERROR);
+                AzureMessager.getMessager().success(NOTIFY_CREATE_DEPLOYMENT_SUCCESS);
+            } catch (final Throwable e) {
+                throw new AzureToolkitRuntimeException(e);
             }
-            UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
         });
         close(DialogWrapper.OK_EXIT_CODE, true);
     }

@@ -22,6 +22,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class DeploymentPropertiesView extends AzResourcePropertiesEditor<ResourceDeployment> {
@@ -51,8 +52,8 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
         overviewDecorator.setOn(true);
         pnlOverview.setName(PNL_OVERVIEW);
         pnlOverview.setBorder(BorderFactory.createCompoundBorder());
-        exportTemplateFileButton.addActionListener((e) -> DeploymentActions.exportTemplate(deployment));
-        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(deployment));
+        exportTemplateFileButton.addActionListener((e) -> DeploymentActions.exportTemplate(this.project, deployment));
+        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(this.project, deployment));
         this.rerender();
     }
 
@@ -63,7 +64,7 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
 
     private void setData(ResourceDeployment deployment) {
         deploymentNameLabel.setText(deployment.getName());
-        lastModifiedLabel.setText(deployment.getTimestamp().format(DATETIME_FORMATTER));
+        lastModifiedLabel.setText(Optional.ofNullable(deployment.getTimestamp()).map(t -> t.format(DATETIME_FORMATTER)).orElse(""));
         statusLabel.setText(deployment.getStatus());
         deploymentModeLabel.setText(deployment.getMode());
         final StringBuilder statusReason = new StringBuilder();
@@ -89,7 +90,14 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
         deployment.getParameters().stream().map(DefaultMutableTreeNode::new).forEach(nodeParameters::add);
         deployment.getVariables().stream().map(DefaultMutableTreeNode::new).forEach(nodeVariables::add);
         deployment.getResources().stream().map(DefaultMutableTreeNode::new).forEach(nodeResources::add);
-        IntStream.range(0, templateTree.getRowCount()).forEach(i -> templateTree.expandRow(i));
+        expandTree(templateTree, 0, templateTree.getRowCount());
+    }
+
+    private void expandTree(JTree tree, int startingIndex, int rowCount) {
+        IntStream.range(0, rowCount).forEach(tree::expandRow);
+        if (tree.getRowCount() != rowCount) {
+            expandTree(tree, rowCount, tree.getRowCount());
+        }
     }
 
     @Nonnull
