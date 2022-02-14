@@ -75,6 +75,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-redis.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-database.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-appservice.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-arm.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -102,8 +103,6 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"
@@ -142,13 +141,6 @@
     <configurationType implementation="com.microsoft.azure.toolkit.intellij.docker.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
-    <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
-    <lang.syntaxHighlighterFactory language="arm"
-      implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
-    <lang.parserDefinition language="arm"
-                           implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
-    <completion.contributor language="JSON" order="first"
-      implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
     <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
   </extensions>
 
