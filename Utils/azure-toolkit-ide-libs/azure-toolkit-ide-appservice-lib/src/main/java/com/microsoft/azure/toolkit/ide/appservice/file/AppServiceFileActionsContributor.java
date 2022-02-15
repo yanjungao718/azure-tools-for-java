@@ -49,7 +49,9 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh.resource", ((AppServiceFile) r).getName())).orElse(null))
                 .enabled(s -> s instanceof AppServiceFile);
-        am.registerAction(APP_SERVICE_DIRECTORY_REFRESH, new Action<>(refresh, refreshView));
+        final Action<AppServiceFile> action = new Action<>(refresh, refreshView);
+        action.setShortcuts(am.getIDEDefaultShortcuts().refresh());
+        am.registerAction(APP_SERVICE_DIRECTORY_REFRESH, action);
     }
 
     public int getOrder() {

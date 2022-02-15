@@ -43,10 +43,15 @@ public class ArmActionsContributor implements IActionsContributor {
         final ActionView.Builder exportParameter = new ActionView.Builder("Export Parameter File", "/icons/action/export")
             .title(s -> Optional.ofNullable(s).map(r -> title("resourceDeployment.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment);
-        am.registerAction(EDIT, new Action<>(editDeployment));
+        final Action<ResourceDeployment> editAction = new Action<>(editDeployment);
+        final Action<ResourceDeployment> exportTemplateAction = new Action<>(exportTemplate);
+        final Action<ResourceDeployment> exportParameterAction = new Action<>(exportParameter);
+        editAction.setShortcuts(am.getIDEDefaultShortcuts().view());
+        exportTemplateAction.setShortcuts("control alt E");
+        am.registerAction(EDIT, editAction);
         am.registerAction(UPDATE, new Action<>(updateDeployment));
-        am.registerAction(EXPORT_TEMPLATE, new Action<>(exportTemplate));
-        am.registerAction(EXPORT_PARAMETER, new Action<>(exportParameter));
+        am.registerAction(EXPORT_TEMPLATE, exportTemplateAction);
+        am.registerAction(EXPORT_PARAMETER, exportParameterAction);
     }
 
     @Override

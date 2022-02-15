@@ -101,7 +101,9 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open in Portal", "/icons/action/portal.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.open_portal_url.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof IAzureBaseResource);
-        am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
+        final Action<IAzureBaseResource<?, ?>> openPortalUrlAction = new Action<>(openPortalUrl, openPortalUrlView);
+        openPortalUrlAction.setShortcuts("control alt P");
+        am.registerAction(OPEN_PORTAL_URL, openPortalUrlAction);
 
         // register commands
         final Action<String> action = new Action<>((s) -> {
