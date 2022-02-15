@@ -6,16 +6,18 @@
 package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
+import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.TreeUIHelper;
@@ -37,6 +39,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -112,17 +115,28 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
                 final Object node = path.getLastPathComponent();
                 if (node instanceof TreeNode) {
+                    final String place = "azure.component.tree";
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
-                            final ActionPopupMenu menu = am.createActionPopupMenu("azure.component.tree", toIntellijActionGroup(actions));
+                            final Disposable disposable = Disposer.newDisposable();
+                            final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
+                            group.registerCustomShortcutSetForActions(tree, disposable);
+                            final ActionPopupMenu menu = am.createActionPopupMenu(place, group);
                             menu.setTargetComponent(tree);
-                            menu.getComponent().show(tree, e.getX(), e.getY());
+                            final JPopupMenu popupMenu = menu.getComponent();
+                            popupMenu.addPopupMenuListener(new PopupMenuListenerAdapter() {
+                                @Override
+                                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                                    disposable.dispose();
+                                }
+                            });
+                            popupMenu.show(tree, e.getX(), e.getY());
                         }
                     } else if (e.getClickCount() == 2) {
                         final DataContext context = DataManager.getInstance().getDataContext(tree);
-                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.UNKNOWN, context);
+                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
                         ((TreeNode<?>) node).inner.doubleClick(event);
                     }
                 }

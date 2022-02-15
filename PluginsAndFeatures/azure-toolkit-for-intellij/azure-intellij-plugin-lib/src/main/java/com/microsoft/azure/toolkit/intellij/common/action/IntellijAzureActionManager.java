@@ -5,12 +5,17 @@
 
 package com.microsoft.azure.toolkit.intellij.common.action;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonShortcuts;
+import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ShortcutSet;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -19,12 +24,14 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.swing.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -93,14 +100,33 @@ public class IntellijAzureActionManager extends AzureActionManager {
             applyView(view, this.getTemplatePresentation());
         }
 
+        public void registerShortcuts(JComponent component, @Nullable Disposable disposable) {
+            final Object shortcuts = action.getShortcuts();
+            final ShortcutSet shortcutSet;
+            if (shortcuts == null) {
+                return;
+            } else if (shortcuts instanceof Action.Id) {
+                shortcutSet = ActionManager.getInstance().getAction(((Action.Id<?>) shortcuts).getId()).getShortcutSet();
+            } else if (shortcuts instanceof String) {
+                shortcutSet = CustomShortcutSet.fromString((String) shortcuts);
+            } else if (shortcuts instanceof String[]) {
+                shortcutSet = CustomShortcutSet.fromString((String[]) shortcuts);
+            } else if (shortcuts instanceof ShortcutSet) {
+                shortcutSet = (ShortcutSet) shortcuts;
+            } else {
+                throw new AzureToolkitRuntimeException("invalid shortcuts:" + shortcuts);
+            }
+            this.registerCustomShortcutSet(shortcutSet, component, disposable);
+        }
+
         @Override
-        public void actionPerformed(@NotNull AnActionEvent e) {
+        public void actionPerformed(@Nonnull AnActionEvent e) {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
             this.action.handle(source, e);
         }
 
         @Override
-        public void update(@NotNull AnActionEvent e) {
+        public void update(@Nonnull AnActionEvent e) {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
             final IView.Label view = this.action.getView(source);
             final boolean visible = Objects.nonNull(view) && view.isEnabled() && Objects.nonNull(action.getHandler(source, e));
@@ -170,5 +196,48 @@ public class IntellijAzureActionManager extends AzureActionManager {
                 }
             }
         }
+
+        public void registerCustomShortcutSetForActions(JComponent tree, @Nullable Disposable disposable) {
+            for (final AnAction action : this.getChildActionsOrStubs()) {
+                if (action instanceof AnActionWrapper) {
+                    ((AnActionWrapper<?>) action).registerShortcuts(tree, disposable);
+                }
+            }
+        }
+    }
+
+    @Override
+    public Shortcuts getIDEDefaultShortcuts() {
+        return new Shortcuts() {
+            @Override
+            public Object add() {
+                return CommonShortcuts.getNew();
+            }
+
+            @Override
+            public Object delete() {
+                return CommonShortcuts.getDelete();
+            }
+
+            @Override
+            public Object view() {
+                return CommonShortcuts.getViewSource();
+            }
+
+            @Override
+            public Object edit() {
+                return CommonShortcuts.getEditSource();
+            }
+
+            @Override
+            public Object refresh() {
+                return Action.Id.of(IdeActions.ACTION_REFRESH);
+            }
+
+            @Override
+            public Object stop() {
+                return Action.Id.of(IdeActions.ACTION_STOP_PROGRAM);
+            }
+        };
     }
 }

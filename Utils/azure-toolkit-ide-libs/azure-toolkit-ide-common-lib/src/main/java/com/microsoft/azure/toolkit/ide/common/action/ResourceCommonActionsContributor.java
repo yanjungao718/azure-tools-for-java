@@ -44,10 +44,12 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
+        final AzureActionManager.Shortcuts shortcuts = am.getIDEDefaultShortcuts();
         final ActionView.Builder startView = new ActionView.Builder("Start", "/icons/action/start.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.start_resource.resource", ((AzResourceBase) r).getName())).orElse(null))
             .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> startAction = new Action<>(startView);
+        startAction.setShortcuts(shortcuts.start());
         startAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isStartable(), s -> ((Startable) s).start());
         am.registerAction(START, startAction);
 
@@ -55,6 +57,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.stop_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> stopAction = new Action<>(stopView);
+        stopAction.setShortcuts(shortcuts.stop());
         stopAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isStoppable(), s -> ((Startable) s).stop());
         am.registerAction(STOP, stopAction);
 
@@ -62,6 +65,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.restart_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> restartAction = new Action<>(restartView);
+        restartAction.setShortcuts(shortcuts.restart());
         restartAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isRestartable(), s -> ((Startable) s).restart());
         am.registerAction(RESTART, restartAction);
 
@@ -73,19 +77,25 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder deleteView = new ActionView.Builder("Delete", "/icons/action/delete.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.delete_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof Removable && !((AzResourceBase) s).getFormalStatus().isWriting());
-        am.registerAction(DELETE, new Action<>(delete, deleteView));
+        final Action<IAzureBaseResource<?, ?>> deleteAction = new Action<>(delete, deleteView);
+        deleteAction.setShortcuts(shortcuts.delete());
+        am.registerAction(DELETE, deleteAction);
 
         final Consumer<IAzureBaseResource<?, ?>> refresh = IAzureBaseResource::refresh;
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof IAzureBaseResource);
-        am.registerAction(REFRESH, new Action<>(refresh, refreshView));
+        final Action<IAzureBaseResource<?, ?>> refreshAction = new Action<>(refresh, refreshView);
+        refreshAction.setShortcuts(shortcuts.refresh());
+        am.registerAction(REFRESH, refreshAction);
 
         final Consumer<AzService> serviceRefresh = AzService::refresh;
         final ActionView.Builder serviceRefreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("service.refresh.service", ((AzService) r).getName())).orElse(null))
             .enabled(s -> s instanceof AzService);
-        am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
+        final Action<AzService> serviceRefreshAction = new Action<>(serviceRefresh, serviceRefreshView);
+        serviceRefreshAction.setShortcuts(shortcuts.refresh());
+        am.registerAction(SERVICE_REFRESH, serviceRefreshAction);
 
         final Consumer<IAzureBaseResource<?, ?>> openPortalUrl = s -> am.getAction(OPEN_URL).handle(s.portalUrl());
         final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open in Portal", "/icons/action/portal.svg")
@@ -108,12 +118,16 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.show_properties.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResourceBase && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING));
-        am.registerAction(SHOW_PROPERTIES, new Action<>(showPropertiesView));
+        final Action<AzResourceBase> showPropertiesAction = new Action<>(showPropertiesView);
+        showPropertiesAction.setShortcuts(shortcuts.edit());
+        am.registerAction(SHOW_PROPERTIES, showPropertiesAction);
 
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.deploy_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(DEPLOY, new Action<>(deployView));
+        final Action<IAzureBaseResource<?, ?>> deployAction = new Action<>(deployView);
+        deployAction.setShortcuts(shortcuts.deploy());
+        am.registerAction(DEPLOY, deployAction);
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
             .title((s) -> AzureOperationBundle.title("common.open_azure_settings"));
@@ -130,7 +144,9 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 return title("resource.create_resource.service", name);
             }).orElse(null)).enabled(s -> s instanceof AzService ||
                 (s instanceof IAzureBaseResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING)));
-        am.registerAction(CREATE, new Action<>(createView));
+        final Action<Object> createAction = new Action<>(createView);
+        createAction.setShortcuts(shortcuts.add());
+        am.registerAction(CREATE, createAction);
     }
 
     public int getOrder() {
