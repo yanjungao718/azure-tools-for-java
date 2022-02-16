@@ -50,7 +50,7 @@ public class WorkspaceTaggingActivity {
         });
     }
 
-    private static void showCustomerSurvey(final Project project, final Set<String> workspaceTags) {
+    private static void showCustomerSurvey(final @NotNull Project project, final Set<String> workspaceTags) {
         if (workspaceTags.containsAll(Arrays.asList(CLIENT, MGMT))) {
             CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_SDK);
         }

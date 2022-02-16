@@ -52,29 +52,6 @@ public class AuthMethodManager {
     private final CompletableFuture<Boolean> initFuture = new CompletableFuture();
     private final IdentityAzureManager identityAzureManager = IdentityAzureManager.getInstance();
 
-    static {
-        // fix the class load problem for intellij plugin
-        disableLogLevelFor("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
-                "com.microsoft.aad.msal4j.ConfidentialClientApplication");
-    }
-
-    private static void disableLogLevelFor(String...classes) {
-        try {
-            Class<?> loggerClz = Class.forName("org.apache.log4j.Logger");
-            Class<?> loggerLevelClz = Class.forName("org.apache.log4j.Level");
-            Object offLevel = FieldUtils.readDeclaredStaticField(loggerLevelClz, "OFF");
-            Method getLoggerMethod = ClassUtils.getPublicMethod(loggerClz, "getLogger", String.class);
-            if (getLoggerMethod != null) {
-                for (String className : classes) {
-                    Object logger2 = getLoggerMethod.invoke(loggerClz, className);
-                    FieldUtils.writeField(logger2, "level", offLevel, true);
-                }
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            // ignore
-        }
-    }
-
     private static class LazyHolder {
         static final AuthMethodManager INSTANCE = new AuthMethodManager();
     }
