@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.16.0"
+    azureToolkitVersion = "0.17.0-SNAPSHOT"
 }
 
 compileKotlin {
@@ -82,7 +82,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     ext {
-        azureToolkitVersion = "0.16.0"
+        azureToolkitVersion = "0.17.0-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
@@ -184,6 +184,7 @@ dependencies {
     compile project(':azure-intellij-plugin-service-explorer')
     compile project(':azure-intellij-plugin-database')
     compile project(':azure-intellij-plugin-appservice')
+    compile project(':azure-intellij-plugin-arm')
     compile 'com.microsoft.azure:azure-client-authentication'
     compile 'com.microsoft.azure:azure-toolkit-resource-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
@@ -203,17 +204,17 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.61.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.62.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.61.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.62.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.61.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.62.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"

@@ -11,6 +11,8 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudClusterModule;
+
 import org.eclipse.swt.widgets.Composite;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,8 +58,8 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
     protected List<? extends SpringCloudCluster> loadItems() throws Exception {
         if (Objects.nonNull(this.subscription)) {
             final String sid = this.subscription.getId();
-            final AzureSpringCloud az = Azure.az(AzureSpringCloud.class).subscription(sid);
-            return az.clusters();
+            final SpringCloudClusterModule az = Azure.az(AzureSpringCloud.class).clusters(sid);
+            return az.list();
         }
         return Collections.emptyList();
     }

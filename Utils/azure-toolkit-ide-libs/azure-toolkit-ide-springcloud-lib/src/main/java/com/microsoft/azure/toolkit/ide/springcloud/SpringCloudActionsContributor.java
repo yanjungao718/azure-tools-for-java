@@ -52,6 +52,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
+                ResourceCommonActionsContributor.CREATE,
+                "---",
                 ResourceCommonActionsContributor.SERVICE_REFRESH
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
