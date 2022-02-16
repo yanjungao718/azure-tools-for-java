@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurvey;
 import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurveyManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
