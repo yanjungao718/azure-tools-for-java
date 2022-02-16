@@ -44,13 +44,17 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
         final Object source = event.getSource();
         if (source instanceof AzResourceBase && ((AzResourceBase) source).getId().equals(this.resource.getId())) {
             if (StringUtils.equalsAnyIgnoreCase(((AzResourceBase) source).getStatus(), "deleted", "removed")) {
-                IntellijShowPropertiesViewAction.closePropertiesView(resource, project);
-                final String message = String.format("Close properties view of \"%s\" because the resource is deleted.", this.resource.getName());
-                AzureMessager.getMessager().warning(message);
+                onResourceDeleted();
             } else {
                 this.debouncer.debounce();
             }
         }
+    }
+
+    protected void onResourceDeleted() {
+        IntellijShowPropertiesViewAction.closePropertiesView(resource, project);
+        final String message = String.format("Close properties view of \"%s\" because the resource is deleted.", this.resource.getName());
+        AzureMessager.getMessager().warning(message);
     }
 
     @Override
