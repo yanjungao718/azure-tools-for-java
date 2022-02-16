@@ -215,7 +215,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private int runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
             throws IOException, InterruptedException {
         isDebuggerLaunched = false;
-        final int funcPort = functionRunConfiguration.getFuncPort();
+        final int funcPort = functionRunConfiguration.isAutoPort() ? FunctionUtils.getFreePort() : functionRunConfiguration.getFuncPort();
         final int debugPort = FunctionUtils.findFreePortForApi(Math.max(DEFAULT_DEBUG_PORT, funcPort));
         processHandler.println(message("function.run.hint.port", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
@@ -376,7 +376,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     protected Action<Void>[] getErrorActions(Executor executor, @NotNull ProgramRunner programRunner, Throwable throwable) {
         final Consumer<Void> consumer = v -> {
             final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).findSettings(functionRunConfiguration);
-            functionRunConfiguration.setFuncPort(FunctionUtils.getFreePort());
+            functionRunConfiguration.setAutoPort(true);
             AzureTaskManager.getInstance().runLater(() -> ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance()));
         };
         final Action<Void> retryAction = new Action(consumer, new ActionView.Builder("Retry with free port")).authRequired(false);

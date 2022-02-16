@@ -18,6 +18,7 @@ import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
@@ -553,17 +554,35 @@ public class FunctionUtils {
     public static int findFreePortForApi(int startPort) {
         ServerSocket socket = null;
         for (int port = startPort; port <= MAX_PORT; port++) {
-            try (ServerSocket serverSocket = new ServerSocket()) {
-                // setReuseAddress(false) is required only on OSX,
-                // otherwise the code will not work correctly on that platform
-                serverSocket.setReuseAddress(false);
-                serverSocket.bind(new InetSocketAddress(InetAddress.getByName("localhost"), port), 1);
-                return serverSocket.getLocalPort();
-            } catch (Exception ex) {
-                continue;
+            if (isPortFree(port)) {
+                return port;
             }
         }
         return -1;
+    }
+
+    private static final boolean isPortFree(int port) {
+        return SystemInfo.isMac ? isPortFreeInMac(port) : isPortFreeInWindows(port);
+    }
+
+    private static final boolean isPortFreeInWindows(int port) {
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private static final boolean isPortFreeInMac(int port) {
+        try (ServerSocket serverSocket = new ServerSocket()) {
+            // setReuseAddress(false) is required only on OSX,
+            // otherwise the code will not work correctly on that platform
+            serverSocket.setReuseAddress(false);
+            serverSocket.bind(new InetSocketAddress(InetAddress.getByName("localhost"), port), 1);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     public static int getFreePort() {
