@@ -15,8 +15,9 @@ import org.eclipse.swt.widgets.Composite;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
+import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 
-public class SpringCloudDeploymentComboBox extends AzureComboBox<SpringCloudDeploymentInstanceEntity> {
+public class SpringCloudDeploymentComboBox extends AzureComboBox<DeploymentInstance> {
 
     private SpringCloudApp app;
 
@@ -37,9 +38,9 @@ public class SpringCloudDeploymentComboBox extends AzureComboBox<SpringCloudDepl
     }
 
     @Override
-    protected List<? extends SpringCloudDeploymentInstanceEntity> loadItems() {
-        return Optional.ofNullable(app).map(SpringCloudApp::activeDeployment)
-                .map(deployment -> deployment.entity().getInstances()).orElse(Collections.emptyList());
+    protected List<? extends DeploymentInstance> loadItems() {
+        return Optional.ofNullable(app).map(SpringCloudApp::getActiveDeployment)
+                .map(deployment -> deployment.getInstances()).orElse(Collections.emptyList());
     }
 
     @Override

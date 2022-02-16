@@ -5,12 +5,10 @@
 
 package com.microsoft.intellij.util;
 
-import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -73,11 +71,8 @@ public class ValidationUtils {
         if (StringUtils.isEmpty(resourceGroup)) {
             throw new IllegalArgumentException(message("appService.resourceGroup.validate.empty"));
         }
-        try {
-            final ResourceGroup rg = Azure.az(AzureGroup.class).get(subscriptionId, resourceGroup);
+        if (Azure.az(AzureResources.class).groups(subscriptionId).exists(resourceGroup)) {
             throw new IllegalArgumentException(message("appService.resourceGroup.validate.exist"));
-        } catch (ManagementException e) {
-            // swallow exception for get resources
         }
     }
 

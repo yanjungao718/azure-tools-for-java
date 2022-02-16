@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +65,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         restartAction.registerHandler((s) -> s instanceof Startable && ((Startable) s).isRestartable(), s -> ((Startable) s).restart());
         am.registerAction(RESTART, restartAction);
 
-        final Consumer<IAzureBaseResource<?, ?>> delete = s -> ((Removable) s).remove();
+        final Consumer<IAzureBaseResource<?, ?>> delete = s -> {
+            if (AzureMessager.getMessager().confirm(String.format("Are you sure to delete \"%s\"", s.getName()))) {
+                ((Removable) s).remove();
+            }
+        };
         final ActionView.Builder deleteView = new ActionView.Builder("Delete", "/icons/action/delete.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.delete_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof Removable && !((AzResourceBase) s).getFormalStatus().isWriting());
@@ -97,17 +102,17 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> ((AzResourceBase) s).getFormalStatus().isRunning());
+            .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(CONNECT, new Action<>(connectView));
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.show_properties.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING));
+            .enabled(s -> s instanceof AzResourceBase && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), IAzureBaseResource.Status.CREATING));
         am.registerAction(SHOW_PROPERTIES, new Action<>(showPropertiesView));
 
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.deploy_resource.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> ((AzResourceBase) s).getFormalStatus().isRunning());
+            .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(DEPLOY, new Action<>(deployView));
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")

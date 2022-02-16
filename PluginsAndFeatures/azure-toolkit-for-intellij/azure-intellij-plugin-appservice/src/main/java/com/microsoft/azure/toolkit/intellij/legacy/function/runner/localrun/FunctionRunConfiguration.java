@@ -165,6 +165,14 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         this.myModule.setModule(module);
     }
 
+    public int getFuncPort() {
+        return this.functionRunModel.getFuncPort();
+    }
+
+    public void setFuncPort(int funcPort) {
+        this.functionRunModel.setFuncPort(funcPort);
+    }
+
     public void initializeDefaults(Module module) {
         if (module == null) {
             return;
@@ -216,6 +224,9 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException(message("function.run.validate.invalidFuncPath"));
+        }
+        if (getFuncPort() <= 0 || getFuncPort() >= 65535) {
+            throw new ConfigurationException(message("function.validate_run_configuration.invalidPort"));
         }
     }
 

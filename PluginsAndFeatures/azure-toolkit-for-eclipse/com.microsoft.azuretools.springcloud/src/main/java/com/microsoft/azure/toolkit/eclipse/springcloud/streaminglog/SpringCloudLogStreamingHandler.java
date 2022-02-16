@@ -19,8 +19,8 @@ public class SpringCloudLogStreamingHandler {
             dialog.setOkActionListener(instance -> {
                 dialog.close();
                 AzureTaskManager.getInstance().runLater(
-                        () -> EclipseAzureLogStreamingManager.getInstance().showLogStreaming(instance.getName(),
-                                instance.getName(), app.activeDeployment().streamLogs(instance.getName())));
+                        () -> EclipseAzureLogStreamingManager.getInstance().showLogStreaming(instance.name(),
+                                instance.name(), app.getActiveDeployment().streamLogs(instance.name())));
             });
             dialog.open();
         });

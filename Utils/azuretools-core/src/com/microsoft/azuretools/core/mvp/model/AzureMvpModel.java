@@ -6,14 +6,14 @@
 package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.resources.Deployment;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -103,7 +104,8 @@ public class AzureMvpModel {
     )
     public List<ResourceEx<ResourceGroup>> getResourceGroups(String sid) {
         List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
-        resourceGroups.addAll(az(AzureGroup.class).list(sid).stream().map(r -> new ResourceEx<>(r, sid)).collect(Collectors.toList()));
+        resourceGroups.addAll(az(AzureResources.class).groups(sid).list().stream()
+            .map(r -> new ResourceEx<>(r.toPojo(), sid)).collect(Collectors.toList()));
         Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
                 resourceGroupResourceEx.getResource().getName()));
         return resourceGroups;
@@ -119,7 +121,8 @@ public class AzureMvpModel {
     )
     public List<ResourceEx<ResourceGroup>> getResourceGroups() {
         List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
-        resourceGroups.addAll(az(AzureGroup.class).list().stream().map(r -> new ResourceEx<>(r, r.getSubscriptionId())).collect(Collectors.toList()));
+        resourceGroups.addAll(az(AzureResources.class).list().stream().flatMap(r -> r.resourceGroups().list().stream())
+            .map(r -> new ResourceEx<>(r.toPojo(), r.getSubscriptionId())).collect(Collectors.toList()));
         Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
                 resourceGroupResourceEx.getResource().getName()));
         return resourceGroups;
@@ -137,7 +140,7 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public void deleteResourceGroup(String rgName, String sid) {
-        az(AzureGroup.class).delete(sid, rgName);
+        az(AzureResources.class).groups(sid).delete(rgName, rgName);
     }
 
     /**
@@ -152,9 +155,8 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceGroup> getResourceGroupsBySubscriptionId(String sid) {
-        List<ResourceGroup> ret = new ArrayList<>(az(AzureGroup.class).list(sid));
-        Collections.sort(ret, getComparator(ResourceGroup::getName));
-        return ret;
+        return az(AzureResources.class).groups(sid).list().stream().map(r -> r.toPojo())
+            .sorted(getComparator(ResourceGroup::getName)).collect(Collectors.toList());
     }
 
     /**
@@ -166,11 +168,9 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
-        try {
-            return az(AzureGroup.class).get(sid, name);
-        } catch (Exception e) {
-            throw new Exception(CANNOT_GET_RESOURCE_GROUP);
-        }
+        return Optional.ofNullable(az(AzureResources.class).groups(sid).get(name, name))
+            .map(com.microsoft.azure.toolkit.lib.resource.ResourceGroup::toPojo)
+            .orElseThrow(() -> new Exception(CANNOT_GET_RESOURCE_GROUP));
     }
 
     @AzureOperation(

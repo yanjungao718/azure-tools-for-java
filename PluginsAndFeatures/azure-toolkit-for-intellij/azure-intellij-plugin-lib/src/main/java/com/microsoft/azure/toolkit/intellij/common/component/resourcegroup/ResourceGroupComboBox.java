@@ -7,14 +7,14 @@ package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.ide.common.model.Draft;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -71,8 +71,8 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
                     .collect(Collectors.toList()));
             }
             final String sid = subscription.getId();
-            final List<ResourceGroup> remoteGroups = Azure.az(AzureGroup.class).list(sid);
-            remoteGroups.sort(Comparator.comparing(ResourceGroup::getName));
+            final List<ResourceGroup> remoteGroups = Azure.az(AzureResources.class).groups(sid).list().stream().map(r -> r.toPojo())
+                .sorted(Comparator.comparing(ResourceGroup::getName)).collect(Collectors.toList());
             groups.addAll(remoteGroups);
         }
         return groups;

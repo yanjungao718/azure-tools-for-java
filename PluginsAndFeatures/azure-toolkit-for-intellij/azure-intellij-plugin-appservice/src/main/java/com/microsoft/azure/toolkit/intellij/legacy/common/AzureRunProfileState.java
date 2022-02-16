@@ -42,10 +42,9 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
     @Nullable
     @Override
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) {
-        final Action<Void> retry = Action.retryFromFailure(() -> this.execute(executor, programRunner));
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
-        ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
+        final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
 
@@ -62,7 +61,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                 err.printStackTrace();
                 this.sendTelemetry(operation, err);
                 this.onFail(err, processHandler);
-                AzureMessager.getMessager().error(err, "Azure", retry);
+                AzureMessager.getMessager().error(err, "Azure", (Object[]) getErrorActions(executor, programRunner, err));
             });
 
         processHandler.addProcessListener(new ProcessAdapter() {
@@ -87,6 +86,10 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
             EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), null, null);
         }
         operation.complete();
+    }
+
+    protected Action<Void>[] getErrorActions(final Executor executor, @NotNull ProgramRunner programRunner, final Throwable throwable) {
+        return new Action[]{Action.retryFromFailure(() -> this.execute(executor, programRunner))};
     }
 
     protected abstract T executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception;

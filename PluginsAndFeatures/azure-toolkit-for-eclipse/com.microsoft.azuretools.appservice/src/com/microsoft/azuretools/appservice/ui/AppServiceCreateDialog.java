@@ -88,9 +88,9 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -915,7 +915,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }
         setComboRefreshingStatus(comboResourceGroup, true);
         Mono.fromCallable(() -> {
-            List<ResourceGroup> list = Azure.az(AzureGroup.class).list(selectedSubscription.getId(), false);
+            List<ResourceGroup> list = Azure.az(AzureResources.class).groups(selectedSubscription.getId()).list();
             list.sort(Comparator.comparing(ResourceGroup::getName));
             return list;
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(groupList -> {
@@ -1239,7 +1239,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 setError(dec_textNewResGrName, RESOURCE_GROUP_NAME_INVALID_MSG);
                 return false;
             }
-            for (ResourceGroup rg : Azure.az(AzureGroup.class).list(model.getSubscriptionId(), false)) {
+            List<ResourceGroup> list = Azure.az(AzureResources.class).groups(model.getSubscriptionId()).list();
+            for (ResourceGroup rg : list) {
                 if (rg != null && StringUtils.equalsIgnoreCase(rg.getName(), model.getResourceGroup())) {
                     setError(dec_textNewResGrName, NAME_ALREADY_TAKEN);
                     return false;

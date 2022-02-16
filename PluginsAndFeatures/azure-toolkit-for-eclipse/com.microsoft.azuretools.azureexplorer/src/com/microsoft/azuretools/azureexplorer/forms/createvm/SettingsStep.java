@@ -35,8 +35,8 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
-import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -361,7 +361,7 @@ public class SettingsStep extends WizardPage {
             @Override
             public void run() {
                 if (storageAccounts == null) {
-                    List<StorageAccount> accounts = Azure.az(AzureStorageAccount.class).subscription(wizard.getSubscription().getId()).list();
+                    List<StorageAccount> accounts = Azure.az(AzureStorageAccount.class).accounts(wizard.getSubscription().getId()).list();
                     storageAccounts = new TreeMap<String, StorageAccount>();
                     for (StorageAccount storageAccount : accounts) {
                         storageAccounts.put(storageAccount.name(), storageAccount);
@@ -415,8 +415,8 @@ public class SettingsStep extends WizardPage {
         for (StorageAccount storageAccount : storageAccounts.values()) {
             // only general purpose accounts support page blobs, so only they can be used to create vm;
             // zone-redundant acounts not supported for vm
-            if ((Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE) || Objects.equals(storageAccount.entity().getKind(), Kind.STORAGE_V2))
-                && !Objects.equals(storageAccount.entity().getRedundancy(), Redundancy.STANDARD_ZRS)) {
+            if ((Objects.equals(storageAccount.getKind(), Kind.STORAGE) || Objects.equals(storageAccount.getKind(), Kind.STORAGE_V2))
+                && !Objects.equals(storageAccount.getRedundancy(), Redundancy.STANDARD_ZRS)) {
                 filteredStorageAccounts.add(storageAccount);
             }
         }

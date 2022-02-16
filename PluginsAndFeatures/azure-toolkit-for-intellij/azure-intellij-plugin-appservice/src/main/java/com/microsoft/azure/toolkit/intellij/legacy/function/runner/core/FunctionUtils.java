@@ -56,6 +56,9 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,6 +74,8 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionUtils {
+    private static final int MAX_PORT = 65535;
+
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
             "com.microsoft.azure.functions.annotation.FunctionName";
@@ -546,5 +551,29 @@ public class FunctionUtils {
             return false;
         }
         return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
+    }
+
+    public static int findFreePortForApi(int startPort) {
+        ServerSocket socket = null;
+        for (int port = startPort; port <= MAX_PORT; port++) {
+            try (ServerSocket serverSocket = new ServerSocket()) {
+                // setReuseAddress(false) is required only on OSX,
+                // otherwise the code will not work correctly on that platform
+                serverSocket.setReuseAddress(false);
+                serverSocket.bind(new InetSocketAddress(InetAddress.getByName("localhost"), port), 1);
+                return serverSocket.getLocalPort();
+            } catch (Exception ex) {
+                continue;
+            }
+        }
+        return -1;
+    }
+
+    public static int getFreePort() {
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
+            return serverSocket.getLocalPort();
+        } catch (IOException e) {
+            return -1;
+        }
     }
 }

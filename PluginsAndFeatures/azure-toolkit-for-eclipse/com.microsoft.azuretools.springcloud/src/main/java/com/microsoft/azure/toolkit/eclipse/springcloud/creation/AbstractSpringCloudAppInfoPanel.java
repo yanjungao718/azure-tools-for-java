@@ -5,32 +5,35 @@
 
 package com.microsoft.azure.toolkit.eclipse.springcloud.creation;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureFormPanel;
 import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-
-import javax.annotation.Nullable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
 
 @Getter(AccessLevel.PROTECTED)
 public abstract class AbstractSpringCloudAppInfoPanel extends Composite implements AzureFormPanel<SpringCloudAppConfig> {
@@ -57,18 +60,18 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
         selectorCluster.addValueChangedListener(this::onClusterChanged);
         textName.setRequired(true);
         textName.setValue(this.defaultAppName);
-        textName.setValidator(() -> {
-            final String name = textName.getValue();
-            if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-                return AzureValidationInfo.error(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString(), textName);
-            } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
-                return AzureValidationInfo.error(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString(), textName);
+        textName.addValidator(() -> {
+            try {
+                validateSpringCloudAppName(textName.getValue(), this.cluster);
+            } catch (final IllegalArgumentException e) {
+                final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.input(textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
             }
-            return AzureValidationInfo.success(textName);
+            return AzureValidationInfo.success(this);
         });
         if (Objects.nonNull(this.cluster)) {
             selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));
-            selectorCluster.setValue(new ItemReference<>(this.cluster.name(), IAzureResource::name));
+            selectorCluster.setValue(new ItemReference<>(this.cluster.name(), AzResource::getName));
         }
     }
 
@@ -79,7 +82,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
     private void onClusterChanged(@Nullable final SpringCloudCluster c) {
         final String appName = StringUtils.firstNonBlank(this.getTextName().getValue(), this.defaultAppName);
         if (Objects.nonNull(c)) {
-            final SpringCloudApp app = c.app(new SpringCloudAppEntity(appName, c.entity()));
+            final SpringCloudApp app = c.apps().updateOrCreate(appName, c.getResourceGroupName());
             this.onAppChanged(app);
         }
     }
@@ -95,7 +98,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
 
     protected SpringCloudAppConfig getValue(SpringCloudAppConfig config) {
         config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
-        config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureResource::name).orElse(null));
+        config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(AzResource::getName).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;
     }
@@ -113,7 +116,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
         this.originalConfig = config;
         this.getTextName().setValue(config.getAppName());
         if (Objects.nonNull(config.getClusterName())) {
-            this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), IAzureResource::name));
+            this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), AzResource::getName));
         }
         if (Objects.nonNull(config.getSubscriptionId())) {
             this.getSelectorSubscription().setValue(new ItemReference<>(config.getSubscriptionId(), Subscription::getId));
@@ -123,6 +126,16 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
     @Override
     public void setVisible(final boolean visible) {
         super.setVisible(visible);
+    }
+
+    public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
+        if (StringUtils.isEmpty(name)) {
+            throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.empty").toString());
+        } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
+            throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.invalid").toString());
+        } else if (Objects.nonNull(cluster) && Objects.nonNull(cluster.apps().get(name, cluster.getResourceGroupName()))) {
+            throw new IllegalArgumentException(AzureMessageBundle.message("springcloud.app.name.validate.exist", name).toString());
+        }
     }
 
     protected abstract SubscriptionComboBox getSelectorSubscription();

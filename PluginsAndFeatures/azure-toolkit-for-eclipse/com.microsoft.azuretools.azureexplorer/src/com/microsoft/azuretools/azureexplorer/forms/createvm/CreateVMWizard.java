@@ -34,7 +34,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
-import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.helpers.CreateStorageAccountTask;

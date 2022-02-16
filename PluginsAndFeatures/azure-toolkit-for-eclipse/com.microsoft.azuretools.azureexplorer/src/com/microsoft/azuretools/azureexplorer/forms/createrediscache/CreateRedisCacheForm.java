@@ -5,17 +5,20 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.model.PricingTier;
 import com.microsoft.azure.toolkit.redis.RedisCache;
+import com.microsoft.azure.toolkit.redis.RedisCacheDraft;
+import com.microsoft.azure.toolkit.redis.RedisCacheModule;
 import com.microsoft.azure.toolkit.redis.model.RedisConfig;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
@@ -36,7 +39,6 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -459,7 +461,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                         dnsNameValue), ex);
             }
         };
-        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), RedisCacheModule.MODULE_NAME, config.getName());
+        final String name = com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule.MODULE_NAME;
+        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), name, config.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, progressMessage, false, runnable));
 
         super.okPressed();
@@ -470,7 +473,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         redisConfig.setSubscription(this.currentSub);
         redisConfig.setRegion(Region.fromName(selectedLocationValue));
         redisConfig.setResourceGroup(newResGrp ? new DraftResourceGroup(this.currentSub, selectedResGrpValue) :
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureGroup.class).get(this.currentSub.getId(), selectedResGrpValue));
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureResources.class).groups(this.currentSub.getId()).get(selectedResGrpValue, selectedResGrpValue).toPojo());
         redisConfig.setEnableNonSslPort(noSSLPort);
         redisConfig.setPricingTier(PricingTier.values().stream()
                 .filter(pricingTier -> StringUtils.equalsIgnoreCase(pricingTier.toString(), selectedPriceTierValue)).findFirst().orElse(null));
@@ -564,7 +567,12 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             if (rg instanceof Draft) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
-            return com.microsoft.azure.toolkit.lib.Azure.az(AzureRedis.class).subscription(config.getSubscription()).create(config);
+            final RedisCacheModule caches = Azure.az(AzureRedis.class).caches(config.getSubscription().getId());
+            final RedisCacheDraft draft = caches.create(config.getName(), config.getResourceGroup().getName());
+            draft.setPricingTier(config.getPricingTier());
+            draft.setRegion(config.getRegion());
+            draft.setNonSslPortEnabled(config.isEnableNonSslPort());
+            return draft.commit();
         }
     }
 }

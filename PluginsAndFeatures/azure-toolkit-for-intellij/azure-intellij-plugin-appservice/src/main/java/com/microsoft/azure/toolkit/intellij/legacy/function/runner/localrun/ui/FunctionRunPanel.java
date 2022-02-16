@@ -32,12 +32,13 @@ import java.util.UUID;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration> {
-
+    private static final int DEFAULT_FUNC_PORT = 7071;
     private JPanel settings;
     private JPanel pnlMain;
     private FunctionCoreToolsCombobox txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
+    private JTextField txtPort;
     private AppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
@@ -92,6 +93,8 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 break;
             }
         }
+        int funcPort = configuration.getFuncPort() <= 0 ? FunctionUtils.findFreePortForApi(DEFAULT_FUNC_PORT) : configuration.getFuncPort();
+        txtPort.setText(String.valueOf(funcPort));
     }
 
     @Override
@@ -102,6 +105,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         // save app settings storage key instead of real value
         configuration.setAppSettings(Collections.EMPTY_MAP);
         configuration.setAppSettingsKey(appSettingsKey);
+        try {
+            configuration.setFuncPort(Integer.valueOf(txtPort.getText()));
+        } catch (final NumberFormatException e) {
+            configuration.setFuncPort(-1);
+        }
     }
 
     @NotNull
