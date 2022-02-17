@@ -27,7 +27,7 @@ public class IntellijAccountActionsContributor implements IActionsContributor, I
         final ActionView.Builder tryAzureView = new ActionView.Builder("Try Azure for Free").title((s) -> tryAzureTitle);
         final BiConsumer<Void, AnActionEvent> tryAzureHandler = (Void v, AnActionEvent e) ->
             AzureActionManager.getInstance().getAction(OPEN_URL).handle(URL_TRY_AZURE_FOR_FREE);
-        am.registerAction(IAccountActions.TRY_AZURE, new Action<>(tryAzureHandler, tryAzureView).authRequired(false));
+        am.registerAction(IAccountActions.TRY_AZURE, new Action<>(tryAzureHandler, tryAzureView).setAuthRequired(false));
     }
 
     @Override

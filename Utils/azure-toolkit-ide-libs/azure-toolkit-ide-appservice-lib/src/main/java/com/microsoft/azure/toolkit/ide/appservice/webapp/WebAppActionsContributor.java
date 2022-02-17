@@ -90,7 +90,9 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("webapp.list_deployments.app", ((WebApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof WebApp);
-        am.registerAction(REFRESH_DEPLOYMENT_SLOTS, new Action<>(refresh, refreshView));
+        final Action<WebApp> refreshAction = new Action<>(refresh, refreshView);
+        refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
+        am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
         final Consumer<WebAppDeploymentSlot> swap = slot -> slot.webApp().swap(slot.name());
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")

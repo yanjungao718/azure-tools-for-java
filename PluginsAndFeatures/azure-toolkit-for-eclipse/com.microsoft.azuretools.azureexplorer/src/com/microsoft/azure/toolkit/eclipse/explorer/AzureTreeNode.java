@@ -126,7 +126,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
     private void applyActionGroupToMenu(@Nonnull ActionGroup actionGroup, @Nonnull IMenuManager manager,
             @Nullable Object source) {
         final AzureActionManager actionManager = AzureActionManager.getInstance();
-        for (Object raw : actionGroup.actions()) {
+        for (Object raw : actionGroup.getActions()) {
             Action action = null;
             if (raw instanceof com.microsoft.azure.toolkit.lib.common.action.Action.Id) {
                 action = toEclipseAction(
@@ -158,7 +158,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
 
     private <T> Action toEclipseAction(com.microsoft.azure.toolkit.lib.common.action.Action<T> action,
             @Nullable T source) {
-        final Label view = Optional.ofNullable(action).map(act -> act.view(source)).orElse(null);
+        final Label view = Optional.ofNullable(action).map(act -> act.getView(source)).orElse(null);
         if (view == null) {
             return null;
         }
@@ -170,7 +170,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
                 action.handle(source);
             }
         };
-        eclipseAction.setEnabled(view.isEnabled() && action.handler(source, null) != null);
+        eclipseAction.setEnabled(view.isEnabled() && action.getHandler(source, null) != null);
         return eclipseAction;
     }
 }

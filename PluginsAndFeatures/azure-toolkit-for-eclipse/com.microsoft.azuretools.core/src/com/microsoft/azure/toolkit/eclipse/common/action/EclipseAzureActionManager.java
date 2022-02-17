@@ -76,7 +76,7 @@ public class EclipseAzureActionManager extends AzureActionManager {
                 } catch (org.eclipse.core.commands.ExecutionException | NotDefinedException | NotEnabledException | NotHandledException error) {
                     error.printStackTrace();
                 }
-            }).authRequired(false);
+            }).setAuthRequired(false);
         });
     }
 

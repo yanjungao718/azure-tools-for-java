@@ -75,7 +75,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.refresh_funcs")).orElse(null))
                 .enabled(s -> s instanceof FunctionApp);
-        am.registerAction(REFRESH_FUNCTIONS, new Action<>(refresh, refreshView));
+        final Action<FunctionApp> refreshAction = new Action<>(refresh, refreshView);
+        refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
+        am.registerAction(REFRESH_FUNCTIONS, refreshAction);
 
         final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func.trigger", ((FunctionEntity) s).getName())).orElse(null))
@@ -90,16 +92,14 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
                 .title(s -> title("function.download_core_tools"));
-        final Action<Void> downloadCliAction = new Action<>((v) -> {
-            am.getAction(OPEN_URL).handle(CORE_TOOLS_URL);
-        }, downloadCliView);
-        downloadCliAction.authRequired(false);
+        final Action<Void> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
+        downloadCliAction.setAuthRequired(false);
         am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
                 .title(s -> title("function.config_core_tools"));
         final Action<Void> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
-        configCliAction.authRequired(false);
+        configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
     }
 

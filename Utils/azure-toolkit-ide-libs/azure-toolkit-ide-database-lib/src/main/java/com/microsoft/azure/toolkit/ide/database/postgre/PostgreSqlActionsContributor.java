@@ -33,7 +33,9 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", "icons/action/open_database_tool.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof PostgreSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
+        final Action<IAzureBaseResource<?, ?>> action = new Action<>(openDatabaseTool);
+        action.setShortcuts("control alt D");
+        am.registerAction(OPEN_DATABASE_TOOL, action);
     }
 
     public int getOrder() {
