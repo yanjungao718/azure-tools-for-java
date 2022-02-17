@@ -92,6 +92,17 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.numCpu.addActionListener((e) -> debouncer.debounce());
         this.numMemory.addActionListener((e) -> debouncer.debounce());
         this.numInstance.addChangeListener((e) -> debouncer.debounce());
+
+        this.txtTestEndpoint.setVisible(false);
+        this.lblTestEndpoint.setVisible(false);
+        this.txtTestEndpoint.setHyperlinkTarget(null);
+        final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(new Integer[]{1});
+        final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(new Integer[]{1, 2});
+        numCpuModel.setSelectedItem(1);
+        numMemoryModel.setSelectedItem(1);
+        this.numCpu.setModel(numCpuModel);
+        this.numMemory.setModel(numMemoryModel);
+
     }
 
     public void reset() {

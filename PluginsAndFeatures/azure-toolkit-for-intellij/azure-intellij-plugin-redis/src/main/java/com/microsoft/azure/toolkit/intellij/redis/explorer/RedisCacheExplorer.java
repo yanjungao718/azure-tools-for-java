@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.redis.explorer;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.apache.commons.lang3.tuple.Pair;
@@ -388,5 +390,12 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
             default:
                 return null;
         }
+    }
+
+    @Override
+    protected void onResourceDeleted() {
+        IntellijShowPropertiesViewAction.closePropertiesView(this.redis, project);
+        final String message = String.format("Close redis cache explorer of \"%s\" because the resource is deleted.", this.redis.getName());
+        AzureMessager.getMessager().warning(message);
     }
 }
