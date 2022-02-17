@@ -94,7 +94,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 break;
             }
         }
-        int port = functionRunConfiguration.getFuncPort() <= 0 ? FunctionUtils.findFreePortForApi(DEFAULT_FUNC_PORT) : functionRunConfiguration.getFuncPort();
+        int port = functionRunConfiguration.getFuncPort() <= 0 ? FunctionUtils.findFreePort(DEFAULT_FUNC_PORT) : functionRunConfiguration.getFuncPort();
         txtPort.setText(String.valueOf(port));
         chkAuto.setSelected(configuration.isAutoPort());
     }

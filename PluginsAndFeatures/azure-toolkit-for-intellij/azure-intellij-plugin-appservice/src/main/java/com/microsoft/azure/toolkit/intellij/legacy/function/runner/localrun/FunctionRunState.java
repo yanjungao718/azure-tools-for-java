@@ -215,8 +215,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private int runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
             throws IOException, InterruptedException {
         isDebuggerLaunched = false;
-        final int funcPort = functionRunConfiguration.isAutoPort() ? FunctionUtils.getFreePort() : functionRunConfiguration.getFuncPort();
-        final int debugPort = FunctionUtils.findFreePortForApi(Math.max(DEFAULT_DEBUG_PORT, funcPort));
+        final int funcPort = functionRunConfiguration.isAutoPort() ? FunctionUtils.findFreePort() : functionRunConfiguration.getFuncPort();
+        final int debugPort = FunctionUtils.findFreePort(Math.max(DEFAULT_DEBUG_PORT, funcPort));
         processHandler.println(message("function.run.hint.port", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Redirect function cli output to console

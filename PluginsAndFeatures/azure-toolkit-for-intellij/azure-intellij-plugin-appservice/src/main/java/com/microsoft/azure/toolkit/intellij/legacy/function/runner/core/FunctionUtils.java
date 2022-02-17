@@ -551,7 +551,15 @@ public class FunctionUtils {
         return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
     }
 
-    public static int findFreePortForApi(int startPort) {
+    public static int findFreePort() {
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
+            return serverSocket.getLocalPort();
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+
+    public static int findFreePort(int startPort) {
         ServerSocket socket = null;
         for (int port = startPort; port <= MAX_PORT; port++) {
             if (isPortFree(port)) {
@@ -582,14 +590,6 @@ public class FunctionUtils {
             return true;
         } catch (Exception ex) {
             return false;
-        }
-    }
-
-    public static int getFreePort() {
-        try (ServerSocket serverSocket = new ServerSocket(0)) {
-            return serverSocket.getLocalPort();
-        } catch (IOException e) {
-            return -1;
         }
     }
 }
