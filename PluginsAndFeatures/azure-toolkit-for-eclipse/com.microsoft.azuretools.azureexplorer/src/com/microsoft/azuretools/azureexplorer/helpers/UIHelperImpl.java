@@ -12,8 +12,6 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Map;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;

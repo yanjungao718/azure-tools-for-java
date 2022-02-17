@@ -76,7 +76,7 @@ public class IntellijErrorDialog extends DialogWrapper {
     @Override
     protected Action[] createActions() {
         final Action[] actions = Arrays.stream(this.message.getActions()).map((com.microsoft.azure.toolkit.lib.common.action.Action<?> a) -> {
-            final String name = Optional.ofNullable(a.view(null)).map(IView.Label::getLabel).orElse(a.toString());
+            final String name = Optional.ofNullable(a.getView(null)).map(IView.Label::getLabel).orElse(a.toString());
             return new DialogWrapperAction(name) {
                 protected void doAction(final ActionEvent e) {
                     // refer `com.intellij.designer.LightToolWindow.ActionButton`

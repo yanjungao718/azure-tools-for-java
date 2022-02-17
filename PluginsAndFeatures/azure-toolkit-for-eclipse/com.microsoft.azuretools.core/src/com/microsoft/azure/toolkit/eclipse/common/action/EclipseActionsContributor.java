@@ -28,7 +28,7 @@ public class EclipseActionsContributor implements IActionsContributor {
             AzureTaskManager.getInstance().runLater(() -> {
                 SignInCommandHandler.requireSignedIn(PluginUtil.getParentShell(), r);
             });
-        }).authRequired(false));
+        }).setAuthRequired(false));
     }
 
     @Override

@@ -94,7 +94,7 @@ public class IntellijAzureMessager implements IAzureMessager {
         final String content = message.getContent();
         final Notification notification = this.createNotification(message.getTitle(), content, type);
         notification.addActions(Arrays.stream(message.getActions()).map(a -> {
-            final String title = Optional.ofNullable(a.view(null)).map(IView.Label::getLabel).orElse(a.toString());
+            final String title = Optional.ofNullable(a.getView(null)).map(IView.Label::getLabel).orElse(a.toString());
             return new NotificationAction(title) {
                 @Override
                 public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
