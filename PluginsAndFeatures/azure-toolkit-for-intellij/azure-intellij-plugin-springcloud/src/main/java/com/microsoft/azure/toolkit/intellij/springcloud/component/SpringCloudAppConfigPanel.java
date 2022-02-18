@@ -195,8 +195,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final Map<String, String> env = deployment.getEnvironment();
         this.envTable.setEnvironmentVariables(ObjectUtils.firstNonNull(env, Collections.emptyMap()));
 
-        this.numCpu.setItem(deployment.getCpu());
-        this.numMemory.setItem(deployment.getMemoryInGB());
+        Optional.ofNullable(deployment.getCpu()).ifPresent(c -> this.numCpu.setItem(c));
+        Optional.ofNullable(deployment.getMemoryInGB()).ifPresent(c -> this.numMemory.setItem(c));
         this.numInstance.setValue(deployment.getInstanceCount());
     }
 
