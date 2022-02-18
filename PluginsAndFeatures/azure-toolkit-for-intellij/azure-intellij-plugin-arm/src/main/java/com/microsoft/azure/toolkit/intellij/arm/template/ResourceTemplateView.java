@@ -153,7 +153,7 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
 
     public String getParameters() {
         final Gson gson = new Gson();
-        return Optional.of(((PsiAwareTextEditorImpl) templateEditor).getEditor())
+        return Optional.of(((PsiAwareTextEditorImpl) parameterEditor).getEditor())
             .map(Editor::getDocument)
             .map(Document::getText)
             .map(parameters -> {
