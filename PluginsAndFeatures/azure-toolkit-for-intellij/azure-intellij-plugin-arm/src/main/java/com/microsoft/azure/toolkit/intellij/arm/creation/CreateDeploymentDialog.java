@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
@@ -41,6 +42,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Objects;
 
 public class CreateDeploymentDialog extends AzureDialogWrapper {
@@ -155,24 +157,30 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
                     messager.error("\"Resource Template\" is required to create a deployment.");
                     return;
                 }
-                final String template = IOUtils.toString(new FileReader(templatePath));
-                String parameters = "{}";
-                if (!StringUtils.isEmpty(parametersPath)) {
-                    final String origin = IOUtils.toString(new FileReader(parametersPath));
-                    final Gson gson = new Gson();
-                    final JsonElement parametersElement = gson.fromJson(origin, JsonElement.class).getAsJsonObject().get("parameters");
-                    parameters = parametersElement == null ? origin : parametersElement.toString();
-                }
-                AzureTaskManager.getInstance().runLater(() -> close(DialogWrapper.OK_EXIT_CODE, true));
-                final ResourceDeploymentDraft draft = group.deployments().create(deploymentName, group.getName());
-                draft.setTemplateAsJson(template);
-                draft.setParametersAsJson(parameters);
-                draft.commit();
-                messager.success(NOTIFY_CREATE_DEPLOYMENT_SUCCESS);
+                createDeployment(deploymentName, parametersPath, templatePath, messager, group);
             } catch (final Throwable e) {
                 throw new AzureToolkitRuntimeException(e);
             }
         });
+    }
+
+    @AzureOperation(name = "arm.create_deployment.deployment", params = {"deploymentName"}, type = AzureOperation.Type.ACTION)
+    private void createDeployment(String deploymentName, String parametersPath, String templatePath, IAzureMessager messager, ResourceGroup group)
+        throws IOException {
+        final String template = IOUtils.toString(new FileReader(templatePath));
+        String parameters = "{}";
+        if (!StringUtils.isEmpty(parametersPath)) {
+            final String origin = IOUtils.toString(new FileReader(parametersPath));
+            final Gson gson = new Gson();
+            final JsonElement parametersElement = gson.fromJson(origin, JsonElement.class).getAsJsonObject().get("parameters");
+            parameters = parametersElement == null ? origin : parametersElement.toString();
+        }
+        AzureTaskManager.getInstance().runLater(() -> close(DialogWrapper.OK_EXIT_CODE, true));
+        final ResourceDeploymentDraft draft = group.deployments().create(deploymentName, group.getName());
+        draft.setTemplateAsJson(template);
+        draft.setParametersAsJson(parameters);
+        draft.commit();
+        messager.success(NOTIFY_CREATE_DEPLOYMENT_SUCCESS);
     }
 
     private void setResourceGroup(@Nullable ResourceGroup group) {

@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -46,6 +47,7 @@ public class DeploymentActions {
     public static final String NOTIFY_UPDATE_DEPLOYMENT_SUCCESS = "Update deployment successfully";
     public static final String NOTIFY_UPDATE_DEPLOYMENT_FAIL = "Update deployment failed";
 
+    @AzureOperation(name = "arm.create_deployment_ui.rg", params = {"rg.getName()"}, type = AzureOperation.Type.ACTION)
     public static void createDeployment(@Nonnull final Project project, @Nullable ResourceGroup rg) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -54,6 +56,7 @@ public class DeploymentActions {
         });
     }
 
+    @AzureOperation(name = "arm.open_template_view.deployment", params = {"deployment.getName()"}, type = AzureOperation.Type.ACTION)
     public static void openTemplateView(@Nonnull final Project project, @Nonnull ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -65,10 +68,12 @@ public class DeploymentActions {
         });
     }
 
+    @AzureOperation(name = "arm.update_deployment_ui.deployment", params = {"deployment.getName()"}, type = AzureOperation.Type.ACTION)
     public static void updateDeployment(@Nonnull final Project project, @Nonnull final ResourceDeployment deployment) {
         AzureTaskManager.getInstance().runLater(() -> new UpdateDeploymentDialog(project, deployment).show());
     }
 
+    @AzureOperation(name = "arm.export_template.deployment", params = {"deployment.getName"}, type = AzureOperation.Type.ACTION)
     public static void exportTemplate(@Nonnull final Project project, @Nonnull final ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -87,6 +92,7 @@ public class DeploymentActions {
         });
     }
 
+    @AzureOperation(name = "arm.export_parameter.deployment", params = {"deployment.getName"}, type = AzureOperation.Type.ACTION)
     public static void exportParameters(@Nonnull final Project project, final ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
