@@ -202,7 +202,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
             chkDeployToSlot.setEnabled(true);
             Mono.fromCallable(() -> Azure.az(AzureWebApp.class).get(selectedWebApp.getResourceId()).deploymentSlots())
                     .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe(slots -> fillDeploymentSlots(slots, selectedWebApp));
+                    .subscribe(slots -> AzureTaskManager.getInstance().runLater(()-> fillDeploymentSlots(slots, selectedWebApp)));
         }
     }
 
