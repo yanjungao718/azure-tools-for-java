@@ -16,7 +16,7 @@ import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.AzureFunctionsConstants;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -24,7 +24,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-@Log4j2
+@Slf4j
 public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposable {
     private static final String MAVEN_TOOL = "Maven";
     private static final String GRADLE_TOOL = "Gradle";
