@@ -163,7 +163,7 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
                     final JsonElement parametersElement = gson.fromJson(origin, JsonElement.class).getAsJsonObject().get("parameters");
                     parameters = parametersElement == null ? origin : parametersElement.toString();
                 }
-                close(DialogWrapper.OK_EXIT_CODE, true);
+                AzureTaskManager.getInstance().runLater(() -> close(DialogWrapper.OK_EXIT_CODE, true));
                 final ResourceDeploymentDraft draft = group.deployments().create(deploymentName, group.getName());
                 draft.setTemplateAsJson(template);
                 draft.setParametersAsJson(parameters);
