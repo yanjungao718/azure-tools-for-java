@@ -9,6 +9,8 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import java.io.Serializable;
+import java.util.Objects;
+
 /**
  * Model class to store application insights resource data.
  */
@@ -120,6 +122,11 @@ public class ApplicationInsightsResource implements Serializable, Comparable<App
         String key = resource.getInstrumentationKey();
         boolean value = instrumentationKey != null && instrumentationKey.equals(key);
         return value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(resourceName, instrumentationKey, subscriptionName, subscriptionId, location, resourceGroup, imported);
     }
 
     @Override
