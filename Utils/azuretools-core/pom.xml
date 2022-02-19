@@ -191,10 +191,6 @@
             <artifactId>azure-security-keyvault-certificates</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
-            <artifactId>azure-mgmt-insights</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
