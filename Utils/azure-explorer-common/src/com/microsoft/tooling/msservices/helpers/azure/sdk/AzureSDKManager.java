@@ -10,9 +10,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationType;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.KnownWindowsVirtualMachineImage;
@@ -23,8 +20,12 @@ import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
+import com.microsoft.azure.toolkit.lib.applicationinsights.task.GetOrCreateApplicationInsightsTask;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -153,56 +154,31 @@ public class AzureSDKManager {
         return withCreate.create();
     }
 
-    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull String subscriptionId) throws IOException {
-        final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
-        return insightsManager == null ? Collections.emptyList() : new ArrayList<>(insightsManager.components().list());
+    public static List<ApplicationInsight> getInsightsResources(@NotNull String subscriptionId) {
+        return com.microsoft.azure.toolkit.lib.Azure.az(AzureApplicationInsights.class).applicationInsights(subscriptionId).list();
     }
 
-    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException {
+    public static List<ApplicationInsight> getInsightsResources(@NotNull SubscriptionDetail subscription) {
         return getInsightsResources(subscription.getSubscriptionId());
     }
 
     // SDK will return existing application insights component when you create new one with existing name
     // Use this method in case SDK service update their behavior
-    public static ApplicationInsightsComponent getOrCreateApplicationInsights(@NotNull String subscriptionId,
+    public static ApplicationInsight getOrCreateApplicationInsights(@NotNull String subscriptionId,
                                                                               @NotNull String resourceGroupName,
                                                                               @NotNull String resourceName,
                                                                               @NotNull String location) throws IOException {
-        final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
-        if (insightsManager == null) {
-            return null;
-        }
-        ApplicationInsightsComponent component = null;
-        try {
-            component = insightsManager.components().getByResourceGroup(resourceGroupName, resourceName);
-        } catch (Exception e) {
-            // SDK will throw exception when resource not found
-        }
-        return component != null ? component : createInsightsResource(subscriptionId, resourceGroupName, resourceName, location);
+        return new GetOrCreateApplicationInsightsTask(subscriptionId, resourceGroupName, Region.fromName(location), resourceName).execute();
     }
 
-    public static ApplicationInsightsComponent createInsightsResource(@NotNull String subscriptionId,
+    public static ApplicationInsight createInsightsResource(@NotNull String subscriptionId,
                                                                       @NotNull String resourceGroupName,
                                                                       @NotNull String resourceName,
                                                                       @NotNull String location) throws IOException {
-        final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
-        if (insightsManager == null) { // not signed in
-            return null;
-        }
-        final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-        if (!azure.resourceGroups().contain(resourceGroupName)) {
-            azure.resourceGroups().define(resourceGroupName).withRegion(location).create();
-        }
-        return insightsManager.components()
-                .define(resourceName)
-                .withRegion(location)
-                .withExistingResourceGroup(resourceGroupName)
-                .withApplicationType(ApplicationType.WEB)
-                .withKind("web")
-                .create();
+        return getOrCreateApplicationInsights(subscriptionId, resourceGroupName, resourceName, location);
     }
 
-    public static ApplicationInsightsComponent createInsightsResource(@NotNull Subscription subscription,
+    public static ApplicationInsight createInsightsResource(@NotNull Subscription subscription,
                                                                       @NotNull String resourceGroupName,
                                                                       boolean isNewGroup,
                                                                       @NotNull String resourceName,
@@ -246,12 +222,5 @@ public class AzureSDKManager {
     // we are requiring the SDK to provide that API, before SDK side fix, we will use our own impl
     public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws IOException {
         return getLocationsForInsights(subscription.getSubscriptionId());
-    }
-
-    @NotNull
-    private static InsightsManager getInsightsManagerClient(@NotNull String subscriptionId)
-            throws IOException {
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        return azureManager == null ? null : azureManager.getInsightsManager(subscriptionId);
     }
 }

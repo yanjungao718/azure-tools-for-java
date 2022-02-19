@@ -4,13 +4,10 @@
  */
 package com.microsoft.azure.toolkit.lib.legacy.function;
 
-import com.azure.core.management.AzureEnvironment;
-import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.applicationinsights.task.GetOrCreateApplicationInsightsTask;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;
@@ -20,6 +17,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
@@ -161,37 +159,19 @@ public class FunctionAppService {
         }
         String instrumentationKey = config.getMonitorConfig().getApplicationInsightsConfig().getInstrumentationKey();
         if (StringUtils.isEmpty(instrumentationKey)) {
-            final ApplicationInsightsEntity applicationInsightsComponent = getOrCreateApplicationInsights(config);
+            final ApplicationInsight applicationInsightsComponent = getOrCreateApplicationInsights(config);
             instrumentationKey = applicationInsightsComponent == null ? null : applicationInsightsComponent.getInstrumentationKey();
         }
         appSettings.put(APPINSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
     }
 
     @Nullable
-    private ApplicationInsightsEntity getOrCreateApplicationInsights(final FunctionAppConfig config) {
-        final ApplicationInsightsConfig insightsConfig = config.getMonitorConfig().getApplicationInsightsConfig();
-        try {
-            return Azure.az(ApplicationInsights.class).subscription(config.getSubscription())
-                    .get(config.getResourceGroup().getName(), insightsConfig.getName());
-        } catch (final ManagementException e) {
-            return createApplicationInsights(config);
-        }
-    }
-
-    @Nullable
-    private ApplicationInsightsEntity createApplicationInsights(final FunctionAppConfig config) {
-        try {
-            AzureMessager.getMessager().info(APPLICATION_INSIGHTS_CREATE_START);
-            final AzureEnvironment environment = Azure.az(AzureAccount.class).account().getEnvironment();
-            final ApplicationInsightsEntity resource = Azure.az(ApplicationInsights.class).create(config.getSubscription().getId(),
-                    config.getResourceGroup().getName(), config.getRegion(), config.getMonitorConfig().getApplicationInsightsConfig().getName());
-            AzureMessager.getMessager().info(String.format(APPLICATION_INSIGHTS_CREATED,
-                    resource.getName(), Azure.az(AzureAccount.class).account().portalUrl(), resource.getId()));
-            return resource;
-        } catch (final Exception e) {
-            AzureMessager.getMessager().warning(String.format(APPLICATION_INSIGHTS_CREATE_FAILED, e.getMessage()));
-            return null;
-        }
+    private ApplicationInsight getOrCreateApplicationInsights(final FunctionAppConfig config) {
+        final String subscriptionId = config.getSubscription().getId();
+        final String resourceGroup = config.getResourceGroup().getName();
+        final String name = config.getMonitorConfig().getApplicationInsightsConfig().getName();
+        final Region region = config.getRegion();
+        return new GetOrCreateApplicationInsightsTask(subscriptionId, resourceGroup, region, name).execute();
     }
 
     public void deployFunctionApp(final FunctionApp functionApp, final File stagingFolder) throws IOException {

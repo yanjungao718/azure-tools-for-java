@@ -5,15 +5,9 @@
 
 package com.microsoft.applicationinsights.preference;
 
-import com.microsoft.applicationinsights.ui.activator.Activator;
-import com.microsoft.applicationinsights.util.AILibraryUtil;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -33,8 +27,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.microsoft.applicationinsights.ui.activator.Activator;
+import com.microsoft.applicationinsights.util.AILibraryUtil;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
 /**
  * Class is intended for creating new application insights resources remotely in the cloud.
@@ -133,12 +135,8 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
 
     private void populateResourceGroupValues(String subId, String valtoSet) {
         try {
-            com.microsoft.azuretools.sdkmanage.AzureManager azureManager = AuthMethodManager.getInstance()
-                    .getAzureManager();
-            Azure azure = azureManager.getAzure(subId);
-            List<com.microsoft.azure.management.resources.ResourceGroup> groups = azure.resourceGroups().list();
-            List<String> groupStringList = groups.stream()
-                    .map(com.microsoft.azure.management.resources.ResourceGroup::name).collect(Collectors.toList());
+            final List<String> groupStringList = Azure.az(AzureResources.class).groups(subId).list()
+                    .stream().map(group -> group.getName()).collect(Collectors.toList());
             if (groupStringList.size() > 0) {
                 String[] groupArray = groupStringList.toArray(new String[groupStringList.size()]);
                 resourceGrpCombo.removeAll();
@@ -330,7 +328,7 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
                     @Override
                     public void run() {
                         try {
-                            ApplicationInsightsComponent resource = AzureSDKManager.createInsightsResource(currentSub,
+                            ApplicationInsight resource = AzureSDKManager.createInsightsResource(currentSub,
                                     resourceGroup, isNewGroup, name, location);
                             resourceToAdd = new ApplicationInsightsResource(resource, currentSub, true);
                             if (onCreate != null) {
