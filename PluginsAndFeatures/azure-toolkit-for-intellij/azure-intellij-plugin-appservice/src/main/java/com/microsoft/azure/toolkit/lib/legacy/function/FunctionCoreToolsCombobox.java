@@ -44,7 +44,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private static final String AZURE_TOOLKIT_FUNCTION_CORE_TOOLS_HISTORY = "azure_toolkit.function.core.tools.history";
