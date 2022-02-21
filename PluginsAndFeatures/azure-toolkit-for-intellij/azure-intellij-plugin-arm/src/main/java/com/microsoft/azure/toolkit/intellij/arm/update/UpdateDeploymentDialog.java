@@ -14,6 +14,7 @@ import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
@@ -93,25 +94,28 @@ public class UpdateDeploymentDialog extends AzureDialogWrapper {
         final StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
         final String deploymentName = this.deployment.getName();
         final AzureString title = AzureOperationBundle.title("arm.update_deployment.deployment", deploymentName);
-        AzureTaskManager.getInstance().runInBackground(title, false, () -> {
-            final ResourceDeploymentDraft draft = (ResourceDeploymentDraft) this.deployment.update();
-            final String templatePath = templateTextField.getText();
-            final String parametersPath = parametersTextField.getText();
-            try {
-                if (!StringUtils.isEmpty(templatePath)) {
-                    final String templateAsJson = IOUtils.toString(new FileReader(templatePath));
-                    draft.setTemplateAsJson(templateAsJson);
-                }
-                if (!StringUtils.isEmpty(parametersPath)) {
-                    final String parametersAsJson = IOUtils.toString(new FileReader(parametersPath));
-                    draft.setParametersAsJson(parametersAsJson);
-                }
-                draft.commit();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        AzureTaskManager.getInstance().runInBackground(title, false, this::updateDeployment);
         close(OK_EXIT_CODE, true);
+    }
+
+    @AzureOperation(name = "arm.update_deployment.deployment", params = {"this.deployment.getName()"}, type = AzureOperation.Type.ACTION)
+    private void updateDeployment() {
+        final ResourceDeploymentDraft draft = (ResourceDeploymentDraft) this.deployment.update();
+        final String templatePath = templateTextField.getText();
+        final String parametersPath = parametersTextField.getText();
+        try {
+            if (!StringUtils.isEmpty(templatePath)) {
+                final String templateAsJson = IOUtils.toString(new FileReader(templatePath));
+                draft.setTemplateAsJson(templateAsJson);
+            }
+            if (!StringUtils.isEmpty(parametersPath)) {
+                final String parametersAsJson = IOUtils.toString(new FileReader(parametersPath));
+                draft.setParametersAsJson(parametersAsJson);
+            }
+            draft.commit();
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable
