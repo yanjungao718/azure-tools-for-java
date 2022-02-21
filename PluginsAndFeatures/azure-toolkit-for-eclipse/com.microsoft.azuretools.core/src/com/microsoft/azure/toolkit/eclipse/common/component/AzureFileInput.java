@@ -115,7 +115,7 @@ public class AzureFileInput extends Composite implements AzureForm<String> {
         } else {
             final File file = new File(value);
             return file.exists() ? AzureValidationInfo.ok(textInput)
-                    : AzureValidationInfo.error("Target file does not exists", textInput);
+                    : AzureValidationInfo.error("Target file does not exist", textInput);
         }
     }
 
