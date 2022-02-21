@@ -39,6 +39,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
     private JTextField txtPort;
+    private JCheckBox chkAuto;
     private AppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
@@ -58,7 +59,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
             }
         });
 
-
+        chkAuto.addItemListener(e -> txtPort.setEnabled(!chkAuto.isSelected()));
         fillModules();
     }
 
@@ -93,8 +94,9 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 break;
             }
         }
-        int funcPort = configuration.getFuncPort() <= 0 ? FunctionUtils.findFreePortForApi(DEFAULT_FUNC_PORT) : configuration.getFuncPort();
-        txtPort.setText(String.valueOf(funcPort));
+        int port = functionRunConfiguration.getFuncPort() <= 0 ? FunctionUtils.findFreePort(DEFAULT_FUNC_PORT) : functionRunConfiguration.getFuncPort();
+        txtPort.setText(String.valueOf(port));
+        chkAuto.setSelected(configuration.isAutoPort());
     }
 
     @Override
@@ -105,6 +107,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         // save app settings storage key instead of real value
         configuration.setAppSettings(Collections.EMPTY_MAP);
         configuration.setAppSettingsKey(appSettingsKey);
+        configuration.setAutoPort(chkAuto.isSelected());
         try {
             configuration.setFuncPort(Integer.valueOf(txtPort.getText()));
         } catch (final NumberFormatException e) {

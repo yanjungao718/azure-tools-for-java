@@ -31,7 +31,9 @@ public class RedisActionsContributor implements IActionsContributor {
         final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
             .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
             .enabled(s -> s instanceof RedisCache && ((RedisCache) s).getFormalStatus().isRunning());
-        am.registerAction(OPEN_EXPLORER, new Action<>(showExplorerView));
+        final Action<IAzureBaseResource<?, ?>> action = new Action<>(showExplorerView);
+        action.setShortcuts(am.getIDEDefaultShortcuts().view());
+        am.registerAction(OPEN_EXPLORER, action);
     }
 
     @Override

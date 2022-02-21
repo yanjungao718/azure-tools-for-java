@@ -50,11 +50,11 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private static final int MAX_HISTORY_SIZE = 15;
     private final Set<String> funcCoreToolsPathList = new LinkedHashSet<>();
 
-    private Condition<? super VirtualFile> fileFilter;
-    private Project project;
+    private final Condition<? super VirtualFile> fileFilter;
+    private final Project project;
 
     private String lastSelected;
-    private boolean includeSettings;
+    private final boolean includeSettings;
     private boolean pendingOpenAzureSettings = false;
 
     public FunctionCoreToolsCombobox(Project project, boolean includeSettings) {
@@ -62,14 +62,9 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         this.project = project;
         this.includeSettings = includeSettings;
         final List<String> exePostfix = Arrays.asList("exe|bat|cmd|sh|bin|run".split("\\|"));
-        this.fileFilter = file ->
-            Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive())
-                && (file.getExtension() == null || exePostfix.contains(
-                file.isCaseSensitive() ? file.getExtension() : StringUtils.lowerCase(file.getExtension())
-            )
-
-            );
-        reset();
+        this.fileFilter = file -> Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive()) &&
+            (file.getExtension() == null || exePostfix.contains(file.isCaseSensitive() ? file.getExtension() : StringUtils.lowerCase(file.getExtension())));
+        AzureTaskManager.getInstance().runOnPooledThread(this::reset);
         if (includeSettings) {
             this.setRenderer(SimpleListCellRenderer.create((label, value, index) -> {
                 label.setText(value);
@@ -102,7 +97,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private void openAzureSettingsPanel() {
         final Action<Void> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
         final AnActionEvent event = AnActionEvent.createFromInputEvent(null, ActionPlaces.UNKNOWN, null, DataManager.getInstance().getDataContext(FunctionCoreToolsCombobox.this));
-        openSettingsAction.handler(null, event).accept(null, event); // Open Azure Settings Panel sync
+        openSettingsAction.getHandler(null, event).accept(null, event); // Open Azure Settings Panel sync
     }
 
     public void reset() {
@@ -140,8 +135,8 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
             fileDescriptor.withFileFilter(fileFilter);
         }
         fileDescriptor.withTitle("Select Path to Azure Functions Core Tools");
-        final VirtualFile lastFile = lastFilePath != null && new File(lastFilePath).exists()
-            ? LocalFileSystem.getInstance().findFileByIoFile(new File(lastFilePath)) : null;
+        final VirtualFile lastFile = lastFilePath != null && new File(lastFilePath).exists() ?
+            LocalFileSystem.getInstance().findFileByIoFile(new File(lastFilePath)) : null;
         FileChooser.chooseFile(fileDescriptor, project, this, lastFile, (file) -> {
             if (file != null && file.exists()) {
                 addOrSelectExistingVirtualFile(file);
@@ -161,7 +156,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
                 this.addItem(selectFile);
             }
             this.setSelectedItem(selectFile);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             AzureMessager.getMessager().error(e);
         }
     }
@@ -171,12 +166,12 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         final String history = propertiesComponent.getValue(AZURE_TOOLKIT_FUNCTION_CORE_TOOLS_HISTORY);
         if (history != null) {
             final String[] items = history.split("\n");
-            List<String> result = new ArrayList<>();
-            for (String item : items) {
+            final List<String> result = new ArrayList<>();
+            for (final String item : items) {
                 if (StringUtils.isNotBlank(item) && new File(item).exists()) {
                     try {
                         result.add(Paths.get(item).toRealPath().toString());
-                    } catch (Exception ignore) {
+                    } catch (final Exception ignore) {
                         // ignore since the history data is not important
                     }
                 }
@@ -188,9 +183,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
 
     private void saveHistory() {
         final PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
-        final List<String> subList = funcCoreToolsPathList.stream().skip(Math.max(funcCoreToolsPathList.size() - MAX_HISTORY_SIZE, 0))
-            .collect(Collectors.toList());
         propertiesComponent.setValue(AZURE_TOOLKIT_FUNCTION_CORE_TOOLS_HISTORY, StringUtils.join(
-            subList.toArray(), "\n"));
+            funcCoreToolsPathList.stream().skip(Math.max(funcCoreToolsPathList.size() - MAX_HISTORY_SIZE, 0)).toArray(), "\n"));
     }
 }

@@ -173,6 +173,14 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         this.functionRunModel.setFuncPort(funcPort);
     }
 
+    public boolean isAutoPort() {
+        return this.functionRunModel.isAutoPort();
+    }
+
+    public void setAutoPort(boolean autoPort) {
+        this.functionRunModel.setAutoPort(autoPort);
+    }
+
     public void initializeDefaults(Module module) {
         if (module == null) {
             return;
@@ -225,7 +233,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException(message("function.run.validate.invalidFuncPath"));
         }
-        if (getFuncPort() <= 0 || getFuncPort() >= 65535) {
+        if (!isAutoPort() && (getFuncPort() <= 0 || getFuncPort() >= 65535)) {
             throw new ConfigurationException(message("function.validate_run_configuration.invalidPort"));
         }
     }
