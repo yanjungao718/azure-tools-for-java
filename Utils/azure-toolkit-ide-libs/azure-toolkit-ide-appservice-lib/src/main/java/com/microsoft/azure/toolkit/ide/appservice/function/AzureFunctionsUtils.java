@@ -9,6 +9,7 @@ import com.google.common.io.Files;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.microsoft.azure.toolkit.ide.appservice.util.JsonUtils;
+import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -19,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -26,7 +28,15 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class AzureFunctionsUtils {
+    public static final String HTTP_TRIGGER = "httptrigger";
+
     private static List<FunctionTemplate> functionTemplates;
+
+    public static boolean isHttpTrigger(@Nonnull final FunctionEntity functionEntity) {
+        final String triggerType = Optional.ofNullable(functionEntity.getTrigger())
+                .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
+        return StringUtils.equalsIgnoreCase(triggerType, HTTP_TRIGGER);
+    }
 
     @AzureOperation(name = "function.create_function_project", type = AzureOperation.Type.ACTION)
     public static void createAzureFunctionProject(String targetPath, String groupId, final String artifactId,
