@@ -21,20 +21,15 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils.HTTP_TRIGGER;
+
 public class TriggerFunctionInBrowserAction {
-    private static final String HTTP_TRIGGER = "httptrigger";
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
 
     private final FunctionApp functionApp;
     private final FunctionEntity functionEntity;
     private final FunctionEntity.BindingEntity trigger;
-
-    public static boolean isApplyFor(@Nonnull final FunctionEntity functionEntity) {
-        final String triggerType = Optional.ofNullable(functionEntity.getTrigger())
-                .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
-        return StringUtils.equalsIgnoreCase(triggerType, HTTP_TRIGGER);
-    }
 
     public TriggerFunctionInBrowserAction(@Nonnull final FunctionEntity functionEntity) {
         final String functionId = Optional.ofNullable(functionEntity.getFunctionAppId()).orElseGet(() ->
