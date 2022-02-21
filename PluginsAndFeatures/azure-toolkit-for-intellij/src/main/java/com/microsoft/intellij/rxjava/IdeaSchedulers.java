@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import rx.Observable;
 import rx.Scheduler;
 import rx.functions.Action1;
@@ -36,7 +36,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static rx.schedulers.Schedulers.computation;
 import static rx.schedulers.Schedulers.from;
 
-@Log4j2
+@Slf4j
 public class IdeaSchedulers implements IdeSchedulers, ILogger {
     @Nullable
     private final Project project;
