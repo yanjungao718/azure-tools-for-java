@@ -27,10 +27,14 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +43,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
@@ -55,6 +60,27 @@ public class AuthMethodManager {
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
     private final CompletableFuture<Boolean> initFuture = new CompletableFuture();
     private final IdentityAzureManager identityAzureManager = IdentityAzureManager.getInstance();
+
+    static {
+        // fix the class load problem for intellij plugin
+        disableLog("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
+                "com.microsoft.aad.msal4j.ConfidentialClientApplication");
+    }
+
+    private static void disableLog(String... classes) {
+        for (String className : classes) {
+            try {
+                final Logger logger = LoggerFactory.getLogger(className);
+                final Field innerLoggerField = FieldUtils.getDeclaredField(logger.getClass(), "logger", true);
+                final Object innerLogger = innerLoggerField.get(logger);
+                if (innerLogger instanceof java.util.logging.Logger) {
+                    ((java.util.logging.Logger) innerLogger).setLevel(Level.OFF);
+                }
+            } catch (Throwable e) {
+                // swallow exceptions here
+            }
+        }
+    }
 
     private static class LazyHolder {
         static final AuthMethodManager INSTANCE = new AuthMethodManager();
