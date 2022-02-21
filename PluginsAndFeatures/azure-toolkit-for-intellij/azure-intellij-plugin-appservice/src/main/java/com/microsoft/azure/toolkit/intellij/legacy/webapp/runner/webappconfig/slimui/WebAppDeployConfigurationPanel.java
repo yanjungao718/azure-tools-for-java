@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.util.UIUtils;
@@ -202,7 +203,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
             chkDeployToSlot.setEnabled(true);
             Mono.fromCallable(() -> Azure.az(AzureWebApp.class).get(selectedWebApp.getResourceId()).deploymentSlots())
                     .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe(slots -> fillDeploymentSlots(slots, selectedWebApp));
+                    .subscribe(slots -> AzureTaskManager.getInstance().runLater(()-> fillDeploymentSlots(slots, selectedWebApp), AzureTask.Modality.ANY));
         }
     }
 
