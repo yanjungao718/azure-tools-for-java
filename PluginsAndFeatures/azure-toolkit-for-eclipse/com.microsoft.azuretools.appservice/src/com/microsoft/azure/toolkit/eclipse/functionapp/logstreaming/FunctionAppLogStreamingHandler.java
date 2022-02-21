@@ -14,8 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.JsonObject;
 import com.microsoft.azure.toolkit.eclipse.common.logstream.EclipseAzureLogStreamingManager;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
@@ -75,8 +75,9 @@ public class FunctionAppLogStreamingHandler {
         if (StringUtils.isEmpty(aiKey)) {
             throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
         }
-        final String subscriptionId = functionApp.subscriptionId();
-        final ApplicationInsightsEntity insights = Azure.az(ApplicationInsights.class).list().stream()
+        final String subscriptionId = functionApp.getSubscriptionId();
+        final ApplicationInsight insights = Azure.az(AzureApplicationInsights.class)
+                .applicationInsights(subscriptionId).list().stream()
                 .filter(entity -> StringUtils.equals(entity.getInstrumentationKey(), aiKey)).findFirst()
                 .orElseThrow(() -> new IOException(AzureMessageBundle
                         .message("appService.logStreaming.error.aiNotFound", subscriptionId).toString()));
@@ -85,12 +86,12 @@ public class FunctionAppLogStreamingHandler {
         AzureTaskManager.getInstance().runLater(() -> PluginUtil.openLinkInBrowser(aiUrl));
     }
 
-    private static String getApplicationInsightLiveMetricsUrl(ApplicationInsightsEntity target, String portalUrl)
+    private static String getApplicationInsightLiveMetricsUrl(ApplicationInsight target, String portalUrl)
             throws UnsupportedEncodingException {
         final JsonObject componentObject = new JsonObject();
         componentObject.addProperty("Name", target.getName());
         componentObject.addProperty("SubscriptionId", target.getSubscriptionId());
-        componentObject.addProperty("ResourceGroup", target.getResourceGroup());
+        componentObject.addProperty("ResourceGroup", target.getResourceGroupName());
         final String componentId = URLEncoder.encode(componentObject.toString(), "utf-8");
         final String aiResourceId = URLEncoder.encode(target.getId(), "utf-8");
         return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);

@@ -5,12 +5,11 @@
 
 package com.microsoft.azuretools.core.applicationinsights;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -19,7 +18,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -38,7 +36,7 @@ public class ApplicationInsightsResourceRegistryEclipse {
             if (sub.isSelected()) {
                 try {
                     // fetch resources available for particular subscription
-                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub.getId());
+                    List<ApplicationInsight> resourceList = AzureSDKManager.getInsightsResources(sub.getId());
 
                     // Removal logic
                     List<ApplicationInsightsResource> registryList = ApplicationInsightsResourceRegistry
@@ -69,11 +67,11 @@ public class ApplicationInsightsResourceRegistryEclipse {
                     // Addition logic
                     List<ApplicationInsightsResource> list = ApplicationInsightsResourceRegistry
                             .getAppInsightsResrcList();
-                    for (ApplicationInsightsComponent resource : resourceList) {
+                    for (ApplicationInsight resource : resourceList) {
                         ApplicationInsightsResource resourceToAdd = new ApplicationInsightsResource(resource, sub, true);
                         if (list.contains(resourceToAdd)) {
                             int index = ApplicationInsightsResourceRegistry
-                                    .getResourceIndexAsPerKey(resource.instrumentationKey());
+                                    .getResourceIndexAsPerKey(resource.getInstrumentationKey());
                             ApplicationInsightsResource objectFromRegistry = list.get(index);
                             if (!objectFromRegistry.isImported()) {
                                 ApplicationInsightsResourceRegistry.getAppInsightsResrcList().set(index, resourceToAdd);

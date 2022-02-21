@@ -10,8 +10,8 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
@@ -186,8 +186,8 @@ public enum AppServiceStreamingLogManager {
                 throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }
             final String subscriptionId = functionApp.id();
-            final List<ApplicationInsightsEntity> insightsResources = Azure.az(ApplicationInsights.class).subscription(subscriptionId).list();
-            final ApplicationInsightsEntity target = insightsResources
+            final List<ApplicationInsight> insightsResources = Azure.az(AzureApplicationInsights.class).applicationInsights(subscriptionId).list();
+            final ApplicationInsight target = insightsResources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
                     .findFirst()
@@ -196,11 +196,11 @@ public enum AppServiceStreamingLogManager {
             BrowserUtil.browse(aiUrl);
         }
 
-        private String getApplicationInsightLiveMetricsUrl(ApplicationInsightsEntity target, String portalUrl) {
+        private String getApplicationInsightLiveMetricsUrl(ApplicationInsight target, String portalUrl) {
             final JsonObject componentObject = new JsonObject();
             componentObject.addProperty("Name", target.getName());
             componentObject.addProperty("SubscriptionId", target.getSubscriptionId());
-            componentObject.addProperty("ResourceGroup", target.getResourceGroup());
+            componentObject.addProperty("ResourceGroup", target.getResourceGroupName());
             final String componentId = URLEncoder.encode(componentObject.toString(), StandardCharsets.UTF_8);
             final String aiResourceId = URLEncoder.encode(target.getId(), StandardCharsets.UTF_8);
             return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);

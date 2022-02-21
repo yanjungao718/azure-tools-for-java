@@ -5,10 +5,12 @@
 
 package com.microsoft.applicationinsights.preference;
 
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import java.io.Serializable;
+import java.util.Objects;
+
 /**
  * Model class to store application insights resource data.
  */
@@ -27,14 +29,14 @@ public class ApplicationInsightsResource implements Serializable, Comparable<App
         super();
     }
 
-    public ApplicationInsightsResource(ApplicationInsightsComponent component, Subscription subscription, boolean imported) {
+    public ApplicationInsightsResource(ApplicationInsight component, Subscription subscription, boolean imported) {
         super();
-        this.resourceName = component.name();
-        this.instrumentationKey = component.instrumentationKey();
+        this.resourceName = component.getName();
+        this.instrumentationKey = component.getInstrumentationKey();
         this.subscriptionName = subscription.getName();
         this.subscriptionId = subscription.getId();
-        this.location = component.regionName();
-        this.resourceGroup = component.resourceGroupName();
+        this.location = component.getRegion().getName();
+        this.resourceGroup = component.getResourceGroupName();
         this.imported = imported;
     }
 
@@ -120,6 +122,11 @@ public class ApplicationInsightsResource implements Serializable, Comparable<App
         String key = resource.getInstrumentationKey();
         boolean value = instrumentationKey != null && instrumentationKey.equals(key);
         return value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(resourceName, instrumentationKey, subscriptionName, subscriptionId, location, resourceGroup, imported);
     }
 
     @Override

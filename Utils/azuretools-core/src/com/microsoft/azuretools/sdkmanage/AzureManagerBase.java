@@ -9,7 +9,6 @@ import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -62,7 +61,6 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
-    protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
     protected static final Settings settings = new Settings();
 
@@ -154,19 +152,6 @@ public abstract class AzureManagerBase implements AzureManager {
         return azure;
     }
 
-    public @Nullable InsightsManager getInsightsManager(String sid) {
-        if (!isSignedIn()) {
-            return null;
-        }
-        return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
-            // Register insights namespace first
-            final Azure azure = getAzure(sid);
-            azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
-            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
-            return authApplicationInsights(sid, tid);
-        });
-    }
-
     @Override
     public SubscriptionManager getSubscriptionManager() {
         return this.subscriptionManager;
@@ -245,18 +230,6 @@ public abstract class AzureManagerBase implements AzureManager {
             Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
         });
         return configurable.authenticate(credentials);
-    }
-
-    protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
-        final AzureTokenCredentials credentials = getCredentials(tenantId);
-        final InsightsManager.Configurable configurable = buildAzureManager(InsightsManager.configure())
-            .withInterceptor(new TelemetryInterceptor());
-        Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
-            configurable.withProxy(proxy);
-            Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);
-        });
-
-        return configurable.authenticate(credentials, subscriptionId);
     }
 
     private static Proxy createProxyFromConfig() {

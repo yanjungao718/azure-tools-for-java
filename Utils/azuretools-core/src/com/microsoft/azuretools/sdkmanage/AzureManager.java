@@ -6,7 +6,6 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.PromptBehavior;
@@ -22,8 +21,6 @@ public interface AzureManager {
     Azure getAzure(String sid);
 
     Subscription getSubscriptionById(String sid);
-
-    InsightsManager getInsightsManager(String sid);
 
     List<Subscription> getSubscriptions();
 
