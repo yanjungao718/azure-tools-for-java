@@ -29,6 +29,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -41,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,7 +66,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         final List<String> exePostfix = Arrays.asList("exe|bat|cmd|sh|bin|run".split("\\|"));
         this.fileFilter = file -> Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive()) &&
             (file.getExtension() == null || exePostfix.contains(file.isCaseSensitive() ? file.getExtension() : StringUtils.lowerCase(file.getExtension())));
-        AzureTaskManager.getInstance().runOnPooledThread(this::reset);
+        this.reset();
         if (includeSettings) {
             this.setRenderer(SimpleListCellRenderer.create((label, value, index) -> {
                 label.setText(value);
@@ -100,26 +102,28 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         openSettingsAction.getHandler(null, event).accept(null, event); // Open Azure Settings Panel sync
     }
 
+    private String getDefaultFuncPath() {
+        final String functionCoreToolsPath = Azure.az().config().getFunctionCoreToolsPath();
+        return StringUtils.isNotEmpty(functionCoreToolsPath) && Files.exists(Path.of(functionCoreToolsPath)) ? functionCoreToolsPath : null;
+    }
+
+    @Nonnull
+    @Override
+    protected List<? extends String> loadItems() throws Exception {
+        final List<String> result = new ArrayList<>();
+        result.addAll(loadHistory());
+        result.addAll(FunctionCliResolver.resolve());
+        result.add(getDefaultFuncPath());
+        result.add(includeSettings ? OPEN_AZURE_SETTINGS : null);
+        return result.stream().filter(Objects::nonNull).distinct().sorted().collect(Collectors.toList());
+    }
+
     public void reset() {
-        funcCoreToolsPathList.clear();
-        this.clear();
-        funcCoreToolsPathList.addAll(loadHistory());
-        funcCoreToolsPathList.addAll(FunctionCliResolver.resolve());
-
-        final String valueFromAzConfig = Azure.az().config().getFunctionCoreToolsPath();
-        if (StringUtils.isNotBlank(valueFromAzConfig) && Files.exists(Path.of(valueFromAzConfig))) {
-            funcCoreToolsPathList.add(valueFromAzConfig);
+        final String defaultFuncPath = getDefaultFuncPath();
+        if (StringUtils.isNotEmpty(defaultFuncPath)) {
+            this.setValue(defaultFuncPath);
         }
-        funcCoreToolsPathList.forEach(this::addItem);
-
-        if (includeSettings) {
-            this.addItem(OPEN_AZURE_SETTINGS);
-        }
-        if (StringUtils.isNotBlank(valueFromAzConfig)) {
-            this.setValue(valueFromAzConfig);
-        } else {
-            this.setSelectedIndex(-1);
-        }
+        this.refreshItems();
     }
 
     @Override
