@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.hdinsight.spark.common.log;
 
-import org.apache.log4j.Level;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -17,17 +15,18 @@ import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 
 public class SparkLogUtils {
-    public static final List<Level> log4jAllLevels = Arrays.asList(
-            Level.FATAL,
-            Level.ERROR,
-            Level.WARN,
-            Level.INFO,
-            Level.DEBUG,
-            Level.TRACE);
+    public static final List<String> log4jAllLevels = Arrays.asList(
+            "FATAL",
+            "ERROR",
+            "WARN",
+            "INFO",
+            "DEBUG",
+            "TRACE");
 
     public static final Pattern log4jLevelRegex = Pattern.compile(
             "\\b(?<level>"
-                    + log4jAllLevels.stream().map(Level::toString).collect(Collectors.joining("|")) + ")\\b");
+                    + log4jAllLevels.stream().collect(Collectors.joining("|")) + ")\\b",
+            Pattern.CASE_INSENSITIVE);
 
     public static SparkLogLine mapTypedMessageByLog4jLevels(
             final SparkLogLine previous,
@@ -37,21 +36,18 @@ public class SparkLogUtils {
             final Matcher matcher = log4jLevelRegex.matcher(msg);
 
             if (matcher.find()) {
-                final Level level = Level.toLevel(matcher.group("level"));
-                if (level.isGreaterOrEqual(Level.ERROR)) {
-                    return new SparkLogLine(current.getLogSource(), Error, msg);
+                final String level = matcher.group("level");
+                switch (level.toUpperCase()) {
+                    case "FATAL": case "ERROR":
+                        return new SparkLogLine(current.getLogSource(), Error, msg);
+                    case "WARN":
+                        return new SparkLogLine(current.getLogSource(), Warning, msg);
+                    case "INFO":
+                        return new SparkLogLine(current.getLogSource(), Info, msg);
+                    // Keep the current level by default
+                    default:
+                        return current;
                 }
-
-                if (level == Level.WARN) {
-                    return new SparkLogLine(current.getLogSource(), Warning, msg);
-                }
-
-                if (level == Level.INFO) {
-                    return new SparkLogLine(current.getLogSource(), Info, msg);
-                }
-
-                // Keep the current level
-                return current;
             }
 
             // No level keyword found, use the previous's level
