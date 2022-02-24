@@ -56,6 +56,11 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     }
 
     @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
     public String getBuilderId() {
         return "HDInsight";
     }
