@@ -81,13 +81,13 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func.trigger", ((FunctionEntity) s).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionEntity);
+                .enabled(s -> s instanceof FunctionEntity && !AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
         am.registerAction(TRIGGER_FUNCTION, new Action<>(triggerView));
 
         final Consumer<FunctionEntity> triggerInBrowserHandler = entity -> new TriggerFunctionInBrowserAction(entity).trigger();
         final ActionView.Builder triggerInBrowserView = new ActionView.Builder("Trigger Function In Browser")
-                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func_http.app", ((FunctionEntity) s).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionEntity && TriggerFunctionInBrowserAction.isApplyFor((FunctionEntity) s));
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func_in_browser.trigger", ((FunctionEntity) s).getName())).orElse(null))
+                .enabled(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
         am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(triggerInBrowserHandler, triggerInBrowserView));
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")

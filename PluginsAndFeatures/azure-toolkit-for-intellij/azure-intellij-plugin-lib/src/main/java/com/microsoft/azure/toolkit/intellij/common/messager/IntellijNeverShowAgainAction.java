@@ -11,13 +11,13 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
 @Setter
-@Log4j2
+@Slf4j
 public class IntellijNeverShowAgainAction extends NotificationAction {
 
     public static final String ID = "AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain";

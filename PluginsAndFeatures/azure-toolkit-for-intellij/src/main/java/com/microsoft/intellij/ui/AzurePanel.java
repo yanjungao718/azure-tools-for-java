@@ -23,7 +23,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,7 +38,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 
-@Log4j2
+@Slf4j
 public class AzurePanel implements AzureAbstractConfigurablePanel {
     private static final String DISPLAY_NAME = "Azure";
     private JPanel contentPane;

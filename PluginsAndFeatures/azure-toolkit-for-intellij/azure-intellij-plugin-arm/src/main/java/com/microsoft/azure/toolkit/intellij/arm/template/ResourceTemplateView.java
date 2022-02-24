@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.arm.template;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.intellij.lang.Language;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -33,6 +35,7 @@ import com.microsoft.intellij.ui.util.UIUtils;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDeployment> {
 
@@ -143,14 +146,20 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     }
 
     public String getTemplate() {
-        return ((PsiAwareTextEditorImpl) templateEditor).getEditor().getDocument().getText();
+        return Optional.of(((PsiAwareTextEditorImpl) templateEditor).getEditor())
+            .map(Editor::getDocument)
+            .map(Document::getText).orElse("");
     }
 
     public String getParameters() {
-        final String parameters = ((PsiAwareTextEditorImpl) parameterEditor).getEditor().getDocument().getText();
         final Gson gson = new Gson();
-        final JsonElement parametersElement = gson.fromJson(parameters, JsonElement.class).getAsJsonObject().get("parameters");
-        return parametersElement == null ? parameters : parametersElement.toString();
+        return Optional.of(((PsiAwareTextEditorImpl) parameterEditor).getEditor())
+            .map(Editor::getDocument)
+            .map(Document::getText)
+            .map(parameters -> {
+                final JsonElement parametersElement = gson.fromJson(parameters, JsonElement.class).getAsJsonObject().get("parameters");
+                return parametersElement == null ? parameters : parametersElement.toString();
+            }).orElse("");
     }
 
     @Nonnull

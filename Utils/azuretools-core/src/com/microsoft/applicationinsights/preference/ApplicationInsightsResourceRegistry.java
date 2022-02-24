@@ -5,10 +5,14 @@
 
 package com.microsoft.applicationinsights.preference;
 
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class ApplicationInsightsResourceRegistry {
     /**
@@ -192,9 +196,9 @@ public class ApplicationInsightsResourceRegistry {
      * @return
      */
     public static List<ApplicationInsightsResource> prepareAppResListFromRes(
-            List<ApplicationInsightsComponent> resourceList, Subscription sub) {
+            List<ApplicationInsight> resourceList, Subscription sub) {
         List<ApplicationInsightsResource> list = new ArrayList<ApplicationInsightsResource>();
-        for (ApplicationInsightsComponent resource : resourceList) {
+        for (ApplicationInsight resource : resourceList) {
             ApplicationInsightsResource resourceToAdd = new ApplicationInsightsResource(resource, sub, true);
             list.add(resourceToAdd);
         }

@@ -144,7 +144,7 @@ public class Tree extends SimpleTree implements DataProvider {
 
             private IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(ActionGroup actions) {
                 final ActionManager am = ActionManager.getInstance();
-                if (actions.getOrigin() != null) {
+                if (actions.getOrigin() instanceof IntellijAzureActionManager.ActionGroupWrapper) {
                     return (IntellijAzureActionManager.ActionGroupWrapper) actions.getOrigin();
                 }
                 return new IntellijAzureActionManager.ActionGroupWrapper(actions);

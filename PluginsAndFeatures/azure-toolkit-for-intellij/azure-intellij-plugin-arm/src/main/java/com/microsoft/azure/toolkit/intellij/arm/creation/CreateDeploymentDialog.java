@@ -23,8 +23,10 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
@@ -40,6 +42,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Objects;
 
 public class CreateDeploymentDialog extends AzureDialogWrapper {
@@ -121,42 +124,63 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
         final Subscription subs = (Subscription) subscriptionCombobox.getSelectedItem();
         final String parametersPath = parametersTextField.getText();
         final String templatePath = templateTextField.getText();
-        final Object selectedResourceGroup = resourceGroupCombobox.getSelectedItem();
+        final IAzureMessager messager = AzureMessager.getMessager();
         AzureTaskManager.getInstance().runInBackground(title, false, () -> {
             if (Objects.isNull(subs)) {
+                // TODO: migrate to AzureFormInput.validate
+                messager.error("\"Subscription\" is required to create a deployment.");
                 return;
             }
             final ResourceGroup group;
             if (createNewRgButton.isSelected()) {
                 final String rgName = rgNameTextFiled.getText();
+                if (StringUtils.isEmpty(rgName)) {
+                    // TODO: migrate to AzureFormInput.validate
+                    messager.error("\"name\" is required to create a resource group.");
+                    return;
+                }
                 final Region region = (Region) regionCb.getSelectedItem();
                 group = Azure.az(AzureResources.class).groups(subs.getId()).create(rgName, rgName);
                 ((ResourceGroupDraft) group).setRegion(region);
             } else {
+                final Object selectedResourceGroup = resourceGroupCombobox.getSelectedItem();
                 if (Objects.isNull(selectedResourceGroup)) {
+                    // TODO: migrate to AzureFormInput.validate
+                    messager.error("\"Resource group\" is required to create a deployment.");
                     return;
                 }
                 group = (ResourceGroup) selectedResourceGroup;
             }
             try {
-                final String template = IOUtils.toString(new FileReader(templatePath));
-                String parameters = "{}";
-                if (!StringUtils.isEmpty(parametersPath)) {
-                    final String origin = IOUtils.toString(new FileReader(parametersPath));
-                    final Gson gson = new Gson();
-                    final JsonElement parametersElement = gson.fromJson(origin, JsonElement.class).getAsJsonObject().get("parameters");
-                    parameters = parametersElement == null ? origin : parametersElement.toString();
+                if (StringUtils.isBlank(templatePath)) {
+                    // TODO: migrate to AzureFormInput.validate
+                    messager.error("\"Resource Template\" is required to create a deployment.");
+                    return;
                 }
-                final ResourceDeploymentDraft draft = group.deployments().create(deploymentName, group.getName());
-                draft.setTemplateAsJson(template);
-                draft.setParametersAsJson(parameters);
-                draft.commit();
-                AzureMessager.getMessager().success(NOTIFY_CREATE_DEPLOYMENT_SUCCESS);
+                createDeployment(deploymentName, parametersPath, templatePath, messager, group);
             } catch (final Throwable e) {
                 throw new AzureToolkitRuntimeException(e);
             }
         });
-        close(DialogWrapper.OK_EXIT_CODE, true);
+    }
+
+    @AzureOperation(name = "arm.create_deployment.deployment", params = {"deploymentName"}, type = AzureOperation.Type.ACTION)
+    private void createDeployment(String deploymentName, String parametersPath, String templatePath, IAzureMessager messager, ResourceGroup group)
+        throws IOException {
+        final String template = IOUtils.toString(new FileReader(templatePath));
+        String parameters = "{}";
+        if (!StringUtils.isEmpty(parametersPath)) {
+            final String origin = IOUtils.toString(new FileReader(parametersPath));
+            final Gson gson = new Gson();
+            final JsonElement parametersElement = gson.fromJson(origin, JsonElement.class).getAsJsonObject().get("parameters");
+            parameters = parametersElement == null ? origin : parametersElement.toString();
+        }
+        AzureTaskManager.getInstance().runLater(() -> close(DialogWrapper.OK_EXIT_CODE, true));
+        final ResourceDeploymentDraft draft = group.deployments().create(deploymentName, group.getName());
+        draft.setTemplateAsJson(template);
+        draft.setParametersAsJson(parameters);
+        draft.commit();
+        messager.success(NOTIFY_CREATE_DEPLOYMENT_SUCCESS);
     }
 
     private void setResourceGroup(@Nullable ResourceGroup group) {

@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfi
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.CreateApplicationInsightsDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
+import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections.ListUtils;
@@ -60,7 +60,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
                 getItems().stream().filter(ApplicationInsightsConfig::isNewCreate).collect(Collectors.toList());
         final List<ApplicationInsightsConfig> existingItems =
                 subscription == null ? Collections.emptyList() :
-                        Azure.az(ApplicationInsights.class).list().stream()
+                        Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).list().stream()
                                 .map(instance -> new ApplicationInsightsConfig(instance.getName(), instance.getInstrumentationKey()))
                                 .collect(Collectors.toList());
         return ListUtils.union(newItems, existingItems);

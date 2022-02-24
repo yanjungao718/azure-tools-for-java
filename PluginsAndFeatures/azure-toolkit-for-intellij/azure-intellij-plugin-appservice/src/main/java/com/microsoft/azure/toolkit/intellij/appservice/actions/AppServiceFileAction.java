@@ -38,6 +38,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -92,6 +93,10 @@ public class AppServiceFileAction {
             }
             indicator.setText2("Loading file content");
             final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
+            if (target.getSize() > 10 * FileUtils.ONE_MB) {
+                AzureTaskManager.getInstance().runLater(() -> Messages.showWarningDialog(failure, "Open File"));
+                return;
+            }
             appService
                     .getFileContent(file.getPath())
                     .doOnComplete(() -> AzureTaskManager.getInstance().runLater(() -> {

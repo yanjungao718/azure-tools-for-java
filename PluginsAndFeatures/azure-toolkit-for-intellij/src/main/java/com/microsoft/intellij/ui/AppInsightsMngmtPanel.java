@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTable
 import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTableElements;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -160,7 +160,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
             if (sub.isSelected()) {
                 try {
                     // fetch resources available for particular subscription
-                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub.getId());
+                    List<ApplicationInsight> resourceList = AzureSDKManager.getInsightsResources(sub.getId());
                     // Removal logic
                     List<ApplicationInsightsResource> importedList = ApplicationInsightsResourceRegistry.prepareAppResListFromRes(resourceList, sub);
                     // Addition logic

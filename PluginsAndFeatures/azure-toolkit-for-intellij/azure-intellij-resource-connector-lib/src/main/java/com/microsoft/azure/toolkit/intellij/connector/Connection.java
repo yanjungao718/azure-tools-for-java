@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -83,17 +84,22 @@ public class Connection<R, C> {
      */
     @AzureOperation(name = "connector.prepare_before_run", type = AzureOperation.Type.ACTION)
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
-        this.env = this.resource.initEnv(configuration.getProject()).entrySet().stream()
+        try {
+            this.env = this.resource.initEnv(configuration.getProject()).entrySet().stream()
                 .collect(Collectors.toMap(
-                        e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()),
-                        Map.Entry::getValue));
-        if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
-            final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
-            final Map<String, String> settings = Optional.ofNullable(webAppConfiguration.getApplicationSettings()).orElse(new HashMap<>());
-            settings.putAll(this.env);
-            webAppConfiguration.setApplicationSettings(settings);
+                    e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()),
+                    Map.Entry::getValue));
+            if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
+                final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
+                final Map<String, String> settings = Optional.ofNullable(webAppConfiguration.getApplicationSettings()).orElse(new HashMap<>());
+                settings.putAll(this.env);
+                webAppConfiguration.setApplicationSettings(settings);
+            }
+            return true;
+        } catch (final Throwable e) {
+            AzureMessager.getMessager().error(e);
+            return false;
         }
-        return true;
     }
 
     /**
