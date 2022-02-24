@@ -47,6 +47,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,12 +136,8 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     private void setSubscriptions() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        sdl.sort((sub1, sub2) -> {
-            if (sub1.isSelected() != sub2.isSelected()) {
-                return sub1.isSelected() ? -1 : 0;
-            }
-            return StringUtils.compareIgnoreCase(sub1.getSubscriptionName(), sub2.getSubscriptionName());
-        });
+        sdl.sort((sub1, sub2) -> StringUtils.compareIgnoreCase(sub1.getSubscriptionName(), sub2.getSubscriptionName()));
+        sdl.sort(Comparator.comparing(SubscriptionDetail::isSelected));
         for (SubscriptionDetail sd : sdl) {
             model.addRow(new Object[]{sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
         }
