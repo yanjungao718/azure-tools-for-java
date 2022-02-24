@@ -135,7 +135,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     private void setSubscriptions() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         sdl.sort((sub1, sub2) -> StringUtils.compareIgnoreCase(sub1.getSubscriptionName(), sub2.getSubscriptionName()));
-        sdl.sort(Comparator.comparing(SubscriptionDetail::isSelected));
+        sdl.sort(Comparator.comparing(SubscriptionDetail::isSelected).reversed());
         for (SubscriptionDetail sd : sdl) {
             model.addRow(new Object[]{sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
         }
