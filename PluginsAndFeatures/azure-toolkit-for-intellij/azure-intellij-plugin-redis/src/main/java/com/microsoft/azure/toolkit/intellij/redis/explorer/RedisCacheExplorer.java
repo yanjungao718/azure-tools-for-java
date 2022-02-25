@@ -394,7 +394,7 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
 
     @Override
     protected void onResourceDeleted() {
-        IntellijShowPropertiesViewAction.closePropertiesView(this.redis, project);
+        this.manager.closeEditor(this.redis, project);
         final String message = String.format("Close redis cache explorer of \"%s\" because the resource is deleted.", this.redis.getName());
         AzureMessager.getMessager().warning(message);
     }
