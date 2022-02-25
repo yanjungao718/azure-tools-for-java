@@ -23,11 +23,13 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
     private final T resource;
     private final TailingDebouncer debouncer;
     protected final Project project;
+    protected final AzureResourceEditorViewManager manager;
 
     public AzResourcePropertiesEditor(@Nonnull final VirtualFile virtualFile, @Nonnull T resource, @Nonnull final Project project) {
         super(virtualFile);
         this.resource = resource;
         this.project = project;
+        this.manager = virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_EDITOR_MANAGER_KEY);
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("resource.status_changed.resource", listener);
         this.debouncer = new TailingDebouncer(this::rerender, 500);
@@ -52,7 +54,7 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
     }
 
     protected void onResourceDeleted() {
-        IntellijShowPropertiesViewAction.closePropertiesView(resource, project);
+        this.manager.closeEditor(resource, project);
         final String message = String.format("Close properties view of \"%s\" because the resource is deleted.", this.resource.getName());
         AzureMessager.getMessager().warning(message);
     }
