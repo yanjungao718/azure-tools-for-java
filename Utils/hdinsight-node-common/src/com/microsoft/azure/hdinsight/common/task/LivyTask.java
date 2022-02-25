@@ -19,13 +19,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.log4j.Logger;
 
 import java.nio.charset.Charset;
 
 public class LivyTask extends Task<String> {
-    private static Logger LOG = Logger.getLogger(LivyTask.class);
-
     protected final IClusterDetail clusterDetail;
     protected final String path;
     private final CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
