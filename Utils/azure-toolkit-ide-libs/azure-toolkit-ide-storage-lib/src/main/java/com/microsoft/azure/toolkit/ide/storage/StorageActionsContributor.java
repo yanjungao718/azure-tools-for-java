@@ -41,18 +41,19 @@ public class StorageActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.SERVICE_REFRESH,
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup accountActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                "---",
-                ResourceCommonActionsContributor.CONNECT,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            "---",
+            ResourceCommonActionsContributor.CONNECT,
+            "---",
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
     }

@@ -42,25 +42,27 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.SERVICE_REFRESH,
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup functionAppActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                ResourceCommonActionsContributor.DEPLOY,
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                AppServiceActionsContributor.START_STREAM_LOG,
-                AppServiceActionsContributor.STOP_STREAM_LOG
-                // todo: add profile actions like log streaming
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            "---",
+            ResourceCommonActionsContributor.DEPLOY,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            AppServiceActionsContributor.START_STREAM_LOG,
+            AppServiceActionsContributor.STOP_STREAM_LOG
+            // todo: add profile actions like log streaming
         );
         am.registerGroup(FUNCTION_APP_ACTIONS, functionAppActionGroup);
 
