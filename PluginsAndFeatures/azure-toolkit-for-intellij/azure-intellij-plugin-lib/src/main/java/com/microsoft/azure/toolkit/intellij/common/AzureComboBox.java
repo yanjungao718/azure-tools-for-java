@@ -116,6 +116,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         return ((T) this.getSelectedItem());
     }
 
+    public Object getRawValue() {
+        return this.value;
+    }
+
     @Override
     public void setValue(final T val) {
         this.setValue(val, null);
