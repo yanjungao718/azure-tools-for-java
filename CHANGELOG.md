@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.62.0](#3620)
   - [3.61.1](#3611)
   - [3.61.0](#3610)
   - [3.60.2](#3602)
@@ -79,6 +80,25 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.62.0
+### Added
+- Azure Explorer: a `Create` action (link to portal) is added on `Spring Cloud` node's context menu to create Spring Cloud service on portal.
+- Add support for IntelliJ 2022.1 EAP。
+
+### Changed
+- You need to confirm before deleting any Azure resource.
+- App Service: files can be opened in editor by double clicking.
+- Azure Explorer: most context menu actions of Azure Explorer nodes can be triggered via shortcuts.
+- Functions: port of Azure Functions Core tools can be customized when run Function project.
+- ARM & Application Insights: migrate to Track2 SDK.
+
+### Fixed
+- [#6370](https://github.com/microsoft/azure-tools-for-java/issues/6370): Opening IntelliJ IDEA settings takes 60+ seconds with Azure Toolkit plug-in enabled.
+- [#6374](https://github.com/microsoft/azure-tools-for-java/issues/6374): Azure Functions local process not killed properly on Mac/IntelliJ.
+- The pricing tier of redis is displayed as Basic C0 no matter what you choose.
+- NPE when show properties editor of a deleting MySQL/SQL Server/PostgreSQL server.
+- Azure CLI auth type is disabled even though user has signed-in in local Azure CLI.
 
 ## 3.61.1
 
