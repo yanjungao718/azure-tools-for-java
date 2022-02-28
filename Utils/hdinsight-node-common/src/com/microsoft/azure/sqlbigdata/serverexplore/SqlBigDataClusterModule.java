@@ -37,6 +37,13 @@ public class SqlBigDataClusterModule extends RefreshableNode implements ILogger 
     }
 
     @Override
+    protected boolean refreshEnabledWhenNotSignIn() {
+        // SQL Server big data cluster user should be accessible to their linked clusters
+        // when not sign in their Azure accounts
+        return true;
+    }
+
+    @Override
     protected void refreshItems() throws AzureCmdException {
         synchronized (this) {
             List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()

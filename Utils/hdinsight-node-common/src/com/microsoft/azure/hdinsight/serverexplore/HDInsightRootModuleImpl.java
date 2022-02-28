@@ -47,6 +47,13 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
     }
 
     @Override
+    protected boolean refreshEnabledWhenNotSignIn() {
+        // HDInsight cluster users should be accessible to their linked clusters
+        // when not sign in their Azure accounts
+        return true;
+    }
+
+    @Override
     protected void refreshItems() throws AzureCmdException {
         synchronized (this) {
             ClusterManagerEx.getInstance().getCachedClusters().stream()
