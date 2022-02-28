@@ -25,12 +25,31 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.61.1</h3>
+        <h3>3.62.0</h3>
+        <h4>Added</h4>
+        <ul>
+            <li>Add support for IntelliJ 2022.1 EAP.</li>
+            <li>Azure Explorer: a `Create` action (link to portal) is added on `Spring Cloud` node's context menu to create Spring Cloud service on portal.</li>
+        </ul>
+        <h4>Changed</h4>
+        <ul>
+            <li>You need to confirm before deleting any Azure resource.</li>
+            <li>App Service: files can be opened in editor by double clicking.</li>
+            <li>Azure Explorer: most context menu actions of Azure Explorer nodes can be triggered via shortcuts.</li>
+            <li>Functions: port of Azure Functions Core tools can be customized when run Function project.</li>
+            <li>ARM & Application Insights: migrate to Track2 SDK.</li>
+        </ul>
         <h4>Fixed</h4>
         <ul>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6364">#6364</a>: [IntelliJ][ReportedByUser] Uncaught Exception
-          com.intellij.ide.ui.UITheme$1@5b3f3ba0 cannot patch icon path java.lang.StringIndexOutOfBoundsException: String index out of range: 0</li>
-        <ul>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6370">#6370</a>: Opening IntelliJ IDEA settings takes 60+ seconds with Azure Toolkit
+                plug-in enabled.
+            </li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6374">#6374</a>: Azure Functions local process not killed properly on Mac/IntelliJ.
+            </li>
+            <li>The pricing tier of redis is displayed as Basic C0 no matter what you choose.</li>
+            <li>NPE when show properties editor of a deleting MySQL/SQL Server/PostgreSQL server.</li>
+            <li>Azure CLI auth type is disabled even though user has signed-in in local Azure CLI.</li>
+        </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
