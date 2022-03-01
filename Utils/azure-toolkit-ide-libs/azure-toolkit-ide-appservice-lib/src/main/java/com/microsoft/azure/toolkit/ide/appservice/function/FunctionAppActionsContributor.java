@@ -35,8 +35,8 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("actions.function.function.trigger_in_browser");
-    public static final Action.Id<Void> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
-    public static final Action.Id<Void> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
+    public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
+    public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
 
     @Override
@@ -94,13 +94,13 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
                 .title(s -> title("function.download_core_tools"));
-        final Action<Void> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
+        final Action<Object> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
         downloadCliAction.setAuthRequired(false);
         am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
                 .title(s -> title("function.config_core_tools"));
-        final Action<Void> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
+        final Action<Object> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
         configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
     }
