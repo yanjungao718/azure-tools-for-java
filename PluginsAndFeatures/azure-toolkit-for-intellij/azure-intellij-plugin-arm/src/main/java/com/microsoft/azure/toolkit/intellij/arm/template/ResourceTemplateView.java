@@ -15,6 +15,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorProvider;
+import com.intellij.openapi.fileEditor.impl.text.TextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -31,6 +32,7 @@ import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeploymentDraft;
 import com.microsoft.intellij.ui.util.UIUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -146,20 +148,24 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     }
 
     public String getTemplate() {
-        return Optional.of(((PsiAwareTextEditorImpl) templateEditor).getEditor())
+        return Optional.ofNullable((PsiAwareTextEditorImpl) templateEditor)
+            .map(TextEditorImpl::getEditor)
             .map(Editor::getDocument)
             .map(Document::getText).orElse("");
     }
 
     public String getParameters() {
         final Gson gson = new Gson();
-        return Optional.of(((PsiAwareTextEditorImpl) parameterEditor).getEditor())
+        return Optional.ofNullable((PsiAwareTextEditorImpl) parameterEditor)
+            .map(TextEditorImpl::getEditor)
             .map(Editor::getDocument)
             .map(Document::getText)
-            .map(parameters -> {
-                final JsonElement parametersElement = gson.fromJson(parameters, JsonElement.class).getAsJsonObject().get("parameters");
-                return parametersElement == null ? parameters : parametersElement.toString();
-            }).orElse("");
+            .filter(StringUtils::isNotBlank)
+            .map(parameters -> Optional.ofNullable(gson.fromJson(parameters, JsonElement.class))
+                .map(JsonElement::getAsJsonObject)
+                .map(o -> o.get("parameters"))
+                .map(JsonElement::toString).orElse(parameters))
+            .orElse("");
     }
 
     @Nonnull
