@@ -11,7 +11,6 @@ import com.intellij.execution.ExecutorRegistry;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
-import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
@@ -106,14 +105,12 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private void launchDebugger(final Project project, int debugPort) {
         final Runnable runnable = () -> {
             final RunManagerImpl manager = new RunManagerImpl(project);
-            final ConfigurationFactory configFactory = RemoteConfigurationType.getInstance().getConfigurationFactories()[0];
-            final RemoteConfiguration remoteConfig = new RemoteConfiguration(project, configFactory);
+            final RemoteConfiguration remoteConfig = (RemoteConfiguration) RemoteConfigurationType.getInstance().createTemplateConfiguration(project);
             remoteConfig.PORT = String.valueOf(debugPort);
             remoteConfig.HOST = "localhost";
             remoteConfig.USE_SOCKET_TRANSPORT = true;
             remoteConfig.SERVER_MODE = false;
             remoteConfig.setName("azure functions");
-
             final RunnerAndConfigurationSettings configuration = new RunnerAndConfigurationSettingsImpl(manager, remoteConfig, false);
             manager.setTemporaryConfiguration(configuration);
             ExecutionUtil.runConfiguration(configuration, ExecutorRegistry.getInstance().getExecutorById(ToolWindowId.DEBUG));
