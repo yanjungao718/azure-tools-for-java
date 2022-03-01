@@ -69,6 +69,12 @@ public abstract class RefreshableNode extends Node {
         }
     }
 
+    // Sub-classes are expected to override this method if they wish to refresh items when user
+    // doesn't sign in. By default, we disable node refresh when user doesn't sign in.
+    protected boolean refreshEnabledWhenNotSignIn() {
+        return false;
+    }
+
     // Sub-classes are expected to override this method if they wish to
     // refresh items synchronously. The default implementation does nothing.
     protected abstract void refreshItems() throws AzureCmdException;
@@ -82,7 +88,9 @@ public abstract class RefreshableNode extends Node {
             setLoading(true);
             try {
                 removeAllChildNodes();
-                if (AuthMethodManager.getInstance().isSignedIn() || this instanceof AzureModule) {
+                if (AuthMethodManager.getInstance().isSignedIn()
+                        || this instanceof AzureModule
+                        || refreshEnabledWhenNotSignIn()) {
                     if (forceRefresh) {
                         refreshFromAzure();
                     }
