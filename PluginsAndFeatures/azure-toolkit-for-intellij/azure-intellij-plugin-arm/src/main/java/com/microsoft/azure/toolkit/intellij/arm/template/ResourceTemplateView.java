@@ -87,7 +87,7 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
             public void beforeFileClosed(@Nonnull FileEditorManager source, @Nonnull VirtualFile file) {
                 if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) && file.getName().equals(deployment.getName())) {
                     try {
-                        if (isModified() && UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
+                        if (deployment.exists() && isModified() && UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
                             apply();
                         }
                     } finally {
@@ -104,6 +104,9 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     }
 
     public synchronized void setData(ResourceDeployment deployment) {
+        if (!deployment.exists()) {
+            return;
+        }
         final GridConstraints constraints = new GridConstraints();
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setAnchor(GridConstraints.ANCHOR_WEST);
