@@ -150,6 +150,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         if (config.getRegion() != null) {
             regionComboBox.setValue(config.getRegion());
         }
+        confirmPasswordFieldInput.setValue("");
         security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAzureServiceAccessAllowed());
         security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isLocalMachineAccessAllowed());
     }

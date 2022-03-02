@@ -74,16 +74,16 @@ public class ArmActionsContributor implements IActionsContributor {
         am.registerGroup(RESOURCE_GROUP_ACTIONS, groupActionGroup);
 
         final ActionGroup deploymentActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-            ArmActionsContributor.EXPORT_TEMPLATE,
-            ArmActionsContributor.EXPORT_PARAMETER,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
             "---",
             ArmActionsContributor.EDIT,
             ArmActionsContributor.UPDATE,
             ResourceCommonActionsContributor.DELETE,
             "---",
-            ResourceCommonActionsContributor.SHOW_PROPERTIES,
-            ResourceCommonActionsContributor.REFRESH
+            ArmActionsContributor.EXPORT_TEMPLATE,
+            ArmActionsContributor.EXPORT_PARAMETER
         );
         am.registerGroup(RESOURCE_DEPLOYMENT_ACTIONS, deploymentActionGroup);
     }

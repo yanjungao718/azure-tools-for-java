@@ -51,7 +51,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiConsumer<Void, AnActionEvent> openSettingsHandler = (ignore, e) ->
+        final BiConsumer<Object, AnActionEvent> openSettingsHandler = (ignore, e) ->
             AzureTaskManager.getInstance().runAndWait(() ->
                 ShowSettingsUtil.getInstance().showSettingsDialog(Optional.ofNullable(e).map(AnActionEvent::getProject).orElse(null),
                     AzureConfigurable.AzureAbstractConfigurable.class));

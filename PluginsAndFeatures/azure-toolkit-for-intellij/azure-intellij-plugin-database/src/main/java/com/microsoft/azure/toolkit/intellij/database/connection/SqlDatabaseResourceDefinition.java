@@ -99,12 +99,12 @@ public abstract class SqlDatabaseResourceDefinition<T extends IDatabase> extends
     }
 
     @Override
-    public Resource<T> define(T resource) {
+    public Resource<T> define(@Nonnull T resource) {
         return new SqlDatabaseResource<>(resource, null, this);
     }
 
     @Override
-    public Resource<T> define(String dataId) {
+    public Resource<T> define(@Nonnull String dataId) {
         return new AzureServiceResource<>(getResource(dataId), this);
     }
 

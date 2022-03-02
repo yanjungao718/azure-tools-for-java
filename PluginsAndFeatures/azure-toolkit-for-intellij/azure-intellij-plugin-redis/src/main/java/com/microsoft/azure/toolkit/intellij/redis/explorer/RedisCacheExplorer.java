@@ -191,6 +191,7 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
 
     public void showContent(Pair<String, ArrayList<String[]>> val) {
         if (Objects.isNull(val)) {
+            setWidgetEnableStatus(true);
             return;
         }
         final String type = val.getKey();
