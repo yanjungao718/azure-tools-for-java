@@ -133,8 +133,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(DEPLOY, deployAction);
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
-            .title((s) -> AzureOperationBundle.title("common.open_azure_settings"))
-            .enabled(Objects::isNull);
+            .title((s) -> AzureOperationBundle.title("common.open_azure_settings"));
         am.registerAction(OPEN_AZURE_SETTINGS, new Action<>(openSettingsView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
