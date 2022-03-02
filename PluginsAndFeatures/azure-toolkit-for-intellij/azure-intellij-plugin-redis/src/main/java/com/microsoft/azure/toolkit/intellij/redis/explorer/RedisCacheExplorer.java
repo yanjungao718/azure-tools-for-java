@@ -351,7 +351,8 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
     }
 
     @Nullable
-    private static Pair<String, ArrayList<String[]>> getValueByKey(Jedis jedis, String key) {
+    private Pair<String, ArrayList<String[]>> getValueByKey(Jedis jedis, String key) {
+        jedis.select(cbDatabase.getSelectedIndex());
         final String type = jedis.type(key).toUpperCase();
         final ArrayList<String[]> columnData = new ArrayList<>();
         switch (type) {
