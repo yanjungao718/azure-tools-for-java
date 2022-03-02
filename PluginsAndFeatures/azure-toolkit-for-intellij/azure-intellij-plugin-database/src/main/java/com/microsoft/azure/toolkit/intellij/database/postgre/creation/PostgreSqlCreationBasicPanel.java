@@ -98,6 +98,7 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
         if (config.getAdminPassword() != null) {
             passwordField.setText(config.getAdminPassword());
         }
+        confirmPasswordFieldInput.setValue("");
     }
 
     @Override

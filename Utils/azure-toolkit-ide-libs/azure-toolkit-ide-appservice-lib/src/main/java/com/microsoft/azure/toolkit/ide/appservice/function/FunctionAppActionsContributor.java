@@ -35,32 +35,34 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("actions.function.function.trigger_in_browser");
-    public static final Action.Id<Void> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
-    public static final Action.Id<Void> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
+    public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
+    public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
 
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.SERVICE_REFRESH,
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup functionAppActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                ResourceCommonActionsContributor.DEPLOY,
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                AppServiceActionsContributor.START_STREAM_LOG,
-                AppServiceActionsContributor.STOP_STREAM_LOG
-                // todo: add profile actions like log streaming
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            "---",
+            ResourceCommonActionsContributor.DEPLOY,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            AppServiceActionsContributor.START_STREAM_LOG,
+            AppServiceActionsContributor.STOP_STREAM_LOG
+            // todo: add profile actions like log streaming
         );
         am.registerGroup(FUNCTION_APP_ACTIONS, functionAppActionGroup);
 
@@ -92,13 +94,13 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
                 .title(s -> title("function.download_core_tools"));
-        final Action<Void> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
+        final Action<Object> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
         downloadCliAction.setAuthRequired(false);
         am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
                 .title(s -> title("function.config_core_tools"));
-        final Action<Void> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
+        final Action<Object> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
         configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
     }

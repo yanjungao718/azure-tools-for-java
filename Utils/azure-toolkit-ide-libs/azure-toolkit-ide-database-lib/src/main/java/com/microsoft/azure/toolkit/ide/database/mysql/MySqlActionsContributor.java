@@ -46,23 +46,23 @@ public class MySqlActionsContributor implements IActionsContributor {
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
             ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup serverActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
-            MySqlActionsContributor.OPEN_DATABASE_TOOL,
             "---",
+            MySqlActionsContributor.OPEN_DATABASE_TOOL,
             ResourceCommonActionsContributor.CONNECT,
             "---",
             ResourceCommonActionsContributor.START,
             ResourceCommonActionsContributor.STOP,
             ResourceCommonActionsContributor.RESTART,
-            ResourceCommonActionsContributor.DELETE,
-            "---",
-            ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(SERVER_ACTIONS, serverActionGroup);
     }
