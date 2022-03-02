@@ -45,21 +45,21 @@ public class SqlServerActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.SERVICE_REFRESH,
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup serverActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
-            SqlServerActionsContributor.OPEN_DATABASE_TOOL,
             "---",
+            SqlServerActionsContributor.OPEN_DATABASE_TOOL,
             ResourceCommonActionsContributor.CONNECT,
             "---",
-            ResourceCommonActionsContributor.DELETE,
-            "---",
-            ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(SERVER_ACTIONS, serverActionGroup);
     }

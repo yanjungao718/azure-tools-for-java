@@ -35,12 +35,12 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
     private final AzureServiceResource.Definition<T> definition;
     private T data;
 
-    public AzureServiceResource(T data, @Nonnull AzureServiceResource.Definition<T> definition) {
+    public AzureServiceResource(@Nonnull T data, @Nonnull AzureServiceResource.Definition<T> definition) {
         this(data.getId(), definition);
         this.data = data;
     }
 
-    public AzureServiceResource(String id, @Nonnull AzureServiceResource.Definition<T> definition) {
+    public AzureServiceResource(@Nonnull String id, @Nonnull AzureServiceResource.Definition<T> definition) {
         this.id = ResourceId.fromString(id);
         this.definition = definition;
     }

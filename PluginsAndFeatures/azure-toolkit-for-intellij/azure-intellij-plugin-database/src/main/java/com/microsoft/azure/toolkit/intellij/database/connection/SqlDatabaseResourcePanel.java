@@ -31,6 +31,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -205,8 +206,12 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
         };
     }
 
+    @Nullable
     public Resource<T> getValue() {
         final T database = databaseComboBox.getValue();
+        if (Objects.isNull(database)) {
+            return null;
+        }
         final Password password = new Password();
         password.password(inputPasswordField.getPassword());
         password.saveType(passwordSaveComboBox.getValue());
