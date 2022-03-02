@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -40,7 +41,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
     public static final Action.Id<AzService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
-    public static final Action.Id<Void> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
+    public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -133,7 +134,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
             .title((s) -> AzureOperationBundle.title("common.open_azure_settings"));
-        am.registerAction(OPEN_AZURE_SETTINGS, new Action<Void>(openSettingsView).setAuthRequired(false));
+        am.registerAction(OPEN_AZURE_SETTINGS, new Action<>(openSettingsView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
             .title(s -> Optional.ofNullable(s).map(r -> {

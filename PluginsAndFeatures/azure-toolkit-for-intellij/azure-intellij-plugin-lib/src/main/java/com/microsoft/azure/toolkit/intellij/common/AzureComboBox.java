@@ -111,9 +111,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.trackValidation();
     }
 
+    @Nullable
     @Override
     public T getValue() {
         return ((T) this.getSelectedItem());
+    }
+
+    @Nullable
+    public Object getRawValue() {
+        return this.value;
     }
 
     @Override
