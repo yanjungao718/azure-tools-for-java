@@ -57,6 +57,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang3.ArrayUtils;
+import org.parboiled.common.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -91,13 +92,14 @@ public class UIHelperImpl implements UIHelper {
     private static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
 
     @Override
-    public void showException(@NotNull final String message,
+    public void showException(@Nullable final String message,
                               @Nullable final Throwable ex,
                               @NotNull final String title,
                               final boolean appendEx,
                               final boolean suggestDetail) {
         AzureTaskManager.getInstance().runLater(() -> {
-            final String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
+            final String fixedMessage = StringUtils.isEmpty(message) ? "Unexpected exception" : message;
+            final String headerMessage = getHeaderMessage(fixedMessage, ex, appendEx, suggestDetail);
             final String details = getDetails(ex);
             final ErrorMessageForm em = new ErrorMessageForm(title);
             em.showErrorMessageForm(headerMessage, details);
