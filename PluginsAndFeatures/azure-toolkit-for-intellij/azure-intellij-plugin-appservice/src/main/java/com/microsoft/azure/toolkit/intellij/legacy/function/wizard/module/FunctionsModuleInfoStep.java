@@ -26,8 +26,8 @@ import java.util.function.Predicate;
 
 @Slf4j
 public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposable {
-    private static final String MAVEN_TOOL = "Maven";
-    private static final String GRADLE_TOOL = "Gradle";
+    public static final String MAVEN_TOOL = "Maven";
+    public static final String GRADLE_TOOL = "Gradle";
 
     private JPanel panel;
 
