@@ -57,19 +57,18 @@ public class ArmActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.CREATE,
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
             "---",
-            ResourceCommonActionsContributor.SERVICE_REFRESH
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(RESOURCE_MANAGEMENT_ACTIONS, serviceActionGroup);
 
         final ActionGroup groupActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
             ResourceCommonActionsContributor.CREATE,
-            ResourceCommonActionsContributor.DELETE,
-            "---",
-            ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(RESOURCE_GROUP_ACTIONS, groupActionGroup);
 
