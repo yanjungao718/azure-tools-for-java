@@ -97,7 +97,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     }
 
     private void openAzureSettingsPanel() {
-        final Action<Void> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
         final AnActionEvent event = AnActionEvent.createFromInputEvent(null, ActionPlaces.UNKNOWN, null, DataManager.getInstance().getDataContext(FunctionCoreToolsCombobox.this));
         openSettingsAction.getHandler(null, event).accept(null, event); // Open Azure Settings Panel sync
     }

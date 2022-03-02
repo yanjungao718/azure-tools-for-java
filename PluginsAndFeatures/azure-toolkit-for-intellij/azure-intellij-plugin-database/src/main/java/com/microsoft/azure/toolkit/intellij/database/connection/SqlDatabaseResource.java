@@ -44,13 +44,13 @@ public class SqlDatabaseResource<T extends IDatabase> extends AzureServiceResour
         return database.getServerName() + "/" + database.getName();
     }
 
-    public SqlDatabaseResource(T database, @Nullable String username, @Nonnull Definition<T> definition) {
+    public SqlDatabaseResource(@Nonnull T database, @Nullable String username, @Nonnull Definition<T> definition) {
         super(database, definition);
         this.database = new Database(ResourceId.fromString(database.getId()).parent().id(), database.getName());
         this.database.setUsername(username);
     }
 
-    public SqlDatabaseResource(String id, @Nonnull String username, @Nonnull Definition<T> definition) {
+    public SqlDatabaseResource(@Nonnull String id, @Nonnull String username, @Nonnull Definition<T> definition) {
         super(id, definition);
         final ResourceId resourceId = ResourceId.fromString(id);
         this.database = new Database(resourceId.parent().id(), resourceId.name());

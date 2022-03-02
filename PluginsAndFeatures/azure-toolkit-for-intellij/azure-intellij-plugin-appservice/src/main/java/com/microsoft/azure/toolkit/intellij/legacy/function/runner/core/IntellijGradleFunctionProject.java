@@ -29,24 +29,18 @@ import org.jetbrains.plugins.gradle.settings.GradleExecutionSettings;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class IntellijGradleFunctionProject extends FunctionProject {
     private final Project workspace;
     private final ExternalProject externalProject;
     @Getter
     private final boolean isValid;
-
-    public IntellijGradleFunctionProject(@Nonnull Project workspace, @Nonnull Module module) {
-        this.workspace = workspace;
-        final String externalProjectPath = ExternalSystemApiUtil.getExternalProjectPath(module);
-
-        externalProject = externalProjectPath != null ? ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(externalProjectPath) : null;
-        isValid = externalProject != null;
-        init();
-    }
 
     public IntellijGradleFunctionProject(@Nonnull Project workspace, @Nonnull ExternalProjectPojo project) {
         this.workspace = workspace;
@@ -55,8 +49,43 @@ public class IntellijGradleFunctionProject extends FunctionProject {
         init();
     }
 
+    public IntellijGradleFunctionProject(@Nonnull Project workspace, @Nonnull Module module) {
+        this.workspace = workspace;
+        this.externalProject = getExternalProject(workspace, module);
+        this.isValid = externalProject != null;
+        init();
+    }
+
+    @Nullable
+    private ExternalProject getExternalProject(@Nonnull Project workspace, @Nonnull Module module) {
+        final String externalProjectPath = ExternalSystemApiUtil.getExternalProjectPath(module);
+        if (StringUtils.isEmpty(externalProjectPath)) {
+            return null;
+        }
+        return Optional.of(externalProjectPath)
+                .map(path -> ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(externalProjectPath))
+                .orElseGet(() -> {
+                    // in case module is a sub module of gradle project
+                    final ExternalProject rootExternalProject = ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(workspace.getBasePath());
+                    return getGradleProject(rootExternalProject, new File(externalProjectPath));
+                });
+    }
+
+    private ExternalProject getGradleProject(@Nonnull ExternalProject workspace, @Nonnull File projectPath) {
+        for (final ExternalProject child : workspace.getChildProjects().values()) {
+            if (Objects.equals(child.getProjectDir(), projectPath)) {
+                return child;
+            }
+            final ExternalProject gradleProject = getGradleProject(child, projectPath);
+            if (gradleProject != null) {
+                return gradleProject;
+            }
+        }
+        return null;
+    }
+
     public void packageJar() {
-        //TODO(andxu) this method will be removed after we add logic to add before run task for function run configuraiotn
+        //TODO(andxu) this method will be removed after we add logic to add before run task for function run configuration
         final GradleManager manager = (GradleManager) ExternalSystemApiUtil.getManager(GradleConstants.SYSTEM_ID);
         final GradleTaskManager gradleTaskManager = new GradleTaskManager();
         final ExternalSystemTaskId externalSystemTaskId = ExternalSystemTaskId.create(GradleConstants.SYSTEM_ID, ExternalSystemTaskType.EXECUTE_TASK, workspace);
@@ -94,12 +123,8 @@ public class IntellijGradleFunctionProject extends FunctionProject {
                     dependencies.add(((ExternalLibraryDependency) t).getFile());
                 }
                 if (t instanceof ExternalProjectDependency) {
-                    final ExternalProject childProject = this.externalProject.getChildProjects().get(t.getName());
-                    if (childProject != null) {
-                        dependencies.addAll(childProject.getArtifacts());
-                    }
+                    dependencies.addAll(((ExternalProjectDependency) t).getProjectDependencyArtifacts());
                 }
-
             });
         }
         setDependencies(dependencies);

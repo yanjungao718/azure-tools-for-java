@@ -98,6 +98,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
         if (config.getAdminPassword() != null) {
             passwordField.setText(config.getAdminPassword());
         }
+        confirmPasswordFieldInput.setValue("");
     }
 
     @Override
