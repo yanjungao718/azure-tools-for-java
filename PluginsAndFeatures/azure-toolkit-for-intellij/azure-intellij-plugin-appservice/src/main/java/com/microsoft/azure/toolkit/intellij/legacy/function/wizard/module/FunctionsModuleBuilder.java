@@ -5,9 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module;
 
-import com.intellij.ide.util.projectWizard.*;
+import com.intellij.ide.util.projectWizard.JavaModuleBuilder;
+import com.intellij.ide.util.projectWizard.ModuleNameLocationSettings;
+import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware;
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -32,7 +38,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
+import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import javax.swing.*;
 import java.io.File;
@@ -40,6 +48,10 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
 
+import static com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionsModuleInfoStep.GRADLE_TOOL;
+import static com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionsModuleInfoStep.MAVEN_TOOL;
+
+// todo: Refactor module builder to separate implementation of module and project, Gradle and Maven
 public class FunctionsModuleBuilder extends JavaModuleBuilder {
     private WizardContext wizardContext;
 
@@ -132,12 +144,19 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
                             }
                             FileUtils.copyDirectory(tempProjectFolder, moduleFile);
 
-                            final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(moduleFile);
-                            RefreshQueue.getInstance().refresh(true, true, null, new VirtualFile[]{vf});
-                            final VirtualFile pomFile = vf.findChild("pom.xml");
-                            if (pomFile != null) {
-                                final MavenProjectsManager mavenProjectsManager = MavenProjectsManager.getInstance(project);
-                                mavenProjectsManager.addManagedFiles(Collections.singletonList(pomFile));
+                            if (StringUtils.equals(tool, MAVEN_TOOL)) {
+                                final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(moduleFile);
+                                RefreshQueue.getInstance().refresh(true, true, () -> {
+                                    final VirtualFile pomFile = vf.findChild(MavenConstants.POM_XML);
+                                    if (pomFile != null) {
+                                        final MavenProjectsManager mavenProjectsManager = MavenProjectsManager.getInstance(project);
+                                        mavenProjectsManager.addManagedFiles(Collections.singletonList(pomFile));
+                                    }
+                                }, new VirtualFile[]{vf});
+                            } else if (StringUtils.equals(tool, GRADLE_TOOL)) {
+                                ExternalProjectsManagerImpl.getInstance(project).runWhenInitialized(() -> {
+                                    ExternalSystemUnlinkedProjectAware.getInstance(GradleConstants.SYSTEM_ID).linkAndLoadProject(project, project.getBasePath());
+                                });
                             }
                         }
                     }
