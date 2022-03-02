@@ -117,7 +117,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             .map(i -> ((Password.SaveType) i).name())
             .orElse(Password.SaveType.UNTIL_RESTART.name()));
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
-        data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
+        if (Objects.nonNull(funcCoreToolsPath.getItem())) {
+            data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
+        } else if (funcCoreToolsPath.getRawValue() instanceof String) {
+            data.setFunctionCoreToolsPath((String) funcCoreToolsPath.getRawValue());
+        }
         return data;
     }
 

@@ -52,35 +52,35 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.CREATE,
-                "---",
-                ResourceCommonActionsContributor.SERVICE_REFRESH
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup clusterActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                ResourceCommonActionsContributor.CREATE,
-                ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(CLUSTER_ACTIONS, clusterActionGroup);
 
         final ActionGroup appActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                SpringCloudActionsContributor.OPEN_PUBLIC_URL,
-                SpringCloudActionsContributor.OPEN_TEST_URL,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                ResourceCommonActionsContributor.DEPLOY,
-                "---",
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                ResourceCommonActionsContributor.REFRESH,
-                "---",
-                SpringCloudActionsContributor.STREAM_LOG
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            SpringCloudActionsContributor.OPEN_PUBLIC_URL,
+            SpringCloudActionsContributor.OPEN_TEST_URL,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            "---",
+            ResourceCommonActionsContributor.DEPLOY,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
     }

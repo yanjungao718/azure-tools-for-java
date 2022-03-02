@@ -40,44 +40,47 @@ public class WebAppActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.SERVICE_REFRESH,
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup webAppActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                AppServiceActionsContributor.OPEN_IN_BROWSER,
-                ResourceCommonActionsContributor.DEPLOY,
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                AppServiceActionsContributor.PROFILE_FLIGHT_RECORD,
-                AppServiceActionsContributor.SSH_INTO_WEBAPP,
-                AppServiceActionsContributor.START_STREAM_LOG,
-                AppServiceActionsContributor.STOP_STREAM_LOG
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            AppServiceActionsContributor.OPEN_IN_BROWSER,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            "---",
+            ResourceCommonActionsContributor.DEPLOY,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            AppServiceActionsContributor.PROFILE_FLIGHT_RECORD,
+            AppServiceActionsContributor.SSH_INTO_WEBAPP,
+            AppServiceActionsContributor.START_STREAM_LOG,
+            AppServiceActionsContributor.STOP_STREAM_LOG
         );
         am.registerGroup(WEBAPP_ACTIONS, webAppActionGroup);
 
         final ActionGroup deploymentSlotActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                AppServiceActionsContributor.OPEN_IN_BROWSER,
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                SWAP_DEPLOYMENT_SLOT,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                AppServiceActionsContributor.START_STREAM_LOG,
-                AppServiceActionsContributor.STOP_STREAM_LOG
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            AppServiceActionsContributor.OPEN_IN_BROWSER,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            "---",
+            SWAP_DEPLOYMENT_SLOT,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            AppServiceActionsContributor.START_STREAM_LOG,
+            AppServiceActionsContributor.STOP_STREAM_LOG
         );
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, deploymentSlotActionGroup);
 

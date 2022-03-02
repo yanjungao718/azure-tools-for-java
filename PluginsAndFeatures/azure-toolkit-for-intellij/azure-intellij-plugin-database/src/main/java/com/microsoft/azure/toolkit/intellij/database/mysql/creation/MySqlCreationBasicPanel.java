@@ -98,6 +98,7 @@ public class MySqlCreationBasicPanel extends JPanel implements AzureFormPanel<Da
         if (config.getAdminPassword() != null) {
             passwordField.setText(config.getAdminPassword());
         }
+        confirmPasswordFieldInput.setValue("");
     }
 
     @Override

@@ -36,8 +36,9 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.SERVICE_REFRESH,
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 

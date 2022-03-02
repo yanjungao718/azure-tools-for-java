@@ -160,6 +160,7 @@ public class MySqlCreationAdvancedPanel extends JPanel implements AzureFormPanel
         if (config.getVersion() != null) {
             versionComboBox.setValue(config.getVersion());
         }
+        confirmPasswordFieldInput.setValue("");
         security.getAllowAccessFromAzureServicesCheckBox().setSelected(config.isAzureServiceAccessAllowed());
         security.getAllowAccessFromLocalMachineCheckBox().setSelected(config.isLocalMachineAccessAllowed());
     }
