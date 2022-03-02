@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.livy.interactive;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
@@ -13,6 +15,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
  * Based on Apache Livy, v0.4.0-incubating, refer to http://livy.incubator.apache.org./docs/0.4.0-incubating/rest-api.html
  */
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Statement implements IConvertible {
     private int             id;         // The statement id
     private String          code;       // The execution code
