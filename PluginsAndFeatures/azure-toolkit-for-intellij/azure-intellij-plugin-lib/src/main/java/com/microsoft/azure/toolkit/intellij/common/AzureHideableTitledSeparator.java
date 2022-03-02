@@ -53,16 +53,9 @@ public class AzureHideableTitledSeparator extends TitledSeparator {
         this.updateIcon(expand);
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        contentComponentList.forEach(c -> c.setEnabled(enabled));
-    }
-
     private void updateIcon(boolean expand) {
         final Icon icon = expand ? AllIcons.General.ArrowDown : AllIcons.General.ArrowRight;
         final JLabel label = this.getLabel();
         label.setIcon(icon);
     }
-
 }
