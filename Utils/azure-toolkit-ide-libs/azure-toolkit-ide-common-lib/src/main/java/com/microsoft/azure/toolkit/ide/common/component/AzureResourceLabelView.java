@@ -79,8 +79,8 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
                 case "common|resource.status_changed":
                 case "resource.status_changed.resource":
                     tm.runOnPooledThread(() -> {
-                        this.icon = iconProvider.getIcon(resource);
-                        this.description = descriptionLoader.apply(resource);
+                        this.icon = iconProvider.getIcon((T) source);
+                        this.description = descriptionLoader.apply((T) source);
                         tm.runLater(this::refreshView);
                     });
                     break;
