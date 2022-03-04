@@ -38,24 +38,6 @@
    <extension
             point="org.eclipse.ui.editors">
        <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor"
-               icon="icons/BlobFile_16.png"
-               name="[Container]"
-               extensions="mtl"
-               id="com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor"/>
-       <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.TableFileEditor"
-               icon="icons/storage.png"
-               name="[Table]"
-               extensions="mtl"
-               id="com.microsoft.azuretools.azureexplorer.editors.TableFileEditor"/>
-       <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor"
-               icon="icons/storage.png"
-               name="[Queue]"
-               extensions="mtl"
-               id="com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor"/>
-       <editor
                class="com.microsoft.azuretools.azureexplorer.editors.JobViewEditor"
                icon="icons/JobViewTitle.png"
                name="Spark JobView"
