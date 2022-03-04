@@ -15,10 +15,7 @@ import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,14 +76,6 @@ public interface UIHelper {
     void openInBrowser(String link);
 
     void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node);
-
-    void openWebAppPropertyView(@NotNull WebAppNode node);
-
-    default void openFunctionAppPropertyView(@NotNull FunctionAppNode node) {
-
-    }
-
-    void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
 
     default void openMySQLPropertyView(@NotNull String id, @NotNull Object project) {
 
