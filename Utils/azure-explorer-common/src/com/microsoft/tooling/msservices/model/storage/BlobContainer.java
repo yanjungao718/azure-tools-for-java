@@ -9,7 +9,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.util.Calendar;
 
-public class BlobContainer implements StorageServiceTreeItem {
+public class BlobContainer {
     private boolean loading;
     private String name;
     private String uri;
@@ -29,12 +29,10 @@ public class BlobContainer implements StorageServiceTreeItem {
         this.publicReadAccessType = publicReadAccessType;
     }
 
-    @Override
     public boolean isLoading() {
         return loading;
     }
 
-    @Override
     public void setLoading(boolean loading) {
         this.loading = loading;
     }

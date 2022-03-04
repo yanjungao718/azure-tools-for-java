@@ -100,9 +100,6 @@
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider"/>
     <toolWindow
             anchor="left"
