@@ -50,8 +50,6 @@ import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 public class UIHelperImpl implements UIHelper {
     private Map<Class<? extends StorageServiceTreeItem>, String> type2Editor = ImmutableMap.of(BlobContainer.class, "com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor",
@@ -366,16 +364,6 @@ public class UIHelperImpl implements UIHelper {
         } catch (PartInitException e) {
             showException(UNABLE_TO_GET_PROPERTY, e, UNABLE_TO_GET_PROPERTY, false, false);
         }
-    }
-
-    @Override
-    public void openWebAppPropertyView(WebAppNode node) {
-        // moved to Web App action contributor
-    }
-
-    @Override
-    public void openDeploymentSlotPropertyView(final DeploymentSlotNode node) {
-        // moved to Web App action contributor
     }
 
     @Override

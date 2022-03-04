@@ -54,12 +54,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.parboiled.common.StringUtils;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -311,16 +308,6 @@ public class UIHelperImpl implements UIHelper {
                 ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
             }
         }
-    }
-
-    @Override
-    public void openWebAppPropertyView(@Nonnull WebAppNode webAppNode) {
-        // moved to com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePropertyViewAction
-    }
-
-    @Override
-    public void openDeploymentSlotPropertyView(@Nonnull DeploymentSlotNode deploymentSlotNode) {
-        // moved to com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePropertyViewAction
     }
 
     protected FileEditorManager getFileEditorManager(@NotNull final String sid, @NotNull final String webAppId,
