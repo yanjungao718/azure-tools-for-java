@@ -4,5 +4,5 @@ intellij {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
 }
