@@ -198,7 +198,8 @@
     </group>
     <action class="com.microsoft.intellij.actions.NewCustomerIssueFeedbackAction" id="AzureToolkit.GithubIssue" text="Report Issues" />
     <action class="com.microsoft.intellij.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
-    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback" />
+    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback"
+            icon="/icons/Common/feedback.svg"/>
 
     <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.docker.action.AddDockerSupportAction"
             text="Add Docker Support" description="Add Docker Support"
