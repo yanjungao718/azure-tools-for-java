@@ -38,7 +38,6 @@ configurations {
 dependencies {
     compile 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
-    compile 'io.projectreactor:reactor-core:3.4.5'
 
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-intellij-plugin-service-explorer')
@@ -74,6 +73,7 @@ gradle.taskGraph.whenReady { graph ->
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
+    apply plugin: 'io.spring.dependency-management'
     ext {
         azureToolkitVersion = "0.18.0-SNAPSHOT"
     }
@@ -103,10 +103,10 @@ subprojects {
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations:21.0.1'
+        compileOnly 'org.jetbrains:annotations'
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
-        compileOnly 'org.projectlombok:lombok:1.18.20'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
 
         compile 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
@@ -122,6 +122,6 @@ subprojects {
     }
 }
 wrapper() {
-    gradleVersion = '6.5'
+    gradleVersion = '6.9'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
