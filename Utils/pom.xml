@@ -33,20 +33,9 @@
     <properties>
         <azuretool.version>3.63.0-SNAPSHOT</azuretool.version>
         <azure.version>1.41.2</azure.version>
-        <kotlin.version>1.3.72</kotlin.version>
+        <kotlin.version>1.4.20</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
         <findsecbugs.version>1.11.0</findsecbugs.version>
-        <docker.client.version>8.16.0</docker.client.version>
-
-        <codehaus.plexus-utils.version>3.3.0</codehaus.plexus-utils.version>
-        <dom4j.version>2.1.3</dom4j.version>
-        <httpclient.version>4.5.13</httpclient.version>
-        <jacoco.version>0.8.5</jacoco.version>
-        <jansi.version>1.17.1</jansi.version>
-        <jtwig.core.version>5.87.0.RELEASE</jtwig.core.version>
-        <junit.version>4.13.1</junit.version>
-        <mockito.version>2.22.0</mockito.version>
-        <powermock.version>1.7.0RC4</powermock.version>
         <rx.version>1.3.8</rx.version>
         <azure.toolkit-lib.version>0.18.0-SNAPSHOT</azure.toolkit-lib.version>
         <azure.toolkit-ide-lib.version>0.18.0-SNAPSHOT</azure.toolkit-ide-lib.version>
@@ -239,39 +228,17 @@
         <dependencies>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-toolkit-common-lib</artifactId>
+                <artifactId>azure-toolkit-libs</artifactId>
                 <version>${azure.toolkit-lib.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-toolkit-ide-common-lib</artifactId>
+                <artifactId>azure-toolkit-ide-libs</artifactId>
                 <version>${azure.toolkit-ide-lib.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
-                <version>${azure.toolkit-ide-lib.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-client</artifactId>
-                <version>${docker.client.version}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.retrofit2</groupId>
-                <artifactId>retrofit</artifactId>
-                <version>2.9.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>4.9.1</version>
-            </dependency>
-            <dependency>
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>3.6.3</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>io.reactivex</groupId>
@@ -279,50 +246,35 @@
                 <version>${rx.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-core</artifactId>
-                <version>2.2.1</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.55</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>2.8.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20210307</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>1.14.2</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
             </dependency>
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock</artifactId>
-                <exclusions>
-                    <exclusion> <!--CVE-2021-27568-->
-                        <groupId>net.minidev</groupId>
-                        <artifactId>json-smart</artifactId>
-                    </exclusion>
-                    <exclusion> <!--CVE-2021-28165-->
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-io</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-server</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-servlet</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-servlets</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-webapp</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-proxy</artifactId>
-                    </exclusion>
-                </exclusions>
                 <version>2.27.2</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.sourceforge.htmlunit</groupId>
@@ -341,109 +293,89 @@
                 </exclusions>
             </dependency>
             <dependency> <!--CVE-2021-27568-->
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>net.minidev</groupId>
                 <artifactId>json-smart</artifactId>
                 <version>2.4.7</version>
+                <scope>test</scope>
             </dependency>
             <dependency> <!--CVE-2021-28165-->
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-io</artifactId>
                 <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-server</artifactId>
                 <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
                 <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlets</artifactId>
                 <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-webapp</artifactId>
                 <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
+                <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-proxy</artifactId>
                 <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jcraft</groupId>
-                <artifactId>jsch</artifactId>
-                <version>0.1.55</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.cucumber</groupId>
                 <artifactId>cucumber-junit</artifactId>
                 <version>1.2.6</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.cucumber</groupId>
                 <artifactId>cucumber-java</artifactId>
                 <version>1.2.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <version>4.4.13</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.5.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-common</artifactId>
-                <version>2.8.5</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>3.19.0</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
                 <version>1.34</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-templates</artifactId>
-                <version>3.0.9</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
                 <version>${kotlin.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-test</artifactId>
                 <version>${kotlin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>20210307</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jsoup</groupId>
-                <artifactId>jsoup</artifactId>
-                <version>1.14.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>3.6.0</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.powermock</groupId>
@@ -467,26 +399,8 @@
                 <groupId>xml-apis</groupId>
                 <artifactId>xml-apis</artifactId>
                 <version>2.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-toolkit-libs</artifactId>
-                <version>${azure.toolkit-lib.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>stax2-api</artifactId>
-            <version>4.2</version>
-        </dependency>
-    </dependencies>
 </project>

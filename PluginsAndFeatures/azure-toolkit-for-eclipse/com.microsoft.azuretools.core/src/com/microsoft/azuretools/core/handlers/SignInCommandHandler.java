@@ -21,8 +21,9 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationContext;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.authmanage.AuthMethod;
@@ -60,6 +61,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -192,8 +194,13 @@ public class SignInCommandHandler extends AzureAbstractHandler {
 
     private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
         final AzureString title = AzureOperationBundle.title("account.sign_in");
+        IAzureOperation<?> op = AzureOperationContext.current().currentOperation();
+        while (op != null && !(op instanceof AzureTask)) {
+            op = op.getParent();
+        }
+        final AzureTask<?> currentTask = (AzureTask<?>) op;
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true,
-                () -> doLogin(AzureTaskContext.current().getTask().getMonitor(), auth));
+                () -> doLogin(Optional.ofNullable(currentTask).map(t -> t.getMonitor()).orElse(null), auth));
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
     }
 

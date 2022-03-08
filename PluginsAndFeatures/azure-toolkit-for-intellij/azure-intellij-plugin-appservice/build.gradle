@@ -8,9 +8,10 @@ intellij {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-appservice-lib:' + azureToolkitVersion
-    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-appservice-lib'
+    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
+    compile 'com.jcraft:jsch:0.1.55'
     compile 'org.codehaus.plexus:plexus-archiver:4.2.6'
     compile 'org.codehaus.plexus:plexus-component-api:1.0-alpha-33'
-    compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
+    compile 'com.neovisionaries:nv-websocket-client:2.14'
 }
