@@ -7,12 +7,16 @@ package com.microsoft.intellij.ui;
 
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
+import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
@@ -48,6 +52,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private JComboBox<Password.SaveType> savePasswordComboBox;
     private FunctionCoreToolsCombobox funcCoreToolsPath;
     private JLabel azureEnvDesc;
+    private AzureFileInput txtStorageExplorer;
 
     private AzureConfiguration originalConfig;
     private final Project project;
@@ -87,6 +92,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         });
 
+        txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
+                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+
         displayDescriptionForAzureEnv();
 
         final AzureConfiguration config = Azure.az().config();
@@ -107,6 +115,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotBlank(oldFuncCoreToolsPath)) {
             funcCoreToolsPath.setValue(oldFuncCoreToolsPath);
         }
+        if (StringUtils.isNotBlank(config.getStorageExplorerPath())) {
+            txtStorageExplorer.setValue(config.getStorageExplorerPath());
+        }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
     }
 
@@ -121,6 +132,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
         } else if (funcCoreToolsPath.getRawValue() instanceof String) {
             data.setFunctionCoreToolsPath((String) funcCoreToolsPath.getRawValue());
+        }
+        if (StringUtils.isNotBlank(txtStorageExplorer.getValue())) {
+            data.setStorageExplorerPath(txtStorageExplorer.getValue());
         }
         return data;
     }
