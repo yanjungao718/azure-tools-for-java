@@ -6,18 +6,18 @@
 package com.microsoft.intellij.ui;
 
 import com.google.common.collect.ImmutableList;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
@@ -33,13 +33,9 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
@@ -69,6 +65,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -453,50 +450,22 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
-        if (toolWindow instanceof ToolWindowEx) {
-            ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
-            try {
-                Runnable forceRefreshTitleActions = () -> {
-
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        try {
-                            toolWindowEx.setTitleActions(
-                                    new AnAction("Refresh", "Refresh Azure Nodes List", null) {
-                                        @Override
-                                        public void actionPerformed(AnActionEvent event) {
-                                            azureModule.load(true);
-                                        }
-
-                                        @Override
-                                        public void update(AnActionEvent e) {
-                                            boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
-                                            final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
-                                            e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
-                                        }
-                                    },
-                                    new AzureSignInAction(),
-                                    new SelectSubscriptionsAction());
-                        } catch (Exception e) {
-                            AzurePlugin.log(e.getMessage(), e);
-                        }
-                    });
-                };
-                AuthMethodManager.getInstance().addSignInEventListener(forceRefreshTitleActions);
-                AuthMethodManager.getInstance().addSignOutEventListener(forceRefreshTitleActions);
-                // Remove the sign in/out listener when project close
-                ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-                    @Override
-                    public void projectClosing(@NotNull Project project) {
-                        AuthMethodManager.getInstance().removeSignInEventListener(forceRefreshTitleActions);
-                        AuthMethodManager.getInstance().removeSignOutEventListener(forceRefreshTitleActions);
-                    }
-                });
-
-                forceRefreshTitleActions.run();
-            } catch (Exception e) {
-                AzurePlugin.log(e.getMessage(), e);
+        final AnAction refreshAction = new AnAction("Refresh", "Refresh Azure nodes list", AllIcons.Actions.Refresh) {
+            @Override
+            public void actionPerformed(AnActionEvent event) {
+                azureModule.load(true);
             }
-        }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+                e.getPresentation().setEnabled(isSignIn);
+            }
+        };
+        final AnAction feedbackAction = ActionManager.getInstance().getAction("AzureToolkit.Survey");
+        final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
+        final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
+        toolWindow.setTitleActions(Arrays.asList(refreshAction, signInAction, selectSubscriptionsAction, Separator.create(), feedbackAction));
     }
 
     private boolean isOutdatedModule(Node node) {

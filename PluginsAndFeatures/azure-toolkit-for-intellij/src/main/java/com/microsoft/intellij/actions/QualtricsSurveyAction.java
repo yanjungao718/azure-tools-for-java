@@ -11,6 +11,7 @@ import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.project.DumbAware;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -18,7 +19,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class QualtricsSurveyAction extends AzureAnAction {
+public class QualtricsSurveyAction extends AzureAnAction implements DumbAware {
 
     private static final String SURVEY_URL = "https://microsoft.qualtrics.com/jfe/form/SV_b17fG5QQlMhs2up?" +
             "toolkit=%s&ide=%s&os=%s&jdk=%s&id=%s";
