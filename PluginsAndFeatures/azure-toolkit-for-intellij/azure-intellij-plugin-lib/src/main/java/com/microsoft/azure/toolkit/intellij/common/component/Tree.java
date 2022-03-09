@@ -17,7 +17,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
-import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.TreeUIHelper;
@@ -39,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -81,7 +79,29 @@ public class Tree extends SimpleTree implements DataProvider {
         this.setCellRenderer(new NodeRenderer());
         this.setModel(new DefaultTreeModel(new TreeNode<>(root, this)));
         installExpandListener(this);
+        installSelectionListener(this);
         installPopupMenu(this);
+    }
+
+    public static void installSelectionListener(JTree tree) {
+        tree.addTreeSelectionListener(e -> {
+            final Object node = tree.getLastSelectedPathComponent();
+            Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
+            if (selectionDisposable != null) {
+                selectionDisposable.dispose();
+            }
+            if (node instanceof TreeNode) {
+                final String place = "azure.component.tree";
+                final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
+                if (Objects.nonNull(actions)) {
+                    final ActionManager am = ActionManager.getInstance();
+                    selectionDisposable = Disposer.newDisposable();
+                    tree.putClientProperty("SELECTION_DISPOSABLE", selectionDisposable);
+                    final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
+                    group.registerCustomShortcutSetForActions(tree, selectionDisposable);
+                }
+            }
+        });
     }
 
     public static void installExpandListener(JTree tree) {
@@ -120,18 +140,10 @@ public class Tree extends SimpleTree implements DataProvider {
                         final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
-                            final Disposable disposable = Disposer.newDisposable();
                             final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
-                            group.registerCustomShortcutSetForActions(tree, disposable);
                             final ActionPopupMenu menu = am.createActionPopupMenu(place, group);
                             menu.setTargetComponent(tree);
                             final JPopupMenu popupMenu = menu.getComponent();
-                            popupMenu.addPopupMenuListener(new PopupMenuListenerAdapter() {
-                                @Override
-                                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                                    disposable.dispose();
-                                }
-                            });
                             popupMenu.show(tree, e.getX(), e.getY());
                         }
                     } else if (e.getClickCount() == 2) {
@@ -141,16 +153,16 @@ public class Tree extends SimpleTree implements DataProvider {
                     }
                 }
             }
-
-            private IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(ActionGroup actions) {
-                final ActionManager am = ActionManager.getInstance();
-                if (actions.getOrigin() instanceof IntellijAzureActionManager.ActionGroupWrapper) {
-                    return (IntellijAzureActionManager.ActionGroupWrapper) actions.getOrigin();
-                }
-                return new IntellijAzureActionManager.ActionGroupWrapper(actions);
-            }
         };
         tree.addMouseListener(popupHandler);
+    }
+
+    private static IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(ActionGroup actions) {
+        final ActionManager am = ActionManager.getInstance();
+        if (actions.getOrigin() instanceof IntellijAzureActionManager.ActionGroupWrapper) {
+            return (IntellijAzureActionManager.ActionGroupWrapper) actions.getOrigin();
+        }
+        return new IntellijAzureActionManager.ActionGroupWrapper(actions);
     }
 
     @Override
