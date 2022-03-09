@@ -32,8 +32,8 @@ public class WindowsOpenAzureStorageExplorerHandler extends AbstractAzureStorage
         final ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(explorer, storageUrl);
         try {
-            processBuilder.start();
-        } catch (IOException e) {
+            processBuilder.start().waitFor();
+        } catch (IOException | InterruptedException e) {
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
         }
     }

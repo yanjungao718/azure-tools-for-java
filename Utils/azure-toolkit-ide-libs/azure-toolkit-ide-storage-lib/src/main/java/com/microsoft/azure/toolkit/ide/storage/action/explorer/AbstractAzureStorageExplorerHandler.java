@@ -28,7 +28,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
         final String storageExplorerExecutable = getStorageExplorerExecutable();
         // Launch storage explorer with resource url
         if (StringUtils.isEmpty(storageExplorerExecutable)) {
-            throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.", (Object[]) getStorageNotFoundActions());
+            throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.", (Object[]) getStorageNotFoundActions(storageAccount));
         }
         launchStorageExplorer(storageExplorerExecutable, resourceUrl);
     }
@@ -38,15 +38,22 @@ public abstract class AbstractAzureStorageExplorerHandler {
         return StringUtils.isEmpty(storageExplorerPath) ? getStorageExplorerExecutableFromOS() : storageExplorerPath;
     }
 
-    protected Action<?>[] getStorageNotFoundActions() {
+    protected Action<?>[] getStorageNotFoundActions(@Nonnull final StorageAccount storageAccount) {
         // Download Storage Explorer
         final Consumer<Void> downloadConsumer = ignore ->
                 AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(STORAGE_EXPLORER_DOWNLOAD_URL);
         final Action<Void> downloadAction = new Action<>(downloadConsumer, new ActionView.Builder("Download"));
         downloadAction.setAuthRequired(false);
         // Open Azure Settings Panel, and re-run
-        Action<Object> openAzureSettingAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-        return new Action[]{downloadAction, openAzureSettingAction};
+        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+        final Consumer<Void> browserConsumer = ignore -> {
+            openSettingsAction.getHandler(null, null).accept(null, null); // Open Azure Settings Panel sync
+            if (StringUtils.isNotBlank(Azure.az().config().getStorageExplorerPath())) {
+                openResource(storageAccount);
+            }
+        };
+        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Set path for storage explorer"));
+        return new Action[]{downloadAction, browserAction};
     }
 
     protected abstract String getStorageExplorerExecutableFromOS();

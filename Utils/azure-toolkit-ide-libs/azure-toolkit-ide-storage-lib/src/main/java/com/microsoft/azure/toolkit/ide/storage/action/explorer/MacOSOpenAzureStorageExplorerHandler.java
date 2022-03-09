@@ -24,8 +24,8 @@ public class MacOSOpenAzureStorageExplorerHandler extends AbstractAzureStorageEx
         final String[] commands = new String[]{"open", "-a", explorer, storageUrl};
         processBuilder.command(commands);
         try {
-            processBuilder.start();
-        } catch (IOException e) {
+            processBuilder.start().waitFor();
+        } catch (IOException | InterruptedException e) {
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
         }
     }
