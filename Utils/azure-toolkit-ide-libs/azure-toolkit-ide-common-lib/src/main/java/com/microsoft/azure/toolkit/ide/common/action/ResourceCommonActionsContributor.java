@@ -103,7 +103,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.open_portal_url.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof IAzureBaseResource);
         final Action<IAzureBaseResource<?, ?>> openPortalUrlAction = new Action<>(openPortalUrl, openPortalUrlView);
-        openPortalUrlAction.setShortcuts("control alt P");
+        openPortalUrlAction.setShortcuts("control alt O");
         am.registerAction(OPEN_PORTAL_URL, openPortalUrlAction);
 
         // register commands
