@@ -7,6 +7,8 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ex.ProjectManagerEx;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
@@ -20,6 +22,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.AzureConfigurable;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -51,10 +54,14 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiConsumer<Object, AnActionEvent> openSettingsHandler = (ignore, e) ->
+        final BiConsumer<Object, AnActionEvent> openSettingsHandler = (ignore, e) -> {
+            final Project project = Optional.ofNullable(e).map(AnActionEvent::getProject).orElseGet(() -> {
+                final Project[] openProjects = ProjectManagerEx.getInstance().getOpenProjects();
+                return ArrayUtils.isEmpty(openProjects) ? null : openProjects[0];
+            });
             AzureTaskManager.getInstance().runAndWait(() ->
-                ShowSettingsUtil.getInstance().showSettingsDialog(Optional.ofNullable(e).map(AnActionEvent::getProject).orElse(null),
-                    AzureConfigurable.AzureAbstractConfigurable.class));
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class));
+        };
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
     }
 }

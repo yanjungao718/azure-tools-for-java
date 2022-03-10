@@ -52,7 +52,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
                 openResource(storageAccount);
             }
         };
-        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Set path for storage explorer"));
+        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Set Path for Storage Explorer"));
         return new Action[]{downloadAction, browserAction};
     }
 
