@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -30,6 +31,7 @@ import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.h2.store.fs.FileUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -92,9 +94,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         });
 
-        txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
-                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
-
         displayDescriptionForAzureEnv();
 
         final AzureConfiguration config = Azure.az().config();
@@ -102,6 +101,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             config.setDatabasePasswordSaveType(Password.SaveType.UNTIL_RESTART.name());
         }
         setData(config);
+    }
+
+    public AzureValidationInfo validateStorageExplorerPath() {
+        final String path = txtStorageExplorer.getValue();
+        if (StringUtils.isNotEmpty(path) && !FileUtils.exists(path)) {
+            return AzureValidationInfo.error("Target file does not exists", txtStorageExplorer);
+        }
+        return AzureValidationInfo.ok(txtStorageExplorer);
     }
 
     public void setData(AzureConfiguration config) {
@@ -193,6 +200,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
             this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
         this.originalConfig.setUserAgent(userAgent);
+        this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
         // apply changes
         // we need to get rid of AuthMethodManager, using az.azure_account
@@ -238,9 +246,10 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureEnvironment newEnv = AzureEnvironmentUtils.stringToAzureEnvironment(newConfig.getCloud());
         final AzureEnvironment oldEnv = AzureEnvironmentUtils.stringToAzureEnvironment(originalConfig.getCloud());
         return !Objects.equals(newEnv, oldEnv) ||
-            !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
-            !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
-            !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled());
+                !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
+                !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
+                !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
+                !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled());
     }
 
     @Override
@@ -250,5 +259,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     private void createUIComponents() {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(project, false);
+        this.txtStorageExplorer = new AzureFileInput() {
+            @Override
+            public boolean needValidation() {
+                return true;
+            }
+        };
+        txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
+                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
     }
 }
