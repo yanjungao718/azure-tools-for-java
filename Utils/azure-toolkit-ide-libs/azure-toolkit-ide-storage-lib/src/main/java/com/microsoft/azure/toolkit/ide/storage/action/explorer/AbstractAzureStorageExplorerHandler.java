@@ -12,11 +12,16 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
 import java.util.function.Consumer;
 
+@Slf4j
 public abstract class AbstractAzureStorageExplorerHandler {
 
     private static final String STORAGE_EXPLORER_DOWNLOAD_URL = "https://go.microsoft.com/fwlink/?LinkId=723579";
@@ -24,6 +29,19 @@ public abstract class AbstractAzureStorageExplorerHandler {
     public void openResource(@Nonnull final StorageAccount storageAccount) {
         // Get resource url
         final String resourceUrl = "storageexplorer://v=1&accountid=" + storageAccount.getId() + "&subscriptionid=" + storageAccount.getSubscriptionId();
+        // try launch with uri
+        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(URI.create(resourceUrl));
+                return;
+            } catch (IOException e) {
+                log.info("failed to launch storage explorer from uri", e);
+                launchStorageExplorerThroughCommand(storageAccount, resourceUrl);
+            }
+        }
+    }
+
+    protected void launchStorageExplorerThroughCommand(final StorageAccount storageAccount, final String resourceUrl) {
         // Get storage explorer path
         final String storageExplorerExecutable = getStorageExplorerExecutable();
         // Launch storage explorer with resource url
