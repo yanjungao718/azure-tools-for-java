@@ -24,14 +24,13 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctio
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.DeployWebAppAction;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
-import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -78,21 +77,21 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<IAppService<?>, AnActionEvent> isAppService = (r, e) -> r instanceof IAppService<?>;
-        final BiConsumer<IAppService<?>, AnActionEvent> flightRecorderHandler = (c, e) ->
+        final BiPredicate<AppServiceAppBase<?, ?, ?>, AnActionEvent> isAppService = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?>;
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> flightRecorderHandler = (c, e) ->
                 AzureTaskManager.getInstance().runLater(() -> new ProfileFlightRecordAction(c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.PROFILE_FLIGHT_RECORD, isAppService, flightRecorderHandler);
 
-        final BiConsumer<IAppService<?>, AnActionEvent> startStreamingLogHandler = (c, e) ->
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> startStreamingLogHandler = (c, e) ->
                 AzureTaskManager.getInstance().runLater(() -> new StartStreamingLogsAction(c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.START_STREAM_LOG, isAppService, startStreamingLogHandler);
 
-        final BiConsumer<IAppService<?>, AnActionEvent> stopStreamingLogHandler = (c, e) ->
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> stopStreamingLogHandler = (c, e) ->
                 AzureTaskManager.getInstance().runLater(() -> new StopStreamingLogsAction(c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.STOP_STREAM_LOG, isAppService, stopStreamingLogHandler);
 
-        final BiPredicate<IAppService<?>, AnActionEvent> isWebApp = (r, e) -> r instanceof WebApp;
-        final BiConsumer<IAppService<?>, AnActionEvent> sshHandler = (c, e) ->
+        final BiPredicate<AppServiceAppBase<?, ?, ?>, AnActionEvent> isWebApp = (r, e) -> r instanceof WebApp;
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> sshHandler = (c, e) ->
                 AzureTaskManager.getInstance().runLater(() -> new SSHIntoWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.SSH_INTO_WEBAPP, isAppService, sshHandler);
 
@@ -102,7 +101,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
 
         final BiConsumer<Object, AnActionEvent> createWebAppHandler = (c, e) -> AzureTaskManager.getInstance()
                 .runLater(() -> new CreateWebAppAction(e.getProject()).execute());
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureWebApp, createWebAppHandler);
+//        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureWebApp, createWebAppHandler);
 
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
                 .getInstance().runLater(() -> new DeployFunctionAppAction((FunctionApp) c, e.getProject()).execute());
@@ -110,7 +109,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
 
         final BiConsumer<Object, AnActionEvent> createFunctionHandler = (c, e) -> AzureTaskManager.getInstance()
                 .runLater(() -> new CreateFunctionAppAction(e.getProject()).execute());
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureFunction, createFunctionHandler);
+//        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureFunction, createFunctionHandler);
 
         final BiConsumer<AzResourceBase, AnActionEvent> showFunctionPropertyViewHandler = (c, e) -> AzureTaskManager.getInstance()
                 .runLater(() -> new OpenAppServicePropertyViewAction().openFunctionAppPropertyView((FunctionApp) c, e.getProject()));
@@ -128,7 +127,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         final BiConsumer<FunctionEntity, AnActionEvent> triggerFunctionHandler = (entity, e) -> {
             final String functionId = Optional.ofNullable(entity.getFunctionAppId())
                     .orElseGet(() -> ResourceId.fromString(entity.getTriggerId()).parent().id());
-            final FunctionApp functionApp = Azure.az(AzureFunction.class).get(functionId);
+            final FunctionApp functionApp = Azure.az(AzureAppService.class).functionApp(functionId);
             final String triggerType = Optional.ofNullable(entity.getTrigger())
                     .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
             final Object request;

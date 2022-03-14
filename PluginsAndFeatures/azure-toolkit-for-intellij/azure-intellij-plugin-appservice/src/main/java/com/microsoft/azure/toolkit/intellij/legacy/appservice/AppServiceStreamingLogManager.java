@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceUtils;
 import com.google.gson.JsonObject;
 import com.intellij.ide.BrowserUtil;
@@ -13,13 +14,14 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
-import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -147,7 +149,7 @@ public enum AppServiceStreamingLogManager {
         private final FunctionApp functionApp;
 
         FunctionLogStreaming(final String resourceId) {
-            this.functionApp = Azure.az(AzureFunction.class).get(resourceId);
+            this.functionApp = Azure.az(AzureAppService.class).functionApp(resourceId);
         }
 
         @Override
@@ -160,7 +162,9 @@ public enum AppServiceStreamingLogManager {
         public void enableLogStreaming() {
             final DiagnosticConfig diagnosticConfig = functionApp.getDiagnosticConfig();
             diagnosticConfig.setEnableApplicationLog(true);
-            functionApp.update().withDiagnosticConfig(diagnosticConfig).commit();
+            final FunctionAppDraft draft = (FunctionAppDraft) functionApp.update();
+            draft.setDiagnosticConfig(diagnosticConfig);
+            draft.commit();
         }
 
         @Override
@@ -211,7 +215,7 @@ public enum AppServiceStreamingLogManager {
         private final WebApp webApp;
 
         public WebAppLogStreaming(String resourceId) {
-            this.webApp = Azure.az(AzureWebApp.class).get(resourceId);
+            this.webApp = Azure.az(AzureAppService.class).webApp(resourceId);
         }
 
         @Override
@@ -222,7 +226,9 @@ public enum AppServiceStreamingLogManager {
         @Override
         public void enableLogStreaming() {
             final DiagnosticConfig diagnosticConfig = webApp.getDiagnosticConfig();
-            webApp.update().withDiagnosticConfig(enableHttpLog(diagnosticConfig)).commit();
+            final WebAppDraft draft = (WebAppDraft) webApp.update();
+            draft.setDiagnosticConfig(enableHttpLog(diagnosticConfig));
+            draft.commit();
         }
 
         @Override
@@ -240,7 +246,8 @@ public enum AppServiceStreamingLogManager {
         private final WebAppDeploymentSlot deploymentSlot;
 
         public WebAppSlotLogStreaming(String resourceId) {
-            this.deploymentSlot = Azure.az(AzureAppService.class).deploymentSlot(resourceId);
+            final ResourceId id = ResourceId.fromString(resourceId);
+            this.deploymentSlot = Azure.az(AzureAppService.class).webApp(id.parent().toString()).slots().get(resourceId);
         }
 
         @Override
@@ -251,7 +258,9 @@ public enum AppServiceStreamingLogManager {
         @Override
         public void enableLogStreaming() {
             final DiagnosticConfig diagnosticConfig = deploymentSlot.getDiagnosticConfig();
-            deploymentSlot.update().withDiagnosticConfig(enableHttpLog(diagnosticConfig)).commit();
+            final WebAppDeploymentSlotDraft draft = (WebAppDeploymentSlotDraft) deploymentSlot.update();
+            draft.setDiagnosticConfig(enableHttpLog(diagnosticConfig));
+            draft.commit();
         }
 
         @Override

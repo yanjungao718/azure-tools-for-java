@@ -12,16 +12,14 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppModule;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider.APP_SERVICE_ICON_PROVIDER;
 
@@ -32,12 +30,12 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
     @Nullable
     @Override
     public Object getRoot() {
-        return Azure.az(AzureFunction.class);
+        return FunctionAppModule.class;
     }
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
-        return data instanceof AzureFunction ||
+        return data == FunctionAppModule.class ||
             data instanceof FunctionApp ||
             data instanceof AppServiceFile;
     }
@@ -45,12 +43,12 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
     @Nullable
     @Override
     public Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager) {
-        if (data instanceof AzureFunction) {
-            final AzureFunction service = (AzureFunction) data;
+        if (data == FunctionAppModule.class) {
+            final AzureAppService service = Azure.az(AzureAppService.class);
             return new Node<>(service)
                 .view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(FunctionAppActionsContributor.SERVICE_ACTIONS)
-                .addChildren(FunctionAppNodeProvider::listFunctionApps, (d, p) -> this.createNode(d, p, manager));
+                .addChildren(AzureAppService::functionApps, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof FunctionApp) {
             final FunctionApp functionApp = (FunctionApp) data;
             return new Node<>(functionApp)
@@ -64,9 +62,5 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
             return new AppServiceFileNode(file);
         }
         return null;
-    }
-
-    private static List<FunctionApp> listFunctionApps(AzureFunction functionModule) {
-        return functionModule.list().stream().sorted(Comparator.comparing(FunctionApp::name)).collect(Collectors.toList());
     }
 }

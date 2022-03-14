@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.ide.appservice.webapp;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -97,29 +97,29 @@ public class WebAppActionsContributor implements IActionsContributor {
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
-        final Consumer<WebAppDeploymentSlot> swap = slot -> slot.webApp().swap(slot.name());
+        final Consumer<WebAppDeploymentSlot> swap = slot -> slot.getParent().swap(slot.getName());
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
-                        ((WebAppDeploymentSlot) s).name(), ((WebAppDeploymentSlot) s).webApp().name())).orElse(null))
+                        ((WebAppDeploymentSlot) s).name(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
                 .enabled(s -> s instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
     }
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> startCondition = (r, e) -> r instanceof IAppService &&
+        final BiPredicate<IAzureBaseResource<?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase &&
                 StringUtils.equals(r.status(), IAzureBaseResource.Status.STOPPED);
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> startHandler = (c, e) -> ((IAppService) c).start();
+        final BiConsumer<IAzureBaseResource<?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
         am.registerHandler(ResourceCommonActionsContributor.START, startCondition, startHandler);
 
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> stopCondition = (r, e) -> r instanceof IAppService &&
+        final BiPredicate<IAzureBaseResource<?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase &&
                 StringUtils.equals(r.status(), IAzureBaseResource.Status.RUNNING);
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> stopHandler = (c, e) -> ((IAppService) c).stop();
+        final BiConsumer<IAzureBaseResource<?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?,?,?>) c).stop();
         am.registerHandler(ResourceCommonActionsContributor.STOP, stopCondition, stopHandler);
 
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> restartCondition = (r, e) -> r instanceof IAppService &&
+        final BiPredicate<IAzureBaseResource<?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase &&
                 StringUtils.equals(r.status(), IAzureBaseResource.Status.RUNNING);
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> restartHandler = (c, e) -> ((IAppService) c).restart();
+        final BiConsumer<IAzureBaseResource<?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?,?,?>) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
     }
 

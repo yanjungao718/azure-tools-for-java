@@ -21,7 +21,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.tab
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.CommonConst;
@@ -184,7 +184,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             if (!FunctionAppConfig.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {
                 // Do not refresh if selected function app is not changed except create run configuration from azure explorer
                 this.beforeFillAppSettings();
-                presenter.loadAppSettings(Azure.az(AzureFunction.class).get(model.getResourceId()));
+                presenter.loadAppSettings(Azure.az(AzureAppService.class).functionApp(model.getResourceId()));
             }
         }
         appSettingsFunctionApp = model;

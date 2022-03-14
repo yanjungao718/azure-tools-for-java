@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.jfr;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.ProcessComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
@@ -28,9 +28,9 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
     private ProcessComboBox processComboBox1;
     private DurationPanel durationPanel;
 
-    private IAppService appService;
+    private AppServiceAppBase<?, ?, ?> appService;
 
-    public RunFlightRecorderDialog(final Project project, IAppService appService) {
+    public RunFlightRecorderDialog(final Project project, AppServiceAppBase<?, ?, ?> appService) {
         super(project);
         this.appService = appService;
         this.init();

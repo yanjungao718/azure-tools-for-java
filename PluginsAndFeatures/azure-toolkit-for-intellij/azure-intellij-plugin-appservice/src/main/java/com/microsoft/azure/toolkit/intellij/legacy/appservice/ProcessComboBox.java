@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +28,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @Setter
     @Getter
-    private IAppService appService;
+    private AppServiceAppBase<?, ?, ?> appService;
 
     @NotNull
     @Override

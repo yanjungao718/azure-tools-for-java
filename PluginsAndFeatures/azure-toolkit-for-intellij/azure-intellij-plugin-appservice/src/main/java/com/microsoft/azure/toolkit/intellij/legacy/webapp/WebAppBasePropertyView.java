@@ -22,8 +22,8 @@ import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -186,12 +186,12 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
     protected void onStatusChangeEvent(AzureEvent<Object> event) {
         final Object source = event.getSource();
-        if (source instanceof IAppService && StringUtils.equalsIgnoreCase(this.resourceId, ((IAppService) source).id())) {
-            onAppServiceStatusChanged((IAppService) source);
+        if (source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(this.resourceId, ((AppServiceAppBase<?, ?, ?>) source).id())) {
+            onAppServiceStatusChanged((AppServiceAppBase<?, ?, ?>) source);
         }
     }
 
-    protected void onAppServiceStatusChanged(IAppService app) {
+    protected void onAppServiceStatusChanged(AppServiceAppBase<?, ?, ?> app) {
         if (!app.exists()) {
             closeEditor(app);
             return;
@@ -200,7 +200,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         presenter.onLoadWebAppProperty(this.subscriptionId, this.appServiceId, this.slotName);
     }
 
-    protected void closeEditor(IAppService app) {
+    protected void closeEditor(AppServiceAppBase<?, ?, ?> app) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
         AzureMessager.getMessager().info(AzureString.format("The editor for app '%s' is closed.", app.name()),

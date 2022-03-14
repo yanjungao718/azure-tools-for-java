@@ -5,6 +5,8 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
@@ -12,10 +14,13 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -70,29 +75,28 @@ public class AzureWebAppMvpModel {
     public WebApp createAzureWebAppWithPrivateRegistryImage(@Nonnull WebAppOnLinuxDeployModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
-                .id(model.getAppServicePlanId())
-                .subscriptionId(model.getSubscriptionId())
-                .name(model.getAppServicePlanName())
-                .resourceGroup(model.getResourceGroupName())
-                .region(model.getLocationName())
-                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
-                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
+            .id(model.getAppServicePlanId())
+            .subscriptionId(model.getSubscriptionId())
+            .name(model.getAppServicePlanName())
+            .resourceGroup(model.getResourceGroupName())
+            .region(model.getLocationName())
+            .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
+            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
         final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         // todo: support start up file in docker configuration
         final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
-                .image(pr.getImageTagWithServerUrl())
-                .registryUrl(pr.getServerUrl())
-                .userName(pr.getUsername())
-                .password(pr.getPassword())
-                .startUpCommand(pr.getStartupFile()).build();
-        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
-                .withName(model.getWebAppName())
-                .withResourceGroup(resourceGroup.getName())
-                .withPlan(appServicePlan.id())
-                .withRuntime(Runtime.DOCKER)
-                .withDockerConfiguration(dockerConfiguration)
-                .commit();
+            .image(pr.getImageTagWithServerUrl())
+            .registryUrl(pr.getServerUrl())
+            .userName(pr.getUsername())
+            .password(pr.getPassword())
+            .startUpCommand(pr.getStartupFile()).build();
+        final WebAppDraft draft = Azure.az(AzureAppService.class).webApps(model.getSubscriptionId())
+            .create(model.getWebAppName(), model.getResourceGroupName());
+        draft.setAppServicePlan(appServicePlan);
+        draft.setRuntime(Runtime.DOCKER);
+        draft.setDockerConfiguration(dockerConfiguration);
+        return draft.createIfNotExist();
     }
 
     /**
@@ -108,17 +112,19 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public WebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
-        final WebApp app = com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).webapp(webAppId);
+        final WebApp app = Objects.requireNonNull(Azure.az(AzureAppService.class).webApp(webAppId));
         // clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
             final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
-                    .image(pr.getImageTagWithServerUrl())
-                    .registryUrl(pr.getServerUrl())
-                    .userName(pr.getUsername())
-                    .password(pr.getPassword())
-                    .startUpCommand(pr.getStartupFile()).build();
-            app.update().withDockerConfiguration(dockerConfiguration).commit();
+                .image(pr.getImageTagWithServerUrl())
+                .registryUrl(pr.getServerUrl())
+                .userName(pr.getUsername())
+                .password(pr.getPassword())
+                .startUpCommand(pr.getStartupFile()).build();
+            final WebAppDraft draft = (WebAppDraft) app.update();
+            draft.setDockerConfiguration(dockerConfiguration);
+            draft.updateIfExist();
         }
         // status-free restart.
         app.restart();
@@ -136,29 +142,27 @@ public class AzureWebAppMvpModel {
     public WebApp createWebAppFromSettingModel(@Nonnull WebAppSettingModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
-                .id(model.getAppServicePlanId())
-                .subscriptionId(model.getSubscriptionId())
-                .name(model.getAppServicePlanName())
-                .resourceGroup(model.getResourceGroup())
-                .region(model.getRegion())
-                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
-                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing())).build();
+            .id(model.getAppServicePlanId())
+            .subscriptionId(model.getSubscriptionId())
+            .name(model.getAppServicePlanName())
+            .resourceGroup(model.getResourceGroup())
+            .region(model.getRegion())
+            .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
+            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing())).build();
         final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
-                .enableApplicationLog(model.isEnableApplicationLog())
-                .applicationLogLevel(com.microsoft.azure.toolkit.lib.appservice.model.LogLevel.fromString(model.getApplicationLogLevel()))
-                .enableWebServerLogging(model.isEnableWebServerLogging())
-                .webServerLogQuota(model.getWebServerLogQuota())
-                .webServerRetentionPeriod(model.getWebServerRetentionPeriod())
-                .enableDetailedErrorMessage(model.isEnableDetailedErrorMessage())
-                .enableFailedRequestTracing(model.isEnableFailedRequestTracing()).build();
-        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
-                .withName(model.getWebAppName())
-                .withResourceGroup(resourceGroup.getName())
-                .withPlan(appServicePlan.id())
-                .withRuntime(model.getRuntime())
-                .withDiagnosticConfig(diagnosticConfig)
-                .commit();
+            .enableApplicationLog(model.isEnableApplicationLog())
+            .applicationLogLevel(com.microsoft.azure.toolkit.lib.appservice.model.LogLevel.fromString(model.getApplicationLogLevel()))
+            .enableWebServerLogging(model.isEnableWebServerLogging())
+            .webServerLogQuota(model.getWebServerLogQuota())
+            .webServerRetentionPeriod(model.getWebServerRetentionPeriod())
+            .enableDetailedErrorMessage(model.isEnableDetailedErrorMessage())
+            .enableFailedRequestTracing(model.isEnableFailedRequestTracing()).build();
+        final WebAppDraft draft = Azure.az(AzureAppService.class).webApps(model.getSubscriptionId()).create(model.getWebAppName(), model.getResourceGroup());
+        draft.setAppServicePlan(appServicePlan);
+        draft.setRuntime(model.getRuntime());
+        draft.setDiagnosticConfig(diagnosticConfig);
+        return draft.createIfNotExist();
     }
 
     // todo: Move duplicated codes to azure common library
@@ -167,19 +171,18 @@ public class AzureWebAppMvpModel {
     }
 
     private AppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
-        final AzureAppService az = getAzureAppServiceClient(servicePlanEntity.getSubscriptionId());
-        final AppServicePlan appServicePlan = az.appServicePlan(servicePlanEntity);
+        final String rg = Optional.ofNullable(servicePlanEntity.getResourceGroup()).orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).resourceGroupName());
+        final String name = Optional.ofNullable(servicePlanEntity.getName()).orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).name());
+        final AzureAppService az = Azure.az(AzureAppService.class);
+        final AppServicePlan appServicePlan = az.plans(servicePlanEntity.getSubscriptionId()).getOrDraft(name, rg);
         if (appServicePlan.exists()) {
             return appServicePlan;
         }
-        return appServicePlan.create()
-                // todo: remove duplicated parameters declared in service plan entity
-                .withName(servicePlanEntity.getName())
-                .withResourceGroup(servicePlanEntity.getResourceGroup())
-                .withRegion(Region.fromName(servicePlanEntity.getRegion()))
-                .withPricingTier(servicePlanEntity.getPricingTier())
-                .withOperatingSystem(servicePlanEntity.getOperatingSystem())
-                .commit();
+        final AppServicePlanDraft draft = (AppServicePlanDraft) appServicePlan;
+        draft.setRegion(Region.fromName(servicePlanEntity.getRegion()));
+        draft.setPricingTier(servicePlanEntity.getPricingTier());
+        draft.setOperatingSystem(servicePlanEntity.getOperatingSystem());
+        return draft.createIfNotExist();
     }
 
     /**
@@ -193,26 +196,22 @@ public class AzureWebAppMvpModel {
     public WebAppDeploymentSlot createDeploymentSlotFromSettingModel(@Nonnull final WebApp webApp, @Nonnull final WebAppSettingModel model) {
         String configurationSource = model.getNewSlotConfigurationSource();
         if (StringUtils.equalsIgnoreCase(configurationSource, webApp.name())) {
-            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_PARENT;
+            configurationSource = WebAppDeploymentSlotDraft.CONFIGURATION_SOURCE_PARENT;
         }
         if (StringUtils.equalsIgnoreCase(configurationSource, DO_NOT_CLONE_SLOT_CONFIGURATION)) {
-            configurationSource = WebAppDeploymentSlot.WebAppDeploymentSlotCreator.CONFIGURATION_SOURCE_NEW;
+            configurationSource = WebAppDeploymentSlotDraft.CONFIGURATION_SOURCE_NEW;
         }
-        return webApp.deploymentSlot(model.getNewSlotName()).create()
-                .withName(model.getNewSlotName())
-                .withConfigurationSource(configurationSource).commit();
-    }
-
-    public AzureAppService getAzureAppServiceClient(String subscriptionId) {
-        return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId);
+        final WebAppDeploymentSlotDraft draft = webApp.slots().create(model.getNewSlotName(), webApp.getResourceGroupName());
+        draft.setConfigurationSource(configurationSource);
+        return draft.createIfNotExist();
     }
 
     @AzureOperation(
-            name = "webapp.upload_artifact.artifact|app",
-            params = {"file.getName()", "deployTarget.name()"},
-            type = AzureOperation.Type.SERVICE
+        name = "webapp.upload_artifact.artifact|app",
+        params = {"file.getName()", "deployTarget.name()"},
+        type = AzureOperation.Type.SERVICE
     )
-    public void deployArtifactsToWebApp(@Nonnull final IWebAppBase deployTarget, @Nonnull final File file,
+    public void deployArtifactsToWebApp(@Nonnull final WebAppBase<?, ?, ?> deployTarget, @Nonnull final File file,
                                         boolean isDeployToRoot, @Nonnull final IProgressIndicator progressIndicator) {
         final Action<Void> retry = Action.retryFromFailure(() -> deployArtifactsToWebApp(deployTarget, file, isDeployToRoot, progressIndicator));
         if (!(deployTarget instanceof WebApp || deployTarget instanceof WebAppDeploymentSlot)) {
@@ -221,21 +220,21 @@ public class AzureWebAppMvpModel {
             throw new AzureToolkitRuntimeException(error, action, retry);
         }
         // stop target app service
-        String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
+        final String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
         progressIndicator.setText(stopMessage);
         deployTarget.stop();
         // todo: @hanli migrate to use WebAppDeployTask
         final DeployType deployType = Optional.ofNullable(DeployType.fromString(FilenameUtils.getExtension(file.getName()))).orElse(DeployType.ZIP);
         // java se runtime will always deploy to root
         if (isDeployToRoot ||
-                Objects.equals(deployTarget.getRuntime().getWebContainer(), WebContainer.JAVA_SE)) {
+            Objects.equals(Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer(), WebContainer.JAVA_SE)) {
             deployTarget.deploy(deployType, file);
         } else {
             final String webappPath = String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
             deployTarget.deploy(deployType, file, webappPath);
         }
 
-        String successMessage = deployTarget instanceof WebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
+        final String successMessage = deployTarget instanceof WebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
         progressIndicator.setText(successMessage);
         deployTarget.start();
     }
@@ -250,7 +249,9 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public void updateDeploymentSlotAppSettings(final WebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
-        slot.update().withAppSettings(toUpdate).commit();
+        final WebAppDeploymentSlotDraft draft = (WebAppDeploymentSlotDraft) slot.update();
+        draft.setAppSettings(toUpdate);
+        draft.updateIfExist();
     }
 
     private static final class SingletonHolder {

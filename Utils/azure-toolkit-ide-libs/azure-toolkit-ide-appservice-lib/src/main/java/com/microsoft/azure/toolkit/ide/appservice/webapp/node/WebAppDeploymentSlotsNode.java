@@ -9,8 +9,8 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributo
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -31,7 +31,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
         this.webApp = data;
         this.view(new WebAppDeploymentSlotsNodeView(data));
         this.actions(WebAppActionsContributor.DEPLOYMENT_SLOTS_ACTIONS);
-        this.addChildren(ignore -> webApp.deploymentSlots().stream().sorted(Comparator.comparing(WebAppDeploymentSlot::name)).collect(Collectors.toList()),
+        this.addChildren(ignore -> webApp.slots().list().stream().sorted(Comparator.comparing(WebAppDeploymentSlot::name)).collect(Collectors.toList()),
                 (slot, slotsNode) -> new Node<>(slot).view(new AzureResourceLabelView<>(slot)).actions(WebAppActionsContributor.DEPLOYMENT_SLOT_ACTIONS));
     }
 

@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.ide.appservice.file;
 
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -33,9 +33,9 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
     public static final String LOG_FILES = "/LogFiles";
 
     private final AppServiceFile file;
-    private final IAppService<?> appService;
+    private final AppServiceAppBase<?, ?, ?> appService;
 
-    public static AppServiceFile getRootFileNodeForAppService(@Nonnull IAppService<?> appService) {
+    public static AppServiceFile getRootFileNodeForAppService(@Nonnull AppServiceAppBase<?, ?, ?> appService) {
         final AppServiceFile appServiceFile = new AppServiceFile();
         appServiceFile.setName("Files");
         appServiceFile.setPath(SITE_WWWROOT);
@@ -44,7 +44,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         return appServiceFile;
     }
 
-    public static AppServiceFile getRootLogNodeForAppService(@Nonnull IAppService<?> appService) {
+    public static AppServiceFile getRootLogNodeForAppService(@Nonnull AppServiceAppBase<?, ?, ?> appService) {
         final AppServiceFile appServiceFile = new AppServiceFile();
         appServiceFile.setName("Logs");
         appServiceFile.setPath(LOG_FILES);
@@ -131,7 +131,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         private static String formatDateTime(@Nullable final String dateTime) {
             try {
                 return StringUtils.isEmpty(dateTime) ? "Unknown" : DateTimeFormatter.RFC_1123_DATE_TIME.format(OffsetDateTime.parse(dateTime));
-            } catch (DateTimeException dateTimeException) {
+            } catch (final DateTimeException dateTimeException) {
                 // swallow exception for parse datetime, return unknown in this case
                 return "Unknown";
             }

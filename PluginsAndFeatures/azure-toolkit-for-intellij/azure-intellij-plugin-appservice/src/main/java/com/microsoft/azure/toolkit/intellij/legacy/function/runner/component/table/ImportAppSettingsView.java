@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 import java.util.List;

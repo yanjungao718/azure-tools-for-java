@@ -6,12 +6,12 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
@@ -68,7 +68,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         }));
     }
 
-    protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final IAppService<T> appService, @Nonnull final AppServicePlan plan) {
+    protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final AppServiceAppBase<?, ?, ?> appService, @Nonnull final AppServicePlan plan) {
         final Map<String, String> appSettingsMap = appService.getAppSettings();
         final Map<String, Object> propertyMap = new HashMap<>();
         propertyMap.put(KEY_NAME, appService.getName());
@@ -77,7 +77,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_SUB_ID, appService.getSubscriptionId());
         propertyMap.put(KEY_STATUS, StringUtils.capitalize(StringUtils.lowerCase(appService.status())));
         propertyMap.put(KEY_PLAN, plan.name());
-        propertyMap.put(KEY_URL, appService.hostName());
+        propertyMap.put(KEY_URL, appService.getHostName());
         final PricingTier pricingTier = plan.getPricingTier();
         propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
@@ -92,11 +92,11 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         return new WebAppProperty(propertyMap);
     }
 
-    protected abstract <T extends AppServiceBaseEntity> IAppService<T> getWebAppBase(@Nonnull String sid, @Nonnull String webAppId,
-                                                                                     @Nullable String name) throws Exception;
+    protected abstract AppServiceAppBase<?, ?, ?> getWebAppBase(@Nonnull String sid, @Nonnull String webAppId,
+                                                                @Nullable String name) throws Exception;
 
     protected abstract void updateAppSettings(@Nonnull String sid, @Nonnull String webAppId, @Nullable String name,
-                                              @Nonnull Map toUpdate, @Nonnull Set toRemove) throws Exception;
+                                              @Nonnull Map<String, String> toUpdate, @Nonnull Set<String> toRemove) throws Exception;
 
     protected boolean getPublishingProfile(@Nonnull String sid, @Nonnull String webAppId, @Nullable String name,
                                            @Nonnull String filePath) throws Exception {
@@ -108,7 +108,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             AzureMessager.getMessager().warning("failed to create publishing profile xml file");
             return false;
         }
-        final IAppService resource = getWebAppBase(sid, webAppId, name);
+        final AppServiceAppBase<?, ?, ?> resource = getWebAppBase(sid, webAppId, name);
         try (final InputStream inputStream = resource.listPublishingProfileXmlWithSecrets();
              final OutputStream outputStream = new FileOutputStream(file)) {
             IOUtils.copy(inputStream, outputStream);

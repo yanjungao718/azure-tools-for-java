@@ -15,22 +15,20 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppModule;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class WebAppNodeProvider implements IExplorerNodeProvider {
-    public static final AzureIconProvider<IAppService<?>> APP_SERVICE_ICON_PROVIDER =
-        new AzureResourceIconProvider<IAppService<?>>().withModifier(WebAppNodeProvider::getOperatingSystemModifier);
+    public static final AzureIconProvider<AppServiceAppBase<?, ?, ?>> APP_SERVICE_ICON_PROVIDER =
+        new AzureResourceIconProvider<AppServiceAppBase<?, ?, ?>>().withModifier(WebAppNodeProvider::getOperatingSystemModifier);
 
     private static final String NAME = "Web Apps";
     private static final String ICON = "/icons/webapp.svg";
@@ -38,12 +36,12 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
     @Nullable
     @Override
     public Object getRoot() {
-        return Azure.az(AzureWebApp.class);
+        return WebAppModule.class;
     }
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
-        return data instanceof AzureWebApp ||
+        return data == WebAppModule.class ||
             data instanceof WebApp ||
             data instanceof AppServiceFile;
     }
@@ -51,12 +49,12 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
     @Nullable
     @Override
     public Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager) {
-        if (data instanceof AzureWebApp) {
-            final AzureWebApp service = (AzureWebApp) data;
+        if (data == WebAppModule.class) {
+            final AzureAppService service = Azure.az(AzureAppService.class);
             return new Node<>(service)
                 .view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(WebAppActionsContributor.SERVICE_ACTIONS)
-                .addChildren(WebAppNodeProvider::listWebApps, (d, p) -> this.createNode(d, p, manager));
+                .addChildren(AzureAppService::webApps, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof WebApp) {
             final WebApp webApp = (WebApp) data;
             return new Node<>(webApp)
@@ -73,13 +71,8 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
     }
 
     @Nullable
-    private static AzureIcon.Modifier getOperatingSystemModifier(IAppService<?> resource) {
+    private static AzureIcon.Modifier getOperatingSystemModifier(AppServiceAppBase<?, ?, ?> resource) {
         return resource.getFormalStatus().isWaiting() ? null :
             resource.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
-    }
-
-    @Nonnull
-    private static List<WebApp> listWebApps(AzureWebApp webAppModule) {
-        return webAppModule.list().stream().sorted(Comparator.comparing(WebApp::name)).collect(Collectors.toList());
     }
 }

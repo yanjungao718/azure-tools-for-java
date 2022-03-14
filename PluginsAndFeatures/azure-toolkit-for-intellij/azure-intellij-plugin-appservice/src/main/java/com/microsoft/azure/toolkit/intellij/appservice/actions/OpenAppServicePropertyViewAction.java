@@ -14,9 +14,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppPropertyViewProvider;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -70,9 +70,9 @@ public class OpenAppServicePropertyViewAction {
             final Map<Key, String> userData = new HashMap<>();
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
-            userData.put(WEBAPP_ID, slot.webApp().id());
+            userData.put(WEBAPP_ID, slot.getParent().id());
             userData.put(SLOT_NAME, slot.name());
-            itemVirtualFile = createVirtualFile(slot.webApp().name() + "-" + slot.name(), userData);
+            itemVirtualFile = createVirtualFile(slot.getParent().name() + "-" + slot.name(), userData);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.DeploymentSlot.MODULE.getPath())));
         }
         final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
