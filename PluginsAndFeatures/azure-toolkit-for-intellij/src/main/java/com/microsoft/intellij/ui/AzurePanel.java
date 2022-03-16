@@ -154,7 +154,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     }
 
     private static String azureEnvironmentToString(@Nonnull AzureEnvironment env) {
-        final String name = AzureEnvironmentUtils.getCloudNameForAzureCli(env);
+        final String name = AzureEnvironmentUtils.getCloudName(env);
         return StringUtils.removeEnd(name, "Cloud");
     }
 

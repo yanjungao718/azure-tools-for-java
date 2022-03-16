@@ -49,7 +49,7 @@ public class AuthMethodManager {
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
-    private final CompletableFuture<Boolean> initFuture = new CompletableFuture();
+    private final CompletableFuture<Boolean> initFuture = new CompletableFuture<>();
     private final IdentityAzureManager identityAzureManager = IdentityAzureManager.getInstance();
 
     static {
@@ -60,17 +60,17 @@ public class AuthMethodManager {
 
     private static void disableLogLevelFor(String...classes) {
         try {
-            Class<?> loggerClz = Class.forName("org.apache.log4j.Logger");
-            Class<?> loggerLevelClz = Class.forName("org.apache.log4j.Level");
-            Object offLevel = FieldUtils.readDeclaredStaticField(loggerLevelClz, "OFF");
-            Method getLoggerMethod = ClassUtils.getPublicMethod(loggerClz, "getLogger", String.class);
+            final Class<?> loggerClz = Class.forName("org.apache.log4j.Logger");
+            final Class<?> loggerLevelClz = Class.forName("org.apache.log4j.Level");
+            final Object offLevel = FieldUtils.readDeclaredStaticField(loggerLevelClz, "OFF");
+            final Method getLoggerMethod = ClassUtils.getPublicMethod(loggerClz, "getLogger", String.class);
             if (getLoggerMethod != null) {
-                for (String className : classes) {
-                    Object logger2 = getLoggerMethod.invoke(loggerClz, className);
+                for (final String className : classes) {
+                    final Object logger2 = getLoggerMethod.invoke(loggerClz, className);
                     FieldUtils.writeField(logger2, "level", offLevel, true);
                 }
             }
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             // ignore
         }
     }
@@ -87,7 +87,7 @@ public class AuthMethodManager {
         Mono.fromCallable(() -> {
             try {
                 initAuthMethodManagerFromSettings();
-            } catch (Throwable ex) {
+            } catch (final Throwable ex) {
                 log.warn("Cannot restore login due to error: " + ex.getMessage());
             }
             return true;
@@ -130,7 +130,7 @@ public class AuthMethodManager {
     }
 
     public void notifySignInEventListener() {
-        for (Runnable l : signInEventListeners) {
+        for (final Runnable l : signInEventListeners) {
             l.run();
         }
         if (AzureUIRefreshCore.listeners != null) {
@@ -139,7 +139,7 @@ public class AuthMethodManager {
     }
 
     private void notifySignOutEventListener() {
-        for (Runnable l : signOutEventListeners) {
+        for (final Runnable l : signOutEventListeners) {
             l.run();
         }
         if (AzureUIRefreshCore.listeners != null) {
@@ -207,7 +207,7 @@ public class AuthMethodManager {
         waitInitFinish();
         try {
             System.out.println("saving authMethodDetails...");
-            String sd = JsonHelper.serialize(authMethodDetails);
+            final String sd = JsonHelper.serialize(authMethodDetails);
             AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, sd);
         } catch (final IOException e) {
             final String error = "Failed to persist auth method settings while updating";
@@ -247,9 +247,9 @@ public class AuthMethodManager {
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
-                List<SubscriptionDetail> persistSubscriptions = SubscriptionManager.loadSubscriptions();
+                final List<SubscriptionDetail> persistSubscriptions = SubscriptionManager.loadSubscriptions();
                 if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
-                    List<String> savedSubscriptionList = persistSubscriptions.stream()
+                    final List<String> savedSubscriptionList = persistSubscriptions.stream()
                             .filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
                     identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
@@ -267,7 +267,7 @@ public class AuthMethodManager {
                 };
                 EventUtil.logEvent(EventType.info, operation, telemetryProperties);
                 notifySignInEventListener();
-            } catch (RuntimeException exception) {
+            } catch (final RuntimeException exception) {
                 initFuture.complete(true);
                 EventUtil.logError(operation, ErrorType.systemError, exception, null, null);
                 this.authMethodDetails = new AuthMethodDetails();
@@ -285,8 +285,8 @@ public class AuthMethodManager {
         try {
             String json = AzureStoreManager.getInstance().getIdeStore().getProperty(ACCOUNT, AUTH_METHOD_DETAIL, "");
             if (StringUtils.isBlank(json)) {
-                FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
-                byte[] data = fs.read();
+                final FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
+                final byte[] data = fs.read();
                 json = new String(data);
                 AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, json);
                 fs.removeFile();
@@ -296,7 +296,7 @@ public class AuthMethodManager {
                 return new AuthMethodDetails();
             }
             return JsonHelper.deserialize(AuthMethodDetails.class, json);
-        } catch (IOException ignored) {
+        } catch (final IOException ignored) {
             System.out.println("Failed to loading authMethodDetails settings. Use defaults.");
             return new AuthMethodDetails();
         }
@@ -305,7 +305,7 @@ public class AuthMethodManager {
     private void waitInitFinish() {
         try {
             this.initFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (final InterruptedException | ExecutionException ignored) {
         }
     }
 }

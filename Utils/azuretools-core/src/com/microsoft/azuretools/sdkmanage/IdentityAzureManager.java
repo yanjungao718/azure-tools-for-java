@@ -267,7 +267,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         authMethodDetails.setClientId(entity.getClientId());
         authMethodDetails.setTenantIds(entity.getTenantIds());
         authMethodDetails.setSubscriptions(entity.getSubscriptions());
-        authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudNameForAzureCli(entity.getEnvironment()));
+        authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudName(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());
         return authMethodDetails;
     }
