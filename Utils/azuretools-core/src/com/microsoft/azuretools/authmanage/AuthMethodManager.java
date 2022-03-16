@@ -254,10 +254,6 @@ public class AuthMethodManager {
                     identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
                 initFuture.complete(true);
-                // pre-load regions
-                AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-                Optional.ofNullable(identityAzureManager.getSelectedSubscriptionIds()).ifPresent(sids -> sids.stream().limit(5).forEach(az::listRegions));
-
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {
