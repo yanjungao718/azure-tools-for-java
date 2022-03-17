@@ -11,13 +11,16 @@ import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +37,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> START = Action.Id.of("action.resource.start");
     public static final Action.Id<IAzureBaseResource<?, ?>> STOP = Action.Id.of("action.resource.stop");
     public static final Action.Id<IAzureBaseResource<?, ?>> RESTART = Action.Id.of("action.resource.restart");
-    public static final Action.Id<IAzureBaseResource<?, ?>> REFRESH = Action.Id.of("action.resource.refresh");
+    public static final Action.Id<Refreshable> REFRESH = Action.Id.of("action.resource.refresh");
     public static final Action.Id<IAzureBaseResource<?, ?>> DELETE = Action.Id.of("action.resource.delete");
     public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
     public static final Action.Id<AzResourceBase> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
@@ -42,7 +45,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> CONNECT = Action.Id.of("action.resource.connect");
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
     public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("action.resource.pin");
-    public static final Action.Id<AzService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
 
@@ -85,21 +87,21 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         deleteAction.setShortcuts(shortcuts.delete());
         am.registerAction(DELETE, deleteAction);
 
-        final Consumer<IAzureBaseResource<?, ?>> refresh = IAzureBaseResource::refresh;
+        final Consumer<Refreshable> refresh = Refreshable::refresh;
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh.resource", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof IAzureBaseResource);
-        final Action<IAzureBaseResource<?, ?>> refreshAction = new Action<>(refresh, refreshView);
+            .title(s -> Optional.ofNullable(s).map(r -> {
+                if (r instanceof IAzureBaseResource) {
+                    return title("resource.refresh.resource", ((IAzureBaseResource<?, ?>) r).name());
+                } else if (r instanceof AbstractAzResourceModule) {
+                    return title("resource.refresh.resource", ((AbstractAzResourceModule<?, ?, ?>) r).getResourceTypeName());
+                } else {
+                    return AzureString.fromString("refresh");
+                }
+            }).orElse(null))
+            .enabled(s -> s instanceof Refreshable);
+        final Action<Refreshable> refreshAction = new Action<>(refresh, refreshView);
         refreshAction.setShortcuts(shortcuts.refresh());
         am.registerAction(REFRESH, refreshAction);
-
-        final Consumer<AzService> serviceRefresh = AzService::refresh;
-        final ActionView.Builder serviceRefreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-            .title(s -> Optional.ofNullable(s).map(r -> title("service.refresh.service", ((AzService) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AzService);
-        final Action<AzService> serviceRefreshAction = new Action<>(serviceRefresh, serviceRefreshView);
-        serviceRefreshAction.setShortcuts(shortcuts.refresh());
-        am.registerAction(SERVICE_REFRESH, serviceRefreshAction);
 
         final Consumer<IAzureBaseResource<?, ?>> openPortalUrl = s -> am.getAction(OPEN_URL).handle(s.portalUrl());
         final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open in Portal", "/icons/action/portal.svg")

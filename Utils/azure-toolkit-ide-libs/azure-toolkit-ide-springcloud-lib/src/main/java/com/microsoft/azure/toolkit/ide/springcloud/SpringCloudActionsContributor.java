@@ -58,7 +58,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final ActionGroup serviceActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.PIN,
             "---",
-            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );

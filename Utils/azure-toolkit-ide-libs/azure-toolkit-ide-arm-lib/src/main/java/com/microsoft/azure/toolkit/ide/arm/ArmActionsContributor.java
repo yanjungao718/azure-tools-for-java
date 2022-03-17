@@ -57,7 +57,7 @@ public class ArmActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
