@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Favorite extends AbstractAzResource<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
     public static final String RG = "FAVORITES_RESOURCE_GROUP";
@@ -46,7 +47,7 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
 
     @Nonnull
     @Override
-    public String loadStatus() {
-        return this.remoteOptional().filter(AbstractAzResource::exists).map(r -> Status.RUNNING).orElse(Status.DELETED);
+    public String loadStatus(AbstractAzResource<?, ?, ?> remote) {
+        return Optional.of(remote).filter(AbstractAzResource::exists).map(r -> Status.RUNNING).orElse(Status.DELETED);
     }
 }
