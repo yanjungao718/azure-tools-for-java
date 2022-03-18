@@ -54,16 +54,15 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.resource = resource;
         this.label = resource.getName();
         this.iconProvider = iconProvider;
-        this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         this.descriptionLoader = descriptionLoader;
-        this.description = descriptionLoader.apply(resource);
-        this.icon = iconProvider.getIcon(resource);
+        this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        this.icon = AzureIcon.REFRESH_ICON;
         AzureEventBus.on("resource.refresh.resource", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
         AzureEventBus.on("resource.refreshed.resource", listener);
         AzureEventBus.on("resource.status_changed.resource", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);
-        this.refreshView();
+        this.updateFrom(this.resource);
     }
 
     public void onEvent(AzureEvent<Object> event) {
@@ -75,29 +74,29 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             if (StringUtils.equalsAny(type,
                 "resource.refresh.resource", "resource.refreshed.resource")) {
-                tm.runOnPooledThread(() -> {
-                    this.icon = iconProvider.getIcon((T) source);
-                    this.description = descriptionLoader.apply((T) source);
-                    this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
-                    tm.runLater(this::refreshView);
-                });
+                this.updateFrom((T) source);
                 if (!(event instanceof AzureOperationEvent) ||
                     ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                     tm.runLater(this::refreshChildren);
                 }
             } else if (StringUtils.equalsAny(type,
                 "common|resource.status_changed", "resource.status_changed.resource")) {
-                tm.runOnPooledThread(() -> {
-                    this.icon = iconProvider.getIcon((T) source);
-                    this.description = descriptionLoader.apply((T) source);
-                    this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
-                    tm.runLater(this::refreshView);
-                });
+                updateFrom((T) source);
             } else if (StringUtils.equalsAny(type,
                 "resource.children_changed.resource")) {
                 tm.runLater(() -> this.refreshChildren(true));
             }
         }
+    }
+
+    private void updateFrom(T source) {
+        final AzureTaskManager tm = AzureTaskManager.getInstance();
+        tm.runOnPooledThread(() -> {
+            this.icon = iconProvider.getIcon(source);
+            this.description = descriptionLoader.apply(source);
+            this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, source.getStatus());
+            tm.runLater(this::refreshView);
+        });
     }
 
     public void dispose() {

@@ -68,7 +68,7 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsAnyIgnoreCase(type, "module.children_changed.module", "service.children_changed.service");
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        if (source instanceof AzService && ((AzService) source).getName().equals(this.service.getName())) {
+        if (source instanceof AzService && source.equals(this.service)) {
             if (!(event instanceof AzureOperationEvent) || (((AzureOperationEvent) event).getStage() == Stage.AFTER)) {
                 tm.runLater(() -> this.refreshChildren(childrenChanged));
             }

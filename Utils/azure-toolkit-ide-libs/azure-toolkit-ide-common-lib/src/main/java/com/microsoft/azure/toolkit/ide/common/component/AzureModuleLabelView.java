@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implements NodeView {
     @Nonnull
@@ -61,11 +60,9 @@ public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implement
         final String type = event.getType();
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsIgnoreCase(type, "module.children_changed.module");
-        if (source instanceof AzResourceModule) {
+        if (source instanceof AzResourceModule && source.equals(this.module)) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            if (Objects.equals(source, this.module)) {
-                tm.runLater(() -> this.refreshChildren(childrenChanged));
-            }
+            tm.runLater(() -> this.refreshChildren(childrenChanged));
         }
     }
 }
