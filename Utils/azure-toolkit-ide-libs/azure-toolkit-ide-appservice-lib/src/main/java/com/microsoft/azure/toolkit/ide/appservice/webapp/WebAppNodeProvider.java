@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class WebAppNodeProvider implements IExplorerNodeProvider {
     public static final AzureIconProvider<AppServiceAppBase<?, ?, ?>> WEBAPP_ICON_PROVIDER =
@@ -73,7 +74,7 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
 
     @Nullable
     public static AzureIcon.Modifier getOperatingSystemModifier(AppServiceAppBase<?, ?, ?> resource) {
-        return resource.getFormalStatus().isWaiting() ? null :
-            resource.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
+        final OperatingSystem os = Optional.ofNullable(resource.getRuntime()).map(r -> r.getOperatingSystem()).orElse(null);
+        return resource.getFormalStatus().isWaiting() ? null : os != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
     }
 }
