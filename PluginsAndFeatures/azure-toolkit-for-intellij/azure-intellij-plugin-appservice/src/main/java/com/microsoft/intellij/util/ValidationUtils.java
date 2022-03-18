@@ -58,7 +58,7 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             throw new IllegalArgumentException(message("appService.name.validate.invalidName"));
         }
-        final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).get(subscriptionId).checkNameAvailability(appServiceName);
+        final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).forSubscription(subscriptionId).checkNameAvailability(appServiceName);
         if (!result.isAvailable()) {
             throw new IllegalArgumentException(result.getUnavailabilityMessage());
         }
