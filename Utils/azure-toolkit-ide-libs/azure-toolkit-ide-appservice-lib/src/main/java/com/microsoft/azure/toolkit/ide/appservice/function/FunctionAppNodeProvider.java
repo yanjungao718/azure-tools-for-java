@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
 import com.microsoft.azure.toolkit.ide.appservice.function.node.FunctionsNode;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
@@ -62,6 +63,7 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
             final FunctionApp functionApp = (FunctionApp) data;
             return new Node<>(functionApp)
                 .view(new AzureResourceLabelView<>(functionApp, FunctionApp::getStatus, FUNCTIONAPP_ICON_PROVIDER))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(FunctionAppActionsContributor.FUNCTION_APP_ACTIONS)
                 .addChildren(Arrays::asList, (app, webAppNode) -> new FunctionsNode(app))
                 .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files

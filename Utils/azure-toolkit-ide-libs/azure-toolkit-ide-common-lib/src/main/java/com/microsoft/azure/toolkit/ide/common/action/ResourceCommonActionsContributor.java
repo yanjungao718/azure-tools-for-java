@@ -166,7 +166,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             if (favorites.exists(r.getId(), null)) {
                 favorites.unpin(r.getId());
             } else {
-                favorites.pin(r.getId());
+                favorites.pin(r);
             }
         }, pinView);
         pinAction.setShortcuts("F11");

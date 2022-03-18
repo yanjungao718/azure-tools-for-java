@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.appservice.webapp;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.node.WebAppDeploymentSlotsNode;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
@@ -61,6 +62,7 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
             final WebApp webApp = (WebApp) data;
             return new Node<>(webApp)
                 .view(new AzureResourceLabelView<>(webApp, WebApp::getStatus, WEBAPP_ICON_PROVIDER))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(WebAppActionsContributor.WEBAPP_ACTIONS)
                 .addChildren(Arrays::asList, (app, webAppNode) -> new WebAppDeploymentSlotsNode(app))
                 .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files

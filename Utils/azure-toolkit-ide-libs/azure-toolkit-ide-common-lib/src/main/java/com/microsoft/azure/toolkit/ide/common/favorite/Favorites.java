@@ -140,8 +140,10 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         this.refresh();
     }
 
-    public void pin(@Nonnull String resourceId) {
-        this.create(resourceId, null).commit();
+    public void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
+        final FavoriteDraft draft = this.create(resource.getId(), null);
+        draft.setResource(resource);
+        draft.commit();
     }
 
     public void unpin(@Nonnull String resourceId) {

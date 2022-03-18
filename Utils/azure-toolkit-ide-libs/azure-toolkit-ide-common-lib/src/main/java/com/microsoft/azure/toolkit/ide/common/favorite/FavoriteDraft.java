@@ -19,6 +19,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
     @Getter
     @Nullable
     private final Favorite origin;
+    private AbstractAzResource<?, ?, ?> resource;
 
     FavoriteDraft(@Nonnull String resourceId, @Nonnull Favorites module) {
         super(resourceId, module);
@@ -32,6 +33,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
 
     @Override
     public void reset() {
+        this.resource = null;
     }
 
     @Nonnull
@@ -42,9 +44,9 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
         type = AzureOperation.Type.SERVICE
     )
     public AbstractAzResource<?, ?, ?> createResourceInAzure() {
-        Favorites.getInstance().favorites.add(0, this.getName());
+        Favorites.getInstance().favorites.add(0, resource.getId());
         Favorites.getInstance().persist();
-        return Objects.requireNonNull(Favorites.getInstance().loadResourceFromAzure(this.getName(), null));
+        return this.resource;
     }
 
     @Nonnull
@@ -56,5 +58,9 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
     @Override
     public boolean isModified() {
         return false;
+    }
+
+    public void setResource(AbstractAzResource<?, ?, ?> resource) {
+        this.resource = resource;
     }
 }
