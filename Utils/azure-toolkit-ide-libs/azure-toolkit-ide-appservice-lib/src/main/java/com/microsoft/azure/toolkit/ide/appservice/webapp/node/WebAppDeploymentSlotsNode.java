@@ -61,7 +61,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         @Override
         public String getIconPath() {
-            return "/icons/webappdeploymentslot.png";
+            return "/icons/Microsoft.Web/sites/slots/default.svg";
         }
 
         @Override

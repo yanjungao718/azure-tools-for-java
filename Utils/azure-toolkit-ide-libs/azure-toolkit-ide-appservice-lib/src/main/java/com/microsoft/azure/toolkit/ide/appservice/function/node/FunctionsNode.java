@@ -69,7 +69,7 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         @Override
         public String getIconPath() {
-            return "/icons/functionapp.png";
+            return "/icons/Microsoft.Web/functions.png";
         }
 
         @Override
