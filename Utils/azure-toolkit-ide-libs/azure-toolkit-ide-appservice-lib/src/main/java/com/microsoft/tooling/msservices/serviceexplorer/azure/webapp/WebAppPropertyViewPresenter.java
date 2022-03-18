@@ -6,7 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
@@ -21,7 +21,7 @@ public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter
     @Override
     protected WebApp getWebAppBase(@Nonnull final String sid, @Nonnull final String webAppId,
                                    @Nullable final String name) {
-        return Azure.az(AzureAppService.class).webApps(sid).get(webAppId);
+        return Azure.az(AzureWebApp.class).webApp(webAppId);
     }
 
     @Override

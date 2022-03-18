@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.task.GetOrCreateApplicationInsightsTask;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;
@@ -21,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.StringUtils;
@@ -78,9 +78,9 @@ public class FunctionAppService {
                 .resourceId(functionApp.id())
                 .name(functionApp.name())
                 .region(functionApp.getRegion())
-                .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
-                .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
-                .servicePlan(AppServicePlanEntity.builder().id(functionApp.getAppServicePlan().id()).build()).build();
+                .resourceGroup(ResourceGroup.builder().name(functionApp.getResourceGroupName()).build())
+                .subscription(functionApp.getSubscription())
+                .servicePlan(AppServicePlanEntity.builder().id(functionApp.getAppServicePlan().getId()).build()).build();
     }
 
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {
@@ -91,7 +91,7 @@ public class FunctionAppService {
         // get/create ai instances only if user didn't specify ai connection string in app settings
         AzureTelemetry.getActionContext().setProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
         bindApplicationInsights(appSettings, config);
-        final FunctionAppDraft draft = Azure.az(AzureAppService.class).functionApps(config.getSubscription().getId())
+        final FunctionAppDraft draft = Azure.az(AzureFunctions.class).functionApps(config.getSubscription().getId())
             .create(config.getName(), resourceGroup.getName());
         draft.setAppServicePlan(appServicePlan);
         draft.setRuntime(config.getRuntime());

@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -38,7 +39,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
 
     private List<WebApp> retrieveListOfWebAppOnLinux(boolean force) {
-        return Azure.az(AzureAppService.class).webApps().stream()
+        return Azure.az(AzureWebApp.class).webApps().stream()
             .filter(app -> Objects.requireNonNull(app.getRuntime()).getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
             .collect(Collectors.toList());
     }

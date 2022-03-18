@@ -13,11 +13,12 @@ import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManage
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
@@ -149,7 +150,7 @@ public enum AppServiceStreamingLogManager {
         private final FunctionApp functionApp;
 
         FunctionLogStreaming(final String resourceId) {
-            this.functionApp = Azure.az(AzureAppService.class).functionApp(resourceId);
+            this.functionApp = Azure.az(AzureFunctions.class).functionApp(resourceId);
         }
 
         @Override
@@ -215,7 +216,7 @@ public enum AppServiceStreamingLogManager {
         private final WebApp webApp;
 
         public WebAppLogStreaming(String resourceId) {
-            this.webApp = Azure.az(AzureAppService.class).webApp(resourceId);
+            this.webApp = Azure.az(AzureWebApp.class).webApp(resourceId);
         }
 
         @Override
@@ -247,7 +248,7 @@ public enum AppServiceStreamingLogManager {
 
         public WebAppSlotLogStreaming(String resourceId) {
             final ResourceId id = ResourceId.fromString(resourceId);
-            this.deploymentSlot = Azure.az(AzureAppService.class).webApp(id.parent().toString()).slots().get(resourceId);
+            this.deploymentSlot = Azure.az(AzureWebApp.class).webApp(id.parent().toString()).slots().get(resourceId);
         }
 
         @Override

@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
@@ -91,7 +92,7 @@ public class AzureWebAppMvpModel {
             .userName(pr.getUsername())
             .password(pr.getPassword())
             .startUpCommand(pr.getStartupFile()).build();
-        final WebAppDraft draft = Azure.az(AzureAppService.class).webApps(model.getSubscriptionId())
+        final WebAppDraft draft = Azure.az(AzureWebApp.class).webApps(model.getSubscriptionId())
             .create(model.getWebAppName(), model.getResourceGroupName());
         draft.setAppServicePlan(appServicePlan);
         draft.setRuntime(Runtime.DOCKER);
@@ -112,7 +113,7 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public WebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
-        final WebApp app = Objects.requireNonNull(Azure.az(AzureAppService.class).webApp(webAppId));
+        final WebApp app = Objects.requireNonNull(Azure.az(AzureWebApp.class).webApp(webAppId));
         // clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
@@ -158,7 +159,7 @@ public class AzureWebAppMvpModel {
             .webServerRetentionPeriod(model.getWebServerRetentionPeriod())
             .enableDetailedErrorMessage(model.isEnableDetailedErrorMessage())
             .enableFailedRequestTracing(model.isEnableFailedRequestTracing()).build();
-        final WebAppDraft draft = Azure.az(AzureAppService.class).webApps(model.getSubscriptionId()).create(model.getWebAppName(), model.getResourceGroup());
+        final WebAppDraft draft = Azure.az(AzureWebApp.class).webApps(model.getSubscriptionId()).create(model.getWebAppName(), model.getResourceGroup());
         draft.setAppServicePlan(appServicePlan);
         draft.setRuntime(model.getRuntime());
         draft.setDiagnosticConfig(diagnosticConfig);

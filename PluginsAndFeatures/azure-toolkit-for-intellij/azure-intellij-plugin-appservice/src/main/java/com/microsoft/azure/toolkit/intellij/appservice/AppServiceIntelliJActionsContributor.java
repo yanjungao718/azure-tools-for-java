@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.CreateWebAppAct
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.DeployWebAppAction;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -129,7 +128,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         final BiConsumer<FunctionEntity, AnActionEvent> triggerFunctionHandler = (entity, e) -> {
             final String functionId = Optional.ofNullable(entity.getFunctionAppId())
                     .orElseGet(() -> ResourceId.fromString(entity.getTriggerId()).parent().id());
-            final FunctionApp functionApp = Azure.az(AzureAppService.class).functionApp(functionId);
+            final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(functionId);
             final String triggerType = Optional.ofNullable(entity.getTrigger())
                     .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
             final Object request;

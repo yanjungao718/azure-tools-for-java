@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
@@ -24,7 +24,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppConfig> {
 
     @Override
     protected List<WebAppConfig> loadAppServiceModels() {
-        final List<WebApp> webApps = Azure.az(AzureAppService.class).webApps();
+        final List<WebApp> webApps = Azure.az(AzureWebApp.class).webApps();
         return webApps.stream().parallel()
                 .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
                 .map(webApp -> convertAppServiceToConfig(WebAppConfig::new, webApp))

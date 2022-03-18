@@ -6,7 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
@@ -33,7 +33,7 @@ public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewP
     @Override
     protected WebAppDeploymentSlot getWebAppBase(@Nonnull final String sid, @Nonnull final String webAppId,
                                                   @Nullable final String name) {
-        final WebApp webApp = Azure.az(AzureAppService.class).webApp(webAppId);
+        final WebApp webApp = Azure.az(AzureWebApp.class).webApp(webAppId);
         return Objects.requireNonNull(webApp).slots().get(name, webApp.getResourceGroupName());
     }
 }

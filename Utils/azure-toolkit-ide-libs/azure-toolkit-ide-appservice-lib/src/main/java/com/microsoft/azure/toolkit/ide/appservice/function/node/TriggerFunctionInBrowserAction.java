@@ -8,8 +8,8 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -34,7 +34,7 @@ public class TriggerFunctionInBrowserAction {
     public TriggerFunctionInBrowserAction(@Nonnull final FunctionEntity functionEntity) {
         final String functionId = Optional.ofNullable(functionEntity.getFunctionAppId()).orElseGet(() ->
                 ResourceId.fromString(functionEntity.getTriggerId()).parent().id());
-        this.functionApp = Azure.az(AzureAppService.class).functionApp(functionId);
+        this.functionApp = Azure.az(AzureFunctions.class).functionApp(functionId);
         this.functionEntity = functionEntity;
         this.trigger = functionEntity.getTrigger();
         final String triggerType = Optional.ofNullable(trigger)

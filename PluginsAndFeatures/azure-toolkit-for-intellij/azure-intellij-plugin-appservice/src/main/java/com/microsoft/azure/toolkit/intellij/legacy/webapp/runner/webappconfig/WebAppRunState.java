@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
@@ -140,7 +141,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
 
     @NotNull
     private WebAppBase<?, ?, ?> getOrCreateDeployTargetFromAppSettingModel(@NotNull RunProcessHandler processHandler) throws Exception {
-        final AzureAppService azureAppService = Azure.az(AzureAppService.class);
+        final AzureAppService azureAppService = Azure.az(AzureWebApp.class);
         final WebApp webApp = getOrCreateWebappFromAppSettingModel(azureAppService, processHandler);
         if (!isDeployToSlot()) {
             return webApp;
