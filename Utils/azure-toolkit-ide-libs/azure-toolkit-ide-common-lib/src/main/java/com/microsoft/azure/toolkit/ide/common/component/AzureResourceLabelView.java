@@ -10,8 +10,9 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +41,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     private Refresher refresher;
     @Getter
     private boolean enabled = true;
+    private final Debouncer refreshViewInner = new TailingDebouncer(this::refreshViewInner, 300);
 
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
     private final Function<T, String> descriptionLoader;
@@ -57,12 +59,11 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.descriptionLoader = descriptionLoader;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         this.icon = AzureIcon.REFRESH_ICON;
-        AzureEventBus.on("resource.refresh.resource", listener);
-        AzureEventBus.on("common|resource.status_changed", listener);
+        System.out.println("&&&&&&&&&&&&&&&&& register listeners@" + this.resource.getName());
         AzureEventBus.on("resource.refreshed.resource", listener);
         AzureEventBus.on("resource.status_changed.resource", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);
-        this.updateFrom(this.resource);
+        this.refreshViewInner.debounce();
     }
 
     public void onEvent(AzureEvent<Object> event) {
@@ -72,39 +73,35 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
             ((IAzureBaseResource<?, ?>) source).getId().equals(this.resource.getId()) &&
             ((IAzureBaseResource<?, ?>) source).getName().equals(this.resource.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            if (StringUtils.equalsAny(type,
-                "resource.refresh.resource", "resource.refreshed.resource")) {
-                this.updateFrom((T) source);
-                if (!(event instanceof AzureOperationEvent) ||
-                    ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                    tm.runLater(this::refreshChildren);
-                }
-            } else if (StringUtils.equalsAny(type,
-                "common|resource.status_changed", "resource.status_changed.resource")) {
-                updateFrom((T) source);
-            } else if (StringUtils.equalsAny(type,
-                "resource.children_changed.resource")) {
+            System.out.println("event:  " + type);
+            System.out.println("source: " + ((IAzureBaseResource<?, ?>) source).getName());
+            System.out.println("status: " + ((IAzureBaseResource<?, ?>) source).getStatus());
+            if (StringUtils.equals(type, "resource.refreshed.resource")) {
+                this.refreshViewInner.debounce();
+                tm.runLater(() -> this.refreshChildren(false));
+            } else if (StringUtils.equals(type, "resource.status_changed.resource")) {
+                this.refreshViewInner.debounce();
+            } else if (StringUtils.equals(type, "resource.children_changed.resource")) {
                 tm.runLater(() -> this.refreshChildren(true));
             }
         }
     }
 
-    private void updateFrom(T source) {
+    private void refreshViewInner() {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         tm.runOnPooledThread(() -> {
-            this.icon = iconProvider.getIcon(source);
-            this.description = descriptionLoader.apply(source);
-            this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, source.getStatus());
+            this.icon = iconProvider.getIcon(this.resource);
+            this.description = descriptionLoader.apply(this.resource);
+            this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, this.resource.getStatus());
             tm.runLater(this::refreshView);
         });
     }
 
     public void dispose() {
-        AzureEventBus.off("resource.refresh.resource", listener);
-        AzureEventBus.off("common|resource.status_changed", listener);
+        System.out.println("&&&&&&&&&&&&&&&&& unregister listeners@" + this.resource.getName());
         AzureEventBus.off("resource.refreshed.resource", listener);
-        AzureEventBus.off("resource.children_changed.resource", listener);
         AzureEventBus.off("resource.status_changed.resource", listener);
+        AzureEventBus.off("resource.children_changed.resource", listener);
         this.refresher = null;
     }
 
