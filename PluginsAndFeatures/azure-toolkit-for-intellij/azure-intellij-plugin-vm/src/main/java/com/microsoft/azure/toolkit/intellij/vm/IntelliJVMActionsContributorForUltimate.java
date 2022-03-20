@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor;
 import com.microsoft.azure.toolkit.intellij.vm.ssh.AddSshConfigAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.compute.vm.VirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;

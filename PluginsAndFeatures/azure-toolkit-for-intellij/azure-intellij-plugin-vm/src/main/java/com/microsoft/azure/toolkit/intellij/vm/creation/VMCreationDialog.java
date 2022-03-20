@@ -21,33 +21,41 @@ import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.Resou
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.AzureStorageAccountComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.InboundPortRulesForm;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.NetworkAvailabilityOptionsComboBox;
+import com.microsoft.azure.toolkit.intellij.vm.creation.component.PublicIPAddressComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.SecurityGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.SubnetComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineImageComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineSizeComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualNetworkComboBox;
-import com.microsoft.azure.toolkit.intellij.vm.creation.component.ip.PublicIPAddressComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
-import com.microsoft.azure.toolkit.lib.compute.network.Network;
-import com.microsoft.azure.toolkit.lib.compute.security.DraftNetworkSecurityGroup;
-import com.microsoft.azure.toolkit.lib.compute.security.model.SecurityRule;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureImage;
-import com.microsoft.azure.toolkit.lib.compute.vm.DraftVirtualMachine;
-import com.microsoft.azure.toolkit.lib.compute.vm.model.AuthenticationType;
-import com.microsoft.azure.toolkit.lib.compute.vm.model.AzureSpotConfig;
-import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachineDraft;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VmImage;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.model.AuthenticationType;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.model.SpotConfig;
+import com.microsoft.azure.toolkit.lib.network.AzureNetwork;
+import com.microsoft.azure.toolkit.lib.network.networksecuritygroup.NetworkSecurityGroupDraft;
+import com.microsoft.azure.toolkit.lib.network.networksecuritygroup.SecurityRule;
+import com.microsoft.azure.toolkit.lib.network.publicipaddress.PublicIpAddress;
+import com.microsoft.azure.toolkit.lib.network.publicipaddress.PublicIpAddressDraft;
+import com.microsoft.azure.toolkit.lib.network.virtualnetwork.Network;
+import com.microsoft.azure.toolkit.lib.network.virtualnetwork.NetworkDraft;
 import io.jsonwebtoken.lang.Collections;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -61,9 +69,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implements AzureForm<DraftVirtualMachine> {
+public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implements AzureForm<VirtualMachineDraft> {
     private static final String SSH_PUBLIC_KEY_DESCRIPTION = "<html> Provide an RSA public key file in the single-line format (starting with \"ssh-rsa\") or " +
-            "the multi-line PEM format. <p/> You can generate SSH keys using ssh-keygen on Linux and OS X, or PuTTYGen on Windows. </html>";
+        "the multi-line PEM format. <p/> You can generate SSH keys using ssh-keygen on Linux and OS X, or PuTTYGen on Windows. </html>";
     private static final String SELECT_CERT_TITLE = "Select Cert for Your VM";
     private static final String VIRTUAL_MACHINE_CREATION_DIALOG_TITLE = "Create Virtual Machine";
     private JTabbedPane tabbedPane;
@@ -179,8 +187,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         cbResourceGroup.addItemListener(this::onResourceGroupChanged);
         cbVirtualNetwork.addItemListener(this::onNetworkChanged);
         cbImage.addItemListener(this::onImageChanged);
-        txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
-                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
+            project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
 
         unifyComponentsStyle();
     }
@@ -191,8 +199,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     private void onImageChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof AzureImage) {
-            final AzureImage image = (AzureImage) e.getItem();
+        if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof VmImage) {
+            final VmImage image = (VmImage) e.getItem();
             if (image.getOperatingSystem() == OperatingSystem.Windows) {
                 // SSH key was not supported for windows
                 rdoSshPublicKey.setVisible(false);
@@ -246,8 +254,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
 
     private void unifyComponentsStyle() {
         final List<JLabel> labels = Stream.of(getLabels(), pnlBasicPorts.getLabels(), pnlPorts.getLabels()).flatMap(List::stream).collect(Collectors.toList());
-        final int maxWidth = labels.stream().map(JLabel::getPreferredSize).map(Dimension::getWidth).max(Double::compare).map(Double::intValue).get();
-        final int maxHeight = labels.stream().map(JLabel::getPreferredSize).map(Dimension::getHeight).max(Double::compare).map(Double::intValue).get();
+        final int maxWidth = labels.stream().map(JLabel::getPreferredSize).map(Dimension::getWidth).max(Double::compare).map(Double::intValue).orElse(500);
+        final int maxHeight = labels.stream().map(JLabel::getPreferredSize).map(Dimension::getHeight).max(Double::compare).map(Double::intValue).orElse(500);
         labels.forEach(field -> {
             final Dimension dimension = new Dimension(maxWidth, Math.max(maxHeight, cbSecurityGroup.getPreferredSize().height));
             field.setPreferredSize(dimension);
@@ -277,7 +285,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         lblMaximumPrice.setVisible(enableAzureSpotInstance);
         txtMaximumPrice.setVisible(enableAzureSpotInstance);
         txtMaximumPrice.setRequired(enableAzureSpotInstance);
-        txtMaximumPrice.setValidator(enableAzureSpotInstance ? this::validateMaximumPricing : null);
+        if (enableAzureSpotInstance) {
+            txtMaximumPrice.setValidator(this::validateMaximumPricing);
+        }
         txtMaximumPrice.validateValueAsync(); // trigger revalidate after reset validator
         txtMaximumPrice.onDocumentChanged(); // trigger revalidate after reset validator
     }
@@ -303,7 +313,9 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         txtCertificate.setRequired(isSSH);
 
         passwordFieldInput.setRequired(!isSSH);
-        passwordFieldInput.setValidator(isSSH ? null : this::validatePassword);
+        if (!isSSH) {
+            passwordFieldInput.setValidator(this::validatePassword);
+        }
         confirmPasswordFieldInput.setRequired(!isSSH);
     }
 
@@ -341,7 +353,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public AzureForm<DraftVirtualMachine> getForm() {
+    public AzureForm<VirtualMachineDraft> getForm() {
         return this;
     }
 
@@ -351,60 +363,68 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public DraftVirtualMachine getValue() {
+    public VirtualMachineDraft getValue() {
         final Subscription subscription = cbSubscription.getValue();
         final String subscriptionId = Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
         final ResourceGroup resourceGroup = cbResourceGroup.getValue();
         final String resourceGroupName = Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
         final String vmName = txtVisualMachineName.getText();
-        final DraftVirtualMachine draftVirtualMachine = new DraftVirtualMachine();
-        draftVirtualMachine.setSubscriptionId(subscriptionId);
-        draftVirtualMachine.setResourceGroup(resourceGroupName);
-        draftVirtualMachine.setName(vmName);
-        draftVirtualMachine.setRegion(cbRegion.getValue());
-        draftVirtualMachine.setNetwork(cbVirtualNetwork.getValue());
-        draftVirtualMachine.setSubnet(cbSubnet.getValue());
-        draftVirtualMachine.setImage(cbImage.getValue());
-        draftVirtualMachine.setIpAddress(cbPublicIp.getValue());
-        draftVirtualMachine.setUserName(txtUserName.getText());
+        final Region region = cbRegion.getValue();
+
+        final Network network = cbVirtualNetwork.getValue();
+        final PublicIpAddress ipAddress = cbPublicIp.getValue();
+        Optional.ofNullable(network).filter(AbstractAzResource::isDraft).map(n -> ((NetworkDraft) n)).ifPresent(n -> {
+            n.setResourceGroupName(resourceGroupName);
+            n.setRegion(region);
+        });
+        Optional.ofNullable(ipAddress).filter(AbstractAzResource::isDraft).map(n -> ((PublicIpAddressDraft) n)).ifPresent(n -> {
+            n.setResourceGroupName(resourceGroupName);
+            n.setRegion(region);
+        });
+        final VirtualMachineDraft vmDraft = Azure.az(AzureCompute.class).virtualMachines(subscriptionId).create(vmName, resourceGroupName);
+        vmDraft.setRegion(region);
+        vmDraft.setNetwork(network);
+        vmDraft.setSubnet(cbSubnet.getValue());
+        vmDraft.setImage(cbImage.getValue());
+        vmDraft.setIpAddress(ipAddress);
+        vmDraft.setAdminUserName(txtUserName.getText());
         if (rdoPassword.isSelected()) {
-            draftVirtualMachine.setAuthenticationType(AuthenticationType.Password);
-            draftVirtualMachine.setPassword(passwordFieldInput.getValue());
+            vmDraft.setAuthenticationType(AuthenticationType.Password);
+            vmDraft.setPassword(passwordFieldInput.getValue());
         } else if (rdoSshPublicKey.isSelected()) {
-            draftVirtualMachine.setAuthenticationType(AuthenticationType.SSH);
+            vmDraft.setAuthenticationType(AuthenticationType.SSH);
             try {
-                draftVirtualMachine.setSshKey(readCert(txtCertificate.getValue()));
+                vmDraft.setSshKey(readCert(txtCertificate.getValue()));
             } catch (final IOException e) {
                 // swallow exception while get data
             }
         }
-        draftVirtualMachine.setSize(cbSize.getValue());
-        draftVirtualMachine.setAvailabilitySet(cbAvailabilityOptions.getValue());
+        vmDraft.setSize(cbSize.getValue());
+        vmDraft.setAvailabilitySet(cbAvailabilityOptions.getValue());
         // Azure Spot
         if (chkAzureSpotInstance.isSelected()) {
-            final AzureSpotConfig.EvictionType evictionType = AzureSpotConfig.EvictionType.CapacityOnly;
-            final AzureSpotConfig.EvictionPolicy evictionPolicy = rdoStopAndDeallocate.isSelected() ?
-                    AzureSpotConfig.EvictionPolicy.StopAndDeallocate : AzureSpotConfig.EvictionPolicy.Delete;
+            final SpotConfig.EvictionType evictionType = SpotConfig.EvictionType.CapacityOnly;
+            final SpotConfig.EvictionPolicy evictionPolicy = rdoStopAndDeallocate.isSelected() ?
+                SpotConfig.EvictionPolicy.StopAndDeallocate : SpotConfig.EvictionPolicy.Delete;
             final double maximumPrice = Double.parseDouble(txtMaximumPrice.getText());
-            final AzureSpotConfig spotConfig = new AzureSpotConfig(maximumPrice, evictionType, evictionPolicy);
-            draftVirtualMachine.setAzureSpotConfig(spotConfig);
+            final SpotConfig spotConfig = new SpotConfig(maximumPrice, evictionType, evictionPolicy);
+            vmDraft.setSpotConfig(spotConfig);
         } else {
-            draftVirtualMachine.setAzureSpotConfig(null);
+            vmDraft.setSpotConfig(null);
         }
         // Security Group
         if (rdoAdvancedSecurityGroup.isSelected()) {
-            draftVirtualMachine.setSecurityGroup(cbSecurityGroup.getValue());
+            vmDraft.setSecurityGroup(cbSecurityGroup.getValue());
         } else if (rdoBasicSecurityGroup.isSelected()) {
-            final DraftNetworkSecurityGroup draftNetworkSecurityGroup = new DraftNetworkSecurityGroup();
-            draftNetworkSecurityGroup.setSubscriptionId(subscriptionId);
-            draftNetworkSecurityGroup.setResourceGroup(resourceGroupName);
-            draftNetworkSecurityGroup.setName(vmName + "-sg" + Utils.getTimestamp());
-            draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
-            draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getValue());
-            draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
+            final String name = vmName + "-sg" + Utils.getTimestamp();
+            final AzureNetwork az = Azure.az(AzureNetwork.class);
+            final NetworkSecurityGroupDraft securityGroupdraft = az.networkSecurityGroups(subscriptionId).create(name, resourceGroupName);
+            securityGroupdraft.setRegion(region);
+            securityGroupdraft.setSecurityRules(pnlPorts.getValue());
+            vmDraft.setSecurityGroup(securityGroupdraft);
         }
-        draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
-        return draftVirtualMachine;
+        vmDraft.setStorageAccount(cbStorageAccount.getValue());
+        return vmDraft;
     }
 
     private String readCert(final String certificate) throws IOException {
@@ -424,25 +444,25 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public void setValue(DraftVirtualMachine data) {
-        Optional.ofNullable(data.getResourceGroup()).ifPresent(groupName -> cbResourceGroup.setValue(
-                new AzureComboBox.ItemReference<>(group -> StringUtils.equalsIgnoreCase(group.getName(), groupName))));
-        Optional.ofNullable(data.getSubscriptionId()).ifPresent(id -> cbSubscription.setValue(
-                new AzureComboBox.ItemReference<>(subscription -> StringUtils.equalsIgnoreCase(subscription.getId(), id))));
-        Optional.ofNullable(data.getName()).ifPresent(name -> txtVisualMachineName.setText(name));
+    public void setValue(@Nonnull VirtualMachineDraft data) {
+        Optional.of(data.getResourceGroupName()).filter(n -> !Objects.equals(n, "<none>")).ifPresent(groupName -> cbResourceGroup.setValue(
+            new AzureComboBox.ItemReference<>(group -> StringUtils.equalsIgnoreCase(group.getName(), groupName))));
+        Optional.of(data.getSubscriptionId()).ifPresent(id -> cbSubscription.setValue(
+            new AzureComboBox.ItemReference<>(subscription -> StringUtils.equalsIgnoreCase(subscription.getId(), id))));
+        Optional.of(data.getName()).ifPresent(name -> txtVisualMachineName.setText(name));
         Optional.ofNullable(data.getRegion()).ifPresent(region -> cbRegion.setValue(region));
         Optional.ofNullable(data.getImage()).ifPresent(image -> cbImage.setValue(image));
         Optional.ofNullable(data.getSize()).ifPresent(size -> cbSize.setValue(size));
-        Optional.ofNullable(data.getUserName()).ifPresent(name -> txtUserName.setText(name));
+        Optional.ofNullable(data.getAdminUserName()).ifPresent(name -> txtUserName.setText(name));
         cbAvailabilityOptions.setValue(data.getAvailabilitySet());
         // skip set value for password/cert
         Optional.ofNullable(data.getNetwork()).ifPresent(network -> cbVirtualNetwork.setData(network));
         Optional.ofNullable(data.getSubnet()).ifPresent(subnet -> cbSubnet.setValue(subnet));
         rdoNoneSecurityGroup.setSelected(data.getSecurityGroup() == null);
         Optional.ofNullable(data.getSecurityGroup()).ifPresent(networkSecurityGroup -> {
-            if (networkSecurityGroup instanceof DraftNetworkSecurityGroup) {
+            if (networkSecurityGroup instanceof NetworkSecurityGroupDraft) {
                 rdoBasicSecurityGroup.setSelected(true);
-                final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
+                final List<SecurityRule> securityRuleList = ((NetworkSecurityGroupDraft) networkSecurityGroup).getSecurityRules();
                 rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
                 pnlPorts.setValue(securityRuleList);
                 pnlBasicPorts.setValue(securityRuleList);
@@ -453,14 +473,14 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         });
         cbPublicIp.setData(data.getIpAddress());
         cbStorageAccount.setData(data.getStorageAccount());
-        final AzureSpotConfig azureSpotConfig = data.getAzureSpotConfig();
-        if (azureSpotConfig == null) {
+        final SpotConfig config = data.getSpotConfig();
+        if (config == null) {
             chkAzureSpotInstance.setSelected(false);
         } else {
             chkAzureSpotInstance.setSelected(true);
-            rdoStopAndDeallocate.setSelected(azureSpotConfig.getPolicy() != AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
-            rdoDelete.setSelected(azureSpotConfig.getPolicy() == AzureSpotConfig.EvictionPolicy.StopAndDeallocate);
-            txtMaximumPrice.setText(String.valueOf(azureSpotConfig.getMaximumPrice()));
+            rdoStopAndDeallocate.setSelected(config.getPolicy() != SpotConfig.EvictionPolicy.StopAndDeallocate);
+            rdoDelete.setSelected(config.getPolicy() == SpotConfig.EvictionPolicy.StopAndDeallocate);
+            txtMaximumPrice.setText(String.valueOf(config.getMaximumPrice()));
         }
     }
 

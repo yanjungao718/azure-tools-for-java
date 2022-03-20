@@ -8,12 +8,11 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +46,9 @@ public class NetworkAvailabilityOptionsComboBox extends AzureComboBox<String> {
     @Nonnull
     @Override
     protected List<? extends String> loadItems() throws Exception {
-        final List<String> availabilitySets = Optional.ofNullable(subscription).map(subscription -> Azure.az(AzureVirtualMachine.class).availabilitySets(subscription.getId())).orElse(Collections.emptyList());
-        return ListUtils.union(Arrays.asList(DISABLE), availabilitySets);
+        final AzureCompute az = Azure.az(AzureCompute.class);
+        final List<String> availabilitySets = Optional.ofNullable(subscription)
+            .map(s -> az.listAvailabilitySets(s.getId())).orElse(Collections.emptyList());
+        return ListUtils.union(List.of(DISABLE), availabilitySets);
     }
 }

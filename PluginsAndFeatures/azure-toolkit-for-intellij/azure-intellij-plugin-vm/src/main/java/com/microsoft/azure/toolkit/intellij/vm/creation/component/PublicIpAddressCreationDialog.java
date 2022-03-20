@@ -3,12 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.vm.creation.component.ip;
+package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -16,7 +17,8 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.compute.ip.DraftPublicIpAddress;
+import com.microsoft.azure.toolkit.lib.network.AzureNetwork;
+import com.microsoft.azure.toolkit.lib.network.publicipaddress.PublicIpAddressDraft;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -25,8 +27,8 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
-public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddress>
-        implements AzureForm<DraftPublicIpAddress> {
+public class PublicIpAddressCreationDialog extends AzureDialog<PublicIpAddressDraft>
+    implements AzureForm<PublicIpAddressDraft> {
     private static final String IP_NAME_PATTERN = "[a-zA-Z0-9]([a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_])?";
 
     private Subscription subscription;
@@ -47,7 +49,7 @@ public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddr
     }
 
     @Override
-    public AzureForm<DraftPublicIpAddress> getForm() {
+    public AzureForm<PublicIpAddressDraft> getForm() {
         return this;
     }
 
@@ -63,14 +65,15 @@ public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddr
     }
 
     @Override
-    public DraftPublicIpAddress getValue() {
-        final DraftPublicIpAddress draftPublicIpAddress = new DraftPublicIpAddress(this.subscription.getId(), this.resourceGroup.getName(), this.txtName.getValue());
-        draftPublicIpAddress.setRegion(region);
-        return draftPublicIpAddress;
+    public PublicIpAddressDraft getValue() {
+        final PublicIpAddressDraft draft = Azure.az(AzureNetwork.class).publicIpAddresses(this.subscription.getId())
+            .create(this.txtName.getValue(), this.resourceGroup.getName());
+        draft.setRegion(region);
+        return draft;
     }
 
     @Override
-    public void setValue(final DraftPublicIpAddress data) {
+    public void setValue(final PublicIpAddressDraft data) {
         this.subscription = data.subscription();
         this.txtName.setValue(data.getName());
     }
@@ -84,7 +87,7 @@ public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddr
         // TODO: place custom component creation code here
         txtName = new AzureTextInput();
         txtName.setRequired(true);
-        txtName.addValidator(() -> validatePublicIpName());
+        txtName.addValidator(this::validatePublicIpName);
     }
 
     private AzureValidationInfo validatePublicIpName() {

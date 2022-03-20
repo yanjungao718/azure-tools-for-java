@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.compute.vm.VirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 
 import java.util.Optional;
 

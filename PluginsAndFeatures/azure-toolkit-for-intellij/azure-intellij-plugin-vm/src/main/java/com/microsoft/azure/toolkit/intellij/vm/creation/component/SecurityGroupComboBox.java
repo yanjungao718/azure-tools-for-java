@@ -9,8 +9,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.compute.security.AzureNetworkSecurityGroup;
-import com.microsoft.azure.toolkit.lib.compute.security.NetworkSecurityGroup;
+import com.microsoft.azure.toolkit.lib.network.AzureNetwork;
+import com.microsoft.azure.toolkit.lib.network.networksecuritygroup.NetworkSecurityGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -41,8 +41,13 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
     @Nonnull
     @Override
     protected List<? extends NetworkSecurityGroup> loadItems() throws Exception {
-        return subscription == null ? Collections.emptyList() : Azure.az(AzureNetworkSecurityGroup.class).subscription(subscription.getId()).list().stream()
+        if (subscription == null) {
+            return Collections.emptyList();
+        } else {
+            final AzureNetwork az = Azure.az(AzureNetwork.class);
+            return az.networkSecurityGroups(subscription.getId()).list().stream()
                 .filter(group -> Objects.equals(group.getRegion(), region)).collect(Collectors.toList());
+        }
     }
 
     public void setData(NetworkSecurityGroup networkSecurityGroup) {

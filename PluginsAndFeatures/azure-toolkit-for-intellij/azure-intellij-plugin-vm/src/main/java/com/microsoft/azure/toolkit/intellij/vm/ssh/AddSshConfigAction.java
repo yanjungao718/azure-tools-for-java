@@ -12,7 +12,7 @@ import com.intellij.remote.AuthType;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.compute.vm.VirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;

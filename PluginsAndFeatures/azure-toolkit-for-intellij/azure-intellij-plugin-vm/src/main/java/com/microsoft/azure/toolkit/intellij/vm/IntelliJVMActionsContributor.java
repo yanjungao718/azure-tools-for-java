@@ -12,8 +12,8 @@ import com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor;
 import com.microsoft.azure.toolkit.intellij.vm.creation.CreateVirtualMachineAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
-import com.microsoft.azure.toolkit.lib.compute.vm.VirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.BiConsumer;
@@ -22,7 +22,7 @@ import java.util.function.BiPredicate;
 public class IntelliJVMActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<Object, AnActionEvent> createCondition = (r, e) -> r instanceof AzureVirtualMachine;
+        final BiPredicate<Object, AnActionEvent> createCondition = (r, e) -> r instanceof AzureCompute;
         final BiConsumer<Object, AnActionEvent> createHandler = (c, e) -> CreateVirtualMachineAction.createVirtualMachine((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
