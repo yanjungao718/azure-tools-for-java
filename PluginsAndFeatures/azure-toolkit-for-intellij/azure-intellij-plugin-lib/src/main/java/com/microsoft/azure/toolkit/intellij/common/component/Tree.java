@@ -142,7 +142,9 @@ public class Tree extends SimpleTree implements DataProvider {
                 } else {
                     this.removeAllChildren();
                     this.add(new LoadingNode());
-                    ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+                    if (Objects.nonNull(this.getParent())) {
+                        ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+                    }
                 }
                 this.loaded = null;
                 this.loadChildren(incremental);
@@ -174,7 +176,9 @@ public class Tree extends SimpleTree implements DataProvider {
             this.removeAllChildren();
             children.stream().map(c -> new TreeNode<>(c, this.tree)).forEach(this::add);
             this.loaded = true;
-            ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+            if (Objects.nonNull(this.getParent())) {
+                ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+            }
         }
 
         private synchronized void updateChildren(List<Node<?>> children) {
@@ -196,7 +200,9 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
             }
             this.remove(0);
-            ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+            if (Objects.nonNull(this.getParent())) {
+                ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+            }
             Optional.ofNullable(toSelect).ifPresent(p -> TreeUtil.selectPath(this.tree, p, true));
             this.loaded = true;
         }
@@ -208,7 +214,9 @@ public class Tree extends SimpleTree implements DataProvider {
                 this.add(new LoadingNode());
                 this.tree.collapsePath(new TreePath(this.getPath()));
             }
-            ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+            if (Objects.nonNull(this.getParent())) {
+                ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+            }
         }
 
         @Override
