@@ -64,6 +64,8 @@ public class ArmActionsContributor implements IActionsContributor {
         am.registerGroup(RESOURCE_MANAGEMENT_ACTIONS, serviceActionGroup);
 
         final ActionGroup groupActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
@@ -73,6 +75,8 @@ public class ArmActionsContributor implements IActionsContributor {
         am.registerGroup(RESOURCE_GROUP_ACTIONS, groupActionGroup);
 
         final ActionGroup deploymentActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,

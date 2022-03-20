@@ -52,6 +52,8 @@ public class SqlServerActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup serverActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,

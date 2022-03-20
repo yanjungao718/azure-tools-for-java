@@ -47,6 +47,8 @@ public class WebAppActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup webAppActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             AppServiceActionsContributor.OPEN_IN_BROWSER,

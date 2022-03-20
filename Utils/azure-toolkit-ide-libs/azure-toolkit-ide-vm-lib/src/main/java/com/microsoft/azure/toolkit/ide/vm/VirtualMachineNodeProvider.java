@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.vm;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
@@ -51,6 +52,7 @@ public class VirtualMachineNodeProvider implements IExplorerNodeProvider {
             final VirtualMachine vm = (VirtualMachine) data;
             return new Node<>(vm)
                 .view(new AzureResourceLabelView<>(vm, VirtualMachine::getStatus, VIRTUAL_MACHINE_ICON_PROVIDER))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(VirtualMachineActionsContributor.VM_ACTIONS);
         }
         return null;

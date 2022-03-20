@@ -43,15 +43,17 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup accountActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                "---",
-                VirtualMachineActionsContributor.ADD_SSH_CONFIG,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE
+            ResourceCommonActionsContributor.PIN,
+            "---",
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            "---",
+            VirtualMachineActionsContributor.ADD_SSH_CONFIG,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(VM_ACTIONS, accountActionGroup);
     }

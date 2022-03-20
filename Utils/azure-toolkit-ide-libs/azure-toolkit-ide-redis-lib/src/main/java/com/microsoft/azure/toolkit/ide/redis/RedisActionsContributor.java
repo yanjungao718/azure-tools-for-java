@@ -46,6 +46,8 @@ public class RedisActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup redisActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             RedisActionsContributor.OPEN_EXPLORER,
