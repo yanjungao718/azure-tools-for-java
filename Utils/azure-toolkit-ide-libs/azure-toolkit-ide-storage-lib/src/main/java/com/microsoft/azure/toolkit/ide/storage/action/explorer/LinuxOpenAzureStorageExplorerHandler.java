@@ -20,8 +20,8 @@ public class LinuxOpenAzureStorageExplorerHandler extends AbstractAzureStorageEx
         final ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(explorer, storageUrl);
         try {
-            processBuilder.start().waitFor();
-        } catch (IOException | InterruptedException e) {
+            processBuilder.start();
+        } catch (IOException e) {
             throw new AzureToolkitRuntimeException(e.getMessage(), e);
         }
     }

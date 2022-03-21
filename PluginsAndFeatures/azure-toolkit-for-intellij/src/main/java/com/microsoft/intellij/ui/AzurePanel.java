@@ -106,7 +106,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     public AzureValidationInfo validateStorageExplorerPath() {
         final String path = txtStorageExplorer.getValue();
         if (StringUtils.isNotEmpty(path) && !FileUtils.exists(path)) {
-            return AzureValidationInfo.error("Target file does not exists", txtStorageExplorer);
+            return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
         }
         return AzureValidationInfo.ok(txtStorageExplorer);
     }
