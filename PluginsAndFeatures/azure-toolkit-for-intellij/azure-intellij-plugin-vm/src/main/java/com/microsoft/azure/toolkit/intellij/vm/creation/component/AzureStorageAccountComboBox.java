@@ -12,8 +12,8 @@ import com.microsoft.azure.toolkit.intellij.storage.creation.VMStorageAccountCre
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -85,8 +85,9 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
     protected List<? extends StorageAccountConfig> loadItems() {
         final List<StorageAccountConfig> resources = Optional.ofNullable(subscription)
                 .map(subscription -> Azure.az(AzureStorageAccount.class).accounts(subscription.getId()).list().stream()
-                        .map(account -> StorageAccountConfig.builder().id(account.id()).name(account.name())
-                                .resourceGroup(ResourceGroup.builder().name(account.resourceGroup()).build()).subscription(account.subscription()).build()).collect(Collectors.toList()))
+                    .map(account -> StorageAccountConfig.builder().id(account.getId()).name(account.getName())
+                        .resourceGroup(ResourceGroup.builder().name(account.getResourceGroupName()).build())
+                        .subscription(account.getSubscription()).build()).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         if (draft != null) {
             // Clean draft reference if the resource has been created

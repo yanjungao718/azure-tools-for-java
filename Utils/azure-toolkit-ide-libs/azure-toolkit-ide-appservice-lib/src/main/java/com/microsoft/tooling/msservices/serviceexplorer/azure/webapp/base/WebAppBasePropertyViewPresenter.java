@@ -75,7 +75,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         propertyMap.put(KEY_RESOURCE_GRP, appService.getResourceGroupName());
         propertyMap.put(KEY_LOCATION, appService.getRegion().getLabel());
         propertyMap.put(KEY_SUB_ID, appService.getSubscriptionId());
-        propertyMap.put(KEY_STATUS, StringUtils.capitalize(StringUtils.lowerCase(appService.status())));
+        propertyMap.put(KEY_STATUS, StringUtils.capitalize(StringUtils.lowerCase(appService.getStatus())));
         propertyMap.put(KEY_PLAN, plan.name());
         propertyMap.put(KEY_URL, appService.getHostName());
         final PricingTier pricingTier = plan.getPricingTier();

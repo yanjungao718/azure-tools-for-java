@@ -40,8 +40,8 @@ public class OpenAppServicePropertyViewAction {
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
 
     public void openWebAppPropertyView(@NotNull WebApp webApp, @Nullable Project project) {
-        final String sid = webApp.subscriptionId();
-        final String webAppId = webApp.id();
+        final String sid = webApp.getSubscriptionId();
+        final String webAppId = webApp.getId();
         final FileEditorManager fileEditorManager = getFileEditorManager(sid, webAppId, project);
         if (fileEditorManager == null) {
             return;
@@ -49,7 +49,7 @@ public class OpenAppServicePropertyViewAction {
         final String type = WebAppPropertyViewProvider.TYPE;
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(webApp.name(), sid, webAppId);
+            itemVirtualFile = createVirtualFile(webApp.getName(), sid, webAppId);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.WebApp.MODULE.getPath())));
         }
         final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
@@ -57,8 +57,8 @@ public class OpenAppServicePropertyViewAction {
     }
 
     public void openDeploymentSlotPropertyView(@NotNull WebAppDeploymentSlot slot, @Nullable Project project) {
-        final String sid = slot.subscriptionId();
-        final String resourceId = slot.id();
+        final String sid = slot.getSubscriptionId();
+        final String resourceId = slot.getId();
         final FileEditorManager fileEditorManager = getFileEditorManager(sid, resourceId, project);
         if (fileEditorManager == null) {
             return;
@@ -70,9 +70,9 @@ public class OpenAppServicePropertyViewAction {
             final Map<Key, String> userData = new HashMap<>();
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
-            userData.put(WEBAPP_ID, slot.getParent().id());
-            userData.put(SLOT_NAME, slot.name());
-            itemVirtualFile = createVirtualFile(slot.getParent().name() + "-" + slot.name(), userData);
+            userData.put(WEBAPP_ID, slot.getParent().getId());
+            userData.put(SLOT_NAME, slot.getName());
+            itemVirtualFile = createVirtualFile(slot.getParent().getName() + "-" + slot.getName(), userData);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.DeploymentSlot.MODULE.getPath())));
         }
         final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
@@ -80,7 +80,7 @@ public class OpenAppServicePropertyViewAction {
     }
 
     public void openFunctionAppPropertyView(FunctionApp functionApp, @Nullable Project project) {
-        final String subscriptionId = functionApp.subscriptionId();
+        final String subscriptionId = functionApp.getSubscriptionId();
         final String functionApId = functionApp.id();
         final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, functionApId, project);
         if (fileEditorManager == null) {

@@ -74,7 +74,7 @@ public class PublicIpAddressCreationDialog extends AzureDialog<PublicIpAddressDr
 
     @Override
     public void setValue(final PublicIpAddressDraft data) {
-        this.subscription = data.subscription();
+        this.subscription = data.getSubscription();
         this.txtName.setValue(data.getName());
     }
 

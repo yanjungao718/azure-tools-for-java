@@ -55,7 +55,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
     public void setValue(Resource<StorageAccount> accountResource) {
         StorageAccount account = accountResource.getData();
         Optional.ofNullable(account).ifPresent((a -> {
-            this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId));
+            this.subscriptionComboBox.setValue(new ItemReference<>(a.getSubscriptionId(), Subscription::getId));
             this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name));
         }));
     }

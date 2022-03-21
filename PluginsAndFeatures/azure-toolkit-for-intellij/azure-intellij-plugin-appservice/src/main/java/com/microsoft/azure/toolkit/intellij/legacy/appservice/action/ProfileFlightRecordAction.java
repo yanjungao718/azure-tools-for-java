@@ -48,7 +48,7 @@ public class ProfileFlightRecordAction {
         super();
         this.project = project;
         this.appService = appService;
-        this.subscriptionId = appService.subscriptionId();
+        this.subscriptionId = appService.getSubscriptionId();
     }
 
     public void execute() {

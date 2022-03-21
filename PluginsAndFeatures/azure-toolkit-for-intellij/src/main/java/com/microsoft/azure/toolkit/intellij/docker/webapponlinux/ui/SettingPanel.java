@@ -5,19 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.docker.webapponlinux.ui;
 
-import com.intellij.ui.SimpleListCellRenderer;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
-import com.microsoft.azure.toolkit.intellij.docker.ContainerSettingPanel;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.intellij.docker.utils.Constant;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import icons.MavenIcons;
-
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -25,35 +12,38 @@ import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
+import com.microsoft.azure.toolkit.intellij.docker.ContainerSettingPanel;
+import com.microsoft.azure.toolkit.intellij.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.docker.webapponlinux.WebAppOnLinuxDeployConfiguration;
-
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
-
+import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.ItemEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 
 import static com.microsoft.azure.toolkit.intellij.docker.pushimage.ui.SettingPanel.PRIVATE_DOCKER_REGISTRY;
 
@@ -366,10 +356,10 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 selectedWebApp = cachedWebAppList.get(webAppTable.getSelectedRow());
             }
             if (selectedWebApp != null) {
-                webAppOnLinuxDeployConfiguration.setWebAppId(selectedWebApp.id());
-                webAppOnLinuxDeployConfiguration.setAppName(selectedWebApp.name());
-                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.subscriptionId());
-                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.resourceGroup());
+                webAppOnLinuxDeployConfiguration.setWebAppId(selectedWebApp.getId());
+                webAppOnLinuxDeployConfiguration.setAppName(selectedWebApp.getName());
+                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.getSubscriptionId());
+                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.getResourceGroupName());
             } else {
                 webAppOnLinuxDeployConfiguration.setWebAppId(null);
                 webAppOnLinuxDeployConfiguration.setAppName(null);
@@ -574,14 +564,14 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         btnRefresh.setEnabled(true);
         webAppTable.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         final List<WebApp> sortedList = webAppOnLinuxList.stream()
-                .sorted((a, b) -> a.subscriptionId().compareToIgnoreCase(b.subscriptionId()))
+            .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
         if (cachedWebAppList.size() > 0) {
             final DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
             model.getDataVector().clear();
             for (final WebApp resource : sortedList) {
-                model.addRow(new String[]{resource.name(), resource.resourceGroup()});
+                model.addRow(new String[]{resource.getName(), resource.getResourceGroupName()});
             }
         }
 

@@ -51,7 +51,7 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
     }
 
     public void setData(NetworkSecurityGroup networkSecurityGroup) {
-        setValue(new ItemReference<>(resource -> StringUtils.equals(resource.name(), networkSecurityGroup.name()) &&
-                StringUtils.equals(resource.resourceGroup(), networkSecurityGroup.resourceGroup())));
+        setValue(new ItemReference<>(resource -> StringUtils.equals(resource.getName(), networkSecurityGroup.getName()) &&
+            StringUtils.equals(resource.getResourceGroupName(), networkSecurityGroup.getResourceGroupName())));
     }
 }

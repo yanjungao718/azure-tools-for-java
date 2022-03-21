@@ -108,11 +108,11 @@ public class FunctionAppConfig extends AppServiceConfig {
     public static FunctionAppConfig fromRemote(FunctionApp functionApp) {
         final AppServicePlan plan = functionApp.getAppServicePlan();
         return FunctionAppConfig.builder()
-                .name(functionApp.name())
-                .resourceId(functionApp.id())
-                .servicePlan(AppServicePlanEntity.builder().id(plan.id()).name(plan.name()).resourceGroup(plan.getResourceGroupName()).build())
-                .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
-                .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
+            .name(functionApp.getName())
+            .resourceId(functionApp.getId())
+            .servicePlan(AppServicePlanEntity.builder().id(plan.getId()).name(plan.getName()).resourceGroup(plan.getResourceGroupName()).build())
+            .subscription(Subscription.builder().id(functionApp.getSubscriptionId()).build())
+            .resourceGroup(ResourceGroup.builder().name(functionApp.getResourceGroupName()).build())
                 .runtime(functionApp.getRuntime())
                 .region(functionApp.getRegion())
                 .appSettings(functionApp.getAppSettings())

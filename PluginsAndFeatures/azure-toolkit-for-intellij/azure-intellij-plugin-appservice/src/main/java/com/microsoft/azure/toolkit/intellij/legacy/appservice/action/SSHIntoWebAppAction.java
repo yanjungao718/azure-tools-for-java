@@ -47,9 +47,9 @@ public class SSHIntoWebAppAction {
         super();
         this.project = project;
         this.webApp = webApp;
-        this.webAppName = webApp.name();
-        this.subscriptionId = webApp.subscriptionId();
-        this.resourceGroupName = webApp.resourceGroup();
+        this.webAppName = webApp.getName();
+        this.subscriptionId = webApp.getSubscriptionId();
+        this.resourceGroupName = webApp.getResourceGroupName();
     }
 
     public void execute() {
