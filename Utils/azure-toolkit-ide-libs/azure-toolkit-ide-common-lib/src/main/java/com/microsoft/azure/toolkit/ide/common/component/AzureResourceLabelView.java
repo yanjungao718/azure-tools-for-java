@@ -59,7 +59,6 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         this.descriptionLoader = descriptionLoader;
         this.listener = new AzureEventBus.EventListener(this::onEvent);
         this.icon = AzureIcon.REFRESH_ICON;
-        System.out.println("&&&&&&&&&&&&&&&&& register listeners@" + this.resource.getName());
         AzureEventBus.on("resource.refreshed.resource", listener);
         AzureEventBus.on("resource.status_changed.resource", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);
@@ -98,7 +97,6 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
     }
 
     public void dispose() {
-        System.out.println("&&&&&&&&&&&&&&&&& unregister listeners@" + this.resource.getName());
         AzureEventBus.off("resource.refreshed.resource", listener);
         AzureEventBus.off("resource.status_changed.resource", listener);
         AzureEventBus.off("resource.children_changed.resource", listener);
