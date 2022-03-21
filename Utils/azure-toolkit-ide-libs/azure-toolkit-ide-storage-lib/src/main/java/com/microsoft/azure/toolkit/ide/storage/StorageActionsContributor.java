@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
 import java.awt.*;
@@ -41,14 +42,20 @@ public class StorageActionsContributor implements IActionsContributor {
         openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().view());
         am.registerAction(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorerAction);
 
-        final Consumer<StorageAccount> copyConnectionString = resource -> copyContentToClipboard(resource.getConnectionString());
+        final Consumer<StorageAccount> copyConnectionString = resource -> {
+            copyContentToClipboard(resource.getConnectionString());
+            AzureMessager.getMessager().info("Connection string copied");
+        };
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount);
         final Action<StorageAccount> copyConnectionStringAction = new Action<>(copyConnectionString, copyConnectionStringView);
         am.registerAction(COPY_CONNECTION_STRING, copyConnectionStringAction);
 
-        final Consumer<StorageAccount> copyPrimaryKey = resource -> copyContentToClipboard(resource.getKey());
+        final Consumer<StorageAccount> copyPrimaryKey = resource -> {
+            copyContentToClipboard(resource.getKey());
+            AzureMessager.getMessager().info("Primary key copied");
+        };
         final ActionView.Builder copyPrimaryView = new ActionView.Builder("Copy Primary Key")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount);
@@ -59,7 +66,7 @@ public class StorageActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );

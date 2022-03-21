@@ -74,6 +74,11 @@ public abstract class AbstractAzureStorageExplorerHandler {
     }
 
     protected Action<?>[] getStorageNotFoundActions(@Nonnull final StorageAccount storageAccount) {
+        // Open in Azure Action
+        final Consumer<Void> openInAzureConsumer = ignore -> AzureActionManager.getInstance()
+                .getAction(ResourceCommonActionsContributor.OPEN_URL).handle(storageAccount.getPortalUrl() + "/storagebrowser");
+        final Action<Void> openInAzureAction = new Action<>(openInAzureConsumer, new ActionView.Builder("Open in Azure"));
+        openInAzureAction.setAuthRequired(false);
         // Download Storage Explorer
         final Consumer<Void> downloadConsumer = ignore ->
                 AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(STORAGE_EXPLORER_DOWNLOAD_URL);
@@ -87,8 +92,9 @@ public abstract class AbstractAzureStorageExplorerHandler {
                 openResource(storageAccount);
             }
         };
-        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Set Path for Storage Explorer"));
-        return new Action[]{downloadAction, browserAction};
+        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Browser"));
+        browserAction.setAuthRequired(false);
+        return new Action[]{openInAzureAction, downloadAction, browserAction};
     }
 
     protected abstract String getStorageExplorerExecutableFromOS();
