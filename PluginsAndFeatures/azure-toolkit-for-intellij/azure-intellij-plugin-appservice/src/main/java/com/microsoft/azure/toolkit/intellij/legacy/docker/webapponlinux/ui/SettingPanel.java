@@ -22,8 +22,8 @@ import com.microsoft.azure.toolkit.intellij.legacy.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -356,8 +356,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             if (selectedWebApp != null) {
                 webAppOnLinuxDeployConfiguration.setWebAppId(selectedWebApp.id());
                 webAppOnLinuxDeployConfiguration.setAppName(selectedWebApp.name());
-                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.subscriptionId());
-                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.resourceGroup());
+                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.getSubscriptionId());
+                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.getResourceGroupName());
             } else {
                 webAppOnLinuxDeployConfiguration.setWebAppId(null);
                 webAppOnLinuxDeployConfiguration.setAppName(null);
@@ -562,14 +562,14 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         btnRefresh.setEnabled(true);
         webAppTable.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         final List<WebApp> sortedList = webAppOnLinuxList.stream()
-                .sorted((a, b) -> a.subscriptionId().compareToIgnoreCase(b.subscriptionId()))
+            .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
         if (cachedWebAppList.size() > 0) {
             final DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
             model.getDataVector().clear();
             for (final WebApp resource : sortedList) {
-                model.addRow(new String[]{resource.name(), resource.resourceGroup()});
+                model.addRow(new String[]{resource.name(), resource.getResourceGroupName()});
             }
         }
 

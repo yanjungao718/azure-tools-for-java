@@ -11,8 +11,8 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerProgressHandler;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -33,7 +33,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> {
+public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
     private final WebAppOnLinuxDeployModel deployModel;
 
     public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
@@ -43,7 +43,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> 
 
     @Override
     @AzureOperation(name = "docker.deploy_image", type = AzureOperation.Type.ACTION)
-    public IAppService executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    public AppServiceAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         processHandler.setText("Starting job ...  ");
         final String basePath = project.getBasePath();
         if (basePath == null) {
@@ -118,7 +118,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> 
         params = {"this.deployModel.getWebAppName()"},
         type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(IAppService result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(AppServiceAppBase<?, ?, ?> result, @NotNull RunProcessHandler processHandler) {
         processHandler.notifyComplete();
     }
 
