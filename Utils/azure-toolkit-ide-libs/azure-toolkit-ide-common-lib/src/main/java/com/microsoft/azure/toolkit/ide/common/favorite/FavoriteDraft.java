@@ -10,12 +10,16 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite, AbstractAzResource<?, ?, ?>> {
+    @Getter
+    @Setter
+    private boolean committed;
     @Getter
     @Nullable
     private final Favorite origin;
