@@ -18,8 +18,8 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
-import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
+import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Startable;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.apache.commons.lang3.StringUtils;
@@ -125,7 +125,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.show_properties.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof AzResourceBase && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING));
+            .enabled(s -> s instanceof AzResourceBase && !StringUtils.equalsAnyIgnoreCase(((AzResourceBase) s).getStatus(),
+                AzResource.Status.DISCONNECTED,
+                AzResource.Status.UNKNOWN,
+                AzResource.Status.DELETED,
+                AzResource.Status.CREATING));
         final Action<AzResourceBase> showPropertiesAction = new Action<>(showPropertiesView);
         showPropertiesAction.setShortcuts(shortcuts.edit());
         am.registerAction(SHOW_PROPERTIES, showPropertiesAction);
