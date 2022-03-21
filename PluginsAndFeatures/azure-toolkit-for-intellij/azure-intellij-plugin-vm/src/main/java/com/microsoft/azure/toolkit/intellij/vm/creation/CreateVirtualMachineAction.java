@@ -29,10 +29,10 @@ public class CreateVirtualMachineAction {
     public static final String REOPEN_CREATION_DIALOG = "Reopen Creation Dialog";
 
     public static void createVirtualMachine(Project project) {
-        AzureTaskManager.getInstance().runLater(() -> showVirtualMachineCreationDialog(project, null));
+        AzureTaskManager.getInstance().runLater(() -> openDialog(project, null));
     }
 
-    private static void showVirtualMachineCreationDialog(final Project project, final VirtualMachineDraft draft) {
+    private static void openDialog(final Project project, final VirtualMachineDraft draft) {
         final VMCreationDialog dialog = new VMCreationDialog(project);
         dialog.setOkActionListener((config) -> {
             dialog.close();
@@ -52,13 +52,13 @@ public class CreateVirtualMachineAction {
     }
 
     private static void doCreateVirtualMachine(final Project project, final VirtualMachineDraft draft) {
-        AzureTaskManager.getInstance().runInBackground(AzureOperationBundle.title("vm.create_vm.vm", draft.getName()), () -> {
+        final AzureTaskManager tm = AzureTaskManager.getInstance();
+        tm.runInBackground(AzureOperationBundle.title("vm.create_vm.vm", draft.getName()), () -> {
             AzureTelemetry.getActionContext().setProperty("subscriptionId", draft.getSubscriptionId());
             try {
                 new CreateVirtualMachineTask(draft).execute();
             } catch (final Exception e) {
-                final Consumer<Object> act = t -> AzureTaskManager.getInstance().runLater("open dialog",
-                    () -> showVirtualMachineCreationDialog(project, draft), AzureTask.Modality.ANY);
+                final Consumer<Object> act = t -> tm.runLater("open dialog", () -> openDialog(project, draft));
                 final Action<?> action = new Action<>(act, new ActionView.Builder(REOPEN_CREATION_DIALOG));
                 AzureMessager.getMessager().error(e, null, action);
             }
