@@ -13,32 +13,49 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractAzureStorageExplorerHandler {
 
     private static final String STORAGE_EXPLORER_DOWNLOAD_URL = "https://go.microsoft.com/fwlink/?LinkId=723579";
+    private static final String STORAGE_EXPLORER = "StorageExplorer";
 
     public void openResource(@Nonnull final StorageAccount storageAccount) {
         // Get resource url
         final String resourceUrl = "storageexplorer://v=1&accountid=" + storageAccount.getId() + "&subscriptionid=" + storageAccount.getSubscriptionId();
         // try launch with uri
+        boolean result = launchStorageExplorerWithUri(storageAccount, resourceUrl);
+        if (!result) {
+            // fall back to launch with command
+            launchStorageExplorerThroughCommand(storageAccount, resourceUrl);
+        }
+    }
+
+    protected boolean launchStorageExplorerWithUri(@Nonnull final StorageAccount storageAccount, @Nonnull final String resourceUrl) {
         if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
+                final List<ProcessHandle> beforeLaunchProcesses = ProcessHandle.allProcesses().collect(Collectors.toList());
                 Desktop.getDesktop().browse(URI.create(resourceUrl));
-                return;
+                final List<ProcessHandle> afterLaunchProcesses = ProcessHandle.allProcesses().collect(Collectors.toList());
+                final Collection<ProcessHandle> newProcesses = CollectionUtils.removeAll(afterLaunchProcesses, beforeLaunchProcesses);
+                return newProcesses.stream().map(ProcessHandle::info).map(ProcessHandle.Info::command)
+                        .anyMatch(command -> StringUtils.containsAnyIgnoreCase(command.orElse(StringUtils.EMPTY), STORAGE_EXPLORER));
             } catch (IOException e) {
                 log.info("failed to launch storage explorer from uri", e);
-                launchStorageExplorerThroughCommand(storageAccount, resourceUrl);
             }
         }
+        return false;
     }
 
     protected void launchStorageExplorerThroughCommand(final StorageAccount storageAccount, final String resourceUrl) {
