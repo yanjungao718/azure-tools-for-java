@@ -40,7 +40,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
         @Nonnull
         @Getter
         private final WebApp webApp;
-        private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+        private final AzureEventBus.EventListener listener;
 
         @Nullable
         @Setter
@@ -49,8 +49,8 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         public WebAppDeploymentSlotsNodeView(@Nonnull WebApp webApp) {
             this.webApp = webApp;
-            this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-            AzureEventBus.on("appservice|webapp.slot.refresh", listener);
+            this.listener = new AzureEventBus.EventListener(this::onEvent);
+            AzureEventBus.on("resource.refreshed.resource", listener);
             this.refreshView();
         }
 
@@ -71,11 +71,11 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         @Override
         public void dispose() {
-            AzureEventBus.off("appservice|webapp.slot.refresh", listener);
+            AzureEventBus.off("resource.refreshed.resource", listener);
             this.refresher = null;
         }
 
-        public void onEvent(AzureEvent<Object> event) {
+        public void onEvent(AzureEvent event) {
             final Object source = event.getSource();
             if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.webApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);

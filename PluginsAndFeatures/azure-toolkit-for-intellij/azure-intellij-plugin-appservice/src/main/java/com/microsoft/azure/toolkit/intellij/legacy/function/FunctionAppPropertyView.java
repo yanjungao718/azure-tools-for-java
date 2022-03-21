@@ -13,9 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,7 +23,7 @@ import java.util.Set;
 
 public class FunctionAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyView";
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> resourceDeleteListener;
+    private final AzureEventBus.EventListener resourceDeleteListener;
 
     public static WebAppBasePropertyView create(@Nonnull final Project project, @Nonnull final String sid,
                                                 @Nonnull final String webAppId, @Nonnull final VirtualFile virtualFile) {
@@ -36,13 +34,14 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
 
     protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, resId, null, virtualFile);
-        resourceDeleteListener = new AzureEventBus.EventListener<>(event -> {
-            if (event instanceof AzureOperationEvent && ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER &&
-                    event.getSource() instanceof FunctionApp && StringUtils.equals(((FunctionApp) event.getSource()).id(), resId)) {
-                closeEditor((AppServiceAppBase<?, ?, ?>) event.getSource());
+        resourceDeleteListener = new AzureEventBus.EventListener(event -> {
+            final Object source = event.getSource();
+            if (source instanceof FunctionApp && StringUtils.equals(((FunctionApp) source).id(), resId) &&
+                ((FunctionApp) source).getFormalStatus().isDeleted()) {
+                closeEditor((AppServiceAppBase<?, ?, ?>) source);
             }
         });
-        AzureEventBus.on("functionapp.delete_app.app", resourceDeleteListener);
+        AzureEventBus.on("resource.status_changed.resource", resourceDeleteListener);
     }
 
     @Override
@@ -53,7 +52,7 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
     @Override
     public void dispose() {
         super.dispose();
-        AzureEventBus.off("functionapp.delete_app.app", resourceDeleteListener);
+        AzureEventBus.off("resource.status_changed.resource", resourceDeleteListener);
     }
 
     @Override

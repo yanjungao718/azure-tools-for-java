@@ -86,7 +86,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         @Nonnull
         @Getter
         private final AppServiceFile file;
-        private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+        private final AzureEventBus.EventListener listener;
 
         @Nullable
         @Setter
@@ -95,12 +95,12 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
         public AppServiceFileLabelView(@Nonnull AppServiceFile file) {
             this.file = file;
-            this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-            AzureEventBus.on("resource.refresh.resource", listener);
+            this.listener = new AzureEventBus.EventListener(this::onEvent);
+            AzureEventBus.on("resource.refreshed.resource", listener);
             this.refreshView();
         }
 
-        private void onEvent(AzureEvent<Object> event) {
+        private void onEvent(AzureEvent event) {
             final String type = event.getType();
             final Object source = event.getSource();
             if (source instanceof AppServiceFile && StringUtils.equalsIgnoreCase(((AppServiceFile) source).getFullName(), this.file.getFullName())) {
@@ -139,7 +139,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
         @Override
         public void dispose() {
-            AzureEventBus.off("resource.refresh.resource", listener);
+            AzureEventBus.off("resource.refreshed.resource", listener);
             this.refresher = null;
         }
     }

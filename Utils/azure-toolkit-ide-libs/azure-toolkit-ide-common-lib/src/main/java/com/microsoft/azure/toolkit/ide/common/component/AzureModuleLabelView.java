@@ -24,7 +24,7 @@ public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implement
     private final String label;
     @Getter
     private final String iconPath;
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener listener;
     @Getter
     private String description;
     @Nullable
@@ -44,7 +44,7 @@ public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implement
         this.module = module;
         this.label = label;
         this.iconPath = iconPath;
-        this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        this.listener = new AzureEventBus.EventListener(this::onEvent);
         AzureEventBus.on("module.refreshed.module", listener);
         AzureEventBus.on("module.children_changed.module", listener);
         this.refreshView();
@@ -56,7 +56,7 @@ public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implement
         this.refresher = null;
     }
 
-    public void onEvent(AzureEvent<Object> event) {
+    public void onEvent(AzureEvent event) {
         final String type = event.getType();
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsIgnoreCase(type, "module.children_changed.module");

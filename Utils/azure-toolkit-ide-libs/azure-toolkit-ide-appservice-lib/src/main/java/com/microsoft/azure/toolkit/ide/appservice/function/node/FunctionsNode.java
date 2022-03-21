@@ -48,7 +48,7 @@ public class FunctionsNode extends Node<FunctionApp> {
         @Nonnull
         @Getter
         private final FunctionApp functionApp;
-        private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+        private final AzureEventBus.EventListener listener;
 
         @Nullable
         @Setter
@@ -57,8 +57,8 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         public FunctionsNodeView(@Nonnull FunctionApp functionApp) {
             this.functionApp = functionApp;
-            this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-            AzureEventBus.on("appservice|function.functions.refresh", listener);
+            this.listener = new AzureEventBus.EventListener(this::onEvent);
+            AzureEventBus.on("resource.refreshed.resource", listener);
             this.refreshView();
         }
 
@@ -79,11 +79,11 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         @Override
         public void dispose() {
-            AzureEventBus.off("appservice|function.functions.refresh", listener);
+            AzureEventBus.off("resource.refreshed.resource", listener);
             this.refresher = null;
         }
 
-        public void onEvent(AzureEvent<Object> event) {
+        public void onEvent(AzureEvent event) {
             final Object source = event.getSource();
             if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.functionApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);

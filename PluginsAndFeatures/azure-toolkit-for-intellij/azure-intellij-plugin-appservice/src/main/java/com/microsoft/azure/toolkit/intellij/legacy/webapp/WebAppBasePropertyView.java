@@ -100,7 +100,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     protected String slotName;
     protected Project project;
     protected VirtualFile virtualFile;
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener listener;
 
     protected WebAppBasePropertyView(@Nonnull Project project, @Nonnull String sid,
                                      @Nonnull String appServiceId, @Nullable String slotName, @Nonnull final VirtualFile virtualFile) {
@@ -180,11 +180,11 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         setTextFieldStyle();
 
         // todo: add event handler to close editor
-        listener = new AzureEventBus.EventListener<>(this::onStatusChangeEvent);
-        AzureEventBus.on("common|resource.status_changed", listener);
+        listener = new AzureEventBus.EventListener(this::onStatusChangeEvent);
+        AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
-    protected void onStatusChangeEvent(AzureEvent<Object> event) {
+    protected void onStatusChangeEvent(AzureEvent event) {
         final Object source = event.getSource();
         if (source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(this.resourceId, ((AppServiceAppBase<?, ?, ?>) source).id())) {
             onAppServiceStatusChanged((AppServiceAppBase<?, ?, ?>) source);
@@ -231,7 +231,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
     @Override
     public void dispose() {
-        AzureEventBus.off("common|resource.status_changed", listener);
+        AzureEventBus.off("resource.status_changed.resource", listener);
         presenter.onDetachView();
     }
 

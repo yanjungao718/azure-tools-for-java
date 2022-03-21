@@ -43,7 +43,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
     private boolean enabled = true;
     private final Debouncer refreshViewInner = new TailingDebouncer(this::refreshViewInner, 300);
 
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener listener;
     private final Function<T, String> descriptionLoader;
     private final AzureIconProvider<? super T> iconProvider;
 
@@ -57,7 +57,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         this.label = resource.getName();
         this.iconProvider = iconProvider;
         this.descriptionLoader = descriptionLoader;
-        this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        this.listener = new AzureEventBus.EventListener(this::onEvent);
         this.icon = AzureIcon.REFRESH_ICON;
         System.out.println("&&&&&&&&&&&&&&&&& register listeners@" + this.resource.getName());
         AzureEventBus.on("resource.refreshed.resource", listener);
@@ -66,7 +66,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         this.refreshViewInner.debounce();
     }
 
-    public void onEvent(AzureEvent<Object> event) {
+    public void onEvent(AzureEvent event) {
         final String type = event.getType();
         final Object source = event.getSource();
         if (source instanceof AzResource &&
