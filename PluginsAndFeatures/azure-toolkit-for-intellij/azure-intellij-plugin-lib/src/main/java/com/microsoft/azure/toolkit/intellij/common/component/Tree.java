@@ -197,6 +197,8 @@ public class Tree extends SimpleTree implements DataProvider {
                     final TreeNode<?> treeNode = new TreeNode<>(node, this.tree);
                     this.insert(treeNode, i + 1);
                     toSelect = new TreePath(treeNode.getPath());
+                } else { // discarded nodes should be disposed manually to unregister listeners.
+                    node.dispose();
                 }
             }
             this.remove(0);
