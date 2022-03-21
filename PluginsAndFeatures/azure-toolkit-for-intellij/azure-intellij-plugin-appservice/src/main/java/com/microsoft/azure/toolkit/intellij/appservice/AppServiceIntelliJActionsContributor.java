@@ -36,7 +36,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -96,16 +96,16 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 AzureTaskManager.getInstance().runLater(() -> new SSHIntoWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.SSH_INTO_WEBAPP, isAppService, sshHandler);
 
-        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> deployWebAppHandler = (c, e) -> AzureTaskManager
-                .getInstance().runLater(() -> new DeployWebAppAction((WebApp) c, e.getProject()).execute());
+        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> deployWebAppHandler = (c, e) -> AzureTaskManager
+            .getInstance().runLater(() -> new DeployWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof WebApp, deployWebAppHandler);
 
         final BiConsumer<Object, AnActionEvent> createWebAppHandler = (c, e) -> AzureTaskManager.getInstance()
                 .runLater(() -> new CreateWebAppAction(e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureWebApp, createWebAppHandler);
 
-        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
-                .getInstance().runLater(() -> new DeployFunctionAppAction((FunctionApp) c, e.getProject()).execute());
+        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
+            .getInstance().runLater(() -> new DeployFunctionAppAction((FunctionApp) c, e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof FunctionApp, deployFunctionAppHandler);
 
         final BiConsumer<Object, AnActionEvent> createFunctionHandler = (c, e) -> AzureTaskManager.getInstance()

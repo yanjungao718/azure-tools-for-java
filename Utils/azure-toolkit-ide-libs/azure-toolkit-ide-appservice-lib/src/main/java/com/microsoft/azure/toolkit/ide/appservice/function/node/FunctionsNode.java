@@ -10,9 +10,9 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -85,7 +85,7 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         public void onEvent(AzureEvent<Object> event) {
             final Object source = event.getSource();
-            if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.functionApp.id())) {
+            if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.functionApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }

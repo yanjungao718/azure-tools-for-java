@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
@@ -26,14 +26,14 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     public static final String SERVER_ACTIONS = "actions.postgre.server";
 
     private static final String NAME_PREFIX = "PostgreSQL Server - %s";
-    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.postgre.open_database_tool");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.postgre.open_database_tool");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", "icons/action/open_database_tool.svg")
-            .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof PostgreSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
-        final Action<IAzureBaseResource<?, ?>> action = new Action<>(openDatabaseTool);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
     }

@@ -6,7 +6,6 @@ package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 
@@ -16,9 +15,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AzureResourceIconProvider<T extends IAzureBaseResource<?, ?>> implements AzureIconProvider<T> {
+public class AzureResourceIconProvider<T extends AzResource<?, ?, ?>> implements AzureIconProvider<T> {
 
-    public static final AzureResourceIconProvider<IAzureBaseResource<?, ?>> DEFAULT_AZURE_RESOURCE_ICON_PROVIDER = new AzureResourceIconProvider<>();
+    public static final AzureResourceIconProvider<AzResource<?, ?, ?>> DEFAULT_AZURE_RESOURCE_ICON_PROVIDER = new AzureResourceIconProvider<>();
 
     private final List<Function<T, AzureIcon.Modifier>> modifierFunctionList = new ArrayList<>();
 
@@ -52,14 +51,14 @@ public class AzureResourceIconProvider<T extends IAzureBaseResource<?, ?>> imple
         return String.format("/icons%s/default.svg", modulePath);
     }
 
-    public static <T extends IAzureBaseResource<?, ?>> String getAzureBaseResourceIconPath(T resource) {
+    public static <T extends AzResource<?, ?, ?>> String getAzureBaseResourceIconPath(T resource) {
         if (resource instanceof AzResource) {
             return AzureResourceIconProvider.getAzResourceIconPath((AzResource) resource);
         }
         return String.format("/icons/%s/default.svg", resource.getClass().getSimpleName().toLowerCase());
     }
 
-    public static <T extends IAzureBaseResource<?, ?>> AzureIcon.Modifier getStatusModifier(T resource) {
+    public static <T extends AzResource<?, ?, ?>> AzureIcon.Modifier getStatusModifier(T resource) {
         final AzResourceBase.FormalStatus formalStatus = resource.getFormalStatus();
         if (formalStatus.isWaiting()) {
             return null;

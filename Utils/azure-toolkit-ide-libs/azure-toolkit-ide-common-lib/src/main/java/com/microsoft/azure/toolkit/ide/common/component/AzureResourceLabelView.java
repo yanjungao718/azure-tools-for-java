@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 
-public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
+public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements NodeView {
 
     @Nonnull
     @Getter
@@ -48,7 +48,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     private final AzureIconProvider<? super T> iconProvider;
 
     public AzureResourceLabelView(@Nonnull T resource) {
-        this(resource, IAzureBaseResource::getStatus, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
+        this(resource, AzResource::getStatus, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
     }
 
     public AzureResourceLabelView(@Nonnull T resource, @Nonnull Function<T, String> descriptionLoader,
@@ -69,13 +69,13 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if (source instanceof IAzureBaseResource &&
-            ((IAzureBaseResource<?, ?>) source).getId().equals(this.resource.getId()) &&
-            ((IAzureBaseResource<?, ?>) source).getName().equals(this.resource.getName())) {
+        if (source instanceof AzResource &&
+            ((AzResource<?, ?, ?>) source).getId().equals(this.resource.getId()) &&
+            ((AzResource<?, ?, ?>) source).getName().equals(this.resource.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             System.out.println("event:  " + type);
-            System.out.println("source: " + ((IAzureBaseResource<?, ?>) source).getName());
-            System.out.println("status: " + ((IAzureBaseResource<?, ?>) source).getStatus());
+            System.out.println("source: " + ((AzResource<?, ?, ?>) source).getName());
+            System.out.println("status: " + ((AzResource<?, ?, ?>) source).getStatus());
             if (StringUtils.equals(type, "resource.refreshed.resource")) {
                 this.refreshViewInner.debounce();
                 tm.runLater(() -> this.refreshChildren(false));
@@ -92,7 +92,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         tm.runOnPooledThread(() -> {
             this.icon = iconProvider.getIcon(this.resource);
             this.description = descriptionLoader.apply(this.resource);
-            this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, this.resource.getStatus());
+            this.enabled = !StringUtils.equalsIgnoreCase(AzResource.Status.DISCONNECTED, this.resource.getStatus());
             tm.runLater(this::refreshView);
         });
     }

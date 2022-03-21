@@ -17,7 +17,7 @@ public class OpenStorageExplorerAction {
     public static void openStorageBrowser(StorageAccount account) {
         final AzureString title = AzureOperationBundle.title("storage.open_storage_explorer.account", account.name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, () -> {
-            final String url = account.portalUrl() + "/storageExplorer";
+            final String url = account.getPortalUrl() + "/storageExplorer";
             AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
         }));
     }

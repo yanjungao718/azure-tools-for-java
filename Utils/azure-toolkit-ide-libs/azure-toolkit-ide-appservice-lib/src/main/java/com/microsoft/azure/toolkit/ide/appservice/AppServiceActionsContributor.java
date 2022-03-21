@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
@@ -56,25 +56,25 @@ public class AppServiceActionsContributor implements IActionsContributor {
 
         final ActionView.Builder sshView = new ActionView.Builder("SSH into Web App")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && StringUtils.equalsIgnoreCase(((AppServiceAppBase<?, ?, ?>) s).getStatus(), IAzureBaseResource.Status.RUNNING));
+            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && StringUtils.equalsIgnoreCase(((AppServiceAppBase<?, ?, ?>) s).getStatus(), AzResource.Status.RUNNING));
         am.registerAction(SSH_INTO_WEBAPP, new Action<>(sshView));
     }
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?> &&
-            StringUtils.equals(r.getStatus(), IAzureBaseResource.Status.STOPPED);
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
+        final BiPredicate<AzResource<?, ?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?> &&
+            StringUtils.equals(r.getStatus(), AzResource.Status.STOPPED);
+        final BiConsumer<AzResource<?, ?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
         am.registerHandler(ResourceCommonActionsContributor.START, startCondition, startHandler);
 
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?> &&
-            StringUtils.equals(r.getStatus(), IAzureBaseResource.Status.RUNNING);
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).stop();
+        final BiPredicate<AzResource<?, ?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?> &&
+            StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
+        final BiConsumer<AzResource<?, ?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).stop();
         am.registerHandler(ResourceCommonActionsContributor.STOP, stopCondition, stopHandler);
 
-        final BiPredicate<IAzureBaseResource<?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?> &&
-            StringUtils.equals(r.getStatus(), IAzureBaseResource.Status.RUNNING);
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
+        final BiPredicate<AzResource<?, ?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase<?, ?, ?> &&
+            StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
+        final BiConsumer<AzResource<?, ?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
     }
 

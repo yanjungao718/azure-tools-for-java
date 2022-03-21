@@ -11,9 +11,9 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -77,7 +77,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         public void onEvent(AzureEvent<Object> event) {
             final Object source = event.getSource();
-            if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.webApp.id())) {
+            if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.webApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }

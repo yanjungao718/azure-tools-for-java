@@ -7,7 +7,7 @@ package com.microsoft.intellij.util;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
+import com.microsoft.azure.toolkit.lib.common.model.Availability;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,7 +58,7 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             throw new IllegalArgumentException(message("appService.name.validate.invalidName"));
         }
-        final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).forSubscription(subscriptionId).checkNameAvailability(appServiceName);
+        final Availability result = Azure.az(AzureAppService.class).forSubscription(subscriptionId).checkNameAvailability(appServiceName);
         if (!result.isAvailable()) {
             throw new IllegalArgumentException(result.getUnavailabilityMessage());
         }
