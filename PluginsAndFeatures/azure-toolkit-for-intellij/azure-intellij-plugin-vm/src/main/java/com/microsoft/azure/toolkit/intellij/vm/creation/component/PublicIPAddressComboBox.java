@@ -77,7 +77,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         if (item instanceof PublicIpAddress) {
             final PublicIpAddress ipAddress = (PublicIpAddress) item;
             final String name = ipAddress.getName();
-            return ipAddress.isDraft() && ipAddress != NONE ? "(New) " + name : name;
+            return ipAddress.isDraftForCreating() && ipAddress != NONE ? "(New) " + name : name;
         }
         return super.getItemText(item);
     }
@@ -94,7 +94,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
             super.setValue(NONE);
             return;
         }
-        this.draft = address.isDraft() ? (PublicIpAddressDraft) address : null;
+        this.draft = address.isDraftForCreating() ? (PublicIpAddressDraft) address : null;
         super.setValue(new ItemReference<>(resource -> StringUtils.equals(address.getName(), resource.getName()) &&
             StringUtils.equals(address.getResourceGroupName(), resource.getResourceGroupName())));
     }
