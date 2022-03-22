@@ -29,7 +29,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder pushImageView = new ActionView.Builder("Push Image")
                 .title(s -> Optional.ofNullable(s).map(r -> title("acr.push_image.acr", ((ContainerRegistry) r).name())).orElse(null))
-                .enabled(s -> s instanceof ContainerRegistry);
+                .enabled(s -> s instanceof ContainerRegistry && ((ContainerRegistry) s).getFormalStatus().isRunning());
         am.registerAction(PUSH_IMAGE, new Action<>(pushImageView));
     }
 

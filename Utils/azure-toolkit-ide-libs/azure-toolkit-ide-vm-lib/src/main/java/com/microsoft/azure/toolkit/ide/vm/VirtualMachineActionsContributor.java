@@ -29,7 +29,7 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", "/icons/action/add")
             .title(s -> Optional.ofNullable(s).map(r -> title("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
-            .enabled(s -> s instanceof VirtualMachine);
+            .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(ADD_SSH_CONFIG, new Action<>(addSshConfigView));
     }
 

@@ -103,7 +103,7 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
                 ((WebAppDeploymentSlot) s).getName(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
-            .enabled(s -> s instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) s).getStatus(), AzResource.Status.RUNNING));
+            .enabled(s -> s instanceof WebAppDeploymentSlot && ((WebAppDeploymentSlot) s).getFormalStatus().isRunning());
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
     }
 

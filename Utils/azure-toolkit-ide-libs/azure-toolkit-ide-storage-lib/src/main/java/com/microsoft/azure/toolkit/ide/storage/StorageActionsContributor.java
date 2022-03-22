@@ -32,7 +32,7 @@ public class StorageActionsContributor implements IActionsContributor {
         final Consumer<StorageAccount> open = OpenStorageExplorerAction::openStorageBrowser;
         final ActionView.Builder openView = new ActionView.Builder("Open Storage Explorer", "/icons/action/portal.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.open_storage_explorer.account", ((StorageAccount) r).name())).orElse(null))
-                .enabled(s -> s instanceof StorageAccount);
+                .enabled(s -> s instanceof StorageAccount && !((StorageAccount) s).getFormalStatus().isDeleted());
         final Action<StorageAccount> action = new Action<>(open, openView);
         action.setShortcuts(am.getIDEDefaultShortcuts().view());
         am.registerAction(OPEN_STORAGE_EXPLORER, action);
