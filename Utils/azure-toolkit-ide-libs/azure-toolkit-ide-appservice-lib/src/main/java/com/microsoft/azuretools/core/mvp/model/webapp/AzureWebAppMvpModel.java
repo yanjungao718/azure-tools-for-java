@@ -172,8 +172,10 @@ public class AzureWebAppMvpModel {
     }
 
     private AppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
-        final String rg = Optional.ofNullable(servicePlanEntity.getResourceGroup()).orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).resourceGroupName());
-        final String name = Optional.ofNullable(servicePlanEntity.getName()).orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).name());
+        final String rg = Optional.ofNullable(servicePlanEntity.getResourceGroup()).filter(StringUtils::isNotBlank)
+            .orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).resourceGroupName());
+        final String name = Optional.ofNullable(servicePlanEntity.getName()).filter(StringUtils::isNotBlank)
+            .orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).name());
         final AzureAppService az = Azure.az(AzureAppService.class);
         final AppServicePlan appServicePlan = az.plans(servicePlanEntity.getSubscriptionId()).getOrDraft(name, rg);
         if (appServicePlan.exists()) {
