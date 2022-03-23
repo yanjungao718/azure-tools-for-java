@@ -72,9 +72,6 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
             ((AzResource<?, ?, ?>) source).getId().equals(this.resource.getId()) &&
             ((AzResource<?, ?, ?>) source).getName().equals(this.resource.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            System.out.println("event:  " + type);
-            System.out.println("source: " + ((AzResource<?, ?, ?>) source).getName());
-            System.out.println("status: " + ((AzResource<?, ?, ?>) source).getStatus());
             if (StringUtils.equals(type, "resource.refreshed.resource")) {
                 this.refreshViewInner.debounce();
                 tm.runLater(() -> this.refreshChildren(false));
