@@ -29,6 +29,7 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -138,6 +139,7 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
 
     private void listMavenProjects(final Project project) {
         final List<MavenProject> projects = MavenProjectsManager.getInstance(project).getProjects();
+        Collections.sort(projects, (project1, project2) -> StringUtils.compare(project1.getName(), project2.getName()));
         final CollectionComboBoxModel<MavenProject> mavenModel = new CollectionComboBoxModel<>(projects);
         parentComboBox.setModel(mavenModel);
         parentComboBox.setRenderer(new ListCellRendererWithRightAlignedComponent() {
@@ -153,6 +155,7 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
 
     private void listGradleProjects(final Project project) {
         final List<ExternalProjectPojo> externalProjects = GradleUtils.listGradleProjects(project);
+        Collections.sort(externalProjects, (project1, project2) -> StringUtils.compare(project1.getName(), project2.getName()));
         final CollectionComboBoxModel<ExternalProjectPojo> gradleModel = new CollectionComboBoxModel<>(externalProjects);
         parentComboBox.setModel(gradleModel);
         parentComboBox.setRenderer(new ListCellRendererWithRightAlignedComponent() {
