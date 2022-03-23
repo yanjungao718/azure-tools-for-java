@@ -39,7 +39,7 @@ public class StorageActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.open_azure_storage_explorer.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount);
         final Action<StorageAccount> openAzureStorageExplorerAction = new Action<>(openAzureStorageExplorer, openAzureStorageExplorerView);
-        openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().view());
+        openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
         am.registerAction(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorerAction);
 
         final Consumer<StorageAccount> copyConnectionString = resource -> {
