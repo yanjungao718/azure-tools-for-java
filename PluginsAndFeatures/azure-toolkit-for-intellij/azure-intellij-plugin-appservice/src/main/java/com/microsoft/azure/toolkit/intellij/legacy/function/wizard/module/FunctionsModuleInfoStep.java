@@ -10,6 +10,7 @@ import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
+import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -25,13 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
+import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposable {
@@ -182,7 +186,34 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
         validateProperties("Artifact id", artifactIdField.getText(), ValidationUtils::isValidGroupIdArtifactId);
         validateProperties("Version", versionField.getText(), ValidationUtils::isValidVersion);
         validateProperties("Package name", packageNameField.getText(), ValidationUtils::isValidJavaPackageName);
+        validateDuplicatedArtifacts();
         return true;
+    }
+
+    private boolean validateDuplicatedArtifacts() throws ConfigurationException {
+        final String artifactId = artifactIdField.getText();
+        if (getExistingArtifacts().contains(artifactId)) {
+            throw new ConfigurationException(String.format("Module '%s' already exists", artifactId));
+        }
+        return true;
+    }
+
+    private List<String> getExistingArtifacts() {
+        if (context.isCreatingNewProject()) {
+            return Collections.emptyList();
+        }
+        final String item = toolComboBox.getItem();
+        if (StringUtils.equals(item, MAVEN_TOOL)) {
+            return MavenProjectsManager.getInstance(context.getProject()).getProjects().stream()
+                    .map(project -> project.getMavenId().getArtifactId())
+                    .collect(Collectors.toList());
+        } else {
+            return ProjectDataManager.getInstance().getExternalProjectsData(context.getProject(), GradleConstants.SYSTEM_ID).stream()
+                    .map(project -> project.getExternalProjectStructure())
+                    .filter(Objects::nonNull)
+                    .map(value -> value.getData().getExternalName())
+                    .collect(Collectors.toList());
+        }
     }
 
     private static void validateProperties(String propertyName, String text, Predicate<String> validator)
