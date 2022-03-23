@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 

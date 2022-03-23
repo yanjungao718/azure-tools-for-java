@@ -25,7 +25,7 @@ import org.eclipse.ui.PlatformUI;
 import com.microsoft.azure.toolkit.eclipse.common.launch.LaunchConfigurationUtils;
 import com.microsoft.azure.toolkit.eclipse.function.launch.model.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 
 public class DeployAzureFunctionAction {
     private static final String RUN = "run";
