@@ -14,7 +14,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib'
     compile 'com.jcraft:jsch:0.1.55'
-    compile 'org.codehaus.plexus:plexus-archiver:4.2.6'
-    compile 'org.codehaus.plexus:plexus-component-api:1.0-alpha-33'
+    compile 'org.codehaus.plexus:plexus-archiver:4.2.7'
+    compile 'org.codehaus.plexus:plexus-container-default:2.1.1'
     compile 'com.neovisionaries:nv-websocket-client:2.14'
 }
