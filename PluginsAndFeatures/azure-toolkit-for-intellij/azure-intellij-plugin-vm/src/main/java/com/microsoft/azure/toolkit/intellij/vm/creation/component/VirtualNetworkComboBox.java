@@ -70,7 +70,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
 
     private void resetToDraft() {
         final Network value = getValue();
-        if (value != null && Objects.nonNull(subscription) && (!(value instanceof AzResource.Draft) || value.exists())) {
+        if (value != null && Objects.nonNull(subscription) && !value.isDraft()) {
             final String name = NetworkDraft.generateDefaultName();
             final String rgName = Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse("<none>");
             this.draft = Azure.az(AzureNetwork.class).virtualNetworks(subscription.getId()).create(name, rgName);
