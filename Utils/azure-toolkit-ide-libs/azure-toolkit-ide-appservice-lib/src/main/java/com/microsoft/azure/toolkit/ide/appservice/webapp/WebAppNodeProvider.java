@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 
@@ -76,7 +77,10 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
 
     @Nullable
     public static AzureIcon.Modifier getOperatingSystemModifier(AppServiceAppBase<?, ?, ?> resource) {
-        final OperatingSystem os = Optional.ofNullable(resource.getRuntime()).map(r -> r.getOperatingSystem()).orElse(null);
-        return resource.getFormalStatus().isWaiting() ? null : os != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
+        if (resource.getFormalStatus().isWaiting()) {
+            return null;
+        }
+        final OperatingSystem os = Optional.ofNullable(resource.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
+        return os != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
     }
 }
