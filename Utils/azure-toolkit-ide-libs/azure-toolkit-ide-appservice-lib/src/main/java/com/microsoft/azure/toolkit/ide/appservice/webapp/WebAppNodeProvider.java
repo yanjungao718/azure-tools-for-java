@@ -79,6 +79,8 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
     public static AzureIcon.Modifier getOperatingSystemModifier(AppServiceAppBase<?, ?, ?> resource) {
         if (resource.getFormalStatus().isWaiting()) {
             return null;
+        } else if (!resource.getFormalStatus().isConnected()) {
+            return null;
         }
         final OperatingSystem os = Optional.ofNullable(resource.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
         return os != OperatingSystem.WINDOWS ? AzureIcon.Modifier.LINUX : null;
