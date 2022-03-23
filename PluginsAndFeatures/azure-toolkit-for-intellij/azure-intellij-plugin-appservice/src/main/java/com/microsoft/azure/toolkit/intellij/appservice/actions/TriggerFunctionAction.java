@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.actions;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.ide.scratch.ScratchFileService;
 import com.intellij.ide.scratch.ScratchRootType;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -52,7 +53,7 @@ public class TriggerFunctionAction {
             if (file != null) {
                 final Document document = textEditor.getEditor().getDocument();
                 if (StringUtils.isEmpty(document.getText())) {
-                    document.setText(getRequestContent(functionEntity));
+                    WriteAction.run(() -> document.setText(getRequestContent(functionEntity)));
                 }
             } else {
                 AzureMessager.getMessager().warning("Failed to open http client to send requests");
