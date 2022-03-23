@@ -84,8 +84,9 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -949,8 +950,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         OperatingSystem os = getSelectedOS();
         setComboRefreshingStatus(comboAppServicePlan, true);
         Mono.fromCallable(() -> {
-            return Azure.az(AzureAppService.class).appServicePlans(selectedSubscription.getId(), false).stream()
-                    .filter(asp -> asp.entity().getOperatingSystem() == null || asp.entity().getOperatingSystem() == os)
+            return Azure.az(AzureAppService.class).plans(selectedSubscription.getId()).list().stream()
+                    .filter(asp -> asp.getOperatingSystem() == null || asp.getOperatingSystem() == os)
                     .collect(Collectors.toList());
         }).subscribeOn(Schedulers.boundedElastic())
             .subscribe(appServicePlans -> {
@@ -984,8 +985,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             lblAppServicePlanPricingTier.setText(NOT_AVAILABLE);
         } else {
             AppServicePlan asp = binderAppServicePlan.get(i);
-            lblAppSevicePlanLocation.setText(asp.entity().getRegion());
-            lblAppServicePlanPricingTier.setText(asp.entity().getPricingTier().toString());
+            lblAppSevicePlanLocation.setText(asp.getRegion().getLabel());
+            lblAppServicePlanPricingTier.setText(asp.getPricingTier().toString());
         }
     }
 
@@ -1161,7 +1162,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     EventUtil.logEvent(EventType.info, operation, properties);
                     webApp = AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(model);
                     if (!appSettings.isEmpty()) {
-                        webApp.update().withAppSettings(appSettings).commit();
+                        final WebAppDraft draft = (WebAppDraft) webApp.update();
+                        draft.setAppSettings(appSettings);
+                        draft.updateIfExist();
                     }
                     monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
                     Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.okPressed());
@@ -1187,7 +1190,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             setError(dec_textAppName, WEB_APP_NAME_INVALID_MSG);
             return false;
         } else {
-            for (WebApp wa : Azure.az(AzureAppService.class).subscription(model.getSubscriptionId()).webapps(false)) {
+            for (WebApp wa : Azure.az(AzureAppService.class).webApps(model.getSubscriptionId()).list()) {
                 if (wa != null && wa.name().toLowerCase().equals(webappName.toLowerCase())) {
                     setError(dec_textAppName, NAME_ALREADY_TAKEN);
                     return false;
@@ -1211,7 +1214,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
                 // App service plan name must be unique in each subscription
                 List<AppServicePlan> appServicePlans = Azure.az(AzureAppService.class)
-                        .appServicePlans(model.getSubscriptionId(), false);
+                        .plans(model.getSubscriptionId()).list();
                 for (AppServicePlan asp : appServicePlans) {
                     if (asp != null && StringUtils.equalsIgnoreCase(asp.name(), model.getAppServicePlanName())) {
                         setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);

@@ -21,9 +21,9 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Availability;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
@@ -116,8 +116,8 @@ public class AppServiceInstanceDetailComposite extends Composite {
         if (subscription == null) {
             return AzureValidationInfo.success(text);
         }
-        final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class)
-                .checkNameAvailability(subscription.getId(), text.getValue());
+        final Availability result = Azure.az(AzureAppService.class)
+                .get(subscription.getId(), null).checkNameAvailability(text.getValue());
         return result.isAvailable() ? AzureValidationInfo.success(text)
                 : AzureValidationInfo.error(result.getUnavailabilityMessage(), text);
     }

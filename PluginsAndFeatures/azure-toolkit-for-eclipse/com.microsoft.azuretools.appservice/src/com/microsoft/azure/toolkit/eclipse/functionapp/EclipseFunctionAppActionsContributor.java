@@ -17,14 +17,14 @@ import com.microsoft.azure.toolkit.ide.appservice.model.TriggerRequest;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -49,7 +49,7 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<Object, Object> createCondition = (r, e) -> r instanceof AzureFunction;
+        final BiPredicate<Object, Object> createCondition = (r, e) -> r instanceof AzureFunctions;
         final BiConsumer<Object, Object> createHandler = (c, e) -> AzureTaskManager.getInstance()
                 .runLater(() -> CreateFunctionAppHandler.create());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
@@ -64,7 +64,7 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
                 });
         am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, isFunctionApp, openWebAppPropertyViewHandler);
 
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> deployHandler = (c, e) -> AzureTaskManager.getInstance().runLater(() -> {
+        final BiConsumer<AzResource<?, ?, ?>, Object> deployHandler = (c, e) -> AzureTaskManager.getInstance().runLater(() -> {
             try {
                 DeployAzureFunctionAction.deployFunctionAppToAzure((FunctionApp) c);
             } catch (CoreException exception) {
@@ -73,14 +73,15 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
         });
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof FunctionApp, deployHandler);
 
-        final BiPredicate<IAppService<?>, Object> logStreamingPredicate = (r, e) -> r instanceof IFunctionAppBase<?>;
-        final BiConsumer<IAppService<?>, Object> startLogStreamingHandler = (c, e) -> FunctionAppLogStreamingHandler
-                .startLogStreaming((IFunctionAppBase<?>) c);
+        final BiPredicate<AppServiceAppBase<?, ?, ?>, Object> logStreamingPredicate = (r,
+                e) -> r instanceof FunctionAppBase<?, ?, ?>;
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, Object> startLogStreamingHandler = (c,
+                e) -> FunctionAppLogStreamingHandler.startLogStreaming((FunctionAppBase<?, ?, ?>) c);
         am.registerHandler(AppServiceActionsContributor.START_STREAM_LOG, logStreamingPredicate,
                 startLogStreamingHandler);
 
-        final BiConsumer<IAppService<?>, Object> stopLogStreamingHandler = (c, e) -> FunctionAppLogStreamingHandler
-                .stopLogStreaming((IFunctionAppBase<?>) c);
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, Object> stopLogStreamingHandler = (c,
+                e) -> FunctionAppLogStreamingHandler.stopLogStreaming((FunctionAppBase<?, ?, ?>) c);
         am.registerHandler(AppServiceActionsContributor.STOP_STREAM_LOG, logStreamingPredicate,
                 stopLogStreamingHandler);
 
@@ -89,7 +90,7 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
         final BiConsumer<FunctionEntity, Object> triggerFunctionHandler = (entity, e) -> {
             final String functionId = Optional.ofNullable(entity.getFunctionAppId())
                     .orElseGet(() -> ResourceId.fromString(entity.getTriggerId()).parent().id());
-            final FunctionApp functionApp = Azure.az(AzureFunction.class).get(functionId);
+            final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(functionId);
             final String triggerType = Optional.ofNullable(entity.getTrigger())
                     .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
             if (StringUtils.equalsIgnoreCase(triggerType, "timertrigger")) {

@@ -70,7 +70,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
             return AzureValidationInfo.success(this);
         });
         if (Objects.nonNull(this.cluster)) {
-            selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));
+            selectorSubscription.setValue(new ItemReference<>(this.cluster.getSubscriptionId(), Subscription::getId));
             selectorCluster.setValue(new ItemReference<>(this.cluster.name(), AzResource::getName));
         }
     }

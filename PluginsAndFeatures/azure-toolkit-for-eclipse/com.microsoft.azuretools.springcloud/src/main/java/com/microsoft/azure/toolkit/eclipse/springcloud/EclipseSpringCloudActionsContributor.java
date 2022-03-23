@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 
@@ -34,8 +34,8 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
     }
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
-        final Predicate<IAzureBaseResource<?, ?>> condition = (r) -> r instanceof SpringCloudApp;
-        final Consumer<IAzureBaseResource<?, ?>> handler = (c) -> DeploySpringCloudAppAction.deployToApp((SpringCloudApp) c);
+        final Predicate<AzResource<?, ?, ?>> condition = (r) -> r instanceof SpringCloudApp;
+        final Consumer<AzResource<?, ?, ?>> handler = (c) -> DeploySpringCloudAppAction.deployToApp((SpringCloudApp) c);
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, condition, handler);
     }
 
