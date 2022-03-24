@@ -48,7 +48,7 @@ public class StorageActionsContributor implements IActionsContributor {
         };
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
-                .enabled(s -> s instanceof StorageAccount);
+                .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyConnectionStringAction = new Action<>(copyConnectionString, copyConnectionStringView);
         am.registerAction(COPY_CONNECTION_STRING, copyConnectionStringAction);
 
@@ -58,7 +58,7 @@ public class StorageActionsContributor implements IActionsContributor {
         };
         final ActionView.Builder copyPrimaryView = new ActionView.Builder("Copy Primary Key")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
-                .enabled(s -> s instanceof StorageAccount);
+                .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(copyPrimaryKey, copyPrimaryView);
         am.registerAction(COPY_PRIMARY_KEY, copyPrimaryKeyAction);
     }
