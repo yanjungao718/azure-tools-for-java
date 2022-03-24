@@ -92,7 +92,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
                 openResource(storageAccount);
             }
         };
-        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Browser"));
+        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Configure"));
         browserAction.setAuthRequired(false);
         return new Action[]{openInAzureAction, downloadAction, browserAction};
     }
