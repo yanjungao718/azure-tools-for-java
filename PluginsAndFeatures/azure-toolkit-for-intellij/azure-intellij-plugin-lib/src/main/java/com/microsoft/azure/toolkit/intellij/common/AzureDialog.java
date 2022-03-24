@@ -55,14 +55,10 @@ public abstract class AzureDialog<T> extends DialogWrapper {
     @Nullable
     @Override
     public JComponent getPreferredFocusedComponent() {
-        final JComponent dft = super.getPreferredFocusedComponent();
-        if (Objects.isNull(dft)) {
-            return this.getForm().getInputs().stream()
-                .filter(i -> i instanceof AzureFormInputComponent)
-                .map(i -> ((AzureFormInputComponent<?>) i).getInputComponent())
-                .findFirst().orElse(null);
-        }
-        return dft;
+        return this.getForm().getInputs().stream()
+            .filter(i -> i instanceof AzureFormInputComponent)
+            .map(i -> ((AzureFormInputComponent<?>) i).getInputComponent())
+            .findFirst().orElseGet(super::getPreferredFocusedComponent);
     }
 
     @Override
