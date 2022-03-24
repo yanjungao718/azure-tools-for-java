@@ -18,8 +18,8 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
-import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
+import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Startable;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.apache.commons.lang3.StringUtils;
@@ -82,7 +82,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         };
         final ActionView.Builder deleteView = new ActionView.Builder("Delete", "/icons/action/delete.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.delete_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof Deletable && !((AzResourceBase) s).getFormalStatus().isWriting());
+            .enabled(s -> s instanceof Deletable && !((AzResourceBase) s).getFormalStatus().isDeleted());
         final Action<AzResource<?, ?, ?>> deleteAction = new Action<>(delete, deleteView);
         deleteAction.setShortcuts(shortcuts.delete());
         am.registerAction(DELETE, deleteAction);
@@ -125,14 +125,14 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.show_properties.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof AzResourceBase && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING));
+            .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isConnected());
         final Action<AzResourceBase> showPropertiesAction = new Action<>(showPropertiesView);
         showPropertiesAction.setShortcuts(shortcuts.edit());
         am.registerAction(SHOW_PROPERTIES, showPropertiesAction);
 
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.deploy_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isRunning());
+            .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isWritable());
         final Action<AzResource<?, ?, ?>> deployAction = new Action<>(deployView);
         deployAction.setShortcuts(shortcuts.deploy());
         am.registerAction(DEPLOY, deployAction);

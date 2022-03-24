@@ -70,7 +70,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
 
     private void resetToDraft() {
         final Network value = getValue();
-        if (value != null && Objects.nonNull(subscription) && (!(value instanceof AzResource.Draft) || value.exists())) {
+        if (value != null && Objects.nonNull(subscription) && !value.isDraft()) {
             final String name = NetworkDraft.generateDefaultName();
             final String rgName = Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse("<none>");
             this.draft = Azure.az(AzureNetwork.class).virtualNetworks(subscription.getId()).create(name, rgName);
@@ -99,7 +99,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     }
 
     public void setData(Network value) {
-        this.draft = value.isDraft() ? (NetworkDraft) value : null;
+        this.draft = value.isDraftForCreating() ? (NetworkDraft) value : null;
         super.setValue(new ItemReference<>(resource -> StringUtils.equals(value.getName(), resource.getName()) &&
             StringUtils.equals(value.getResourceGroupName(), resource.getResourceGroupName())));
     }
@@ -108,7 +108,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     protected String getItemText(Object item) {
         if (item instanceof Network) {
             final Network network = (Network) item;
-            return (network.isDraft() ? "(New) " : "") + network.getName();
+            return (network.isDraftForCreating() ? "(New) " : "") + network.getName();
         }
         return super.getItemText(item);
     }

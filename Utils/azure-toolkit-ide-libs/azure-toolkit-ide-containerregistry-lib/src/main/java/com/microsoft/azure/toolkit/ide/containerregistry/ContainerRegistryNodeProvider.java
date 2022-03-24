@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
-public class ContainerRegistryExplorerContributor implements IExplorerNodeProvider {
+public class ContainerRegistryNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Container Registries";
     private static final String ICON = "/icons/ContainerRegistry/ContainerRegistry.svg";
 

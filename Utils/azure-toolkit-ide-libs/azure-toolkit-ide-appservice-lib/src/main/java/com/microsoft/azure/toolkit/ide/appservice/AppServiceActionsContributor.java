@@ -41,22 +41,22 @@ public class AppServiceActionsContributor implements IActionsContributor {
 
         final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", "/icons/action/log.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?>);
+            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(START_STREAM_LOG, new Action<>(startStreamLogView));
 
         final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", "/icons/action/log.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?>);
+            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(STOP_STREAM_LOG, new Action<>(stopStreamLogView));
 
         final ActionView.Builder profileFlightRecorderView = new ActionView.Builder("Profile Flight Recorder")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.profile_flight_recorder.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?>);
+            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(PROFILE_FLIGHT_RECORD, new Action<>(profileFlightRecorderView));
 
         final ActionView.Builder sshView = new ActionView.Builder("SSH into Web App")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && StringUtils.equalsIgnoreCase(((AppServiceAppBase<?, ?, ?>) s).getStatus(), AzResource.Status.RUNNING));
+            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(SSH_INTO_WEBAPP, new Action<>(sshView));
     }
 

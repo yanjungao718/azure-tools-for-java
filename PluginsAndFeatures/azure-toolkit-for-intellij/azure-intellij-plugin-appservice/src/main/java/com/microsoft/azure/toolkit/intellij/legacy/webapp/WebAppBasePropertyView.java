@@ -24,7 +24,6 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -203,8 +202,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     protected void closeEditor(AppServiceAppBase<?, ?, ?> app) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
-        AzureMessager.getMessager().info(AzureString.format("The editor for app '%s' is closed.", app.name()),
-            String.format("The app with name '%s' is deleted.", app.name()));
+        final String message = String.format("Close editor of app '%s', because the app is deleted.", app.name());
+        AzureMessager.getMessager().info(message);
     }
 
     protected abstract String getId();

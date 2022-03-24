@@ -37,7 +37,7 @@ public class StorageActionsContributor implements IActionsContributor {
         final Consumer<StorageAccount> openAzureStorageExplorer = resource -> new OpenAzureStorageExplorerAction().openResource(resource);
         final ActionView.Builder openAzureStorageExplorerView = new ActionView.Builder("Open Azure Storage Explorer")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.open_azure_storage_explorer.account", ((StorageAccount) r).getName())).orElse(null))
-                .enabled(s -> s instanceof StorageAccount);
+                .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> openAzureStorageExplorerAction = new Action<>(openAzureStorageExplorer, openAzureStorageExplorerView);
         openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
         am.registerAction(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorerAction);

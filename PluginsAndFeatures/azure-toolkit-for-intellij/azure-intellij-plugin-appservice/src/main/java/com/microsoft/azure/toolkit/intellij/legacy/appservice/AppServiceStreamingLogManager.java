@@ -248,7 +248,7 @@ public enum AppServiceStreamingLogManager {
 
         public WebAppSlotLogStreaming(String resourceId) {
             final ResourceId id = ResourceId.fromString(resourceId);
-            this.deploymentSlot = Azure.az(AzureWebApp.class).webApp(id.parent().toString()).slots().get(resourceId);
+            this.deploymentSlot = Azure.az(AzureWebApp.class).webApp(id.parent().id()).slots().get(resourceId);
         }
 
         @Override

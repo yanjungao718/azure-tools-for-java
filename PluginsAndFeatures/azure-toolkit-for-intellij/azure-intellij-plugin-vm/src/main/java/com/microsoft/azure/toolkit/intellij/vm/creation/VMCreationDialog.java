@@ -373,11 +373,11 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
 
         final Network network = cbVirtualNetwork.getValue();
         final PublicIpAddress ipAddress = cbPublicIp.getValue();
-        Optional.ofNullable(network).filter(AbstractAzResource::isDraft).map(n -> ((NetworkDraft) n)).ifPresent(n -> {
+        Optional.ofNullable(network).filter(AbstractAzResource::isDraftForCreating).map(n -> ((NetworkDraft) n)).ifPresent(n -> {
             n.setResourceGroupName(resourceGroupName);
             n.setRegion(region);
         });
-        Optional.ofNullable(ipAddress).filter(AbstractAzResource::isDraft).map(n -> ((PublicIpAddressDraft) n)).ifPresent(n -> {
+        Optional.ofNullable(ipAddress).filter(AbstractAzResource::isDraftForCreating).map(n -> ((PublicIpAddressDraft) n)).ifPresent(n -> {
             n.setResourceGroupName(resourceGroupName);
             n.setRegion(region);
         });
