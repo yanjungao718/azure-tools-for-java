@@ -19,9 +19,9 @@ import java.util.Set;
 public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
 
     @Override
-    protected WebApp getWebAppBase(@Nonnull final String sid, @Nonnull final String webAppId,
-                                   @Nullable final String name) {
-        return Azure.az(AzureWebApp.class).webApp(webAppId);
+    protected WebApp getWebAppBase(@Nonnull final String sid, @Nonnull final String appId,
+                                   @Nullable final String slotName) {
+        return Azure.az(AzureWebApp.class).webApp(appId);
     }
 
     @Override

@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
@@ -22,8 +23,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBaseP
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import rx.Observable;
 
 import javax.annotation.Nonnull;
@@ -37,6 +36,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBasePropertyMvpView> extends MvpPresenter<V> {
@@ -54,18 +55,15 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     public static final String KEY_APP_SETTING = "appSetting";
     public static final String KEY_JAVA_CONTAINER_VERSION = "javaContainerVersion";
 
-    public <T extends AppServiceBaseEntity> void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String webAppId, @Nullable final String name) {
-        Mono.fromCallable(() -> getWebAppBase(sid, webAppId, name)).map(appService -> {
-            if (!appService.exists()) {
-                return new WebAppProperty(new HashMap<>());
-            }
-            return generateProperty(appService, appService.getAppServicePlan());
-        }).subscribeOn(Schedulers.boundedElastic()).subscribe(property -> AzureTaskManager.getInstance().runLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().showProperty(property);
-        }));
+    public <T extends AppServiceBaseEntity> void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId, @Nullable final String slotName) {
+        final String appName = ResourceId.fromString(appId).name();
+        final AzureString title = AzureString.format("load properties of App Service '{0}'", appName);
+        AzureTaskManager.getInstance().runInBackground(title, () -> {
+            final AppServiceAppBase<?, ?, ?> app = getWebAppBase(sid, appId, slotName);
+            final WebAppProperty property = Objects.isNull(app) || app.isDraftForCreating() ? new WebAppProperty(new HashMap<>()) :
+                generateProperty(app, Objects.requireNonNull(app.getAppServicePlan()));
+            AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(getMvpView()).ifPresent(v -> v.showProperty(property)));
+        });
     }
 
     protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final AppServiceAppBase<?, ?, ?> appService, @Nonnull final AppServicePlan plan) {
@@ -92,8 +90,8 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         return new WebAppProperty(propertyMap);
     }
 
-    protected abstract AppServiceAppBase<?, ?, ?> getWebAppBase(@Nonnull String sid, @Nonnull String webAppId,
-                                                                @Nullable String name) throws Exception;
+    protected abstract AppServiceAppBase<?, ?, ?> getWebAppBase(@Nonnull String sid, @Nonnull String appId,
+                                                                @Nullable String slotName);
 
     protected abstract void updateAppSettings(@Nonnull String sid, @Nonnull String webAppId, @Nullable String name,
                                               @Nonnull Map<String, String> toUpdate, @Nonnull Set<String> toRemove) throws Exception;
