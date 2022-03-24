@@ -88,7 +88,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         tm.runOnPooledThread(() -> {
             this.icon = iconProvider.getIcon(this.resource);
             this.description = descriptionLoader.apply(this.resource);
-            this.enabled = !StringUtils.equalsIgnoreCase(AzResource.Status.DISCONNECTED, this.resource.getStatus());
+            this.enabled = !this.resource.getFormalStatus().isDeleted();
             tm.runLater(this::refreshView);
         });
     }
