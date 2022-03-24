@@ -16,6 +16,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenExplicitProfiles;
+import org.jetbrains.idea.maven.model.MavenId;
 import org.jetbrains.idea.maven.project.MavenEmbeddersManager;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -97,6 +98,29 @@ public class MavenUtils {
             }
         }
         return null;
+    }
+
+    public static MavenProject getRootMavenProject(final Project project, final MavenProject mavenProject) {
+        if (mavenProject == null) {
+            return null;
+        }
+        MavenProject result = mavenProject;
+        MavenId parentId = mavenProject.getParentId();
+        while (parentId != null) {
+            result = getMavenProjectById(project, parentId);
+            parentId = result.getParentId();
+        }
+        return result;
+    }
+
+    public static MavenProject getMavenProjectById(final Project project, final MavenId mavenId) {
+        return MavenProjectsManager.getInstance(project).getProjects().stream()
+                .filter(pro -> Objects.equals(pro.getMavenId(), mavenId)).findFirst().orElse(null);
+    }
+
+    public static MavenProject getMavenProjectByDirectory(final Project project, final String directory) {
+        return MavenProjectsManager.getInstance(project).getProjects().stream()
+                .filter(pro -> StringUtils.equals(pro.getDirectory(), directory)).findFirst().orElse(null);
     }
 
 }

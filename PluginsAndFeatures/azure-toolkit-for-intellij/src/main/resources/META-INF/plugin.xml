@@ -65,6 +65,7 @@
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
+  <depends>org.jetbrains.plugins.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-service-explorer.xml" xpointer="xpointer(/idea-plugin/*)"/>
@@ -189,7 +190,7 @@
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.intellij.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.intellij.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
-            description="ShowSubscriptionsAction" />
+            description="ShowSubscriptionsAction" icon="AllIcons.General.Filter" />
     <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
       <action id="AzureToolkit.DisableSSLCertificateValidation"
               class="com.microsoft.intellij.actions.DisableSslCertificateValidationAction"

@@ -7,25 +7,32 @@ package com.microsoft.intellij.ui;
 
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
+import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.h2.store.fs.FileUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -48,6 +55,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private JComboBox<Password.SaveType> savePasswordComboBox;
     private FunctionCoreToolsCombobox funcCoreToolsPath;
     private JLabel azureEnvDesc;
+    private AzureFileInput txtStorageExplorer;
 
     private AzureConfiguration originalConfig;
     private final Project project;
@@ -96,6 +104,18 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         setData(config);
     }
 
+    public AzureValidationInfo validateStorageExplorerPath() {
+        final String path = txtStorageExplorer.getValue();
+        if (StringUtils.isNotEmpty(path) && !FileUtils.exists(path)) {
+            return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
+        }
+        final String fileName = FilenameUtils.getName(path);
+        if (!(StringUtils.containsIgnoreCase(fileName, "storage") && StringUtils.containsIgnoreCase(fileName, "explorer"))) {
+            return AzureValidationInfo.error("Please select correct path for storage explorer", txtStorageExplorer);
+        }
+        return AzureValidationInfo.ok(txtStorageExplorer);
+    }
+
     public void setData(AzureConfiguration config) {
         this.originalConfig = config;
         final AzureEnvironment oldEnv = ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()), AzureEnvironment.AZURE);
@@ -107,6 +127,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotBlank(oldFuncCoreToolsPath)) {
             funcCoreToolsPath.setValue(oldFuncCoreToolsPath);
         }
+        if (StringUtils.isNotBlank(config.getStorageExplorerPath())) {
+            txtStorageExplorer.setValue(config.getStorageExplorerPath());
+        }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
     }
 
@@ -114,13 +137,16 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureConfiguration data = new AzureConfiguration();
         data.setCloud(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
         data.setDatabasePasswordSaveType(Optional.ofNullable(savePasswordComboBox.getSelectedItem())
-            .map(i -> ((Password.SaveType) i).name())
-            .orElse(Password.SaveType.UNTIL_RESTART.name()));
+                .map(i -> ((Password.SaveType) i).name())
+                .orElse(Password.SaveType.UNTIL_RESTART.name()));
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
         if (Objects.nonNull(funcCoreToolsPath.getItem())) {
             data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
         } else if (funcCoreToolsPath.getRawValue() instanceof String) {
             data.setFunctionCoreToolsPath((String) funcCoreToolsPath.getRawValue());
+        }
+        if (StringUtils.isNotBlank(txtStorageExplorer.getValue())) {
+            data.setStorageExplorerPath(txtStorageExplorer.getValue());
         }
         return data;
     }
@@ -129,14 +155,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (AuthMethodManager.getInstance().isSignedIn()) {
             final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
             final AzureEnvironment currentEnv =
-                AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
+                    AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
             final String currentEnvStr = azureEnvironmentToString(currentEnv);
             if (Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
                 setTextToLabel(azureEnvDesc, "You are currently signed in with environment: " + currentEnvStr);
                 azureEnvDesc.setIcon(AllIcons.General.Information);
             } else {
                 setTextToLabel(azureEnvDesc,
-                    String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
+                        String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
                 azureEnvDesc.setIcon(AllIcons.General.Warning);
             }
         } else {
@@ -177,8 +203,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setDatabasePasswordSaveType(newConfig.getDatabasePasswordSaveType());
         this.originalConfig.setFunctionCoreToolsPath(newConfig.getFunctionCoreToolsPath());
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
-            this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
+                this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
         this.originalConfig.setUserAgent(userAgent);
+        this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
         // apply changes
         // we need to get rid of AuthMethodManager, using az.azure_account
@@ -224,9 +251,10 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureEnvironment newEnv = AzureEnvironmentUtils.stringToAzureEnvironment(newConfig.getCloud());
         final AzureEnvironment oldEnv = AzureEnvironmentUtils.stringToAzureEnvironment(originalConfig.getCloud());
         return !Objects.equals(newEnv, oldEnv) ||
-            !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
-            !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
-            !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled());
+                !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
+                !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
+                !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
+                !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled());
     }
 
     @Override
@@ -236,5 +264,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     private void createUIComponents() {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(project, false);
+        this.txtStorageExplorer = new AzureFileInput() {
+            @Override
+            public boolean needValidation() {
+                return true;
+            }
+        };
+        txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
+                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
     }
 }
