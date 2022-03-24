@@ -32,7 +32,8 @@ public class AddSshConfigAction {
 
     public static void addSshConfig(VirtualMachine vm, @Nonnull Project project) {
         if (!vm.isSshEnabled()) {
-            AzureMessager.getMessager().warning(String.format("ssh is not enabled on '%s'", vm.getName()));
+            AzureMessager.getMessager().warning(String.format("SSH is not enabled on '%s'.", vm.getName()));
+            return;
         }
         try {
             final Class<?> clsConfigurable = Class.forName("com.intellij.ssh.ui.unified.SshConfigConfigurable$Main");
