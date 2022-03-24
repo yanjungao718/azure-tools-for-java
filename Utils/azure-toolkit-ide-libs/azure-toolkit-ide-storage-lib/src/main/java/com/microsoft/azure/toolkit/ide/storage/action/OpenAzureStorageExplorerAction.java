@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.storage.action.explorer.AbstractAzureStor
 import com.microsoft.azure.toolkit.ide.storage.action.explorer.LinuxOpenAzureStorageExplorerHandler;
 import com.microsoft.azure.toolkit.ide.storage.action.explorer.MacOSOpenAzureStorageExplorerHandler;
 import com.microsoft.azure.toolkit.ide.storage.action.explorer.WindowsOpenAzureStorageExplorerHandler;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -25,6 +26,7 @@ public class OpenAzureStorageExplorerAction {
         }
     }
 
+    @AzureOperation(name = "storage.open_azure_storage_explorer.account", params = {"storageAccount.getName()"}, type = AzureOperation.Type.ACTION)
     public void openResource(final StorageAccount storageAccount) {
         this.handler.openResource(storageAccount);
     }
