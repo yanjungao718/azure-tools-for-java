@@ -23,7 +23,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SqlServerNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "SQL Server";
-    private static final String ICON = "/icons/Microsoft.SQL/default.svg";
+    private static final String ICON = "/icons/Microsoft.Sql/default.svg";
 
     @Nullable
     @Override

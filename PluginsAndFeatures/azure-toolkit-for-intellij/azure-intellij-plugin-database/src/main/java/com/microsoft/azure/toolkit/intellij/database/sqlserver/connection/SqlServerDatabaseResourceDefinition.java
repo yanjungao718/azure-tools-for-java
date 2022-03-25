@@ -26,7 +26,7 @@ public class SqlServerDatabaseResourceDefinition extends SqlDatabaseResourceDefi
     public static final SqlServerDatabaseResourceDefinition INSTANCE = new SqlServerDatabaseResourceDefinition();
 
     public SqlServerDatabaseResourceDefinition() {
-        super("Azure.SqlServer", "SQL Server", "/icons/Microsoft.SQL/default.svg");
+        super("Azure.SqlServer", "SQL Server", "/icons/Microsoft.Sql/default.svg");
     }
 
     @Override
