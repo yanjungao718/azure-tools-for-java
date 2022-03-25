@@ -49,7 +49,7 @@
             <li>MySQL/SQL/PostgreSQL server: NPE when open properties editor of a deleting MySQL/SQL/PostgreSQL server.</li>
             <li>MySQL/SQL/PostgreSQL server: expandable sections in properties view of a stopped MySQL server can be folded but can not be expanded.</li>
             <li>Redis Cache: Redis data explorer UI blocks when read data in non-first database.</li>
-            <li>Redis Cache: pricing tier keeps <code>Basic C0</code> no matter what use selects in Redis cache creation dialog.</li>
+            <li>Redis Cache: pricing tier keeps <code>Basic C0</code> no matter what user selects in Redis cache creation dialog.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

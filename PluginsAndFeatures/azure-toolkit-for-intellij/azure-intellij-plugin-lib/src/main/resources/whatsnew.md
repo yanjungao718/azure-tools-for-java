@@ -19,7 +19,7 @@
 - MySQL/SQL/PostgreSQL server: NPE when open properties editor of a deleting MySQL/SQL/PostgreSQL server.
 - MySQL/SQL/PostgreSQL server: expandable sections in properties view of a stopped MySQL server can be folded but can not be expanded.
 - Redis Cache: Redis data explorer UI blocks when read data in non-first database.
-- Redis Cache: pricing tier keeps `Basic C0` no matter what use selects in Redis cache creation dialog.
+- Redis Cache: pricing tier keeps `Basic C0` no matter what user selects in Redis cache creation dialog.
 
 ## 3.61.1
 
