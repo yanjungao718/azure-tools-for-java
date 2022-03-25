@@ -119,7 +119,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
 
     private void resetToDraft() {
         final PublicIpAddress value = getValue();
-        if (value != null && Objects.nonNull(subscription) && !value.isDraft()) {
+        if (value != null && Objects.nonNull(subscription) && !value.isDraftForCreating()) {
             final String name = PublicIpAddressDraft.generateDefaultName();
             final String rgName = Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse("<none>");
             this.draft = Azure.az(AzureNetwork.class).publicIpAddresses(subscription.getId()).create(name, rgName);
