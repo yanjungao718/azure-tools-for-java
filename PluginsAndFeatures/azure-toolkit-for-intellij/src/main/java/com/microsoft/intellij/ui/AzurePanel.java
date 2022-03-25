@@ -106,7 +106,10 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     public AzureValidationInfo validateStorageExplorerPath() {
         final String path = txtStorageExplorer.getValue();
-        if (StringUtils.isNotEmpty(path) && !FileUtils.exists(path)) {
+        if (StringUtils.isEmpty(path)) {
+            return AzureValidationInfo.ok(txtStorageExplorer);
+        }
+        if (!FileUtils.exists(path)) {
             return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
         }
         final String fileName = FilenameUtils.getName(path);
@@ -264,12 +267,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     private void createUIComponents() {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(project, false);
-        this.txtStorageExplorer = new AzureFileInput() {
-            @Override
-            public boolean needValidation() {
-                return true;
-            }
-        };
+        this.txtStorageExplorer = new AzureFileInput();
         txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
                 project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
