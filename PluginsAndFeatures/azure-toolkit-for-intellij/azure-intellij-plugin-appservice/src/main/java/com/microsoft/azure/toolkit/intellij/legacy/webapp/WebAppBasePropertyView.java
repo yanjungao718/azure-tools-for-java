@@ -211,9 +211,9 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     protected abstract WebAppBasePropertyViewPresenter createPresenter();
 
     @Override
-    public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String webAppId,
+    public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId,
                                      @Nullable final String slotName) {
-        this.presenter.onLoadWebAppProperty(sid, webAppId, slotName);
+        this.presenter.onLoadWebAppProperty(sid, appId, slotName);
     }
 
     @Nonnull

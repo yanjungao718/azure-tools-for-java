@@ -31,9 +31,9 @@ public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewP
     }
 
     @Override
-    protected WebAppDeploymentSlot getWebAppBase(@Nonnull final String sid, @Nonnull final String webAppId,
-                                                  @Nullable final String name) {
-        final WebApp webApp = Azure.az(AzureWebApp.class).webApp(webAppId);
-        return Objects.requireNonNull(webApp).slots().get(name, webApp.getResourceGroupName());
+    protected WebAppDeploymentSlot getWebAppBase(@Nonnull final String sid, @Nonnull final String appId,
+                                                  @Nullable final String slotName) {
+        final WebApp webApp = Azure.az(AzureWebApp.class).webApp(appId);
+        return Objects.requireNonNull(webApp).slots().get(slotName, webApp.getResourceGroupName());
     }
 }
