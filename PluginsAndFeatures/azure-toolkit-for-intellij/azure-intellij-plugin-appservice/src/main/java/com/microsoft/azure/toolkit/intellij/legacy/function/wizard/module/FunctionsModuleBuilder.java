@@ -81,7 +81,8 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
     public ModuleWizardStep modifySettingsStep(@NotNull final SettingsStep settingsStep) {
         if (settingsStep instanceof ProjectSettingsStep) {
             final ProjectSettingsStep projectSettingsStep = (ProjectSettingsStep) settingsStep;
-            projectSettingsStep.bindModuleSettings();
+            wizardContext.setProjectFileDirectory(Paths.get(wizardContext.getProjectFileDirectory()), false);
+            projectSettingsStep.bindModuleSettings(); // workaround to update path when module name changes
             final ModuleNameLocationSettings nameLocationSettings = settingsStep.getModuleNameLocationSettings();
             final String artifactId = settingsStep.getContext().getUserData(AzureFunctionsConstants.WIZARD_ARTIFACTID_KEY);
             if (nameLocationSettings != null && artifactId != null) {
