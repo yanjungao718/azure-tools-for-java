@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.core;
 
-import com.google.common.base.Supplier;
 import com.google.gson.JsonObject;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInsight.MetaAnnotationUtil;
@@ -70,6 +69,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -153,7 +153,7 @@ public class FunctionUtils {
                 return false;
             }
             final GlobalSearchScope scope = GlobalSearchScope.moduleWithLibrariesScope(m);
-            final Supplier<PsiClass> psiClassSupplier = () -> JavaPsiFacade.getInstance(project).findClass(AZURE_FUNCTION_ANNOTATION_CLASS, scope);
+            final Callable<PsiClass> psiClassSupplier = () -> JavaPsiFacade.getInstance(project).findClass(AZURE_FUNCTION_ANNOTATION_CLASS, scope);
             final PsiClass ecClass = AzureTaskManager.getInstance().readAsObservable(new AzureTask<>(psiClassSupplier)).toBlocking().first();
             return ecClass != null;
         }).toArray(Module[]::new);
