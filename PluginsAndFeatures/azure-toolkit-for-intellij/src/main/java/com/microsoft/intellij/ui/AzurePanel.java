@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
@@ -32,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.h2.store.fs.FileUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -109,7 +109,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isEmpty(path)) {
             return AzureValidationInfo.ok(txtStorageExplorer);
         }
-        if (!FileUtils.exists(path)) {
+        if (!FileUtil.exists(path)) {
             return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
         }
         final String fileName = FilenameUtils.getName(path);
