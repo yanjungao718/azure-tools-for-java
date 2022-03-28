@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.ide.appservice.function.node.TriggerFunctionI
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -35,6 +35,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("actions.function.function.trigger_in_browser");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client.trigger");
     public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
     public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
@@ -42,13 +43,15 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup functionAppActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
@@ -67,7 +70,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         am.registerGroup(FUNCTION_APP_ACTIONS, functionAppActionGroup);
 
         am.registerGroup(FUNCTION_ACTION, new ActionGroup(FunctionAppActionsContributor.TRIGGER_FUNCTION,
-                FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER));
+                FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER, FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT));
         am.registerGroup(FUNCTIONS_ACTIONS, new ActionGroup(FunctionAppActionsContributor.REFRESH_FUNCTIONS));
     }
 
@@ -91,6 +94,12 @@ public class FunctionAppActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func_in_browser.trigger", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
         am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(triggerInBrowserHandler, triggerInBrowserView));
+
+        final ActionView.Builder triggerWIthHttpClientView = new ActionView.Builder("Trigger Function with Http Client")
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_function_with_http_client.trigger",
+                        ((FunctionEntity) s).getName())).orElse(null))
+                .enabled(s -> s instanceof FunctionEntity);
+        am.registerAction(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, new Action<>(triggerWIthHttpClientView));
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
                 .title(s -> title("function.download_core_tools"));

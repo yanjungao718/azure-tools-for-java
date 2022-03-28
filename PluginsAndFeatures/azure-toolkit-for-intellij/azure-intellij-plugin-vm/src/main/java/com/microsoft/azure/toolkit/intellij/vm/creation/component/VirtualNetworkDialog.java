@@ -8,11 +8,13 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.compute.network.DraftNetwork;
+import com.microsoft.azure.toolkit.lib.network.AzureNetwork;
+import com.microsoft.azure.toolkit.lib.network.virtualnetwork.NetworkDraft;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.util.SubnetUtils;
 import org.jetbrains.annotations.NotNull;
@@ -23,9 +25,9 @@ import javax.swing.event.DocumentEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements AzureForm<DraftNetwork> {
+public class VirtualNetworkDialog extends AzureDialog<NetworkDraft> implements AzureForm<NetworkDraft> {
     private static final String NETWORK_NAME_RULES = "The name must begin with a letter or number, end with a letter, number or underscore, " +
-            "and may contain only letters, numbers, underscores, periods, or hyphens.";
+        "and may contain only letters, numbers, underscores, periods, or hyphens.";
     private static final String NETWORK_NAME_PATTERN = "[a-zA-Z0-9][a-zA-Z0-9_\\.-]{0,62}[a-zA-Z0-9_]";
     private static final String SUBNET_NAME_PATTERN = "[a-zA-Z0-9]([a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_])?";
 
@@ -61,7 +63,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
     }
 
     @Override
-    public AzureForm<DraftNetwork> getForm() {
+    public AzureForm<NetworkDraft> getForm() {
         return this;
     }
 
@@ -71,36 +73,35 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
     }
 
     @Override
-    public DraftNetwork getValue() {
-        final DraftNetwork draftNetwork = new DraftNetwork(subscriptionId, resourceGroup, txtName.getValue());
-        draftNetwork.setRegion(region);
-        draftNetwork.setAddressSpace(txtAddressSpace.getValue());
-        draftNetwork.setSubnet(txtSubnetName.getValue());
-        draftNetwork.setSubnetAddressSpace(txtSubnetAddressRange.getValue());
-        return draftNetwork;
+    public NetworkDraft getValue() {
+        final NetworkDraft draft = Azure.az(AzureNetwork.class).virtualNetworks(subscriptionId).create(txtName.getValue(), resourceGroup);
+        draft.setRegion(region);
+        draft.setAddressSpace(txtAddressSpace.getValue());
+        draft.setSubnet(txtSubnetName.getValue(), txtSubnetAddressRange.getValue());
+        return draft;
     }
 
     @Override
-    public void setValue(DraftNetwork data) {
+    public void setValue(NetworkDraft data) {
         txtName.setText(data.getName());
         txtAddressSpace.setText(data.getAddressSpace());
-        txtSubnetName.setText(data.getSubnet());
-        txtSubnetAddressRange.setText(data.getSubnetAddressSpace());
+        txtSubnetName.setText(data.getSubnet().getName());
+        txtSubnetAddressRange.setText(data.getSubnet().getAddressSpace());
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(txtAddressSpace, txtName, txtSubnetAddressRange, txtSubnetName);
+        return Arrays.asList(txtName, txtAddressSpace, txtSubnetAddressRange, txtSubnetName);
     }
 
     private void createUIComponents() {
         // todo: add name validator
         txtName = new AzureTextInput();
         txtName.setRequired(true);
-        txtName.addValidator(() -> validateVirtualNetworkName());
+        txtName.addValidator(this::validateVirtualNetworkName);
         txtSubnetName = new AzureTextInput();
         txtSubnetName.setRequired(true);
-        txtSubnetName.addValidator(() -> validateSubnetName());
+        txtSubnetName.addValidator(this::validateSubnetName);
 
         txtAddressSpace = new AzureTextInput();
         txtAddressSpace.setRequired(true);

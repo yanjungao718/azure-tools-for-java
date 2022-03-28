@@ -19,9 +19,9 @@ import org.eclipse.swt.widgets.Control;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
 
@@ -80,7 +80,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     }
 
     // todo: move to toolkit lib
-    public static boolean isJavaAppService(IAppService<?> appService) {
+    public static boolean isJavaAppService(AppServiceAppBase<?, ?, ?> appService) {
         try {
             return Optional.ofNullable(appService.getRuntime()).map(Runtime::getJavaVersion)
                     .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF))

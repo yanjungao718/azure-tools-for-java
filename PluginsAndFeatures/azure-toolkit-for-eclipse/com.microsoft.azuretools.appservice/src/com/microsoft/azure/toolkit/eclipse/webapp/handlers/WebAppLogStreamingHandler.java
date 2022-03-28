@@ -6,9 +6,11 @@
 package com.microsoft.azure.toolkit.eclipse.webapp.handlers;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -21,12 +23,12 @@ public class WebAppLogStreamingHandler {
     private static final String ENABLE_FILE_LOGGING = "Do you want to enable file logging for ({0})";
     private static final String ENABLE_LOGGING = "Enable logging";
 
-    public static void stopLogStreaming(final IWebAppBase<?> webApp) {
+    public static void stopLogStreaming(final WebAppBase<?, ?, ?> webApp) {
         AzureTaskManager.getInstance()
                 .runLater(() -> EclipseAzureLogStreamingManager.getInstance().stopLogStreaming(webApp.id()));
     }
 
-    public static void startLogStreaming(final IWebAppBase<?> webApp) {
+    public static void startLogStreaming(final WebAppBase<?, ?, ?> webApp) {
         if (!isLogStreamingEnabled(webApp)) {
             final boolean enableLogging = AzureTaskManager.getInstance()
                     .runAndWaitAsObservable(new AzureTask<>(() -> AzureMessager.getMessager()
@@ -46,19 +48,23 @@ public class WebAppLogStreamingHandler {
                 () -> EclipseAzureLogStreamingManager.getInstance().showLogStreaming(webApp.id(), log));
     }
 
-    private static boolean isLogStreamingEnabled(IWebAppBase<?> webApp) {
+    private static boolean isLogStreamingEnabled(WebAppBase<?, ?, ?> webApp) {
         return webApp.getDiagnosticConfig().isEnableWebServerLogging();
     }
 
-    private static void enableLogStreaming(IWebAppBase<?> webApp) {
+    private static void enableLogStreaming(WebAppBase<?, ?, ?> webApp) {
         final DiagnosticConfig diagnosticConfig = webApp.getDiagnosticConfig();
         diagnosticConfig.setEnableWebServerLogging(true);
         diagnosticConfig.setWebServerLogQuota(35);
         diagnosticConfig.setWebServerRetentionPeriod(0);
         if (webApp instanceof WebApp) {
-            ((WebApp) webApp).update().withDiagnosticConfig(diagnosticConfig).commit();
+            final WebAppDraft draft = (WebAppDraft) ((WebApp) webApp).update();
+            draft.setDiagnosticConfig(diagnosticConfig);
+            draft.updateIfExist();
         } else if (webApp instanceof WebAppDeploymentSlot) {
-            ((WebAppDeploymentSlot) webApp).update().withDiagnosticConfig(diagnosticConfig).commit();
+            final WebAppDeploymentSlotDraft draft = (WebAppDeploymentSlotDraft) ((WebAppDeploymentSlot) webApp).update();
+            draft.setDiagnosticConfig(diagnosticConfig);
+            draft.updateIfExist();
         }
     }
 }

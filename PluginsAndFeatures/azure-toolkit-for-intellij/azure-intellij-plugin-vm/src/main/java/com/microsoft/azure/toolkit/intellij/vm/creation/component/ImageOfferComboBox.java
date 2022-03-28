@@ -6,18 +6,18 @@
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureImageOffer;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureImagePublisher;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VmImageOffer;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VmImagePublisher;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ImageOfferComboBox extends AzureComboBox<AzureImageOffer> {
-    private AzureImagePublisher publisher;
+public class ImageOfferComboBox extends AzureComboBox<VmImageOffer> {
+    private VmImagePublisher publisher;
 
-    public void setPublisher(AzureImagePublisher publisher) {
+    public void setPublisher(VmImagePublisher publisher) {
         this.publisher = publisher;
         this.clear();
         refreshItems();
@@ -25,12 +25,12 @@ public class ImageOfferComboBox extends AzureComboBox<AzureImageOffer> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof AzureImageOffer ? ((AzureImageOffer) item).name() : super.getItemText(item);
+        return item instanceof VmImageOffer ? ((VmImageOffer) item).name() : super.getItemText(item);
     }
 
     @Nonnull
     @Override
-    protected List<? extends AzureImageOffer> loadItems() throws Exception {
-        return Optional.ofNullable(publisher).map(AzureImagePublisher::offers).orElse(Collections.emptyList());
+    protected List<? extends VmImageOffer> loadItems() throws Exception {
+        return Optional.ofNullable(publisher).map(VmImagePublisher::offers).orElse(Collections.emptyList());
     }
 }

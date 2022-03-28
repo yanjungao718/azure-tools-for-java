@@ -7,15 +7,14 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
+import com.microsoft.azure.toolkit.ide.common.model.Draft;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -120,12 +119,20 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
                     .collect(Collectors.toList()));
             }
             final List<AppServicePlanEntity> remotePlans = Azure.az(AzureAppService.class)
-                .subscription(subscription.getId()).appServicePlans().stream().map(AppServicePlan::entity)
+                .plans(subscription.getId()).list().stream().map(p -> AppServicePlanEntity.builder()
+                    .subscriptionId(p.getSubscriptionId())
+                    .id(p.getId())
+                    .name(p.getName())
+                    .region(p.getRegion().getName())
+                    .resourceGroup(p.getResourceGroupName())
+                    .pricingTier(p.getPricingTier())
+                    .operatingSystem(p.getOperatingSystem())
+                    .build())
                 .collect(Collectors.toList());
             plans.addAll(remotePlans);
             Stream<AppServicePlanEntity> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
-                stream = stream.filter(p -> Objects.equals(p.getRegion(), this.region.getLabel()));
+                stream = stream.filter(p -> Objects.equals(p.getRegion(), this.region.getName()));
             }
             if (Objects.nonNull(this.os)) {
                 stream = stream.filter(p -> p.getOperatingSystem() == this.os);

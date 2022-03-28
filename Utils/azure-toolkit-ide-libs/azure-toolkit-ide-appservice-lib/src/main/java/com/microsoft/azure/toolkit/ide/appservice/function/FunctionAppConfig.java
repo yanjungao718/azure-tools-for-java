@@ -14,12 +14,12 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -108,11 +108,11 @@ public class FunctionAppConfig extends AppServiceConfig {
     public static FunctionAppConfig fromRemote(FunctionApp functionApp) {
         final AppServicePlan plan = functionApp.getAppServicePlan();
         return FunctionAppConfig.builder()
-                .name(functionApp.name())
-                .resourceId(functionApp.id())
-                .servicePlan(AppServicePlanEntity.builder().id(plan.id()).name(plan.name()).resourceGroup(plan.getResourceGroupName()).build())
-                .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
-                .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
+            .name(functionApp.getName())
+            .resourceId(functionApp.getId())
+            .servicePlan(AppServicePlanEntity.builder().id(plan.getId()).name(plan.getName()).resourceGroup(plan.getResourceGroupName()).build())
+            .subscription(Subscription.builder().id(functionApp.getSubscriptionId()).build())
+            .resourceGroup(ResourceGroup.builder().name(functionApp.getResourceGroupName()).build())
                 .runtime(functionApp.getRuntime())
                 .region(functionApp.getRegion())
                 .appSettings(functionApp.getAppSettings())

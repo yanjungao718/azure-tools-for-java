@@ -4,6 +4,5 @@ dependencies {
     implementation project(":azure-intellij-plugin-lib")
 
     implementation 'com.microsoft.graph:microsoft-graph:3.7.0'
-    implementation "com.microsoft.azure:azure-toolkit-auth-lib:0.18.0-SNAPSHOT"
-    implementation "com.azure.resourcemanager:azure-resourcemanager-authorization:2.5.0"
+    implementation "com.microsoft.azure:azure-toolkit-auth-lib"
 }

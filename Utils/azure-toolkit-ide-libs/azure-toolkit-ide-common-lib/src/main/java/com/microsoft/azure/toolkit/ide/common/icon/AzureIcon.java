@@ -52,7 +52,6 @@ public class AzureIcon {
         private int verticalShift;
 
         public Modifier(@Nonnull final String iconPath, @Nonnull final ModifierLocation location) {
-            assert location != ModifierLocation.OTHER;
             this.iconPath = iconPath;
             this.location = location;
         }

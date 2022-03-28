@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -113,7 +113,15 @@ public class ServicePlanCombobox extends AzureComboBox<AppServicePlanEntity> {
         }
         if (Objects.nonNull(this.subscription)) {
             final List<AppServicePlanEntity> remotePlans = Azure.az(AzureAppService.class)
-                    .subscription(subscription.getId()).appServicePlans().stream().map(AppServicePlan::entity)
+                    .plans(subscription.getId()).list().stream().map(p -> AppServicePlanEntity.builder()
+                            .subscriptionId(p.getSubscriptionId())
+                            .id(p.getId())
+                            .name(p.getName())
+                            .region(p.getRegion().getName())
+                            .resourceGroup(p.getResourceGroupName())
+                            .pricingTier(p.getPricingTier())
+                            .operatingSystem(p.getOperatingSystem())
+                            .build())
                     .collect(Collectors.toList());
 
             Stream<AppServicePlanEntity> stream = remotePlans.stream();

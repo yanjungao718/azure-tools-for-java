@@ -9,7 +9,8 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -23,6 +24,7 @@ import rx.Observable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -37,9 +39,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
 
     private List<WebApp> retrieveListOfWebAppOnLinux(boolean force) {
-        return Azure.az(AzureAppService.class).webapps(force).stream()
-                .filter(WebApp -> WebApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
-                .collect(Collectors.toList());
+        return Azure.az(AzureWebApp.class).webApps().stream()
+            .filter(app -> Objects.requireNonNull(app.getRuntime()).getOperatingSystem() != OperatingSystem.WINDOWS) // docker and linux
+            .collect(Collectors.toList());
     }
 
     /**
@@ -106,7 +108,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param sid Subscription Id.
      */
     public void onLoadLocationList(String sid) {
-        Observable.fromCallable(() -> new ArrayList(az(AzureAccount.class).listRegions(sid)))
+        Observable.fromCallable(() -> new ArrayList<>(az(AzureAccount.class).listRegions(sid)))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(locationList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
@@ -140,16 +142,16 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param rg  Resource group name.
      */
     public void onLoadAppServicePlan(String sid, String rg) {
-        Mono.fromCallable(() -> Azure.az(AzureAppService.class)
-            .subscription(sid).appServicePlansByResourceGroup(rg)).flatMapMany(Flux::fromIterable)
-                .filter(asp -> OperatingSystem.LINUX.equals(asp.getOperatingSystem()))
-                .subscribeOn(Schedulers.boundedElastic())
-                .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    getMvpView().renderAppServicePlanList(appServicePlans);
-                }, AzureTask.Modality.ANY));
+        Mono.fromCallable(() -> Azure.az(AzureAppService.class).plans(sid)
+                .listByResourceGroup(rg)).flatMapMany(Flux::fromIterable)
+            .filter(asp -> OperatingSystem.LINUX == asp.getOperatingSystem())
+            .subscribeOn(Schedulers.boundedElastic())
+            .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                getMvpView().renderAppServicePlanList(appServicePlans);
+            }, AzureTask.Modality.ANY));
     }
 
     /**
@@ -160,8 +162,8 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      */
     public void onLoadAppServicePlan(String sid) {
         Mono.fromCallable(() -> Azure.az(AzureAppService.class)
-            .subscription(sid).appServicePlans()).flatMapMany(Flux::fromIterable)
-            .filter(asp -> OperatingSystem.LINUX.equals(asp.getOperatingSystem()))
+                .plans(sid).list()).flatMapMany(Flux::fromIterable)
+            .filter(asp -> OperatingSystem.LINUX == asp.getOperatingSystem())
             .subscribeOn(Schedulers.boundedElastic())
             .collectList().subscribe(appServicePlans -> AzureTaskManager.getInstance().runLater(() -> {
                 if (isViewDetached()) {

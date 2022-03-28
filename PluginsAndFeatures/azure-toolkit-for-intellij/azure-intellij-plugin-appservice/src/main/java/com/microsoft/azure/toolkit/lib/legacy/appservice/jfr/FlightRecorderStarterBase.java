@@ -6,9 +6,9 @@
 package com.microsoft.azure.toolkit.lib.legacy.appservice.jfr;
 
 import com.azure.core.util.FluxUtil;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
 import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,9 +16,9 @@ import java.io.IOException;
 import java.util.List;
 
 public abstract class FlightRecorderStarterBase {
-    protected IAppService appService;
+    protected AppServiceAppBase<?, ?, ?> appService;
 
-    public FlightRecorderStarterBase(@NotNull IAppService appService) {
+    public FlightRecorderStarterBase(@NotNull AppServiceAppBase<?, ?, ?> appService) {
         this.appService = appService;
     }
 

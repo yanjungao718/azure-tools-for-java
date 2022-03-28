@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
@@ -41,9 +41,9 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppConfig> {
         type = AzureOperation.Type.SERVICE
     )
     protected List<FunctionAppConfig> loadAppServiceModels() {
-        return Azure.az(AzureFunction.class).list().parallelStream()
-                .map(functionApp -> convertAppServiceToConfig(FunctionAppConfig::new, functionApp))
-                .sorted((app1, app2) -> app1.getName().compareToIgnoreCase(app2.getName()))
-                .collect(Collectors.toList());
+        return Azure.az(AzureFunctions.class).functionApps().parallelStream()
+            .map(functionApp -> convertAppServiceToConfig(FunctionAppConfig::new, functionApp))
+            .sorted((app1, app2) -> app1.getName().compareToIgnoreCase(app2.getName()))
+            .collect(Collectors.toList());
     }
 }

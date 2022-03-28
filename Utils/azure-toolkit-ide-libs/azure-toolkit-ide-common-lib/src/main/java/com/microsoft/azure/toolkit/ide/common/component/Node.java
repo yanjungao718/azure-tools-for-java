@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,8 +27,10 @@ import java.util.stream.Collectors;
 
 @Getter
 @Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Node<D> {
     @Nonnull
+    @EqualsAndHashCode.Include
     private final D data;
     @Nonnull
     @Getter(AccessLevel.NONE)
@@ -40,7 +43,8 @@ public class Node<D> {
     @Nullable
     private ActionGroup actions;
     private int order;
-    private Action<D> doubleClickAction;
+    private Action<? super D> doubleClickAction;
+    private Action<? super D> inlineAction;
 
     public Node(@Nonnull D data) {
         this(data, null);
@@ -52,9 +56,16 @@ public class Node<D> {
     }
 
     public <C> Node<D> addChildren(
-            @Nonnull Function<? super D, ? extends List<C>> getChildrenData,
-            @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
+        @Nonnull Function<? super D, ? extends List<C>> getChildrenData,
+        @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
         this.childrenBuilders.add(new ChildrenNodeBuilder<>(getChildrenData, buildChildNode));
+        return this;
+    }
+
+    public <C> Node<D> addChild(
+        @Nonnull Function<? super D, ? extends C> getChildData,
+        @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
+        this.childrenBuilders.add(new ChildrenNodeBuilder<>(d -> Collections.singletonList(getChildData.apply(d)), buildChildNode));
         return this;
     }
 
@@ -78,14 +89,25 @@ public class Node<D> {
         return !this.childrenBuilders.isEmpty();
     }
 
-    public void doubleClick(final Object event) {
+    public void triggerDoubleClickAction(final Object event) {
         if (this.doubleClickAction != null) {
             this.doubleClickAction.handle(this.data, event);
         }
     }
 
-    public Node<D> doubleClickAction(Action.Id<D> actionId) {
+    public Node<D> doubleClickAction(Action.Id<? super D> actionId) {
         this.doubleClickAction = AzureActionManager.getInstance().getAction(actionId);
+        return this;
+    }
+
+    public void triggerInlineAction(final Object event) {
+        if (this.inlineAction != null) {
+            this.inlineAction.handle(this.data, event);
+        }
+    }
+
+    public Node<D> inlineAction(Action.Id<? super D> actionId) {
+        this.inlineAction = AzureActionManager.getInstance().getAction(actionId);
         return this;
     }
 

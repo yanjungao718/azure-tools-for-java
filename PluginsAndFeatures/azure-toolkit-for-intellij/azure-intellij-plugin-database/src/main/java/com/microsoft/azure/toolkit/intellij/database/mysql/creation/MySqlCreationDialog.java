@@ -96,19 +96,18 @@ public class MySqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
 
     public static DatabaseServerConfig getDefaultConfig() {
         final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
-        final DatabaseServerConfig config = new DatabaseServerConfig();
         final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
         final Subscription subscription = selectedSubscriptions.get(0);
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
+        final Region region = Utils.selectFirstOptionIfCurrentInvalid("region",
+            az(AzureMySql.class).forSubscription(subscription.getId()).listSupportedRegions(),
+            Region.US_EAST);
+        final DatabaseServerConfig config = new DatabaseServerConfig("mysql-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
-        config.setName("mysql-" + defaultNameSuffix);
         config.setAdminName(StringUtils.EMPTY);
         config.setAdminPassword(StringUtils.EMPTY);
-        config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region",
-            az(AzureMySql.class).forSubscription(subscription.getId()).listSupportedRegions(),
-            Region.US_EAST));
         config.setVersion("5.7"); // default to 11
         return config;
     }

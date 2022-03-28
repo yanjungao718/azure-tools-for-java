@@ -5,9 +5,9 @@
 package com.microsoft.azure.toolkit.intellij.database;
 
 import com.microsoft.azure.CloudException;
-import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Availability;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,7 +21,7 @@ public class BaseNameValidator implements AzureFormInput.Validator {
     private static final int MAX_LENGTH = 63;
     private final ServerNameTextField input;
 
-    private final BiFunction<String, String, CheckNameAvailabilityResultEntity> checkNameAvailFunc;
+    private final BiFunction<String, String, Availability> checkNameAvailFunc;
 
     @Override
     public AzureValidationInfo doValidate() {
@@ -36,7 +36,7 @@ public class BaseNameValidator implements AzureFormInput.Validator {
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         try { // validate availability
-            CheckNameAvailabilityResultEntity availability = checkNameAvailFunc.apply(input.getSubscription().getId(), value);
+            Availability availability = checkNameAvailFunc.apply(input.getSubscription().getId(), value);
             if (!availability.isAvailable()) {
                 String message = availability.getUnavailabilityReason();
                 if ("AlreadyExists".equalsIgnoreCase(message)) {

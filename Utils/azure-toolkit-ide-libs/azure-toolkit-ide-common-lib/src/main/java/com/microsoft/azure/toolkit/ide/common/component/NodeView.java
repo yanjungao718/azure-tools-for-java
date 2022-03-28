@@ -23,12 +23,16 @@ public interface NodeView extends IView.Label {
         this.refresh();
     }
 
-    default void refreshChildren() {
-        Optional.ofNullable(this.getRefresher()).ifPresent(Refresher::refreshChildren);
+    default void refreshChildren(boolean... incremental) {
+        Optional.ofNullable(this.getRefresher()).ifPresent(r -> r.refreshChildren(incremental));
     }
 
     default AzureIcon getIcon() {
         return StringUtils.isEmpty(getIconPath()) ? null : AzureIcon.builder().iconPath(getIconPath()).build();
+    }
+
+    default String getTips() {
+        return this.getDescription();
     }
 
     void setRefresher(Refresher refresher);
@@ -40,7 +44,7 @@ public interface NodeView extends IView.Label {
         default void refreshView() {
         }
 
-        default void refreshChildren() {
+        default void refreshChildren(boolean... incremental) {
         }
     }
 

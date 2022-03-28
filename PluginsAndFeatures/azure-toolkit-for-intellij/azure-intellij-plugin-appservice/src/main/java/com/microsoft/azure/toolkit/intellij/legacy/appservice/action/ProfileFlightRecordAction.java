@@ -11,8 +11,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.jfr.RunFlightRecorderDialog;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -42,13 +42,13 @@ public class ProfileFlightRecordAction {
     private static final int TWO_SECONDS = 2000;
     private final Project project;
     private final String subscriptionId;
-    private final IAppService<?> appService;
+    private final AppServiceAppBase<?, ?, ?> appService;
 
-    public ProfileFlightRecordAction(@Nonnull final IAppService<?> appService, @Nullable final Project project) {
+    public ProfileFlightRecordAction(@Nonnull final AppServiceAppBase<?, ?, ?> appService, @Nullable final Project project) {
         super();
         this.project = project;
         this.appService = appService;
-        this.subscriptionId = appService.subscriptionId();
+        this.subscriptionId = appService.getSubscriptionId();
     }
 
     public void execute() {
@@ -68,7 +68,7 @@ public class ProfileFlightRecordAction {
                 notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"), message);
                 return;
             }
-            if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
+            if (!StringUtils.equalsIgnoreCase(appService.getStatus(), "running")) {
                 final String message = message("webapp.flightRecord.error.notRunning.message", appService.name());
                 notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"), message);
                 return;
@@ -101,7 +101,7 @@ public class ProfileFlightRecordAction {
 
     private FlightRecorderConfiguration collectFlightRecorderConfiguration() {
         final RunFlightRecorderDialog ui = new RunFlightRecorderDialog(project, appService);
-        ui.setTitle(message("webapp.flightRecord.task.startRecorder.title", appService.hostName()));
+        ui.setTitle(message("webapp.flightRecord.task.startRecorder.title", appService.getHostName()));
         ui.setOkActionListener((config) -> ui.close(DialogWrapper.OK_EXIT_CODE));
 
         if (ui.showAndGet()) {

@@ -14,7 +14,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
-import com.microsoft.azure.arm.resources.ResourceId;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 
 public class AppServicePropertyEditorInput implements IEditorInput {
 
