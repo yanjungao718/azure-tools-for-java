@@ -47,11 +47,12 @@ public abstract class AbstractAzureStorageExplorerHandler {
             try {
                 final List<ProcessHandle> beforeLaunchProcesses = ProcessHandle.allProcesses().collect(Collectors.toList());
                 Desktop.getDesktop().browse(URI.create(resourceUrl));
+                Thread.sleep(1 * 1000); // wait for process updates
                 final List<ProcessHandle> afterLaunchProcesses = ProcessHandle.allProcesses().collect(Collectors.toList());
                 final Collection<ProcessHandle> newProcesses = CollectionUtils.removeAll(afterLaunchProcesses, beforeLaunchProcesses);
                 return newProcesses.stream().map(ProcessHandle::info).map(ProcessHandle.Info::command)
                         .anyMatch(command -> StringUtils.containsAnyIgnoreCase(command.orElse(StringUtils.EMPTY), STORAGE_EXPLORER));
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 log.info("failed to launch storage explorer from uri", e);
             }
         }
@@ -59,13 +60,17 @@ public abstract class AbstractAzureStorageExplorerHandler {
     }
 
     protected void launchStorageExplorerThroughCommand(final StorageAccount storageAccount, final String resourceUrl) {
-        // Get storage explorer path
-        final String storageExplorerExecutable = getStorageExplorerExecutable();
-        // Launch storage explorer with resource url
-        if (StringUtils.isEmpty(storageExplorerExecutable)) {
-            throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.", (Object[]) getStorageNotFoundActions(storageAccount));
+        try {
+            // Get storage explorer path
+            final String storageExplorerExecutable = getStorageExplorerExecutable();
+            // Launch storage explorer with resource url
+            if (StringUtils.isEmpty(storageExplorerExecutable)) {
+                throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.");
+            }
+            launchStorageExplorer(storageExplorerExecutable, resourceUrl);
+        } catch (final RuntimeException e) {
+            throw new AzureToolkitRuntimeException("Failed to launch Azure Storage Explorer.", e, (Object[]) getStorageNotFoundActions(storageAccount));
         }
-        launchStorageExplorer(storageExplorerExecutable, resourceUrl);
     }
 
     protected String getStorageExplorerExecutable() {
