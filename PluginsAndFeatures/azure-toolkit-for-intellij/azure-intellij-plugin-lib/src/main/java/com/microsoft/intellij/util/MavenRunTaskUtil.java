@@ -47,8 +47,7 @@ public class MavenRunTaskUtil {
             if (MavenRunTaskUtil.shouldAddMavenPackageTask(tasks, runConfiguration.getProject())) {
                 MavenBeforeRunTask task = new MavenBeforeRunTask();
                 task.setEnabled(true);
-                task.setProjectPath(runConfiguration.getProject().getBasePath() + File.separator
-                        + MavenConstants.POM_XML);
+                task.setProjectPath(runConfiguration.getProject().getBasePath() + File.separator + MavenConstants.POM_XML);
                 task.setGoal(MAVEN_TASK_PACKAGE);
                 tasks.add(task);
                 manager.setBeforeRunTasks(runConfiguration, tasks);
@@ -62,15 +61,15 @@ public class MavenRunTaskUtil {
               .map(ArtifactType::findById)
               .filter(Objects::nonNull)
               .flatMap(type ->
-                      AzureTaskManager.getInstance()
-                              .readAsObservable(new AzureTask<>(() -> ArtifactManager.getInstance(project).getArtifactsByType(type)))
-                              .toBlocking().single().stream())
+                  AzureTaskManager.getInstance()
+                      .readAsObservable(new AzureTask<>(() -> ArtifactManager.getInstance(project).getArtifactsByType(type)))
+                      .toBlocking().single().stream())
             .collect(Collectors.toList());
     }
 
     public static String getTargetPath(MavenProject mavenProject) {
-        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator
-                + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator +
+                mavenProject.getFinalName() + "." + mavenProject.getPackaging();
     }
 
     public static String getTargetName(MavenProject mavenProject) {
