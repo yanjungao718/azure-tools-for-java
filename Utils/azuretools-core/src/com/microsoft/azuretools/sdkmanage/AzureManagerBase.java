@@ -6,7 +6,6 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.AzureEnvironment;
-import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Tenant;
@@ -94,11 +93,6 @@ public abstract class AzureManagerBase implements AzureManager {
         } else {
             return GLOBAL_SCM_SUFFIX;
         }
-    }
-
-    protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
-        return configurable.withInterceptor(new TelemetryInterceptor())
-            .withUserAgent(CommonSettings.USER_AGENT);
     }
 
     @Override

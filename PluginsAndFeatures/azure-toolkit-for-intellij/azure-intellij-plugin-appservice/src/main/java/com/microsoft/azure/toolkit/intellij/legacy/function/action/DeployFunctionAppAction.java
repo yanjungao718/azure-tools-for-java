@@ -17,7 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 
@@ -59,7 +59,7 @@ public class DeployFunctionAppAction {
             settings = manager.createConfiguration(runConfigurationName, factory);
         }
         final RunConfiguration runConfiguration = settings.getConfiguration();
-        if (runConfiguration instanceof FunctionDeployConfiguration) {
+        if (runConfiguration instanceof FunctionDeployConfiguration && functionApp.getFormalStatus().isRunning()) {
             final FunctionAppConfig config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(functionApp);
             ((FunctionDeployConfiguration) runConfiguration).saveConfig(config);
         }

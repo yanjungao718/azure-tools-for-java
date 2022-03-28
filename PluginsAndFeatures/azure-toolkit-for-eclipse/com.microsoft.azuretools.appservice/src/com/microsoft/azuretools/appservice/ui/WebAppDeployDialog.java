@@ -80,10 +80,10 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -552,14 +552,14 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         final String appServiceName = table.getItems()[selectedRow].getText(0);
         final WebApp webApp = webAppDetailsMap.get(appServiceName);
         Mono.fromCallable(() -> {
-            AppServicePlan asp = webApp.plan();
-            Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(webApp.subscriptionId());
+            AppServicePlan asp = webApp.getAppServicePlan();
+            Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(webApp.getSubscriptionId());
 
             StringBuilder sb = new StringBuilder();
             sb.append(String.format("App Service name: %s \n", webApp.name()));
             sb.append(String.format("Subscription name: %s ; id: %s \n", subscription.getName(), subscription.getId()));
             String aspName = asp == null ? "N/A" : asp.name();
-            String aspPricingTier = asp == null ? "N/A" : asp.entity().getPricingTier().toString();
+            String aspPricingTier = asp == null ? "N/A" : asp.getPricingTier().toString();
             sb.append(String.format("App Service Plan name: %s ; Pricing tier: %s \n", aspName, aspPricingTier));
             String link = buildSiteLink(webApp, null);
             sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
@@ -573,8 +573,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         }));
     }
 
-    private static String buildSiteLink(IWebAppBase<? extends AppServiceBaseEntity> webApp, String artifactName) {
-        String appServiceLink = "https://" + webApp.hostName();
+    private static String buildSiteLink(WebAppBase<?, ?, ?> webApp, String artifactName) {
+        String appServiceLink = "https://" + webApp.getHostName();
         if (artifactName != null && !artifactName.isEmpty()) {
             return appServiceLink + "/" + artifactName;
         } else {
@@ -589,7 +589,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             TableItem refreshingItem = new TableItem(table, SWT.NULL);
             refreshingItem.setText(REFRESHING);
             Mono.fromCallable(() -> {
-                return Azure.az(AzureAppService.class).webapps(forceRefresh).stream().parallel()
+                return Azure.az(AzureAppService.class).webApps().stream().parallel()
                         .filter(webApp -> !webApp.getRuntime().isDocker()
                                 && !Objects.equals(webApp.getRuntime().getJavaVersion(), JavaVersion.OFF))
                         .sorted((o1, o2) -> o1.name().compareTo(o2.name())).collect(Collectors.toList());
@@ -602,7 +602,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     for (WebApp webApp : webAppDetailsList) {
                         TableItem item = new TableItem(table, SWT.NULL);
                         item.setText(new String[] { webApp.name(), webApp.getRuntime().getWebContainer().getValue(),
-                                webApp.getRuntime().getJavaVersion().getValue(), webApp.resourceGroup() });
+                                webApp.getRuntime().getJavaVersion().getValue(), webApp.getResourceGroupName() });
                         webAppDetailsMap.put(webApp.name(), webApp);
                     }
                     fillUserSettings();
@@ -630,7 +630,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         if (webApp == null) {
             return;
         }
-        Mono.fromCallable(() -> webApp.deploymentSlots(false)).subscribeOn(Schedulers.boundedElastic())
+        Mono.fromCallable(() -> webApp.slots().list()).subscribeOn(Schedulers.boundedElastic())
                 .subscribe(slots -> {
                     AzureTaskManager.getInstance().runLater(() -> {
                         if (comboSlot.isDisposed()) {
@@ -868,7 +868,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
                 String errTitle = "Deploy Web App Error";
                 monitor.beginTask(message, IProgressMonitor.UNKNOWN);
-                IWebAppBase<? extends AppServiceBaseEntity> deployTarget = null;
+                WebAppBase<?, ?, ?> deployTarget = null;
                 Operation operation = TelemetryManager.createOperation(WEBAPP, DEPLOY_WEBAPP);
 
                 try {
@@ -961,7 +961,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         job.schedule();
     }
 
-    private IWebAppBase<? extends AppServiceBaseEntity> getRealWebApp(WebApp webApp, Object parent,
+    private WebAppBase<?, ?, ?> getRealWebApp(WebApp webApp, Object parent,
             IProgressMonitor monitor, String deploymentName) {
         if (isDeployToSlot) {
             if (isCreateNewSlot) {
@@ -970,7 +970,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 AzureDeploymentProgressNotification.notifyProgress(parent, deploymentName, "", 30, message);
                 return createDeploymentSlot(webApp);
             } else {
-                return webApp.deploymentSlot(webAppSettingModel.getSlotName());
+                return webApp.slots().get(webAppSettingModel.getSlotName(), webAppSettingModel.getResourceGroup());
             }
         } else {
             return webApp;

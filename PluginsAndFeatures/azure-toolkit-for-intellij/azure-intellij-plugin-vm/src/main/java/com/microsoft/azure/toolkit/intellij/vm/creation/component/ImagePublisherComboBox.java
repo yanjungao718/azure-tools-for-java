@@ -9,15 +9,15 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureImagePublisher;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
+import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VmImagePublisher;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ImagePublisherComboBox extends AzureComboBox<AzureImagePublisher> {
+public class ImagePublisherComboBox extends AzureComboBox<VmImagePublisher> {
     private Subscription subscription;
     private Region region;
 
@@ -41,15 +41,15 @@ public class ImagePublisherComboBox extends AzureComboBox<AzureImagePublisher> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof AzureImagePublisher ? ((AzureImagePublisher) item).name() : super.getItemText(item);
+        return item instanceof VmImagePublisher ? ((VmImagePublisher) item).name() : super.getItemText(item);
     }
 
     @Nonnull
     @Override
-    protected List<? extends AzureImagePublisher> loadItems() throws Exception {
+    protected List<? extends VmImagePublisher> loadItems() throws Exception {
         if (Objects.isNull(subscription) || Objects.isNull(region)) {
             return Collections.emptyList();
         }
-        return Azure.az(AzureVirtualMachine.class).publishers(subscription.getId(), region);
+        return Azure.az(AzureCompute.class).listPublishers(subscription.getId(), region);
     }
 }

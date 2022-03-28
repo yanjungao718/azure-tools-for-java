@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.ui;
 
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -29,7 +29,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
         }
         RxJavaUtils.unsubscribeSubscription(loadAppSettingsSubscription);
         loadAppSettingsSubscription =
-            Observable.fromCallable(() -> functionApp.getAppSettings()).subscribeOn(getSchedulerProvider().io())
+            Observable.fromCallable(functionApp::getAppSettings).subscribeOn(getSchedulerProvider().io())
                       .subscribe(appSettings -> AzureTaskManager.getInstance().runLater(() -> {
                           if (isViewDetached()) {
                               return;

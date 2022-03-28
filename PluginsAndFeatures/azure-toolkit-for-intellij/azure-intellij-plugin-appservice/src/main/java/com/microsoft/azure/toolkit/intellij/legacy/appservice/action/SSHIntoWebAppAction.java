@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -47,9 +47,9 @@ public class SSHIntoWebAppAction {
         super();
         this.project = project;
         this.webApp = webApp;
-        this.webAppName = webApp.name();
-        this.subscriptionId = webApp.subscriptionId();
-        this.resourceGroupName = webApp.resourceGroup();
+        this.webAppName = webApp.getName();
+        this.subscriptionId = webApp.getSubscriptionId();
+        this.resourceGroupName = webApp.getResourceGroupName();
     }
 
     public void execute() {

@@ -6,9 +6,9 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 import javax.annotation.Nonnull;
@@ -17,20 +17,20 @@ import java.util.Map;
 import java.util.Set;
 
 public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
+
     @Override
-    protected void updateAppSettings(@Nonnull final String sid, @Nonnull final String webAppId,
-                                     @Nullable final String name, final Map toUpdate,
-                                     final Set toRemove) {
-        final WebApp webApp = getWebAppBase(sid, webAppId, name);
-        final IAppServiceUpdater appServiceUpdater = webApp.update();
-        appServiceUpdater.withAppSettings(toUpdate);
-        toRemove.forEach(key -> appServiceUpdater.withoutAppSettings((String) key));
-        appServiceUpdater.commit();
+    protected WebApp getWebAppBase(@Nonnull final String sid, @Nonnull final String appId,
+                                   @Nullable final String slotName) {
+        return Azure.az(AzureWebApp.class).webApp(appId);
     }
 
     @Override
-    protected WebApp getWebAppBase(@Nonnull final String sid, @Nonnull final String webAppId,
-                                    @Nullable final String name) {
-        return Azure.az(AzureWebApp.class).subscription(sid).get(webAppId);
+    protected void updateAppSettings(@Nonnull String sid, @Nonnull String webAppId, @Nullable String name, @Nonnull Map toUpdate, @Nonnull Set toRemove) throws Exception {
+        final WebApp webApp = getWebAppBase(sid, webAppId, name);
+        final WebAppDraft draft = (WebAppDraft) webApp.update();
+        draft.setAppSettings(toUpdate);
+        toRemove.forEach(s -> draft.removeAppSetting((String) s));
+        draft.updateIfExist();
     }
+
 }

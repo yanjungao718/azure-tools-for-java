@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.lib.legacy.appservice;
 
 import com.google.common.base.Joiner;
 import com.jcraft.jsch.*;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.PublishingProfile;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,16 +28,16 @@ public class TunnelProxy {
     public static final String DEFAULT_SSH_PASSWORD = "Docker!";
     private static final Logger logger = Logger.getLogger(TunnelProxy.class.getName());
     private static final String LOCALHOST = "localhost";
-    private IAppService appService;
+    private AppServiceAppBase<?, ?, ?> appService;
     private WebSocketSSLProxy wssProxy;
 
-    public TunnelProxy(@NotNull IAppService webAppBase) {
+    public TunnelProxy(@NotNull AppServiceAppBase<?, ?, ?> webAppBase) {
         this.appService = webAppBase;
         reset();
     }
 
     public void reset() {
-        String host = appService.hostName().toLowerCase().replace("http://", "").replace("https://", "");
+        String host = appService.getHostName().toLowerCase().replace("http://", "").replace("https://", "");
         String[] parts = host.split("\\.", 2);
         host = Joiner.on('.').join(parts[0], "scm", parts[1]);
         PublishingProfile publishingProfile = appService.getPublishingProfile();

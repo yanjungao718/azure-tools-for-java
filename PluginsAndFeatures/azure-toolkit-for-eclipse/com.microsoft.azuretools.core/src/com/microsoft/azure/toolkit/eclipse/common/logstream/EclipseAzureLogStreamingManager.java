@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 
-import com.microsoft.azure.arm.resources.ResourceId;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.eclipse.common.console.EclipseConsoleMessager;
 import com.microsoft.azure.toolkit.eclipse.common.console.JobConsole;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;

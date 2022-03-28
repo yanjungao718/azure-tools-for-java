@@ -234,8 +234,23 @@ public class IntellijAzureActionManager extends AzureActionManager {
             }
 
             @Override
+            public Object start() {
+                return "ctrl F1";
+            }
+
+            @Override
+            public Object restart() {
+                return Action.Id.of(IdeActions.ACTION_RERUN);
+            }
+
+            @Override
             public Object stop() {
                 return Action.Id.of(IdeActions.ACTION_STOP_PROGRAM);
+            }
+
+            @Override
+            public Object deploy() {
+                return Action.Id.of(IdeActions.ACTION_DEFAULT_RUNNER);
             }
         };
     }

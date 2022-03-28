@@ -16,7 +16,7 @@ import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +57,9 @@ public class DeployWebAppAction {
         }
         final RunConfiguration runConfiguration = settings.getConfiguration();
         if (runConfiguration instanceof WebAppConfiguration) {
-            ((WebAppConfiguration) runConfiguration).setWebAppId(webApp.id());
-            ((WebAppConfiguration) runConfiguration).setWebAppName(webApp.name());
-            ((WebAppConfiguration) runConfiguration).setSubscriptionId(webApp.subscriptionId());
+            ((WebAppConfiguration) runConfiguration).setWebAppId(webApp.getId());
+            ((WebAppConfiguration) runConfiguration).setWebAppName(webApp.getName());
+            ((WebAppConfiguration) runConfiguration).setSubscriptionId(webApp.getSubscriptionId());
         }
         return settings;
     }

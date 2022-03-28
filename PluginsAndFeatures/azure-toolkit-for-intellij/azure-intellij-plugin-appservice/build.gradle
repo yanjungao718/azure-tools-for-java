@@ -3,15 +3,18 @@ plugins {
 }
 
 intellij {
-    plugins = ['java', 'maven', 'maven-model', "properties", 'terminal', 'gradle']
+    plugins = ['java', 'maven', 'maven-model', "properties", 'terminal', 'gradle', 'gradle-java']
 }
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-appservice-lib:' + azureToolkitVersion
-    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib:' + azureToolkitVersion
-    compile 'org.codehaus.plexus:plexus-archiver:4.2.6'
-    compile 'org.codehaus.plexus:plexus-component-api:1.0-alpha-33'
-    compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
-    compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
+    compile project(':azure-intellij-plugin-containerregistry')
+    compile 'com.spotify:docker-client:8.16.0'
+    compile 'com.microsoft.azure:azure-toolkit-appservice-lib'
+    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
+    compile 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib'
+    compile 'com.jcraft:jsch:0.1.55'
+    compile 'org.codehaus.plexus:plexus-archiver:4.2.7'
+    compile 'org.codehaus.plexus:plexus-container-default:2.1.1'
+    compile 'com.neovisionaries:nv-websocket-client:2.14'
 }

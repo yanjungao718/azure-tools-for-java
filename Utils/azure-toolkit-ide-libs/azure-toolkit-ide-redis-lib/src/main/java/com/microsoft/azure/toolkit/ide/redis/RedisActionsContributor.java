@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 
@@ -24,14 +24,14 @@ public class RedisActionsContributor implements IActionsContributor {
 
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
-    public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_EXPLORER = Action.Id.of("action.redis.open_explorer");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_EXPLORER = Action.Id.of("action.redis.open_explorer");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
             .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
             .enabled(s -> s instanceof RedisCache && ((RedisCache) s).getFormalStatus().isRunning());
-        final Action<IAzureBaseResource<?, ?>> action = new Action<>(showExplorerView);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(showExplorerView);
         action.setShortcuts(am.getIDEDefaultShortcuts().view());
         am.registerAction(OPEN_EXPLORER, action);
     }
@@ -39,13 +39,15 @@ public class RedisActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup redisActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             RedisActionsContributor.OPEN_EXPLORER,

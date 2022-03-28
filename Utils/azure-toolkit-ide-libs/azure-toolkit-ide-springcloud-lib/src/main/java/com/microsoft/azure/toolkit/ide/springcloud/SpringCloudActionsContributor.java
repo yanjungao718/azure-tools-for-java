@@ -35,13 +35,17 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", "/icons/action/browser.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).isPublicEndpointEnabled());
-        am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
+        final Action<SpringCloudApp> openPublicUrlAction = new Action<>(openPublicUrl, openPublicUrlView);
+        openPublicUrlAction.setShortcuts("control alt P");
+        am.registerAction(OPEN_PUBLIC_URL, openPublicUrlAction);
 
         final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getTestUrl());
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof SpringCloudApp);
-        am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
+                .enabled(s -> s instanceof SpringCloudApp && !((SpringCloudApp) s).getFormalStatus().isConnected());
+        final Action<SpringCloudApp> openTestUrlAction = new Action<>(openTestUrl, openTestUrlView);
+        openTestUrlAction.setShortcuts("control alt T");
+        am.registerAction(OPEN_TEST_URL, openTestUrlAction);
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
@@ -52,13 +56,17 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.SERVICE_REFRESH,
+            ResourceCommonActionsContributor.PIN,
+            "---",
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup clusterActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
@@ -67,6 +75,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         am.registerGroup(CLUSTER_ACTIONS, clusterActionGroup);
 
         final ActionGroup appActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             SpringCloudActionsContributor.OPEN_PUBLIC_URL,

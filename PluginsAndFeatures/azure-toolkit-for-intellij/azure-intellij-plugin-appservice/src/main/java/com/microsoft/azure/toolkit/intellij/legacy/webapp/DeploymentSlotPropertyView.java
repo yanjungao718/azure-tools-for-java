@@ -7,11 +7,9 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +18,7 @@ import javax.annotation.Nonnull;
 
 public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> resourceDeleteListener;
+    private final AzureEventBus.EventListener resourceDeleteListener;
 
     /**
      * Initialize the Web App Property View and return it.
@@ -35,13 +33,15 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private DeploymentSlotPropertyView(@Nonnull final Project project, @Nonnull final String sid,
                                        @Nonnull final String webAppId, @Nonnull final String slotName, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, webAppId, slotName, virtualFile);
-        resourceDeleteListener = new AzureEventBus.EventListener<>(event -> {
-            if (event instanceof AzureOperationEvent && ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER &&
-                    event.getSource() instanceof WebAppDeploymentSlot && StringUtils.equals(((WebAppDeploymentSlot) event.getSource()).id(), resourceId)) {
-                closeEditor((IAppService) event.getSource());
+        resourceDeleteListener = new AzureEventBus.EventListener(event -> {
+            final Object source = event.getSource();
+            if (source instanceof WebAppDeploymentSlot &&
+                StringUtils.equals(((WebAppDeploymentSlot) source).id(), resourceId) &&
+                ((WebAppDeploymentSlot) source).getFormalStatus().isDeleted()) {
+                closeEditor((AppServiceAppBase<?, ?, ?>) source);
             }
         });
-        AzureEventBus.on("webapp.delete_slot.slot|app", resourceDeleteListener);
+        AzureEventBus.on("resource.status_changed.resource", resourceDeleteListener);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     @Override
     public void dispose() {
         super.dispose();
-        AzureEventBus.off("webapp.delete_slot.slot|app", resourceDeleteListener);
+        AzureEventBus.off("resource.status_changed.resource", resourceDeleteListener);
     }
 
     @Override

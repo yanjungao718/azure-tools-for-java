@@ -121,7 +121,12 @@ public class AzureFunctionsUtils {
     }
 
     public static File createFunctionProjectToTempFolder(final String groupId, final String artifactId,
-                                                         final String version, final String tool)
+                                                         final String version, final String tool) throws IOException {
+        return createFunctionProjectToTempFolder(groupId, artifactId, version, tool, true);
+    }
+
+    public static File createFunctionProjectToTempFolder(final String groupId, final String artifactId,
+                                                         final String version, final String tool, final boolean isRootProject)
             throws IOException {
         final File folder = Files.createTempDir();
         final Map<String, String> map = new HashMap<>();
@@ -135,8 +140,13 @@ public class AzureFunctionsUtils {
         if (StringUtils.equalsIgnoreCase("maven", tool)) {
             copyResourceFileWithVariableSubstituted("pom.xml", map, folder);
         } else if (StringUtils.equalsIgnoreCase("gradle", tool)) {
-            copyResourceFileWithVariableSubstituted("build.gradle", map, folder);
-            copyResourceFileWithVariableSubstituted("settings.gradle", map, folder);
+            // work around to handle diff in build.gradle between root and child proejct
+            if (isRootProject) {
+                copyResourceFileWithVariableSubstituted("build.gradle", map, folder);
+            } else {
+                copyResourceFileWithVariableSubstituted("build-child.gradle", map, folder);
+                FileUtils.moveFile(new File(folder, "build-child.gradle"), new File(folder, "build.gradle"));
+            }
         }
         return folder;
     }
@@ -147,7 +157,8 @@ public class AzureFunctionsUtils {
         if (url == null) {
             return null;
         }
-        final String templateText = IOUtils.toString(AzureFunctionsUtils.class.getResourceAsStream(String.format("/azurefunction/templates/%s.template", trigger)), "utf8");
+        final String templateText = IOUtils.toString(
+                AzureFunctionsUtils.class.getResourceAsStream(String.format("/azurefunction/templates/%s.template", trigger)), "utf8");
         final Map<String, String> map = new HashMap<>();
         map.put("packageName", packageName);
         map.put("className", className);

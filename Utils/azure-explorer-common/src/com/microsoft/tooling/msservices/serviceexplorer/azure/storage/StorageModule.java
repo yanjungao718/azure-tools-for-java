@@ -6,8 +6,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -22,8 +20,6 @@ public class StorageModule extends AzureRefreshableNode {
 
     public StorageModule(Node parent) {
         super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, null);
-        AzureEventBus.after("storage.create_account.account", this::onCreatedOrRemoved);
-        AzureEventBus.after("storage.delete_account.account", this::onCreatedOrRemoved);
     }
 
     @Override
@@ -38,8 +34,7 @@ public class StorageModule extends AzureRefreshableNode {
                 .forEach(this::addChildNode);
     }
 
-    private void onCreatedOrRemoved(AzureOperationEvent.Source source) {
+    private void onCreatedOrRemoved() {
         this.load(true);
     }
-
 }

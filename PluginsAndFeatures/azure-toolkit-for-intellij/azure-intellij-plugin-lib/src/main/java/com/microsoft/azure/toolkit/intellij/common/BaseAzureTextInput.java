@@ -32,6 +32,7 @@ public class BaseAzureTextInput<T> extends ExtendableTextField
         AzureValidationInfo.Type.ERROR, (i) -> Extension.create(AllIcons.General.BalloonError, i.getMessage(), null),
         AzureValidationInfo.Type.WARNING, (i) -> Extension.create(AllIcons.General.BalloonWarning, i.getMessage(), null)
     );
+    protected Extension validationExtension;
 
     public BaseAzureTextInput() {
         super();
@@ -50,14 +51,22 @@ public class BaseAzureTextInput<T> extends ExtendableTextField
     public void setValidationInfo(@Nullable AzureValidationInfo info) {
         AzureFormInputComponent.super.setValidationInfo(info);
         final Extension ex = Objects.isNull(info) ? null : extensions.get(info.getType()).apply(info);
-        this.setExtensions(ex);
+        this.setValidationExtension(ex);
     }
 
     public void onDocumentChanged() {
         if (this.needValidation()) {
-            this.setExtensions(VALIDATING);
+            this.setValidationExtension(VALIDATING);
         }
         this.debouncer.debounce();
+    }
+
+    protected synchronized void setValidationExtension(final Extension extension) {
+        if (validationExtension != null) {
+            this.removeExtension(validationExtension);
+        }
+        this.addExtension(extension);
+        this.validationExtension = extension;
     }
 
     @Override

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azure</groupId>
     <artifactId>azure-toolkit-ide-libs</artifactId>
-    <version>0.18.0-SNAPSHOT</version>
+    <version>0.20.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Libs for Azure Toolkit for IDEs</name>
     <description>Wrapped libs of Microsoft Azure Toolkits for IDEs</description>
@@ -40,6 +40,7 @@
         <module>azure-toolkit-ide-storage-lib</module>
         <module>azure-toolkit-ide-vm-lib</module>
         <module>azure-toolkit-ide-redis-lib</module>
+        <module>azure-toolkit-ide-containerregistry-lib</module>
         <module>azure-toolkit-ide-appservice-lib</module>
         <module>azure-toolkit-ide-database-lib</module>
         <module>azure-toolkit-ide-arm-lib</module>
@@ -48,7 +49,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <azure.toolkit-lib.version>0.18.0-SNAPSHOT</azure.toolkit-lib.version>
+        <azure.toolkit-lib.version>0.20.0-SNAPSHOT</azure.toolkit-lib.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -71,6 +72,21 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-arm-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-database-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-redis-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-ide-springcloud-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -81,8 +97,18 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-toolkit-ide-redis-lib</artifactId>
+                <artifactId>azure-toolkit-ide-vm-lib</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-containerregistry-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure.functions</groupId>
+                <artifactId>azure-functions-java-library</artifactId>
+                <version>1.4.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

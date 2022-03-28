@@ -9,7 +9,6 @@ import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -97,18 +96,17 @@ public class SqlServerCreationDialog extends AzureDialog<DatabaseServerConfig> {
 
     public static DatabaseServerConfig getDefaultConfig() {
         final String defaultNameSuffix = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss");
-        final DatabaseServerConfig config = new DatabaseServerConfig();
         final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
         final Subscription subscription = selectedSubscriptions.get(0);
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
+        final Region region = Utils.selectFirstOptionIfCurrentInvalid("region", az(AzureSqlServer.class)
+            .forSubscription(subscription.getId()).listSupportedRegions(), Region.US_EAST);
+        final DatabaseServerConfig config = new DatabaseServerConfig("sqlserver-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
-        config.setName("sqlserver-" + defaultNameSuffix);
         config.setAdminName(StringUtils.EMPTY);
         config.setAdminPassword(StringUtils.EMPTY);
-        config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region", Azure.az(AzureSqlServer.class)
-            .forSubscription(subscription.getId()).listSupportedRegions(), Region.US_EAST));
         return config;
     }
 }

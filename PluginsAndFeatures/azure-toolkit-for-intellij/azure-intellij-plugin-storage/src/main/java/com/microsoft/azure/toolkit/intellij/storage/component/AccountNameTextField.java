@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.intellij.storage.component;
 import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Availability;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,7 +49,7 @@ public class AccountNameTextField extends AzureTextInput {
                 .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate availability
-        CheckNameAvailabilityResultEntity resultEntity;
+        Availability resultEntity;
         try {
             resultEntity = Azure.az(AzureStorageAccount.class).forSubscription(subscriptionId).checkNameAvailability(this.getValue());
         } catch (ManagementException e) {
