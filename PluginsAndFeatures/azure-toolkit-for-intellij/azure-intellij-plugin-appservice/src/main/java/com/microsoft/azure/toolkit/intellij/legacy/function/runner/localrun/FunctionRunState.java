@@ -181,7 +181,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             type = AzureOperation.Type.TASK
     )
     private ComparableVersion getFuncVersion() throws IOException {
-        final String funcVersion = CommandUtils.exec("func -v", Paths.get(functionRunConfiguration.getFuncPath()).getParent().toString());
+        final String funcVersion = CommandUtils.exec(String.format("%s -v", functionRunConfiguration.getFuncPath()),
+                Paths.get(functionRunConfiguration.getFuncPath()).getParent().toString());
         return StringUtils.isEmpty(funcVersion) ? null : new ComparableVersion(funcVersion);
     }
 
