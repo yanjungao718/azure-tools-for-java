@@ -40,6 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -87,7 +88,8 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         if (StringUtils.isNotBlank(favorites)) {
             final ObjectMapper mapper = new ObjectMapper();
             try {
-                this.favorites = new LinkedList<>(Arrays.asList(mapper.readValue(favorites, String[].class)));
+                this.favorites = new LinkedList<>(Arrays.asList(mapper.readValue(favorites, String[].class))).stream()
+                    .distinct().collect(Collectors.toList());
             } catch (final JsonProcessingException ex) {
                 AzureMessager.getMessager().error("failed to load favorites.");
                 this.favorites = new LinkedList<>();
@@ -140,7 +142,12 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         this.refresh();
     }
 
-    public void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
+    public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
+        if (this.exists(resource.getId())) {
+            final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());
+            AzureMessager.getMessager().warning(message);
+            return;
+        }
         final FavoriteDraft draft = this.create(resource.getId(), null);
         draft.setResource(resource);
         draft.commit();
