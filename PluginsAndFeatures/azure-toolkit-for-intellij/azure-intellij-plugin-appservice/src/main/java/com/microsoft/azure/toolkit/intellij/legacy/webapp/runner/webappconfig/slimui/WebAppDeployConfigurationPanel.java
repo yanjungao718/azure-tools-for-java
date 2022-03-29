@@ -21,10 +21,10 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -201,9 +201,9 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
             chkDeployToSlot.setSelected(false);
         } else {
             chkDeployToSlot.setEnabled(true);
-            Mono.fromCallable(() -> Azure.az(AzureWebApp.class).get(selectedWebApp.getResourceId()).deploymentSlots())
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe(slots -> AzureTaskManager.getInstance().runLater(()-> fillDeploymentSlots(slots, selectedWebApp), AzureTask.Modality.ANY));
+            Mono.fromCallable(() -> Azure.az(AzureWebApp.class).webApp(selectedWebApp.getResourceId()).slots().list())
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(slots -> AzureTaskManager.getInstance().runLater(() -> fillDeploymentSlots(slots, selectedWebApp), AzureTask.Modality.ANY));
         }
     }
 

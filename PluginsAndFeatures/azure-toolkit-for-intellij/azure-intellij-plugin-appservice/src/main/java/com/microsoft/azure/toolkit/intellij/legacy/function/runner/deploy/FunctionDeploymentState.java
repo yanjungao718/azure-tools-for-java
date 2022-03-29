@@ -13,9 +13,10 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -89,8 +90,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
         if (StringUtils.isEmpty(functionDeployConfiguration.getFunctionId())) {
             functionApp = createFunctionApp(processHandler);
         } else {
-            functionApp = Azure.az(AzureAppService.class).subscription(functionDeployConfiguration.getSubscriptionId())
-                    .functionApp(functionDeployConfiguration.getFunctionId());
+            functionApp = Azure.az(AzureFunctions.class).functionApp(functionDeployConfiguration.getFunctionId());
             updateApplicationSettings(functionApp);
         }
         stagingFolder = FunctionUtils.getTempStagingFolder();
@@ -104,9 +104,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
     }
 
     private FunctionApp createFunctionApp(@NotNull RunProcessHandler processHandler) {
-        FunctionApp functionApp = Azure.az(AzureAppService.class)
-                .subscription(functionDeployConfiguration.getSubscriptionId())
-                .functionApp(functionDeployConfiguration.getConfig().getResourceGroup().getName(), functionDeployConfiguration.getAppName());
+        FunctionApp functionApp = Azure.az(AzureFunctions.class)
+                .functionApps(functionDeployConfiguration.getSubscriptionId())
+                .getOrDraft(functionDeployConfiguration.getAppName(), functionDeployConfiguration.getConfig().getResourceGroup().getName());
         if (functionApp.exists()) {
             return functionApp;
         }
@@ -128,7 +128,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             return;
         }
         AzureMessager.getMessager().info("Updating application settings...");
-        deployTarget.update().withAppSettings(applicationSettings).commit();
+        final FunctionAppDraft draft = (FunctionAppDraft) deployTarget.update();
+        draft.setAppSettings(applicationSettings);
+        draft.updateIfExist();
         AzureMessager.getMessager().info("Update application settings successfully.");
     }
 

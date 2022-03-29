@@ -16,10 +16,11 @@ import com.microsoft.azure.toolkit.eclipse.common.logstream.EclipseAzureLogStrea
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -38,12 +39,12 @@ public class FunctionAppLogStreamingHandler {
     private static final String ENABLE_FILE_LOGGING = "Do you want to enable file logging for ({0})";
     private static final String ENABLE_LOGGING = "Enable logging";
 
-    public static void stopLogStreaming(final IFunctionAppBase<?> functionApp) {
+    public static void stopLogStreaming(final FunctionAppBase<?, ?, ?> functionApp) {
         AzureTaskManager.getInstance()
                 .runLater(() -> EclipseAzureLogStreamingManager.getInstance().stopLogStreaming(functionApp.id()));
     }
 
-    public static void startLogStreaming(final IFunctionAppBase<?> functionApp) {
+    public static void startLogStreaming(final FunctionAppBase<?, ?, ?> functionApp) {
         if (!isLogStreamingEnabled(functionApp)) {
             final boolean enableLogging = AzureTaskManager.getInstance()
                     .runAndWaitAsObservable(new AzureTask<>(() -> AzureMessager.getMessager()
@@ -70,8 +71,8 @@ public class FunctionAppLogStreamingHandler {
 
     // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
     // commands/logstream/startStreamingLogs.ts#L53
-    private static void openLiveMetricsStream(final IFunctionAppBase<?> functionApp) throws IOException {
-        final String aiKey = functionApp.entity().getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
+    private static void openLiveMetricsStream(final FunctionAppBase<?, ?, ?> functionApp) throws IOException {
+        final String aiKey = functionApp.getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
         if (StringUtils.isEmpty(aiKey)) {
             throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
         }
@@ -97,15 +98,17 @@ public class FunctionAppLogStreamingHandler {
         return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
     }
 
-    private static boolean isLogStreamingEnabled(IFunctionAppBase<?> functionApp) {
+    private static boolean isLogStreamingEnabled(FunctionAppBase<?, ?, ?> functionApp) {
         return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX || functionApp.getDiagnosticConfig().isEnableApplicationLog();
     }
 
-    private static void enableLogStreaming(IFunctionAppBase<?> functionApp) {
+    private static void enableLogStreaming(FunctionAppBase<?, ?, ?> functionApp) {
         final DiagnosticConfig diagnosticConfig = functionApp.getDiagnosticConfig();
         diagnosticConfig.setEnableApplicationLog(true);
         if (functionApp instanceof FunctionApp) {
-            ((FunctionApp) functionApp).update().withDiagnosticConfig(diagnosticConfig).commit();
+            final FunctionAppDraft draft = (FunctionAppDraft) ((FunctionApp) functionApp).update();
+            draft.setDiagnosticConfig(diagnosticConfig);
+            draft.updateIfExist();
         }
     }
 }

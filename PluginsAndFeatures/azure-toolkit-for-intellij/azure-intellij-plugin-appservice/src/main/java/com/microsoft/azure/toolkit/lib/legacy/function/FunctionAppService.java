@@ -10,16 +10,18 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.task.GetOrCreateApplicationInsightsTask;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.StringUtils;
@@ -76,31 +78,26 @@ public class FunctionAppService {
                 .resourceId(functionApp.id())
                 .name(functionApp.name())
                 .region(functionApp.getRegion())
-                .resourceGroup(ResourceGroup.builder().name(functionApp.resourceGroup()).build())
-                .subscription(Subscription.builder().id(functionApp.subscriptionId()).build())
-                .servicePlan(AppServicePlanEntity.builder().id(functionApp.getAppServicePlan().id()).build()).build();
+                .resourceGroup(ResourceGroup.builder().name(functionApp.getResourceGroupName()).build())
+                .subscription(functionApp.getSubscription())
+                .servicePlan(AppServicePlanEntity.builder().id(functionApp.getAppServicePlan().getId()).build()).build();
     }
 
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {
         AzureTelemetry.getActionContext().setProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(config);
         final AppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
-        AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP, config.getName()));
         final Map<String, String> appSettings = getAppSettings(config);
         // get/create ai instances only if user didn't specify ai connection string in app settings
         AzureTelemetry.getActionContext().setProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
         bindApplicationInsights(appSettings, config);
-        final FunctionApp result = Azure.az(AzureAppService.class).subscription(config.getSubscription())
-                .functionApp(resourceGroup.getName(), config.getName()).create()
-                .withName(config.getName())
-                .withResourceGroup(resourceGroup.getName())
-                .withPlan(appServicePlan.id())
-                .withRuntime(config.getRuntime())
-                .withAppSettings(appSettings)
-                .withDiagnosticConfig(config.getMonitorConfig().getDiagnosticConfig())
-                .commit();
-        AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP_DONE, result.name()));
-        return result;
+        final FunctionAppDraft draft = Azure.az(AzureFunctions.class).functionApps(config.getSubscription().getId())
+            .create(config.getName(), resourceGroup.getName());
+        draft.setAppServicePlan(appServicePlan);
+        draft.setRuntime(config.getRuntime());
+        draft.setAppSettings(appSettings);
+        draft.setDiagnosticConfig(config.getMonitorConfig().getDiagnosticConfig());
+        return draft.createIfNotExist();
     }
 
     private Map<String, String> getAppSettings(final FunctionAppConfig config) {
@@ -135,19 +132,15 @@ public class FunctionAppService {
     private AppServicePlan getOrCreateAppServicePlan(final FunctionAppConfig config) {
         final String servicePlanName = config.getServicePlan().getName();
         final String servicePlanGroup = StringUtils.firstNonBlank(config.getServicePlan().getResourceGroup(), config.getResourceGroup().getName());
-        final AppServicePlan appServicePlan = Azure.az(AzureAppService.class).subscription(config.getSubscription().getId())
-                .appServicePlan(servicePlanGroup, servicePlanName);
+        final AppServicePlan appServicePlan = Azure.az(AzureAppService.class).plans(config.getSubscription().getId())
+            .getOrDraft(servicePlanName, servicePlanGroup);
         if (!appServicePlan.exists()) {
-            AzureMessager.getMessager().info(CREATE_APP_SERVICE_PLAN);
             AzureTelemetry.getActionContext().setProperty(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
-            appServicePlan.create()
-                    .withName(servicePlanName)
-                    .withResourceGroup(servicePlanGroup)
-                    .withRegion(config.getRegion())
-                    .withPricingTier(config.getServicePlan().getPricingTier())
-                    .withOperatingSystem(config.getRuntime().getOperatingSystem())
-                    .commit();
-            AzureMessager.getMessager().info(String.format(CREATE_APP_SERVICE_DONE, appServicePlan.name()));
+            final AppServicePlanDraft draft = (AppServicePlanDraft) appServicePlan;
+            draft.setRegion(config.getRegion());
+            draft.setPricingTier(config.getServicePlan().getPricingTier());
+            draft.setOperatingSystem(config.getRuntime().getOperatingSystem());
+            return draft.createIfNotExist();
         }
         return appServicePlan;
     }
@@ -179,7 +172,7 @@ public class FunctionAppService {
         final FunctionDeployType deployType = getDeployType(functionApp);
         AzureTelemetry.getActionContext().setProperty(DEPLOYMENT_TYPE, deployType.name());
         functionApp.deploy(packageStagingDirectory(stagingFolder), deployType);
-        if (!StringUtils.equalsIgnoreCase(functionApp.state(), RUNNING)) {
+        if (!StringUtils.equalsIgnoreCase(functionApp.getStatus(), RUNNING)) {
             functionApp.start();
         }
         final String resourceUrl = String.format(PORTAL_URL_PATTERN, Azure.az(AzureAccount.class).account().portalUrl(), functionApp.id());
@@ -190,7 +183,7 @@ public class FunctionAppService {
         if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
             return FunctionDeployType.RUN_FROM_ZIP;
         }
-        final PricingTier pricingTier = functionApp.plan().getPricingTier();
+        final PricingTier pricingTier = functionApp.getAppServicePlan().getPricingTier();
         return StringUtils.equalsAnyIgnoreCase(pricingTier.getTier(), "Dynamic", "ElasticPremium") ?
                 FunctionDeployType.RUN_FROM_BLOB : FunctionDeployType.RUN_FROM_ZIP;
     }

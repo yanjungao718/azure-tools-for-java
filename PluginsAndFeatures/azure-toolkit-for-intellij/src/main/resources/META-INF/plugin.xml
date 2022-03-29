@@ -49,7 +49,7 @@
             <li>MySQL/SQL/PostgreSQL server: NPE when open properties editor of a deleting MySQL/SQL/PostgreSQL server.</li>
             <li>MySQL/SQL/PostgreSQL server: expandable sections in properties view of a stopped MySQL server can be folded but can not be expanded.</li>
             <li>Redis Cache: Redis data explorer UI blocks when read data in non-first database.</li>
-            <li>Redis Cache: pricing tier keeps <code>Basic C0</code> no matter what use selects in Redis cache creation dialog.</li>
+            <li>Redis Cache: pricing tier keeps <code>Basic C0</code> no matter what user selects in Redis cache creation dialog.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
@@ -65,6 +65,7 @@
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
+  <depends>org.jetbrains.plugins.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-service-explorer.xml" xpointer="xpointer(/idea-plugin/*)"/>
@@ -77,6 +78,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-database.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-appservice.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-arm.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-containerregistry.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -100,10 +102,6 @@
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"
@@ -139,7 +137,6 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkBatchRunner" />
-    <configurationType implementation="com.microsoft.azure.toolkit.intellij.docker.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
     <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
@@ -194,7 +191,7 @@
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.intellij.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.intellij.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
-            description="ShowSubscriptionsAction" />
+            description="ShowSubscriptionsAction" icon="AllIcons.General.Filter" />
     <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
       <action id="AzureToolkit.DisableSSLCertificateValidation"
               class="com.microsoft.intellij.actions.DisableSslCertificateValidationAction"
@@ -202,24 +199,8 @@
     </group>
     <action class="com.microsoft.intellij.actions.NewCustomerIssueFeedbackAction" id="AzureToolkit.GithubIssue" text="Report Issues" />
     <action class="com.microsoft.intellij.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
-    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback" />
-
-    <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.docker.action.AddDockerSupportAction"
-            text="Add Docker Support" description="Add Docker Support"
-            icon="/icons/DockerSupport/DockerSupport.svg">
-    </action>
-    <action id="Actions.RunOnDockerHost" class="com.microsoft.azure.toolkit.intellij.docker.action.RunOnDockerHostAction"
-            text="Docker Run" description="Docker Run"
-            icon="/icons/DockerSupport/Run.svg">
-    </action>
-    <action id="Actions.PushImage" class="com.microsoft.azure.toolkit.intellij.docker.action.PushImageAction"
-            text="Push Image" description="Push Image"
-            icon="/icons/DockerSupport/PushImage.svg">
-    </action>
-    <action id="Actions.WebAppOnLinux" class="com.microsoft.azure.toolkit.intellij.docker.action.WebAppOnLinuxAction"
-            text="Run on Web App for Containers" description="Run on Web App for Containers"
-            icon="/icons/DockerSupport/RunOnWebApp.svg">
-    </action>
+    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback"
+            icon="/icons/Common/feedback.svg"/>
     <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
             text="Disconnect" description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">

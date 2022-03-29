@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table;
 
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends MvpPresenter<V> {
     public void onLoadFunctionApps() {
-        Observable.fromCallable(() -> Azure.az(AzureAppService.class).functionApps())
+        Observable.fromCallable(() -> Azure.az(AzureFunctions.class).functionApps())
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(functionApps -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {

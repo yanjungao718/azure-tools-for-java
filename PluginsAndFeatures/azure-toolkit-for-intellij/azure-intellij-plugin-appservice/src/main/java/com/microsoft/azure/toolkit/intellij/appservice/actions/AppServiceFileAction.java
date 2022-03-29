@@ -27,8 +27,8 @@ import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.FileChooser;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -76,7 +76,7 @@ public class AppServiceFileAction {
     @SneakyThrows
     public void openAppServiceFile(AppServiceFile target, Object context) {
         final Action<Void> retry = Action.retryFromFailure((() -> this.openAppServiceFile(target, context)));
-        final IAppService appService = target.getApp();
+        final AppServiceAppBase<?, ?, ?> appService = target.getApp();
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
@@ -165,7 +165,7 @@ public class AppServiceFileAction {
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
         final AzureString title = AzureOperationBundle.title("appservice.save_file.file", appServiceFile.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
-            final IAppService appService = appServiceFile.getApp();
+            final AppServiceAppBase<?, ?, ?> appService = appServiceFile.getApp();
             final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
             final boolean outDated = !deleted && ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()));

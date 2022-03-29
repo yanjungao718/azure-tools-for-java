@@ -11,7 +11,9 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.extern.java.Log;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -48,6 +50,15 @@ public abstract class AzureDialog<T> extends DialogWrapper {
 
     public void close() {
         this.doCancelAction();
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.getForm().getInputs().stream()
+            .filter(i -> i instanceof AzureFormInputComponent)
+            .map(i -> ((AzureFormInputComponent<?>) i).getInputComponent())
+            .findFirst().orElseGet(super::getPreferredFocusedComponent);
     }
 
     @Override

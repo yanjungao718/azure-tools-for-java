@@ -35,18 +35,18 @@ import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsCont
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azureexplorer.helpers.EditorType;
@@ -91,7 +91,7 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, isWebAppSlot,
                 openWebAppSlotPropertyViewHandler);
 
-        final BiConsumer<IAzureBaseResource<?, ?>, Object> deployWebAppHandler = (c, e) -> AzureTaskManager
+        final BiConsumer<AzResource<?, ?, ?>, Object> deployWebAppHandler = (c, e) -> AzureTaskManager
                 .getInstance().runLater(() -> {
                     try {
                         Command deployCommand = ((ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class))
@@ -116,13 +116,13 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         });
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
-        final BiPredicate<IAppService<?>, Object> logStreamingPredicate = (r, e) -> r instanceof IWebAppBase<?>;
-        final BiConsumer<IAppService<?>, Object> startLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
-                .startLogStreaming((IWebAppBase<?>) c);
+        final BiPredicate<AppServiceAppBase<?, ?, ?>, Object> logStreamingPredicate = (r, e) -> r instanceof WebAppBase<?, ?, ?>;
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, Object> startLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
+                .startLogStreaming((WebAppBase<?, ?, ?>) c);
         am.registerHandler(AppServiceActionsContributor.START_STREAM_LOG, logStreamingPredicate, startLogStreamingHandler);
 
-        final BiConsumer<IAppService<?>, Object> stopLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
-                .stopLogStreaming((IWebAppBase<?>) c);
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, Object> stopLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
+                .stopLogStreaming((WebAppBase<?, ?, ?>) c);
         am.registerHandler(AppServiceActionsContributor.STOP_STREAM_LOG, logStreamingPredicate, stopLogStreamingHandler);
     }
 

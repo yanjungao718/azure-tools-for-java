@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 
 public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> extends BaseEditor {
 
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener listener;
     private final T resource;
     private final TailingDebouncer debouncer;
     protected final Project project;
@@ -30,8 +30,9 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
         this.resource = resource;
         this.project = project;
         this.manager = virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_EDITOR_MANAGER_KEY);
-        this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        this.listener = new AzureEventBus.EventListener(this::onEvent);
         AzureEventBus.on("resource.status_changed.resource", listener);
+        AzureEventBus.on("resource.refreshed.resource", listener);
         this.debouncer = new TailingDebouncer(this::rerender, 500);
     }
 
@@ -41,11 +42,11 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
         return this.resource.getName();
     }
 
-    private void onEvent(AzureEvent<Object> event) {
+    private void onEvent(AzureEvent event) {
         final String type = event.getType();
         final Object source = event.getSource();
         if (source instanceof AzResourceBase && ((AzResourceBase) source).getId().equals(this.resource.getId())) {
-            if (StringUtils.equalsAnyIgnoreCase(((AzResourceBase) source).getStatus(), "deleted", "removed")) {
+            if (((AzResourceBase) source).getFormalStatus().isDeleted()) {
                 onResourceDeleted();
             } else {
                 this.debouncer.debounce();
@@ -62,6 +63,7 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
     @Override
     public void dispose() {
         AzureEventBus.off("resource.status_changed.resource", listener);
+        AzureEventBus.off("resource.refreshed.resource", listener);
     }
 
     protected abstract void rerender();

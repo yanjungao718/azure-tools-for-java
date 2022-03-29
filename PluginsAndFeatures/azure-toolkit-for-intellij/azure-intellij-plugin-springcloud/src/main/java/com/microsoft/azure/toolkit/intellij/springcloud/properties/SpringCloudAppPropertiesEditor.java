@@ -13,8 +13,8 @@ import com.microsoft.azure.toolkit.intellij.common.properties.AzResourceProperti
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -102,9 +102,9 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
     @Nonnull
     private SpringCloudAppConfig getConfig() {
         final SpringCloudAppConfig config = this.formConfig.getValue();
-        config.setSubscriptionId(this.draft.subscriptionId());
-        config.setClusterName(this.draft.getParent().name());
-        config.setAppName(this.draft.name());
+        config.setSubscriptionId(this.draft.getSubscriptionId());
+        config.setClusterName(this.draft.getParent().getName());
+        config.setAppName(this.draft.getName());
         return config;
     }
 
@@ -153,7 +153,7 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
             // get status from app instead of draft since status of draft is not correct
             final String status = this.app.getStatus();
             final boolean modified = this.isModified();
-            if (StringUtils.equalsIgnoreCase(status, IAzureBaseResource.Status.INACTIVE)) {
+            if (StringUtils.equalsIgnoreCase(status, AzResource.Status.INACTIVE)) {
                 AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.getName()), null);
             }
             AzureTaskManager.getInstance().runLater(() -> {

@@ -10,18 +10,17 @@ import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.util.ThrowableRunnable;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
-import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,13 +28,11 @@ import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-@Log
 public class IntellijAzureMessager implements IAzureMessager {
+    private static final Logger log = Logger.getInstance(AnAction.class);
     static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
         Map.entry(IAzureMessage.Type.INFO, NotificationType.INFORMATION),
@@ -51,7 +48,7 @@ public class IntellijAzureMessager implements IAzureMessager {
     @Override
     public boolean show(IAzureMessage raw) {
         if (raw.getPayload() instanceof Throwable) {
-            log.log(Level.WARNING, "caught an error by messager", ((Throwable) raw.getPayload()));
+            log.warn("caught an error by messager", ((Throwable) raw.getPayload()));
         }
         switch (raw.getType()) {
             case ALERT:
@@ -68,13 +65,7 @@ public class IntellijAzureMessager implements IAzureMessager {
                 return result[0];
             default:
         }
-        final AzureTask<?> task = AzureTaskContext.current().getTask();
-        final Boolean backgrounded = Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);
-        if (Objects.equals(backgrounded, Boolean.FALSE) && raw.getType() == IAzureMessage.Type.ERROR) {
-            this.showErrorDialog(raw);
-        } else {
-            this.showNotification(raw);
-        }
+        this.showNotification(raw);
         return true;
     }
 

@@ -6,9 +6,9 @@
 package com.microsoft.azure.toolkit.lib.legacy.appservice.jfr;
 
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class WindowFlightRecorderStarter extends FlightRecorderStarterBase {
     private static final String HOME_PATH = "d:/home";
 
-    public WindowFlightRecorderStarter(final IAppService appService) {
+    public WindowFlightRecorderStarter(final AppServiceAppBase<?, ?, ?> appService) {
         super(appService);
     }
 

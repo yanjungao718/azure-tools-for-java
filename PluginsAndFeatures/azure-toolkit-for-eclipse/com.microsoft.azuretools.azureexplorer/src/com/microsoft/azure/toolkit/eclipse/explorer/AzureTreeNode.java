@@ -91,7 +91,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
     }
 
     @Override
-    public void refreshChildren() {
+    public void refreshChildren(boolean... incremental) {
         this.loaded = null;
         this.loadChildren();
         treeView.refresh(this);

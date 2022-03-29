@@ -6,10 +6,10 @@
 package com.microsoft.azure.toolkit.lib.legacy.appservice.jfr;
 
 import com.azure.core.util.FluxUtil;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.TunnelProxy;
 import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -23,7 +23,7 @@ public class LinuxFlightRecorderStarter extends FlightRecorderStarterBase {
     private static final String HOME_PATH = "/home";
     private TunnelProxy proxy;
 
-    public LinuxFlightRecorderStarter(final IAppService app) {
+    public LinuxFlightRecorderStarter(final AppServiceAppBase<?, ?, ?> app) {
         super(app);
         proxy = new TunnelProxy(app);
     }

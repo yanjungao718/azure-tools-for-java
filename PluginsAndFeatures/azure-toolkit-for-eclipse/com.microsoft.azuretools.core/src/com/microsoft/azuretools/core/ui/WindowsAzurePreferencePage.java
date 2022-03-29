@@ -145,7 +145,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
     }
 
     private static String azureEnvironmentToString(@Nonnull AzureEnvironment env) {
-        final String name = AzureEnvironmentUtils.getCloudNameForAzureCli(env);
+        final String name = AzureEnvironmentUtils.getCloudName(env);
         return org.apache.commons.lang3.StringUtils.removeEnd(name, "Cloud");
     }
 

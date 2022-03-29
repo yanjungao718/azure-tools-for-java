@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -279,8 +279,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             if (selectedWebApp != null) {
                 model.setWebAppId(selectedWebApp.id());
                 model.setWebAppName(selectedWebApp.name());
-                model.setSubscriptionId(selectedWebApp.subscriptionId());
-                model.setResourceGroupName(selectedWebApp.resourceGroup());
+                model.setSubscriptionId(selectedWebApp.getSubscriptionId());
+                model.setResourceGroupName(selectedWebApp.getResourceGroupName());
             } else {
                 model.setWebAppId(null);
                 model.setWebAppName(null);
@@ -656,8 +656,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         cpNew.lblPricingTierValue.setText("N/A");
         AppServicePlan asp = getSelectedAppServicePlan();
         if (asp != null) {
-            cpNew.lblLocationValue.setText(asp.entity().getRegion());
-            cpNew.lblPricingTierValue.setText(asp.entity().getPricingTier().getSize());
+            cpNew.lblLocationValue.setText(asp.getRegion().getLabel());
+            cpNew.lblPricingTierValue.setText(asp.getPricingTier().getSize());
         }
     }
 
@@ -762,7 +762,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     public void renderWebAppOnLinuxList(List<WebApp> list) {
         // TODO Auto-generated method stub
         cpExisting.btnRefresh.setEnabled(true);
-        webAppList = list.stream().sorted((a, b) -> a.subscriptionId().compareToIgnoreCase(b.subscriptionId()))
+        webAppList = list.stream().sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
 
         // TODO: where to show loading ...
@@ -770,7 +770,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             cpExisting.tblWebApps.removeAll();
             for (WebApp app : webAppList) {
                 TableItem it = new TableItem(cpExisting.tblWebApps, SWT.NULL);
-                it.setText(new String[] {app.name(), app.resourceGroup()});
+                it.setText(new String[] {app.name(), app.getResourceGroupName()});
             }
         }
     }

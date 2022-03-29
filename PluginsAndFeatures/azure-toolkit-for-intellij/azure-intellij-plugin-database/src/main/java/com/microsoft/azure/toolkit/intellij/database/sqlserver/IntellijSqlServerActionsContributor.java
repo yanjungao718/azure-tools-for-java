@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResou
 import com.microsoft.azure.toolkit.intellij.database.sqlserver.connection.SqlServerDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.sqlserver.creation.CreateSqlServerAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
@@ -38,7 +38,7 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateSqlServerAction.create((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MicrosoftSqlServer,
+        am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MicrosoftSqlServer,
             (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 final MicrosoftSqlServer server = (MicrosoftSqlServer) o;
@@ -47,7 +47,7 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
                 dialog.show();
             }));
 
-        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MicrosoftSqlServer) c);
+        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MicrosoftSqlServer) c);
         am.registerHandler(SqlServerActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
     }
 

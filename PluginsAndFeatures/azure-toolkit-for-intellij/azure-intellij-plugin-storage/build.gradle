@@ -4,8 +4,8 @@ intellij {
 dependencies {
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-intellij-resource-connector-lib')
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib:' + azureToolkitVersion
-    compile 'com.microsoft.azure:azure-toolkit-storage-lib:' + azureToolkitVersion
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib'
+    compile 'com.microsoft.azure:azure-toolkit-storage-lib'
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-storage-lib:' + azureToolkitVersion
 }

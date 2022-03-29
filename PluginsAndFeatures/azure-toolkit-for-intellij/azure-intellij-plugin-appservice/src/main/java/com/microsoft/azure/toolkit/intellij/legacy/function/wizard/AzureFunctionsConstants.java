@@ -14,5 +14,6 @@ public class AzureFunctionsConstants {
     public static final Key<String> WIZARD_VERSION_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".version");
     public static final Key<String> WIZARD_PACKAGE_NAME_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".packageName");
     public static final Key<String[]> WIZARD_TRIGGERS_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".triggers");
+    public static final Key<String> PARENT_PATH = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".parentPath");
 
 }

@@ -5,54 +5,51 @@
 
 package com.microsoft.intellij.ui;
 
-import com.google.common.collect.ImmutableList;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.ui.UISettings;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.hover.TreeHoverListener;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.actions.AzureSignInAction;
-import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,12 +62,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -78,6 +74,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -91,32 +88,41 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     @AzureOperation(name = "common.initialize_explorer", type = AzureOperation.Type.SERVICE)
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
-        AzureModule azureModule = new AzureModuleImpl(project);
+        final AzureModule azureModule = new AzureModuleImpl(project);
         HDInsightUtil.setHDInsightRootModule(azureModule);
         azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
         azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
         // initialize aris service module
-        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
+        final SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
 
-        // initialize with all the service modules
-        DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, ImmutableList.of(azureModule, arisModule)));
+        final SortableTreeNode hiddenRoot = new SortableTreeNode();
+        final DefaultTreeModel treeModel = new DefaultTreeModel(hiddenRoot);
+        final JTree tree = new Tree(treeModel);
+
+        final var favorRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildFavoriteRoot(), tree);
+        final var azureRootNode = createTreeNode(azureModule, project);
+        final var arisRootNode = createTreeNode(arisModule, project);
+        hiddenRoot.add(favorRootNode);
+        hiddenRoot.add(azureRootNode);
+        azureModule.load(false); // kick-off asynchronous load of child nodes on all the modules
+        hiddenRoot.add(arisRootNode);
+        arisModule.load(false);
         treeModelMap.put(project, treeModel);
 
         // initialize tree
-        final JTree tree = new Tree(treeModel);
         ComponentUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
         tree.setRootVisible(false);
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
-        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
-        final DefaultMutableTreeNode azureRoot = (DefaultMutableTreeNode) root.getChildAt(0);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
-                .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
-        modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRoot::add);
+            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
+        modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
-        com.microsoft.azure.toolkit.intellij.common.component.Tree.installExpandListener(tree);
-        com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
+        TreeUtils.installSelectionListener(tree);
+        TreeUtils.installExpandListener(tree);
+        TreeUtils.installMouseListener(tree);
+        TreeHoverListener.DEFAULT.addTo(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {
             if (StringUtils.equals(dataId, Action.SOURCE)) {
@@ -129,54 +135,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         });
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(final MouseEvent e) {
-                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
-                    treeNodeDblClicked(e, tree, project);
-                }
-            }
 
             @Override
             public void mousePressed(MouseEvent e) {
                 treeMousePressed(e, tree);
-            }
-        });
-        // add keyboard handler for the tree
-        tree.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                TreePath treePath = tree.getAnchorSelectionPath();
-                if (treePath == null) {
-                    return;
-                }
-                final Object raw = treePath.getLastPathComponent();
-                if (raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || raw instanceof LoadingNode) {
-                    return;
-                }
-                SortableTreeNode treeNode = (SortableTreeNode) raw;
-                Node node = (Node) treeNode.getUserObject();
-
-                Rectangle rectangle = tree.getRowBounds(tree.getRowForPath(treePath));
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    if (!node.isLoading()) {
-                        node.getClickAction().fireNodeActionEvent();
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
-                    if (node.hasNodeActions()) {
-                        JPopupMenu menu = createPopupMenuForNode(node);
-                        menu.show(e.getComponent(), (int) rectangle.getX(), (int) rectangle.getY());
-                    }
-                }
             }
         });
         // add the tree to the window
@@ -189,29 +151,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // setup toolbar icons
         addToolbarItems(toolWindow, project, azureModule);
 
-    }
-
-    private SortableTreeNode initRoot(Project project, List<RefreshableNode> nodes) {
-        SortableTreeNode root = new SortableTreeNode();
-
-        nodes.forEach(node -> {
-            root.add(createTreeNode(node, project));
-            // kick-off asynchronous load of child nodes on all the modules
-            node.load(false);
-        });
-
-        return root;
-    }
-
-    private void treeNodeDblClicked(MouseEvent e, JTree tree, final Project project) {
-        final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
-        if (treePath == null) {
-            return;
-        }
-        final Node node = getTreeNodeOnMouseClick(tree, treePath);
-        if (Objects.nonNull(node) && !node.isLoading()) {
-            node.onNodeDblClicked(project);
-        }
     }
 
     private void treeMousePressed(MouseEvent e, JTree tree) {
@@ -403,11 +342,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private class NodeTreeCellRenderer extends NodeRenderer {
-        @Override
-        protected void doPaint(Graphics2D g) {
-            super.doPaint(g);
-            setOpaque(false);
-        }
+        private Icon inlineActionIcon = null;
 
         @Override
         public void customizeCellRenderer(@NotNull JTree jtree,
@@ -418,9 +353,18 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           int row,
                                           boolean focused) {
             Object value = v;
+            inlineActionIcon = null;
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
-                com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer
-                    .renderMyTreeNode((com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value, this);
+                final com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?> node =
+                    (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
+                final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
+                inlineActionIcon = Optional.ofNullable(node.getInlineActionView())
+                    .map(av -> AzureIcons.getIcon(av.getIconPath())).orElse(null);
+                if (hoveredRow != row && inlineActionIcon == AllIcons.Nodes.NotFavoriteOnHover) {
+                    // TODO: should not check the value of inlineActionIcon
+                    inlineActionIcon = null;
+                }
+                TreeUtils.renderMyTreeNode(node, this);
                 return;
             } else if (value instanceof LoadingNode) {
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
@@ -452,57 +396,63 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // setup a tooltip
             setToolTipText(node.getToolTip());
         }
-    }
 
-    private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
-        if (toolWindow instanceof ToolWindowEx) {
-            ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
-            try {
-                Runnable forceRefreshTitleActions = () -> {
-
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        try {
-                            toolWindowEx.setTitleActions(
-                                    new AnAction("Refresh", "Refresh Azure Nodes List", null) {
-                                        @Override
-                                        public void actionPerformed(AnActionEvent event) {
-                                            azureModule.load(true);
-                                        }
-
-                                        @Override
-                                        public void update(AnActionEvent e) {
-                                            boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
-                                            final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
-                                            e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
-                                        }
-                                    },
-                                    new AzureSignInAction(),
-                                    new SelectSubscriptionsAction());
-                        } catch (Exception e) {
-                            AzurePlugin.log(e.getMessage(), e);
-                        }
-                    });
-                };
-                AuthMethodManager.getInstance().addSignInEventListener(forceRefreshTitleActions);
-                AuthMethodManager.getInstance().addSignOutEventListener(forceRefreshTitleActions);
-                // Remove the sign in/out listener when project close
-                ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
-                    @Override
-                    public void projectClosing(@NotNull Project project) {
-                        AuthMethodManager.getInstance().removeSignInEventListener(forceRefreshTitleActions);
-                        AuthMethodManager.getInstance().removeSignOutEventListener(forceRefreshTitleActions);
-                    }
-                });
-
-                forceRefreshTitleActions.run();
-            } catch (Exception e) {
-                AzurePlugin.log(e.getMessage(), e);
+        @Override
+        public void paintComponent(Graphics g) {
+            UISettings.setupAntialiasing(g);
+            Shape clip = null;
+            int width = this.myTree.getWidth() - this.getX();
+            final int height = this.getHeight();
+            if (isOpaque()) {
+                // paint background for expanded row
+                g.setColor(getBackground());
+                g.fillRect(0, 0, width, height);
             }
+            if (Objects.nonNull(inlineActionIcon)) {
+                width -= TreeUtils.INLINE_ACTION_ICON_OFFSET;
+                if (width > 0 && height > 0) {
+                    paintIcon(g, inlineActionIcon, width);
+                    clip = g.getClip();
+                    g.clipRect(0, 0, width, height);
+                }
+            }
+
+            super.paintComponent(g);
+            // restore clip area if needed
+            if (clip != null) g.setClip(clip);
         }
     }
 
+    private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
+        final AnAction refreshAction = new RefreshAllAction(azureModule);
+        final AnAction feedbackAction = ActionManager.getInstance().getAction("AzureToolkit.Survey");
+        final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
+        final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
+        toolWindow.setTitleActions(Arrays.asList(refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));
+    }
+
     private boolean isOutdatedModule(Node node) {
-        return node instanceof StorageModule || node instanceof VMArmModule || node instanceof RedisCacheModule ||
-                node instanceof WebAppModule || node instanceof FunctionModule;
+        return node instanceof StorageModule || node instanceof VMArmModule || node instanceof RedisCacheModule || node instanceof ContainerRegistryModule;
+    }
+
+    private static class RefreshAllAction extends AnAction implements DumbAware {
+        private final AzureModule azureModule;
+
+        public RefreshAllAction(AzureModule azureModule) {
+            super("Refresh All", "Refresh Azure nodes list", AllIcons.Actions.Refresh);
+            this.azureModule = azureModule;
+        }
+
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+            azureModule.load(true);
+            AzureExplorer.refreshAll();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            e.getPresentation().setEnabled(isSignIn);
+        }
     }
 }

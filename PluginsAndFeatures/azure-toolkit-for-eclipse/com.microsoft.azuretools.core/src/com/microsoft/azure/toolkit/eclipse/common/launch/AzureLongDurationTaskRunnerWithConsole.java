@@ -42,7 +42,7 @@ public class AzureLongDurationTaskRunnerWithConsole {
                 AzureTaskManager.getInstance().runImmediatelyAsObservable(() -> {
                     ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
                     AzureMessager.getContext().setMessager(messager);
-                    task.getSupplier().get();
+                    task.execute();
                     ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
                     messager.info("Done.");
                     if (removeConsoleAfterSucceed) {
