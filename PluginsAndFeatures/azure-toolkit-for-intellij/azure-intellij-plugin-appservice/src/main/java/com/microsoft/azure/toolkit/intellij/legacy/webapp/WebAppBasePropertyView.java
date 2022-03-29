@@ -22,9 +22,8 @@ import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -100,7 +99,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     protected String slotName;
     protected Project project;
     protected VirtualFile virtualFile;
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final AzureEventBus.EventListener listener;
 
     protected WebAppBasePropertyView(@Nonnull Project project, @Nonnull String sid,
                                      @Nonnull String appServiceId, @Nullable String slotName, @Nonnull final VirtualFile virtualFile) {
@@ -180,19 +179,19 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         setTextFieldStyle();
 
         // todo: add event handler to close editor
-        listener = new AzureEventBus.EventListener<>(this::onStatusChangeEvent);
-        AzureEventBus.on("common|resource.status_changed", listener);
+        listener = new AzureEventBus.EventListener(this::onStatusChangeEvent);
+        AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
-    protected void onStatusChangeEvent(AzureEvent<Object> event) {
+    protected void onStatusChangeEvent(AzureEvent event) {
         final Object source = event.getSource();
-        if (source instanceof IAppService && StringUtils.equalsIgnoreCase(this.resourceId, ((IAppService) source).id())) {
-            onAppServiceStatusChanged((IAppService) source);
+        if (source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(this.resourceId, ((AppServiceAppBase<?, ?, ?>) source).id())) {
+            onAppServiceStatusChanged((AppServiceAppBase<?, ?, ?>) source);
         }
     }
 
-    protected void onAppServiceStatusChanged(IAppService app) {
-        if (!app.exists()) {
+    protected void onAppServiceStatusChanged(AppServiceAppBase<?, ?, ?> app) {
+        if (app.getFormalStatus().isDeleted()) {
             closeEditor(app);
             return;
         }
@@ -200,11 +199,11 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         presenter.onLoadWebAppProperty(this.subscriptionId, this.appServiceId, this.slotName);
     }
 
-    protected void closeEditor(IAppService app) {
+    protected void closeEditor(AppServiceAppBase<?, ?, ?> app) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
-        AzureMessager.getMessager().info(AzureString.format("The editor for app '%s' is closed.", app.name()),
-            String.format("The app with name '%s' is deleted.", app.name()));
+        final String message = String.format("Close editor of app '%s', because the app is deleted.", app.name());
+        AzureMessager.getMessager().info(message);
     }
 
     protected abstract String getId();
@@ -212,9 +211,9 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     protected abstract WebAppBasePropertyViewPresenter createPresenter();
 
     @Override
-    public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String webAppId,
+    public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId,
                                      @Nullable final String slotName) {
-        this.presenter.onLoadWebAppProperty(sid, webAppId, slotName);
+        this.presenter.onLoadWebAppProperty(sid, appId, slotName);
     }
 
     @Nonnull
@@ -231,7 +230,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
     @Override
     public void dispose() {
-        AzureEventBus.off("common|resource.status_changed", listener);
+        AzureEventBus.off("resource.status_changed.resource", listener);
         presenter.onDetachView();
     }
 

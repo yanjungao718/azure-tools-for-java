@@ -562,7 +562,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             this.config = config;
         }
 
-        public RedisCache execute() {
+        public RedisCache doExecute() {
             ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();

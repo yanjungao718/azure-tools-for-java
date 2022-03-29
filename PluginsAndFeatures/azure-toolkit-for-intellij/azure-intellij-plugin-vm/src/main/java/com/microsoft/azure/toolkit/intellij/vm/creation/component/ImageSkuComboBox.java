@@ -6,18 +6,18 @@
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureImageOffer;
-import com.microsoft.azure.toolkit.lib.compute.vm.AzureImageSku;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VmImageOffer;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VmImageSku;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ImageSkuComboBox extends AzureComboBox<AzureImageSku> {
-    private AzureImageOffer offer;
+public class ImageSkuComboBox extends AzureComboBox<VmImageSku> {
+    private VmImageOffer offer;
 
-    public void setOffer(AzureImageOffer offer) {
+    public void setOffer(VmImageOffer offer) {
         this.offer = offer;
         this.clear();
         this.refreshItems();
@@ -25,12 +25,12 @@ public class ImageSkuComboBox extends AzureComboBox<AzureImageSku> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof AzureImageSku ? ((AzureImageSku) item).name() : super.getItemText(item);
+        return item instanceof VmImageSku ? ((VmImageSku) item).name() : super.getItemText(item);
     }
 
     @Nonnull
     @Override
-    protected List<? extends AzureImageSku> loadItems() throws Exception {
-        return Optional.ofNullable(offer).map(AzureImageOffer::skus).orElse(Collections.emptyList());
+    protected List<? extends VmImageSku> loadItems() throws Exception {
+        return Optional.ofNullable(offer).map(VmImageOffer::skus).orElse(Collections.emptyList());
     }
 }

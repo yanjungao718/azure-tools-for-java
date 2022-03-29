@@ -5,8 +5,8 @@
 
 package com.microsoft.azure.toolkit.lib.legacy.appservice.jfr;
 
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -17,7 +17,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class FlightRecorderManager {
     private static Map<String, FlightRecorderStarterBase> jfrStarters = new ConcurrentHashMap<>();
 
-    public static FlightRecorderStarterBase getFlightRecorderStarter(@NotNull IAppService appService) {
+    public static FlightRecorderStarterBase getFlightRecorderStarter(@NotNull AppServiceAppBase<?, ?, ?> appService) {
         return jfrStarters.computeIfAbsent(appService.id(), id -> {
             if (appService.getRuntime().getOperatingSystem() == OperatingSystem.LINUX) {
                 return new LinuxFlightRecorderStarter(appService);

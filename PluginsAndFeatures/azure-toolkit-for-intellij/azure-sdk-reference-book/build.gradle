@@ -5,14 +5,13 @@ intellij {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.3', {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.1', {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.3', {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml', {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
     compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion
-
-    aspect 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-common-lib'
+    aspect 'com.microsoft.azure:azure-toolkit-common-lib'
 }

@@ -9,11 +9,11 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributo
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +31,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
         this.webApp = data;
         this.view(new WebAppDeploymentSlotsNodeView(data));
         this.actions(WebAppActionsContributor.DEPLOYMENT_SLOTS_ACTIONS);
-        this.addChildren(ignore -> webApp.deploymentSlots().stream().sorted(Comparator.comparing(WebAppDeploymentSlot::name)).collect(Collectors.toList()),
+        this.addChildren(ignore -> webApp.slots().list().stream().sorted(Comparator.comparing(WebAppDeploymentSlot::name)).collect(Collectors.toList()),
                 (slot, slotsNode) -> new Node<>(slot).view(new AzureResourceLabelView<>(slot)).actions(WebAppActionsContributor.DEPLOYMENT_SLOT_ACTIONS));
     }
 
@@ -40,7 +40,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
         @Nonnull
         @Getter
         private final WebApp webApp;
-        private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+        private final AzureEventBus.EventListener listener;
 
         @Nullable
         @Setter
@@ -49,8 +49,8 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         public WebAppDeploymentSlotsNodeView(@Nonnull WebApp webApp) {
             this.webApp = webApp;
-            this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-            AzureEventBus.on("appservice|webapp.slot.refresh", listener);
+            this.listener = new AzureEventBus.EventListener(this::onEvent);
+            AzureEventBus.on("resource.refreshed.resource", listener);
             this.refreshView();
         }
 
@@ -61,7 +61,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         @Override
         public String getIconPath() {
-            return "/icons/webappdeploymentslot.png";
+            return "/icons/Microsoft.Web/sites/slots/default.svg";
         }
 
         @Override
@@ -71,13 +71,13 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         @Override
         public void dispose() {
-            AzureEventBus.off("appservice|webapp.slot.refresh", listener);
+            AzureEventBus.off("resource.refreshed.resource", listener);
             this.refresher = null;
         }
 
-        public void onEvent(AzureEvent<Object> event) {
+        public void onEvent(AzureEvent event) {
             final Object source = event.getSource();
-            if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.webApp.id())) {
+            if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.webApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }

@@ -5,20 +5,10 @@
 
 package com.microsoft.tooling.msservices.helpers;
 
-import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
-import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,22 +44,6 @@ public interface UIHelper {
 
     File showFileSaver(String title, String fileName);
 
-    <T extends StorageServiceTreeItem> void openItem(
-            Object projectObject, final StorageAccount storageAccount,
-            final T item, String itemType, String itemName, String iconName);
-
-    <T extends StorageServiceTreeItem> void openItem(
-            Object projectObject, final ClientStorageAccount clientStorageAccount,
-            final T item, String itemType, String itemName, String iconName);
-
-    void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile);
-
-    void refreshQueue(@NotNull Object projectObject, @NotNull StorageAccount storageAccount, @NotNull Queue queue);
-
-    void refreshBlobs(@NotNull Object projectObject, @NotNull String accountName, @NotNull BlobContainer container);
-
-    void refreshTable(@NotNull Object projectObject, @NotNull StorageAccount storageAccount, @NotNull Table table);
-
     String promptForOpenSSLPath();
 
     void openRedisPropertyView(@NotNull RedisCacheNode node);
@@ -80,14 +54,6 @@ public interface UIHelper {
 
     void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node);
 
-    void openWebAppPropertyView(@NotNull WebAppNode node);
-
-    default void openFunctionAppPropertyView(@NotNull FunctionAppNode node) {
-
-    }
-
-    void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
-
     default void openMySQLPropertyView(@NotNull String id, @NotNull Object project) {
 
     }
@@ -95,11 +61,6 @@ public interface UIHelper {
     default void openSqlServerPropertyView(@NotNull String id, @NotNull Object project) {
 
     }
-
-    @Nullable
-    <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
-            @NotNull String accountName,
-            @NotNull T item);
 
     boolean isDarkTheme();
 

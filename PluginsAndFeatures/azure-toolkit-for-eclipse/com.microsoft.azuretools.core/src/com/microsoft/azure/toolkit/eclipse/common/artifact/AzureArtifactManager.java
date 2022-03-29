@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.MavenUtils;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.project.MavenProject;
@@ -145,9 +144,19 @@ public class AzureArtifactManager {
             case Maven:
                 return ((MavenProject) artifact.getReferencedObject()).getPackaging();
             case File:
-                return FileNameUtils.getExtension(((File) artifact.getReferencedObject()).getName());
+                return getExtension(((File) artifact.getReferencedObject()).getName());
             default:
                 return null;
+        }
+    }
+
+    public static String getExtension(String filename) {
+        if (filename == null) {
+            return null;
+        } else {
+            String name = (new File(filename)).getName();
+            int extensionPosition = name.lastIndexOf(46);
+            return extensionPosition < 0 ? "" : name.substring(extensionPosition + 1);
         }
     }
 

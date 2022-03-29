@@ -8,10 +8,10 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -34,7 +34,7 @@ public class TriggerFunctionInBrowserAction {
     public TriggerFunctionInBrowserAction(@Nonnull final FunctionEntity functionEntity) {
         final String functionId = Optional.ofNullable(functionEntity.getFunctionAppId()).orElseGet(() ->
                 ResourceId.fromString(functionEntity.getTriggerId()).parent().id());
-        this.functionApp = Azure.az(AzureFunction.class).get(functionId);
+        this.functionApp = Azure.az(AzureFunctions.class).functionApp(functionId);
         this.functionEntity = functionEntity;
         this.trigger = functionEntity.getTrigger();
         final String triggerType = Optional.ofNullable(trigger)
@@ -45,7 +45,7 @@ public class TriggerFunctionInBrowserAction {
             throw new AzureToolkitRuntimeException(error, action);
         }
         if (!StringUtils.equalsIgnoreCase(triggerType, HTTP_TRIGGER)) {
-            final String error = String.format("trigger function in browser is only supported for function with http trigger.");
+            final String error = "trigger function in browser is only supported for function with http trigger.";
             final String action = "change to use `trigger function` for function without http trigger";
             throw new AzureToolkitRuntimeException(error, action);
         }
@@ -77,7 +77,7 @@ public class TriggerFunctionInBrowserAction {
     }
 
     private String getAnonymousHttpTriggerUrl() {
-        return String.format(HTTP_TRIGGER_URL, functionApp.hostName(), functionEntity.getName());
+        return String.format(HTTP_TRIGGER_URL, functionApp.getHostName(), functionEntity.getName());
     }
 
     private String getFunctionHttpTriggerUrl() {
@@ -87,10 +87,10 @@ public class TriggerFunctionInBrowserAction {
         }
         final String key = functionApp.listFunctionKeys(functionEntity.getName()).values().stream().filter(StringUtils::isNotBlank)
                 .findFirst().orElse(functionApp.getMasterKey());
-        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.hostName(), functionEntity.getName(), key);
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.getHostName(), functionEntity.getName(), key);
     }
 
     private String getAdminHttpTriggerUrl() {
-        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.hostName(), functionEntity.getName(), functionApp.getMasterKey());
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.getHostName(), functionEntity.getName(), functionApp.getMasterKey());
     }
 }

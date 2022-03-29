@@ -15,12 +15,12 @@ import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Availability;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
@@ -105,7 +105,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
         }
 
         if (subscriptionComboBox.getValue() != null) {
-            final CheckNameAvailabilityResultEntity resultEntity =
+            final Availability resultEntity =
                     Azure.az(AzureRedis.class).forSubscription(subscriptionComboBox.getValue().getId()).checkNameAvailability(name);
             if (!resultEntity.isAvailable()) {
                 final String message = resultEntity.getUnavailabilityReason();
@@ -166,9 +166,9 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
+            this.redisNameTextField,
             this.subscriptionComboBox,
             this.resourceGroupComboBox,
-            this.redisNameTextField,
             this.pricingComboBox,
             this.regionComboBox
         };

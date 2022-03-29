@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResou
 import com.microsoft.azure.toolkit.intellij.database.mysql.connection.MySqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.mysql.creation.CreateMySqlAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
@@ -38,7 +38,7 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateMySqlAction.create((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MySqlServer,
+        am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MySqlServer,
             (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 final MySqlServer server = (MySqlServer) o;
@@ -47,7 +47,7 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
                 dialog.show();
             }));
 
-        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MySqlServer) c);
+        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MySqlServer) c);
         am.registerHandler(MySqlActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
     }
 

@@ -6,7 +6,7 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.compute.security.model.SecurityRule;
+import com.microsoft.azure.toolkit.lib.network.networksecuritygroup.SecurityRule;
 import org.apache.commons.collections4.CollectionUtils;
 
 import javax.swing.*;

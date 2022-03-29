@@ -5,10 +5,11 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.messager;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationContext;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.Activator;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -32,8 +33,11 @@ public class EclipseAzureMessager implements IAzureMessager {
                 return true;
             default:
         }
-        final AzureTask<?> task = AzureTaskContext.current().getTask();
-        final Boolean backgrounded = Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);
+        IAzureOperation<?> op = AzureOperationContext.current().currentOperation();
+        while (op != null && !(op instanceof AzureTask)) {
+            op = op.getParent();
+        }
+        final Boolean backgrounded = Optional.ofNullable((AzureTask<?>) op).map(AzureTask::getBackgrounded).orElse(null);
         final EclipseAzureMessage message = new EclipseAzureMessage(raw);
         if (Objects.equals(backgrounded, Boolean.FALSE) && message.getType() == IAzureMessage.Type.ERROR) {
             this.showErrorDialog(message);

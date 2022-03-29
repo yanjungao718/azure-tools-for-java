@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.intellij.redis.connection.RedisResourceDefini
 import com.microsoft.azure.toolkit.intellij.redis.creation.CreateRedisCacheAction;
 import com.microsoft.azure.toolkit.intellij.redis.explorer.RedisCacheExplorerProvider;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
@@ -35,7 +35,7 @@ public class IntellijRedisActionsContributor implements IActionsContributor {
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateRedisCacheAction.createRedisCache((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof RedisCache,
+        am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof RedisCache,
             (r, e) -> AzureTaskManager.getInstance().runLater(() -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 dialog.setResource(new AzureServiceResource<>(((RedisCache) r), RedisResourceDefinition.INSTANCE));
@@ -45,7 +45,7 @@ public class IntellijRedisActionsContributor implements IActionsContributor {
         final String name = RedisCacheExplorerProvider.TYPE;
         final AzureResourceFileType type = new AzureResourceFileType(name, icon);
         final AzureResourceEditorViewManager manager = new AzureResourceEditorViewManager((resource) -> type);
-        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(RedisActionsContributor.OPEN_EXPLORER, (r, e) -> r instanceof RedisCache,
+        am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(RedisActionsContributor.OPEN_EXPLORER, (r, e) -> r instanceof RedisCache,
             (r, e) -> manager.showEditor(r, Objects.requireNonNull(e.getProject())));
     }
 

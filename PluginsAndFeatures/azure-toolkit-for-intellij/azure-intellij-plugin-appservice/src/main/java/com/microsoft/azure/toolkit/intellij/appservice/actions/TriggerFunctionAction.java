@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+package com.microsoft.azure.toolkit.intellij.appservice.actions;
+
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.ide.scratch.ScratchFileService;
+import com.intellij.ide.scratch.ScratchRootType;
+import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.PathUtil;
+import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.StringUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
+
+public class TriggerFunctionAction {
+
+    private static final String HTTP_REQUEST_TEMPLATE =
+            "### Please refer https://docs.microsoft.com/en-us/azure/azure-functions/functions-manually-run-non-http for details\n" +
+                    "POST https://%s/admin/functions/%s\n" +
+                    "Content-Type: application/json\n" +
+                    "x-functions-key: %s\n" +
+                    "\n" +
+                    "%s";
+    private static final String EMPTY_CONTENT = "{}";
+    private static final String INPUT_CONTENT = "{ \"input\" : \"test\" }";
+
+    public static void triggerFunction(@Nonnull FunctionEntity functionEntity, @Nonnull Project project) {
+        try {
+            final ResourceId resourceId = ResourceId.fromString(functionEntity.getTriggerId());
+            final String fileName = PathUtil.makeFileName(String.format("%s-%s", resourceId.parent().name(), resourceId.name()), "http");
+            final VirtualFile file = ScratchFileService.getInstance().findFile(ScratchRootType.getInstance(), fileName,
+                    ScratchFileService.Option.create_if_missing);
+            final FileEditor[] fileEditors = FileEditorManager.getInstance(project).openFile(file, true);
+            final TextEditor textEditor = Arrays.stream(fileEditors)
+                    .filter(editor -> editor instanceof TextEditor && StringUtils.equals(editor.getFile().getPath(), file.getPath()))
+                    .map(editor -> (TextEditor) editor)
+                    .findFirst().orElse(null);
+            if (file != null) {
+                final Document document = textEditor.getEditor().getDocument();
+                if (StringUtils.isEmpty(document.getText())) {
+                    WriteAction.run(() -> document.setText(getRequestContent(functionEntity)));
+                }
+            } else {
+                AzureMessager.getMessager().warning("Failed to open http client to send requests");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static CharSequence getRequestContent(FunctionEntity functionEntity) {
+        final FunctionApp functionApp = Azure.az(AzureAppService.class).functionApp(functionEntity.getFunctionAppId());
+        final String triggerType = Optional.ofNullable(functionEntity.getTrigger())
+                .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
+        final String content = StringUtils.equalsIgnoreCase(triggerType, "timerTrigger") ? EMPTY_CONTENT : INPUT_CONTENT;
+        return String.format(HTTP_REQUEST_TEMPLATE, functionApp.getHostName(), functionEntity.getName(), functionApp.getMasterKey(), content);
+    }
+}

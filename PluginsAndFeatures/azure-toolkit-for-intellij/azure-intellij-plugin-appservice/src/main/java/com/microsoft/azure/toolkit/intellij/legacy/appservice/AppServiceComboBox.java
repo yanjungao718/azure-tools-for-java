@@ -11,10 +11,12 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -58,7 +60,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         return items;
     }
 
-    protected T convertAppServiceToConfig(final Supplier<T> supplier, IAppService<?> appService) {
+    protected T convertAppServiceToConfig(final Supplier<T> supplier, AppServiceAppBase<?, ?, ?> appService) {
         final T config = supplier.get();
         config.setResourceId(appService.id());
         config.setName(appService.name());
@@ -66,12 +68,14 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         config.setSubscription(com.microsoft.azure.toolkit.lib.common.model.Subscription.builder().id(appService.getSubscriptionId()).build());
         config.setResourceGroup(ResourceGroup.builder().name(appService.getResourceGroupName()).build());
         AzureTaskManager.getInstance()
-                .runOnPooledThreadAsObservable(new AzureTask<>(appService::entity))
-                .subscribe(entity -> {
-                    config.setRuntime(entity.getRuntime());
-                    config.setRegion(entity.getRegion());
-                    config.setServicePlan(AppServicePlanEntity.builder().id(entity.getAppServicePlanId()).build());
-                });
+            .runOnPooledThreadAsObservable(new AzureTask<>(() -> {
+                final AppServicePlan plan = appService.getAppServicePlan();
+                config.setRuntime(appService.getRuntime());
+                config.setRegion(appService.getRegion());
+                Optional.ofNullable(plan).map(AbstractAzResource::getId)
+                    .map(id -> AppServicePlanEntity.builder().id(id).build())
+                    .ifPresent(config::setServicePlan);
+            })).subscribe();
         return config;
     }
 

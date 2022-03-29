@@ -9,10 +9,10 @@ import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsCon
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,7 +48,7 @@ public class FunctionsNode extends Node<FunctionApp> {
         @Nonnull
         @Getter
         private final FunctionApp functionApp;
-        private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+        private final AzureEventBus.EventListener listener;
 
         @Nullable
         @Setter
@@ -57,8 +57,8 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         public FunctionsNodeView(@Nonnull FunctionApp functionApp) {
             this.functionApp = functionApp;
-            this.listener = new AzureEventBus.EventListener<>(this::onEvent);
-            AzureEventBus.on("appservice|function.functions.refresh", listener);
+            this.listener = new AzureEventBus.EventListener(this::onEvent);
+            AzureEventBus.on("resource.refreshed.resource", listener);
             this.refreshView();
         }
 
@@ -69,7 +69,7 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         @Override
         public String getIconPath() {
-            return "/icons/functionapp.png";
+            return "/icons/Microsoft.Web/functions.png";
         }
 
         @Override
@@ -79,13 +79,13 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         @Override
         public void dispose() {
-            AzureEventBus.off("appservice|function.functions.refresh", listener);
+            AzureEventBus.off("resource.refreshed.resource", listener);
             this.refresher = null;
         }
 
-        public void onEvent(AzureEvent<Object> event) {
+        public void onEvent(AzureEvent event) {
             final Object source = event.getSource();
-            if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.functionApp.id())) {
+            if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.functionApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }

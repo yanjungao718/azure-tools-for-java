@@ -28,8 +28,8 @@ import com.microsoft.azure.toolkit.eclipse.function.launch.model.FunctionDeployC
 import com.microsoft.azure.toolkit.eclipse.function.utils.FunctionUtils;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.util.JsonUtils;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionPackager;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.task.DeployFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -82,7 +82,7 @@ public class AzureFunctionDeployLaunchDelegate extends LaunchConfigurationDelega
                         // create or update function app
                         final com.microsoft.azure.toolkit.lib.appservice.config.FunctionAppConfig taskConfig = FunctionAppConfig
                                 .convertToTaskConfig(functionConfig);
-                        final IFunctionAppBase<?> function = new CreateOrUpdateFunctionAppTask(taskConfig).execute();
+                        final FunctionAppBase<?, ?, ?> function = new CreateOrUpdateFunctionAppTask(taskConfig).execute();
                         // deploy function app
                         new DeployFunctionAppTask(function, tempFolder, null).execute();
                         function.refresh();

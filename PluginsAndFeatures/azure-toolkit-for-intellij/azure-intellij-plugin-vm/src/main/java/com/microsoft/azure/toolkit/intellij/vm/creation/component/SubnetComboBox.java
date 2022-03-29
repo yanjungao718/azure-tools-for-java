@@ -6,9 +6,9 @@
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.lib.compute.AzureResourceDraft;
-import com.microsoft.azure.toolkit.lib.compute.network.Network;
-import com.microsoft.azure.toolkit.lib.compute.network.model.Subnet;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.network.virtualnetwork.Network;
+import com.microsoft.azure.toolkit.lib.network.virtualnetwork.Subnet;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -20,8 +20,8 @@ public class SubnetComboBox extends AzureComboBox<Subnet> {
 
     public void setNetwork(Network network) {
         this.network = network;
-        if (network instanceof AzureResourceDraft) {
-            this.setValue(network.subnets().get(0));
+        if (network instanceof AzResource.Draft) {
+            this.setValue(network.getSubnets().get(0));
         }
         this.refreshItems();
     }
@@ -34,6 +34,6 @@ public class SubnetComboBox extends AzureComboBox<Subnet> {
     @Nonnull
     @Override
     protected List<? extends Subnet> loadItems() throws Exception {
-        return Optional.ofNullable(network).map(Network::subnets).orElse(Collections.emptyList());
+        return Optional.ofNullable(network).map(Network::getSubnets).orElse(Collections.emptyList());
     }
 }
