@@ -131,7 +131,7 @@ public class IdentityAzureManager extends AzureManagerBase {
 
     public static boolean shallEnablePersistence() {
         // TODO: @miller `ISecurityLibrary.library.CFRelease(null)` cause CRASH on mac !!!
-        return !SystemUtils.IS_OS_MAC;
+        return true;
         //        if (SystemUtils.IS_OS_MAC) {
         //            try {
         //                ISecurityLibrary.library.CFRelease(null); // !!! CRASH on mac !!!
