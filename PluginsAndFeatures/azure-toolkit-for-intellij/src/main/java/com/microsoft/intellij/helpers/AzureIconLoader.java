@@ -30,6 +30,7 @@ public class AzureIconLoader {
     }
 
     private static void loadIDEIcons() {
+        loadIcon(AzureIconSymbol.Common.SELECT_SUBSCRIPTIONS, AllIcons.General.Filter);
         loadIcon(AzureIconSymbol.Common.REFRESH, AllIcons.Actions.Refresh);
         loadIcon(AzureIconSymbol.Common.DELETE, AllIcons.Actions.GC);
         loadIcon(AzureIconSymbol.Common.RESTART, AllIcons.Actions.Restart);
