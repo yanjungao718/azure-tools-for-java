@@ -37,7 +37,6 @@ import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -135,14 +134,14 @@ public enum AppServiceStreamingLogManager {
             return true;
         }
 
-        boolean isLogStreamingEnabled() throws IOException;
+        boolean isLogStreamingEnabled();
 
-        void enableLogStreaming() throws IOException;
+        void enableLogStreaming();
 
-        String getTitle() throws IOException;
+        String getTitle();
 
         @Nullable
-        Flux<String> getStreamingLogContent() throws IOException;
+        Flux<String> getStreamingLogContent();
     }
 
     static class FunctionLogStreaming implements ILogStreaming {
@@ -180,7 +179,7 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public Flux<String> getStreamingLogContent() throws IOException {
+        public Flux<String> getStreamingLogContent() {
             final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
             if (operatingSystem == OperatingSystem.LINUX) {
                 // For linux function, we will just open the "Live Metrics Stream" view in the portal
@@ -192,10 +191,10 @@ public enum AppServiceStreamingLogManager {
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
         // commands/logstream/startStreamingLogs.ts#L53
-        private void openLiveMetricsStream() throws IOException {
+        private void openLiveMetricsStream() {
             final String aiKey = Optional.ofNullable(functionApp.getAppSettings()).map(settings -> settings.get(APPINSIGHTS_INSTRUMENTATIONKEY)).orElse(null);
             if (StringUtils.isEmpty(aiKey)) {
-                throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
+                throw new AzureToolkitRuntimeException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }
             final String subscriptionId = functionApp.getSubscriptionId();
             final List<ApplicationInsight> insightsResources = Azure.az(AzureApplicationInsights.class).applicationInsights(subscriptionId).list();
@@ -203,7 +202,7 @@ public enum AppServiceStreamingLogManager {
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
                     .findFirst()
-                    .orElseThrow(() -> new IOException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
+                    .orElseThrow(() -> new AzureToolkitRuntimeException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
             final String aiUrl = getApplicationInsightLiveMetricsUrl(target, Azure.az(AzureAccount.class).account().portalUrl());
             BrowserUtil.browse(aiUrl);
         }
