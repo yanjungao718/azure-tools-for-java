@@ -28,6 +28,7 @@ public final class AzureIconSymbol {
     public interface Common {
 
         AzureIconSymbol AZURE = fillInPath("Common/Azure.svg");
+        AzureIconSymbol SELECT_SUBSCRIPTIONS = fillInPath("Common/SelectSubscriptions.svg");
         AzureIconSymbol AZURE_ACTIVE_LOG = fillInPath("Common/AzureActiveLog.svg");
         AzureIconSymbol AZURE_RESOURCE_CONNECTOR = fillInPath("Common/AzureResourceConnector.svg");
 
