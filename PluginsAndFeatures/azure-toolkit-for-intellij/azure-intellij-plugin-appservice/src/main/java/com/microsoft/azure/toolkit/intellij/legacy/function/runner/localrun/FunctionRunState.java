@@ -23,6 +23,7 @@ import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.runners.ProgramRunner;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
@@ -294,27 +295,25 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                                       final @NotNull Operation operation) throws Exception {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         AzureMessager.getContext().setMessager(messenger);
-        AzureTaskManager.getInstance().read(() -> {
-            final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-            final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
-            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule());
-            final Path folder = stagingFolder.toPath();
-            try {
-                final Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
-                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
-                final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
-                FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
+        final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
+        final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
+        final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule()));
+        final Path folder = stagingFolder.toPath();
+        try {
+            final Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
+            operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
+            final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
+            FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
 
-                final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
-                if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
-                    installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
-                }
-            } catch (final AzureExecutionException | IOException e) {
-                final String error = String.format("failed prepare staging folder[%s]", folder);
-                throw new AzureToolkitRuntimeException(error, e);
+            final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
+            if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
+                installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
             }
-        });
+        } catch (final AzureExecutionException | IOException e) {
+            final String error = String.format("failed prepare staging folder[%s]", folder);
+            throw new AzureToolkitRuntimeException(error, e);
+        }
         if (installProcess != null) {
             readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
                 if (processHandler.isProcessRunning()) {
