@@ -21,6 +21,8 @@ import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -48,12 +50,11 @@ public abstract class AbstractAzureStorageExplorerHandler {
             try {
                 final List<ProcessHandle> beforeLaunchProcesses = ProcessHandle.allProcesses().collect(Collectors.toList());
                 Desktop.getDesktop().browse(URI.create(resourceUrl));
-                Thread.sleep(1 * 1000); // wait for process updates
                 final List<ProcessHandle> afterLaunchProcesses = ProcessHandle.allProcesses().collect(Collectors.toList());
                 final Collection<ProcessHandle> newProcesses = CollectionUtils.removeAll(afterLaunchProcesses, beforeLaunchProcesses);
                 return newProcesses.stream().map(ProcessHandle::info).map(ProcessHandle.Info::command)
                         .anyMatch(command -> StringUtils.containsAnyIgnoreCase(command.orElse(StringUtils.EMPTY), STORAGE_EXPLORER));
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 log.info("failed to launch storage explorer from uri", e);
             }
         }
@@ -65,7 +66,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
             // Get storage explorer path
             final String storageExplorerExecutable = getStorageExplorerExecutable();
             // Launch storage explorer with resource url
-            if (StringUtils.isEmpty(storageExplorerExecutable)) {
+            if (StringUtils.isEmpty(storageExplorerExecutable) || Files.exists(Path.of(storageExplorerExecutable))) {
                 throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.");
             }
             launchStorageExplorer(storageExplorerExecutable, resourceUrl);
