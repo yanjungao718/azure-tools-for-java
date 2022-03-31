@@ -198,7 +198,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         final File javaFile = StringUtils.isEmpty(javaHome) ? null : Paths.get(javaHome, "bin", "java").toFile();
         final String executeFolder = javaFile == null ? null : javaFile.getParentFile().getAbsolutePath();
         final String command = javaFile == null ? "java" : javaFile.getAbsolutePath();
-        final String javaVersion = CommandUtils.exec("java -version", executeFolder, true);
+        final String javaVersion = CommandUtils.exec(String.format("%s -version", command), executeFolder, true);
         if (StringUtils.isEmpty(javaVersion)) {
             return null;
         }
