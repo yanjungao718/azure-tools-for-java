@@ -3,9 +3,9 @@
 
 ## 3.63.0
 ### Added
-- Azure Explorer: add `Provide feedback` on toolbar of Azure explorer.
+- Azure Explorer: add `Provide feedback` on toolbar of Azure explorer.    
   <img src="https://user-images.githubusercontent.com/69189193/160977559-0099d286-304a-42de-88c9-6407b8a0c09e.png" alt="provide feedback" width="400"/>
-- Azure Explorer: add support for pinning favorite resources.
+- Azure Explorer: add support for pinning favorite resources.    
   <img src="https://user-images.githubusercontent.com/69189193/160977373-ba28e5b2-87e8-43be-98bc-2cbe4e485fd4.png" alt="pin favorite resources" width="400"/>
 - Storage account: add `Open in Azure Storage Explorer` action on storage account nodes to open Storage account in local Azure Storage Explorer.
 - Functions: add action on Function app node to trigger http function with IntelliJ native http client(Ultimate Edition only) directly. 
@@ -19,7 +19,6 @@
 
 ### Fixed
 - [#6505](https://github.com/microsoft/azure-tools-for-java/issues/6505): IntelliJ Crash When logging in to Azure on Mac OS X.
-- [Test] The default app name is wrong when switch between web app and function app
 - [Test] Some apps keep loading when expand a Spring cloud service node at first time.
 
 ## 3.62.0
