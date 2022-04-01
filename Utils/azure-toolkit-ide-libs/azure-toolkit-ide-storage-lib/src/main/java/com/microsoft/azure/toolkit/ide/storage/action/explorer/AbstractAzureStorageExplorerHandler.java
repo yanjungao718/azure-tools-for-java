@@ -66,7 +66,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
             // Get storage explorer path
             final String storageExplorerExecutable = getStorageExplorerExecutable();
             // Launch storage explorer with resource url
-            if (StringUtils.isEmpty(storageExplorerExecutable) || Files.exists(Path.of(storageExplorerExecutable))) {
+            if (StringUtils.isEmpty(storageExplorerExecutable) || !Files.exists(Path.of(storageExplorerExecutable))) {
                 throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.");
             }
             launchStorageExplorer(storageExplorerExecutable, resourceUrl);
