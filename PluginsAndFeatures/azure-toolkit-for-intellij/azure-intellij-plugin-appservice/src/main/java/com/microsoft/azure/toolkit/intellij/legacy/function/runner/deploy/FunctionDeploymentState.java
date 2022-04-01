@@ -5,13 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
@@ -23,9 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -140,23 +140,21 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
-        AzureTaskManager.getInstance().read(() -> {
-            final Module module = functionDeployConfiguration.getModule();
-            if (module == null) {
-                throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
-            }
-            final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(module);
-            final Path folder = stagingFolder.toPath();
-            try {
-                final Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, module, methods);
-                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
-            } catch (final AzureExecutionException | IOException e) {
-                final String error = String.format("failed prepare staging folder[%s]", folder);
-                throw new AzureToolkitRuntimeException(error, e);
-            }
-        });
+        final Module module = functionDeployConfiguration.getModule();
+        if (module == null) {
+            throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
+        }
+        final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
+        final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(module));
+        final Path folder = stagingFolder.toPath();
+        try {
+            final Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, module, methods);
+            operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
+        } catch (final AzureExecutionException | IOException e) {
+            final String error = String.format("failed prepare staging folder[%s]", folder);
+            throw new AzureToolkitRuntimeException(error, e);
+        }
     }
 
     @Override

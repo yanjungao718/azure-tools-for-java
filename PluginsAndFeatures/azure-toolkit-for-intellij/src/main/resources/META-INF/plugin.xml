@@ -44,6 +44,7 @@
         <h4>Fixed</h4>
         <ul>
           <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6505">#6505</a>: IntelliJ Crash When logging in to Azure on Mac OS X.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6511">#6511</a>: Failed to open streaming log for Function App.</li>
           <li>[Test] Some apps keep loading when expand a Spring cloud service node at first time.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
