@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.63.0-SNAPSHOT</version>
+  <version>3.63.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,31 +25,27 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.62.0</h3>
+        <h3>3.63.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>Add support for IntelliJ 2022.1 EAP.</li>
-            <li>Azure Explorer: a `Create` action (link to portal) is added on `Spring Cloud` node's context menu to create Spring Cloud service on portal.</li>
+          <li>Azure Explorer: add `Provide feedback` on toolbar of Azure explorer.</li>
+          <li>Azure Explorer: add support for pinning favorite resources.</li>
+          <li>Storage account: add `Open in Azure Storage Explorer` action on storage account nodes to open Storage account in local Azure Storage Explorer.</li>
+          <li>Functions: add action on Function app node to trigger http function with IntelliJ native http client(Ultimate Edition only) directly.</li>
+          <li>App service: add support for `Tomcat 10`/`Java 17`.</li>
         </ul>
         <h4>Changed</h4>
         <ul>
-            <li>You need to confirm before deleting any Azure resource.</li>
-            <li>App Service: files can be opened in editor by double clicking.</li>
-            <li>Azure Explorer: most context menu actions of Azure Explorer nodes can be triggered via shortcuts.</li>
-            <li>Functions: port of Azure Functions Core tools can be customized when run Function project.</li>
-            <li>ARM & Application Insights: migrate to Track2 SDK.</li>
+          <li>Azure Explorer: node of newly created resource would be automatically focused.</li>
+          <li>Storage account: more actions (e.g. copy Primary/Secondary key...) are added on Storage accounts' nodes.</li>
+          <li>Authentication: performance of authentication with `Azure CLI` is improved a lot.</li>
+          <li>Proper input would be focused automatically once a dialog is opened.</li>
         </ul>
         <h4>Fixed</h4>
         <ul>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6370">#6370</a>: Opening IntelliJ IDEA settings takes 60+ seconds with Azure Toolkit
-                plug-in enabled.
-            </li>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6374">#6374</a>: Azure Functions local process not killed properly on Mac/IntelliJ.
-            </li>
-            <li>MySQL/SQL/PostgreSQL server: NPE when open properties editor of a deleting MySQL/SQL/PostgreSQL server.</li>
-            <li>MySQL/SQL/PostgreSQL server: expandable sections in properties view of a stopped MySQL server can be folded but can not be expanded.</li>
-            <li>Redis Cache: Redis data explorer UI blocks when read data in non-first database.</li>
-            <li>Redis Cache: pricing tier keeps <code>Basic C0</code> no matter what use selects in Redis cache creation dialog.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6505">#6505</a>: IntelliJ Crash When logging in to Azure on Mac OS X.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6511">#6511</a>: Failed to open streaming log for Function App.</li>
+          <li>[Test] Some apps keep loading when expand a Spring cloud service node at first time.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

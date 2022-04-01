@@ -143,7 +143,7 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
 
     private void listMavenProjects(final Project project) {
         final List<MavenProject> projects = MavenProjectsManager.getInstance(project).getProjects();
-        Collections.sort(projects, (project1, project2) -> StringUtils.compare(project1.getName(), project2.getName()));
+        Collections.sort(projects, (project1, project2) -> StringUtils.compare(project1.getMavenId().getArtifactId(), project2.getMavenId().getArtifactId()));
         final CollectionComboBoxModel<MavenProject> mavenModel = new CollectionComboBoxModel<>(projects);
         parentComboBox.setModel(mavenModel);
         parentComboBox.setRenderer(new ListCellRendererWithRightAlignedComponent() {

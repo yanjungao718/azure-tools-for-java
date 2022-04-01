@@ -82,7 +82,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         };
         final ActionView.Builder deleteView = new ActionView.Builder("Delete", "/icons/action/delete.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("resource.delete_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
-            .enabled(s -> s instanceof Deletable && !((AzResourceBase) s).getFormalStatus().isDeleted());
+            .enabled(s -> s instanceof Deletable && !((AzResourceBase) s).getFormalStatus().isDeleted() &&
+                s instanceof AbstractAzResource && !((AbstractAzResource<?, ?, ?>) s).isDraftForCreating());
         final Action<AzResource<?, ?, ?>> deleteAction = new Action<>(delete, deleteView);
         deleteAction.setShortcuts(shortcuts.delete());
         am.registerAction(DELETE, deleteAction);

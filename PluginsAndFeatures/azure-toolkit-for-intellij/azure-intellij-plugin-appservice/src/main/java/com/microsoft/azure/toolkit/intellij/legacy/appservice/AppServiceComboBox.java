@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -67,9 +69,12 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         config.setResourceGroup(ResourceGroup.builder().name(appService.getResourceGroupName()).build());
         AzureTaskManager.getInstance()
             .runOnPooledThreadAsObservable(new AzureTask<>(() -> {
+                final AppServicePlan plan = appService.getAppServicePlan();
                 config.setRuntime(appService.getRuntime());
                 config.setRegion(appService.getRegion());
-                config.setServicePlan(AppServicePlanEntity.builder().id(appService.getAppServicePlan().getId()).build());
+                Optional.ofNullable(plan).map(AbstractAzResource::getId)
+                    .map(id -> AppServicePlanEntity.builder().id(id).build())
+                    .ifPresent(config::setServicePlan);
             })).subscribe();
         return config;
     }

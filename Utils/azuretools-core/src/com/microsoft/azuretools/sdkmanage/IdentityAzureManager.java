@@ -130,14 +130,16 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     public static boolean shallEnablePersistence() {
-        if (SystemUtils.IS_OS_MAC) {
-            try {
-                ISecurityLibrary.library.CFRelease(null);
-            } catch (Throwable ex) {
-                return false;
-            }
-        }
+        // TODO: @miller `ISecurityLibrary.library.CFRelease(null)` cause CRASH on mac !!!
         return true;
+        //        if (SystemUtils.IS_OS_MAC) {
+        //            try {
+        //                ISecurityLibrary.library.CFRelease(null); // !!! CRASH on mac !!!
+        //            } catch (Throwable ex) {
+        //                return false;
+        //            }
+        //        }
+        //        return true;
     }
 
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {

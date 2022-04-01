@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppModule;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -158,8 +159,9 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         final String name = webAppSettingModel.getWebAppName();
         final String rg = webAppSettingModel.getResourceGroup();
         final String id = webAppSettingModel.getWebAppId();
-        final WebApp webApp = azureAppService.webApps(webAppSettingModel.getSubscriptionId()).getOrDraft(name, rg);
-        if (webApp.exists()) {
+        final WebAppModule webapps = azureAppService.webApps(webAppSettingModel.getSubscriptionId());
+        final WebApp webApp = StringUtils.isNotBlank(id) ? webapps.get(id) : webapps.get(name, rg);
+        if (Objects.nonNull(webApp)) {
             return webApp;
         }
         if (webAppSettingModel.isCreatingNew()) {

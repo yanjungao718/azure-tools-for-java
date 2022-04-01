@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.AzureConfigurable;
@@ -59,8 +60,9 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
                 final Project[] openProjects = ProjectManagerEx.getInstance().getOpenProjects();
                 return ArrayUtils.isEmpty(openProjects) ? null : openProjects[0];
             });
-            AzureTaskManager.getInstance().runAndWait(() ->
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class));
+            final AzureString title = AzureOperationBundle.title("common.open_azure_settings");
+            AzureTaskManager.getInstance().runAndWait(new AzureTask<>(title, () ->
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class)));
         };
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
     }

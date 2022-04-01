@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountRes
 import com.microsoft.azure.toolkit.intellij.storage.creation.CreateStorageAccountAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
@@ -30,7 +31,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof StorageAccount,
-            (r, e) -> AzureTaskManager.getInstance().runLater(() -> {
+            (r, e) -> AzureTaskManager.getInstance().runLater(AzureOperationBundle.title("storage.open_azure_storage_explorer.account", r.getName()), () -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 dialog.setResource(new AzureServiceResource<>(((StorageAccount) r), StorageAccountResourceDefinition.INSTANCE));
                 dialog.show();

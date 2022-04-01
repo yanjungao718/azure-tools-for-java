@@ -11,15 +11,13 @@ import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 public class ManageSubscriptionsAction extends NodeAction {
-    private static final String ICON_DARK = "ConnectAccountsDark_16.png";
-    private static final String ICON_LIGHT = "ConnectAccountsLight_16.png";
-
     public ManageSubscriptionsAction(AzureModule azureModule) {
         super(azureModule, "Select Subscriptions");
         addListener(new NodeActionListener() {
@@ -31,12 +29,8 @@ public class ManageSubscriptionsAction extends NodeAction {
     }
 
     @Override
-    public String getIconPath() {
-        return getIcon();
-    }
-
-    public static String getIcon() {
-        return DefaultLoader.getUIHelper().isDarkTheme() ? ICON_DARK : ICON_LIGHT;
+    public AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.Common.SELECT_SUBSCRIPTIONS;
     }
 
     public boolean isEnabled() {
