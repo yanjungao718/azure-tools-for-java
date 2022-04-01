@@ -165,7 +165,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                     message("function.run.error.runtimeNotFound.tips"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
         }
         try {
-            final String funcVersion = CommandUtils.exec("func -v", funcFile.getParent());
+            final String funcVersion = CommandUtils.exec(String.format("%s -v", funcFile.getName()), funcFile.getParent());
             return StringUtils.isEmpty(funcVersion) ? null : new ComparableVersion(funcVersion);
         } catch (IOException e) {
             // swallow exception to get func version
