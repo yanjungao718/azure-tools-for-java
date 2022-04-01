@@ -241,7 +241,7 @@ public class FunctionUtils {
     )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Project project, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {
-        final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
+        final Map<String, FunctionConfiguration> configMap = ReadAction.compute(() -> generateConfigurations(methods));
         if (stagingFolder.toFile().isDirectory()) {
             FileUtils.cleanDirectory(stagingFolder.toFile());
         }

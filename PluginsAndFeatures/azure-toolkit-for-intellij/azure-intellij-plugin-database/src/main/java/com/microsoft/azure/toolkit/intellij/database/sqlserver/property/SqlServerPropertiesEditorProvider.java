@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 
 public class SqlServerPropertiesEditorProvider implements FileEditorProvider, DumbAware {
 
-    public static final String TYPE = "Microsoft.SQL.servers";
+    public static final String TYPE = "Microsoft.Sql.servers";
 
     @Override
     public boolean accept(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {

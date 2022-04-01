@@ -191,7 +191,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     }
 
     protected void onAppServiceStatusChanged(AppServiceAppBase<?, ?, ?> app) {
-        if (!app.exists()) {
+        if (app.getFormalStatus().isDeleted()) {
             closeEditor(app);
             return;
         }

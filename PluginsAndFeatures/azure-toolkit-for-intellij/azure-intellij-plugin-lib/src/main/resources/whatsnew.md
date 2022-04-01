@@ -1,5 +1,26 @@
-<!-- Version: 3.58.0 -->
+<!-- Version: 3.63.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.63.0
+### Added
+- Azure Explorer: add `Provide feedback` on toolbar of Azure explorer.    
+  <img src="https://user-images.githubusercontent.com/69189193/160977559-0099d286-304a-42de-88c9-6407b8a0c09e.png" alt="provide feedback" width="400"/>
+- Azure Explorer: add support for pinning favorite resources.    
+  <img src="https://user-images.githubusercontent.com/69189193/160977373-ba28e5b2-87e8-43be-98bc-2cbe4e485fd4.png" alt="pin favorite resources" width="400"/>
+- Storage account: add `Open in Azure Storage Explorer` action on storage account nodes to open Storage account in local Azure Storage Explorer.
+- Functions: add action on Function app node to trigger http function with IntelliJ native http client(Ultimate Edition only) directly. 
+- App service: add support for `Tomcat 10`/`Java 17`.
+
+### Changed
+- Azure Explorer: node of newly created resource would be automatically focused.
+- Storage account: more actions (e.g. copy Primary/Secondary key...) are added on Storage accounts' nodes.
+- Authentication: performance of authentication with `Azure CLI` is improved a lot.
+- Proper input would be focused automatically once a dialog is opened.
+
+### Fixed
+- [#6505](https://github.com/microsoft/azure-tools-for-java/issues/6505): IntelliJ Crash When logging in to Azure on Mac OS X.
+- [#6511](https://github.com/microsoft/azure-tools-for-java/issues/6511): Failed to open streaming log for Function App.
+- [Test] Some apps keep loading when expand a Spring cloud service node at first time.
 
 ## 3.62.0
 ### Added
@@ -19,7 +40,7 @@
 - MySQL/SQL/PostgreSQL server: NPE when open properties editor of a deleting MySQL/SQL/PostgreSQL server.
 - MySQL/SQL/PostgreSQL server: expandable sections in properties view of a stopped MySQL server can be folded but can not be expanded.
 - Redis Cache: Redis data explorer UI blocks when read data in non-first database.
-- Redis Cache: pricing tier keeps `Basic C0` no matter what use selects in Redis cache creation dialog.
+- Redis Cache: pricing tier keeps `Basic C0` no matter what user selects in Redis cache creation dialog.
 
 ## 3.61.1
 
