@@ -20,18 +20,13 @@ public class WindowsOpenAzureStorageExplorerHandler extends AbstractAzureStorage
 
     @Override
     protected String getStorageExplorerExecutableFromOS() {
-        try {
-            final String storageExplorerPath = Advapi32Util.registryGetStringValue(WinReg.HKEY_CLASSES_ROOT, STORAGE_EXPLORER_REGISTRY_PATH, "");
-            if (StringUtils.isEmpty(storageExplorerPath)) {
-                return null;
-            }
-            // Parse from e.g.: "C:\Program Files (x86)\Microsoft Azure Storage Explorer\StorageExplorer.exe" -- "%1"
-            final String[] split = storageExplorerPath.split("\"");
-            return split.length > 1 ? split[1] : null;
-        } catch (RuntimeException e) {
-            log.info("failed to get storage explorer path from windows registry");
+        final String storageExplorerPath = Advapi32Util.registryGetStringValue(WinReg.HKEY_CLASSES_ROOT, STORAGE_EXPLORER_REGISTRY_PATH, "");
+        if (StringUtils.isEmpty(storageExplorerPath)) {
             return null;
         }
+        // Parse from e.g.: "C:\Program Files (x86)\Microsoft Azure Storage Explorer\StorageExplorer.exe" -- "%1"
+        final String[] split = storageExplorerPath.split("\"");
+        return split.length > 1 ? split[1] : null;
     }
 
     @Override

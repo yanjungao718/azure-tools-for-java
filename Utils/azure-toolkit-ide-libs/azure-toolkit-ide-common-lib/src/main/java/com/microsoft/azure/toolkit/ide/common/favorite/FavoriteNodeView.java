@@ -12,11 +12,13 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -41,6 +43,12 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public String getDescription() {
+        final AzResource<?, ?, ?> r = view.getResource();
+        if (r instanceof AbstractAzResource &&
+            ((AbstractAzResource<?, ?, ?>) r).isDraftForCreating() &&
+            !Objects.equals(r.getStatus(), AzResource.Status.CREATING)) {
+            return AzResource.Status.DELETED;
+        }
         return view.getDescription();
     }
 
@@ -87,6 +95,12 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public boolean isEnabled() {
+        final AzResource<?, ?, ?> r = view.getResource();
+        if (r instanceof AbstractAzResource &&
+            ((AbstractAzResource<?, ?, ?>) r).isDraftForCreating() &&
+            !Objects.equals(r.getStatus(), AzResource.Status.CREATING)) {
+            return false;
+        }
         return view.isEnabled();
     }
 

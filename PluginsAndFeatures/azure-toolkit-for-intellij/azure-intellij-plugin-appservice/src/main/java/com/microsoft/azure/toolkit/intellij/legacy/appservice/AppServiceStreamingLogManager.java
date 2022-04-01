@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
@@ -35,12 +36,13 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
 
-import java.io.IOException;
+import javax.annotation.Nullable;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -132,13 +134,14 @@ public enum AppServiceStreamingLogManager {
             return true;
         }
 
-        boolean isLogStreamingEnabled() throws IOException;
+        boolean isLogStreamingEnabled();
 
-        void enableLogStreaming() throws IOException;
+        void enableLogStreaming();
 
-        String getTitle() throws IOException;
+        String getTitle();
 
-        Flux<String> getStreamingLogContent() throws IOException;
+        @Nullable
+        Flux<String> getStreamingLogContent();
     }
 
     static class FunctionLogStreaming implements ILogStreaming {
@@ -155,13 +158,15 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public boolean isLogStreamingEnabled() {
-            return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX ||
-                    functionApp.getDiagnosticConfig().isEnableApplicationLog();
+            final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
+            final boolean isEnableApplicationLog = Optional.ofNullable(functionApp.getDiagnosticConfig())
+                    .map(DiagnosticConfig::isEnableApplicationLog).orElse(false);
+            return operatingSystem == OperatingSystem.LINUX || functionApp.getDiagnosticConfig().isEnableApplicationLog();
         }
 
         @Override
         public void enableLogStreaming() {
-            final DiagnosticConfig diagnosticConfig = functionApp.getDiagnosticConfig();
+            final DiagnosticConfig diagnosticConfig = Optional.ofNullable(functionApp.getDiagnosticConfig()).orElseGet(DiagnosticConfig::new);
             diagnosticConfig.setEnableApplicationLog(true);
             final FunctionAppDraft draft = (FunctionAppDraft) functionApp.update();
             draft.setDiagnosticConfig(diagnosticConfig);
@@ -170,33 +175,34 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public String getTitle() {
-            return functionApp.name();
+            return functionApp.getName();
         }
 
         @Override
-        public Flux<String> getStreamingLogContent() throws IOException {
-            if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX) {
+        public Flux<String> getStreamingLogContent() {
+            final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
+            if (operatingSystem == OperatingSystem.LINUX) {
                 // For linux function, we will just open the "Live Metrics Stream" view in the portal
                 openLiveMetricsStream();
-                return Flux.empty();
+                return null;
             }
             return functionApp.streamAllLogsAsync();
         }
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
         // commands/logstream/startStreamingLogs.ts#L53
-        private void openLiveMetricsStream() throws IOException {
-            final String aiKey = functionApp.getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
+        private void openLiveMetricsStream() {
+            final String aiKey = Optional.ofNullable(functionApp.getAppSettings()).map(settings -> settings.get(APPINSIGHTS_INSTRUMENTATIONKEY)).orElse(null);
             if (StringUtils.isEmpty(aiKey)) {
-                throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
+                throw new AzureToolkitRuntimeException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }
-            final String subscriptionId = functionApp.id();
+            final String subscriptionId = functionApp.getSubscriptionId();
             final List<ApplicationInsight> insightsResources = Azure.az(AzureApplicationInsights.class).applicationInsights(subscriptionId).list();
             final ApplicationInsight target = insightsResources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
                     .findFirst()
-                    .orElseThrow(() -> new IOException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
+                    .orElseThrow(() -> new AzureToolkitRuntimeException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
             final String aiUrl = getApplicationInsightLiveMetricsUrl(target, Azure.az(AzureAccount.class).account().portalUrl());
             BrowserUtil.browse(aiUrl);
         }
@@ -221,12 +227,12 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public boolean isLogStreamingEnabled() {
-            return webApp.getDiagnosticConfig().isEnableWebServerLogging();
+            return Optional.ofNullable(webApp.getDiagnosticConfig()).map(DiagnosticConfig::isEnableWebServerLogging).orElse(false);
         }
 
         @Override
         public void enableLogStreaming() {
-            final DiagnosticConfig diagnosticConfig = webApp.getDiagnosticConfig();
+            final DiagnosticConfig diagnosticConfig = Optional.ofNullable(webApp.getDiagnosticConfig()).orElseGet(DiagnosticConfig::new);
             final WebAppDraft draft = (WebAppDraft) webApp.update();
             draft.setDiagnosticConfig(enableHttpLog(diagnosticConfig));
             draft.commit();
@@ -234,7 +240,7 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public String getTitle() {
-            return webApp.name();
+            return webApp.getName();
         }
 
         @Override
@@ -248,17 +254,18 @@ public enum AppServiceStreamingLogManager {
 
         public WebAppSlotLogStreaming(String resourceId) {
             final ResourceId id = ResourceId.fromString(resourceId);
-            this.deploymentSlot = Azure.az(AzureWebApp.class).webApp(id.parent().id()).slots().get(resourceId);
+            this.deploymentSlot = Optional.ofNullable(Azure.az(AzureWebApp.class).webApp(id.parent().id())).map(webapp -> webapp.slots().get(resourceId))
+                    .orElseThrow(() -> new AzureToolkitRuntimeException("Target deployment slot does not exist"));
         }
 
         @Override
         public boolean isLogStreamingEnabled() {
-            return deploymentSlot.getDiagnosticConfig().isEnableWebServerLogging();
+            return Optional.ofNullable(deploymentSlot.getDiagnosticConfig()).map(DiagnosticConfig::isEnableWebServerLogging).orElse(false);
         }
 
         @Override
         public void enableLogStreaming() {
-            final DiagnosticConfig diagnosticConfig = deploymentSlot.getDiagnosticConfig();
+            final DiagnosticConfig diagnosticConfig = Optional.ofNullable(deploymentSlot.getDiagnosticConfig()).orElseGet(DiagnosticConfig::new);
             final WebAppDeploymentSlotDraft draft = (WebAppDeploymentSlotDraft) deploymentSlot.update();
             draft.setDiagnosticConfig(enableHttpLog(diagnosticConfig));
             draft.commit();
@@ -266,7 +273,7 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public String getTitle() {
-            return deploymentSlot.name();
+            return deploymentSlot.getName();
         }
 
         @Override

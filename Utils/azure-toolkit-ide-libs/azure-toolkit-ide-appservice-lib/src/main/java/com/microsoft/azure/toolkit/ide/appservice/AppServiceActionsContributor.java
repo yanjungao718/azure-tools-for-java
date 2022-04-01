@@ -34,7 +34,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceAppBase<?, ?, ?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
             .handle("https://" + appService.getHostName());
-        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", "/icons/action/refresh.svg")
+        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", "/icons/action/portal.svg")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.open_browser")).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase);
         am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));

@@ -240,7 +240,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
             @Override
             public Object restart() {
-                return Action.Id.of(IdeActions.ACTION_RERUN);
+                return "ctrl alt F5";
             }
 
             @Override

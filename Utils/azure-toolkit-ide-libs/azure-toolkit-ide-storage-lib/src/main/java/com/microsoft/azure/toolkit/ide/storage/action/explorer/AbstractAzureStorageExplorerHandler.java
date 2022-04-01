@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,8 @@ import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -59,13 +62,17 @@ public abstract class AbstractAzureStorageExplorerHandler {
     }
 
     protected void launchStorageExplorerThroughCommand(final StorageAccount storageAccount, final String resourceUrl) {
-        // Get storage explorer path
-        final String storageExplorerExecutable = getStorageExplorerExecutable();
-        // Launch storage explorer with resource url
-        if (StringUtils.isEmpty(storageExplorerExecutable)) {
-            throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.", (Object[]) getStorageNotFoundActions(storageAccount));
+        try {
+            // Get storage explorer path
+            final String storageExplorerExecutable = getStorageExplorerExecutable();
+            // Launch storage explorer with resource url
+            if (StringUtils.isEmpty(storageExplorerExecutable) || !Files.exists(Path.of(storageExplorerExecutable))) {
+                throw new AzureToolkitRuntimeException("Cannot find Azure Storage Explorer.");
+            }
+            launchStorageExplorer(storageExplorerExecutable, resourceUrl);
+        } catch (final RuntimeException e) {
+            throw new AzureToolkitRuntimeException("Failed to launch Azure Storage Explorer.", e, (Object[]) getStorageNotFoundActions(storageAccount));
         }
-        launchStorageExplorer(storageExplorerExecutable, resourceUrl);
     }
 
     protected String getStorageExplorerExecutable() {
@@ -77,24 +84,30 @@ public abstract class AbstractAzureStorageExplorerHandler {
         // Open in Azure Action
         final Consumer<Void> openInAzureConsumer = ignore -> AzureActionManager.getInstance()
                 .getAction(ResourceCommonActionsContributor.OPEN_URL).handle(storageAccount.getPortalUrl() + "/storagebrowser");
-        final Action<Void> openInAzureAction = new Action<>(openInAzureConsumer, new ActionView.Builder("Open in Azure"));
+        final ActionView.Builder openInAzureView = new ActionView.Builder("Open in Azure")
+                .title(ignore -> AzureString.fromString("Open Storage account in Azure")).enabled(ignore -> true);
+        final Action<Void> openInAzureAction = new Action<>(openInAzureConsumer, openInAzureView);
         openInAzureAction.setAuthRequired(false);
         // Download Storage Explorer
         final Consumer<Void> downloadConsumer = ignore ->
                 AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(STORAGE_EXPLORER_DOWNLOAD_URL);
-        final Action<Void> downloadAction = new Action<>(downloadConsumer, new ActionView.Builder("Download"));
+        final ActionView.Builder downloadView = new ActionView.Builder("Download")
+                .title(ignore -> AzureString.fromString("Download Azure Storage Explorer")).enabled(ignore -> true);
+        final Action<Void> downloadAction = new Action<>(downloadConsumer, downloadView);
         downloadAction.setAuthRequired(false);
         // Open Azure Settings Panel, and re-run
         final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-        final Consumer<Void> browserConsumer = ignore -> {
+        final Consumer<Void> configureConsumer = ignore -> {
             openSettingsAction.getHandler(null, null).accept(null, null); // Open Azure Settings Panel sync
             if (StringUtils.isNotBlank(Azure.az().config().getStorageExplorerPath())) {
                 openResource(storageAccount);
             }
         };
-        final Action<Void> browserAction = new Action<>(browserConsumer, new ActionView.Builder("Configure"));
-        browserAction.setAuthRequired(false);
-        return new Action[]{openInAzureAction, downloadAction, browserAction};
+        final ActionView.Builder configureView = new ActionView.Builder("Configure")
+                .title(ignore -> AzureString.fromString("Configure path for Azure Storage Explorer")).enabled(ignore -> true);
+        final Action<Void> configureAction = new Action<>(configureConsumer, configureView);
+        configureAction.setAuthRequired(false);
+        return new Action[]{openInAzureAction, downloadAction, configureAction};
     }
 
     protected abstract String getStorageExplorerExecutableFromOS();
