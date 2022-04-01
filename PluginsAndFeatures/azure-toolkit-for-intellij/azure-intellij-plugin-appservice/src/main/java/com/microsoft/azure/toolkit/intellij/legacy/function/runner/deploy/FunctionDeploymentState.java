@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
@@ -144,7 +145,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
         }
         final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-        final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(module);
+        final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(module));
         final Path folder = stagingFolder.toPath();
         try {
             final Map<String, FunctionConfiguration> configMap =
