@@ -196,13 +196,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.63.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.64.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.63.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.64.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.63.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.64.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
