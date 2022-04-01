@@ -6,9 +6,15 @@
 package com.microsoft.azure.toolkit.ide.storage.action.explorer;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.Nonnull;
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 
+@Slf4j
 public class MacOSOpenAzureStorageExplorerHandler extends AbstractAzureStorageExplorerHandler {
 
     private static final String MAC_OS_STORAGE_EXPLORER_PATH = "/Contents/MacOS/Microsoft\\ Azure\\ Storage\\ Explorer";
@@ -16,6 +22,19 @@ public class MacOSOpenAzureStorageExplorerHandler extends AbstractAzureStorageEx
     @Override
     protected String getStorageExplorerExecutableFromOS() {
         return MAC_OS_STORAGE_EXPLORER_PATH;
+    }
+
+    @Override
+    protected boolean launchStorageExplorerWithUri(@Nonnull final StorageAccount storageAccount, @Nonnull final String resourceUrl) {
+        if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(URI.create(resourceUrl));
+                return true;
+            } catch (IOException e) {
+                log.info("failed to launch storage explorer from uri", e);
+            }
+        }
+        return false;
     }
 
     @Override
