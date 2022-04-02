@@ -14,9 +14,9 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachineDraft;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.task.CreateVirtualMachineTask;
@@ -54,7 +54,7 @@ public class CreateVirtualMachineAction {
     private static void doCreateVirtualMachine(final Project project, final VirtualMachineDraft draft) {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         tm.runInBackground(AzureOperationBundle.title("vm.create_vm.vm", draft.getName()), () -> {
-            AzureTelemetry.getActionContext().setProperty("subscriptionId", draft.getSubscriptionId());
+            OperationContext.action().setTelemetryProperty("subscriptionId", draft.getSubscriptionId());
             try {
                 new CreateVirtualMachineTask(draft).execute();
             } catch (final Exception e) {

@@ -25,7 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -85,7 +85,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
     @AzureOperation(name = "function.deploy_app", type = AzureOperation.Type.ACTION)
     public FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws IOException {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
-        AzureMessager.getContext().setMessager(messenger);
+        OperationContext.current().setMessager(messenger);
         final FunctionApp functionApp;
         if (StringUtils.isEmpty(functionDeployConfiguration.getFunctionId())) {
             functionApp = createFunctionApp(processHandler);
@@ -99,7 +99,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
         FunctionAppService.getInstance().deployFunctionApp(functionApp, stagingFolder);
         // list triggers after deployment
         listHTTPTriggerUrls(functionApp);
-        operation.trackProperties(AzureTelemetry.getActionContext().getProperties());
+        operation.trackProperties(OperationContext.action().getTelemetryProperties());
         return functionApp;
     }
 

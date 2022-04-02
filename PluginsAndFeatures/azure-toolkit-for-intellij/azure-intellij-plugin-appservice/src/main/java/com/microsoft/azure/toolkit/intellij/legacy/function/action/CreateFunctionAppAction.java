@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.action;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -17,10 +18,9 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -88,12 +88,12 @@ public class CreateFunctionAppAction {
             final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_APP);
             operation.trackProperties(config.getTelemetryProperties());
             try {
-                AzureMessager.getContext().setMessager(actionMessenger);
+                OperationContext.current().setMessager(actionMessenger);
                 final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                 indicator.setIndeterminate(true);
                 return functionAppService.createFunctionApp(config);
             } finally {
-                operation.trackProperties(AzureTelemetry.getActionContext().getProperties());
+                operation.trackProperties(OperationContext.action().getTelemetryProperties());
                 operation.complete();
             }
         });

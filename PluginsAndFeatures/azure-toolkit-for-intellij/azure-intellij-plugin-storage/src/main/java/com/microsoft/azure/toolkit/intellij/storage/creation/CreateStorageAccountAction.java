@@ -13,8 +13,8 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
@@ -42,7 +42,7 @@ public class CreateStorageAccountAction {
 
     public static StorageAccount createStorageAccount(StorageAccountConfig config) {
         final String subscriptionId = config.getSubscription().getId();
-        AzureTelemetry.getActionContext().setProperty("subscriptionId", subscriptionId);
+        OperationContext.action().setTelemetryProperty("subscriptionId", subscriptionId);
         if (config.getResourceGroup() instanceof Draft) { // create resource group if necessary.
             final ResourceGroup newResourceGroup = Azure.az(AzureResources.class)
                 .groups(subscriptionId).createResourceGroupIfNotExist(config.getResourceGroup().getName(), config.getRegion());
