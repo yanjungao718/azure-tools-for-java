@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.CommonShortcuts;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ShortcutSet;
@@ -24,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -100,23 +100,20 @@ public class IntellijAzureActionManager extends AzureActionManager {
             applyView(view, this.getTemplatePresentation());
         }
 
-        public void registerShortcuts(JComponent component, @Nullable Disposable disposable) {
+        @Nullable
+        public ShortcutSet getShortcuts() {
             final Object shortcuts = action.getShortcuts();
-            final ShortcutSet shortcutSet;
-            if (shortcuts == null) {
-                return;
-            } else if (shortcuts instanceof Action.Id) {
-                shortcutSet = ActionManager.getInstance().getAction(((Action.Id<?>) shortcuts).getId()).getShortcutSet();
+            if (shortcuts instanceof Action.Id) {
+                return ActionManager.getInstance().getAction(((Action.Id<?>) shortcuts).getId()).getShortcutSet();
             } else if (shortcuts instanceof String) {
-                shortcutSet = CustomShortcutSet.fromString((String) shortcuts);
+                return CustomShortcutSet.fromString((String) shortcuts);
             } else if (shortcuts instanceof String[]) {
-                shortcutSet = CustomShortcutSet.fromString((String[]) shortcuts);
+                return CustomShortcutSet.fromString((String[]) shortcuts);
             } else if (shortcuts instanceof ShortcutSet) {
-                shortcutSet = (ShortcutSet) shortcuts;
+                return (ShortcutSet) shortcuts;
             } else {
-                throw new AzureToolkitRuntimeException("invalid shortcuts:" + shortcuts);
+                return null;
             }
-            this.registerCustomShortcutSet(shortcutSet, component, disposable);
         }
 
         @Override
@@ -186,7 +183,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
                     } else if (StringUtils.isNotBlank(actionId)) {
                         final AnAction action = am.getAction(actionId);
                         if (Objects.nonNull(action)) {
-                            this.add(action);
+                            this.add(EmptyAction.wrap(action));
                         }
                     }
                 } else if (raw instanceof Action<?>) {
@@ -197,10 +194,15 @@ public class IntellijAzureActionManager extends AzureActionManager {
             }
         }
 
-        public void registerCustomShortcutSetForActions(JComponent tree, @Nullable Disposable disposable) {
-            for (final AnAction action : this.getChildActionsOrStubs()) {
-                if (action instanceof AnActionWrapper) {
-                    ((AnActionWrapper<?>) action).registerShortcuts(tree, disposable);
+        public void registerCustomShortcutSetForActions(JComponent component, @Nullable Disposable disposable) {
+            for (final AnAction origin : this.getChildActionsOrStubs()) {
+                final AnAction real = origin instanceof EmptyAction.MyDelegatingAction ?
+                    ((EmptyAction.MyDelegatingAction) origin).getDelegate() : origin;
+                if (real instanceof AnActionWrapper) {
+                    final ShortcutSet shortcuts = ((AnActionWrapper<?>) real).getShortcuts();
+                    if (Objects.nonNull(shortcuts)) {
+                        origin.registerCustomShortcutSet(shortcuts, component, disposable);
+                    }
                 }
             }
         }
