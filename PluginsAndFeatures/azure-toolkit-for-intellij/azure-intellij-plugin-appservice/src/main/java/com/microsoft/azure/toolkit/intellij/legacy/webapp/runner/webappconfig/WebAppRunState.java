@@ -159,7 +159,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         final String name = webAppSettingModel.getWebAppName();
         final String rg = webAppSettingModel.getResourceGroup();
         final String id = webAppSettingModel.getWebAppId();
-        final WebAppModule webapps = azureAppService.webApps(webAppSettingModel.getSubscriptionId());
+        final WebAppModule webapps = Azure.az(AzureWebApp.class).webApps(webAppSettingModel.getSubscriptionId());
         final WebApp webApp = StringUtils.isNotBlank(id) ? webapps.get(id) : webapps.get(name, rg);
         if (Objects.nonNull(webApp)) {
             return webApp;
