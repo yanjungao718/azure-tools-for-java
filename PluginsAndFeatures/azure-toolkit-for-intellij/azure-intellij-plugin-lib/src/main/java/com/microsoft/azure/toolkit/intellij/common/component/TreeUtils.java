@@ -46,7 +46,7 @@ public class TreeUtils {
             final Object node = tree.getLastSelectedPathComponent();
             Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
             if (selectionDisposable != null) {
-                selectionDisposable.dispose();
+                Disposer.dispose(selectionDisposable);
             }
             if (node instanceof Tree.TreeNode) {
                 final String place = "azure.component.tree";
