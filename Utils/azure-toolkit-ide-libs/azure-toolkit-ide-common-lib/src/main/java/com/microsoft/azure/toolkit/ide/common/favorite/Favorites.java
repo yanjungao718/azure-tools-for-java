@@ -122,6 +122,12 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Nonnull
     @Override
+    protected Favorite newResource(@Nonnull String name, @Nullable String resourceGroupName) {
+        throw new AzureToolkitRuntimeException("not supported");
+    }
+
+    @Nonnull
+    @Override
     protected AzResource.Draft<Favorite, AbstractAzResource<?, ?, ?>> newDraftForCreate(@Nonnull String name, @Nullable String resourceGroup) {
         return new FavoriteDraft(name, this);
     }
