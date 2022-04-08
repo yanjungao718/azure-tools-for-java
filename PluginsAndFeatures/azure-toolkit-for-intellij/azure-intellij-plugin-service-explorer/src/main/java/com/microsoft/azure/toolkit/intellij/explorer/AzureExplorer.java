@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.component.GenericResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
@@ -19,14 +20,16 @@ import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
@@ -103,13 +106,19 @@ public class AzureExplorer extends Tree {
                 .collect(Collectors.toList());
         }
 
-        @Nullable
+        @Nonnull
         @Override
         public Node<?> createNode(@Nonnull Object o, Node<?> parent) {
             return providers.getExtensionList().stream()
-                .filter(p -> p.accept(o, parent))
-                .findAny().map(p -> p.createNode(o, parent, this))
-                .orElse(null);
+                .filter(p -> p.accept(o, parent)).findAny()
+                .map(p -> p.createNode(o, parent, this))
+                .or(() -> Optional.of(o).filter(r -> r instanceof AbstractAzResource).map(AzureExplorerNodeProviderManager::createGenericNode))
+                .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("failed to render %s", o.toString())));
+        }
+
+        private static <U> U createGenericNode(Object o) {
+            final var view = new GenericResourceLabelView<>(((AbstractAzResource<?, ?, ?>) o));
+            return (U) new Node<>(o).view(view);
         }
     }
 }

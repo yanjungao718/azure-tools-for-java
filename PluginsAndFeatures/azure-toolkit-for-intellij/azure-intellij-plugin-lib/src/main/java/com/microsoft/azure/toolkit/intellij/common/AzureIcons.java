@@ -47,6 +47,7 @@ public class AzureIcons {
             put("/icons/module", AllIcons.Nodes.Module);
             put("/icons/spinner", AnimatedIcon.Default.INSTANCE);
             put("/icons/error", AllIcons.General.Error);
+            put("/icons/unknown", AllIcons.Nodes.Unknown);
         }
     };
     private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>() {

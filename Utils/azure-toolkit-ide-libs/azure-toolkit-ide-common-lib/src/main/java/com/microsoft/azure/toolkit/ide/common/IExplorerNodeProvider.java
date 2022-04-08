@@ -30,7 +30,7 @@ public interface IExplorerNodeProvider {
     Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager);
 
     interface Manager {
-        @Nullable
+        @Nonnull
         Node<?> createNode(@Nonnull Object data, Node<?> parent);
     }
 }
