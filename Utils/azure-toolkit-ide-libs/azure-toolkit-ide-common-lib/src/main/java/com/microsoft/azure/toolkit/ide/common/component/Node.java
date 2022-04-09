@@ -77,6 +77,10 @@ public class Node<D> {
         return this.addChildren((d) -> children, (cd, n) -> cd);
     }
 
+    public Node<D> addChildren(@Nonnull Function<? super D, ? extends List<Node<?>>> getChildrenNodes) {
+        return this.addChildren(getChildrenNodes, (cd, n) -> cd);
+    }
+
     public Node<D> addChild(@Nonnull Node<?> childNode) {
         return this.addChildren(Collections.singletonList(childNode));
     }
