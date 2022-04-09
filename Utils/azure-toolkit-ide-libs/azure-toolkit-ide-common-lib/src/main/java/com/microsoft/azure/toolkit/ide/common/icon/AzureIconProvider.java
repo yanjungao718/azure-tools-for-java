@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.ide.common.icon;
 
+@FunctionalInterface
 public interface AzureIconProvider<T> {
     AzureIcon getIcon(T resource);
 }
