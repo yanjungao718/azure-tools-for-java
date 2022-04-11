@@ -10,8 +10,8 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureSubscriptionLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.GenericResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
@@ -48,16 +48,19 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
         if (data instanceof AzureResources) {
             return new Node<>((AzureResources) data)
                 .view(new AzureServiceLabelView<>((AzureResources) data, NAME, ICON))
+                .actions(AppCentricViewActionsContributor.SERVICE_ACTIONS)
                 .addChildren(AbstractAzResourceModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourcesServiceSubscription) {
             final ResourcesServiceSubscription sub = (ResourcesServiceSubscription) data;
             return new Node<>(sub)
                 .view(new AzureSubscriptionLabelView<>(sub))
+                .actions(AppCentricViewActionsContributor.SUBSCRIPTION_ACTIONS)
                 .addChildren(s -> s.resourceGroups().list(), (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourceGroup) {
             final ResourceGroup rg = (ResourceGroup) data;
             return new Node<>(rg)
                 .view(new AzureResourceLabelView<>(rg))
+                .actions(AppCentricViewActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChildren(group -> group.genericResources().list().stream().map(GenericResource::toConcreteResource)
                     .map(r -> manager.createNode(r, parent))

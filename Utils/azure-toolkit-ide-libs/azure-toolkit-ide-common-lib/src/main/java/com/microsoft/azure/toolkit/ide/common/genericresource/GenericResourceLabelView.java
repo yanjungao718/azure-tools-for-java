@@ -3,9 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.common.component;
+package com.microsoft.azure.toolkit.ide.common.genericresource;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import lombok.Getter;
