@@ -12,7 +12,6 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureSubscriptionLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
@@ -32,7 +31,7 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
     @Nullable
     @Override
     public Object getRoot() {
-        return Azure.az(AzureResources.class);
+        return null;
     }
 
     @Override

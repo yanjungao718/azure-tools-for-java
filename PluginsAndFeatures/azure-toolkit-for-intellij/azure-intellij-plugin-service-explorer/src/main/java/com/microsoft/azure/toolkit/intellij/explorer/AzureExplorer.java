@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -46,6 +47,11 @@ public class AzureExplorer extends Tree {
     private static Node<Azure> buildAzureRoot() {
         final List<Node<?>> modules = getModules();
         return new Node<>(Azure.az(), new NodeView.Static(getTitle(), AZURE_ICON)).lazy(false).addChildren(modules);
+    }
+
+    public static Node<?> buildAppCentricViewRoot() {
+        final AzureResources resources = Azure.az(AzureResources.class);
+        return manager.createNode(resources, null);
     }
 
     public static Node<?> buildFavoriteRoot() {
