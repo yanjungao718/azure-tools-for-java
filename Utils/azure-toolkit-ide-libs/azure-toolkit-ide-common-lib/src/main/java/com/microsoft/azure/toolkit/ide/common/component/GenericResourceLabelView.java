@@ -38,7 +38,7 @@ public class GenericResourceLabelView<T extends AbstractAzResource<?, ?, ?>> imp
         this.resource = resource;
         final ResourceId resourceId = ResourceId.fromString(resource.getId());
         this.label = resourceId.name();
-        this.description = resource.getFullResourceType();
+        this.description = resource.getResourceTypeName();
         this.icon = AzureIcon.UNKNOWN_ICON;
     }
 

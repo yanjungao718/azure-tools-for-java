@@ -76,7 +76,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(RESTART, restartAction);
 
         final Consumer<AzResource<?, ?, ?>> delete = s -> {
-            if (AzureMessager.getMessager().confirm(String.format("Are you sure to delete \"%s\"", s.getName()))) {
+            if (AzureMessager.getMessager().confirm(String.format("Are you sure to delete %s \"%s\"", s.getResourceTypeName(), s.getName()))) {
                 ((Deletable) s).delete();
             }
         };

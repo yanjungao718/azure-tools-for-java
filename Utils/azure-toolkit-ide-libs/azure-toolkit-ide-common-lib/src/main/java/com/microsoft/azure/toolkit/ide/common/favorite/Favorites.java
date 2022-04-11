@@ -95,7 +95,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 this.favorites = new LinkedList<>();
             }
         }
-        return this.favorites.stream().map(id -> Azure.az().getById(id)).filter(Objects::nonNull)
+        return this.favorites.stream().map(id -> this.loadResourceFromAzure(id, null)).filter(Objects::nonNull)
             .map(c -> ((AbstractAzResource<?, ?, ?>) c));
     }
 
@@ -196,11 +196,9 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         return new Node<>(Favorites.getInstance(), rootView).lazy(false)
             .actions(new ActionGroup(unpinAllAction, "---", refreshAction))
             .addChildren(Favorites::list, (o, parent) -> {
-                final Node<?> node = manager.createNode(o.getResource(), parent);
-                if (Objects.nonNull(node) && node.view() instanceof AzureResourceLabelView) {
+                final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
+                if (node.view() instanceof AzureResourceLabelView) {
                     node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
-                } else if (Objects.isNull(node)) {
-                    throw new AzureToolkitRuntimeException("failed to render Favorite node from " + o.getResource());
                 }
                 return node;
             });
