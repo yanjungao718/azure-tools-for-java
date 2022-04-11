@@ -32,10 +32,11 @@ public class ArmNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
-        return data instanceof AzureResources ||
-            data instanceof ResourceGroup ||
-            data instanceof ResourceDeployment;
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull ViewType type) {
+        return type == ViewType.TYPE_CENTRIC &&
+            (data instanceof AzureResources ||
+                data instanceof ResourceGroup ||
+                data instanceof ResourceDeployment);
     }
 
     @Nullable

@@ -28,17 +28,12 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Resource Management";
     private static final String ICON = "/icons/Microsoft.Resources/default.svg";
 
-    @Nullable
     @Override
-    public Object getRoot() {
-        return null;
-    }
-
-    @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
-        return data instanceof AzureResources ||
-            data instanceof ResourcesServiceSubscription ||
-            data instanceof ResourceGroup;
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
+        return type == ViewType.APP_CENTRIC &&
+            (data instanceof AzureResources ||
+                data instanceof ResourcesServiceSubscription ||
+                data instanceof ResourceGroup);
     }
 
     @Nullable
@@ -62,7 +57,7 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
                 .actions(AppCentricViewActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChildren(group -> group.genericResources().list().stream().map(GenericResource::toConcreteResource)
-                    .map(r -> manager.createNode(r, parent))
+                    .map(r -> manager.createNode(r, parent, ViewType.APP_CENTRIC))
                     .sorted(Comparator.comparing(r -> ((Node<?>) r).view() instanceof GenericResourceLabelView)
                         .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).data()).getFullResourceType())
                         .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).data()).getName()))

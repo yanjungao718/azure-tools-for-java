@@ -51,7 +51,7 @@ public class AzureExplorer extends Tree {
 
     public static Node<?> buildAppCentricViewRoot() {
         final AzureResources resources = Azure.az(AzureResources.class);
-        return manager.createNode(resources, null);
+        return manager.createNode(resources, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
     }
 
     public static Node<?> buildFavoriteRoot() {
@@ -73,7 +73,10 @@ public class AzureExplorer extends Tree {
 
     @Nonnull
     public static List<Node<?>> getModules() {
-        return manager.getRootNodes();
+        return manager.getRoots().stream()
+            .map(r -> manager.createNode(r, null, IExplorerNodeProvider.ViewType.TYPE_CENTRIC))
+            .sorted(Comparator.comparing(Node::order))
+            .collect(Collectors.toList());
     }
 
     public static void refreshAll() {
@@ -97,15 +100,6 @@ public class AzureExplorer extends Tree {
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.explorerNodeProvider");
 
         @Nonnull
-        public List<Node<?>> getRootNodes() {
-            return providers.getExtensionList().stream()
-                .map(p -> p.getModuleNode(null, this))
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(Node::order))
-                .collect(Collectors.toList());
-        }
-
-        @Nonnull
         public List<Object> getRoots() {
             return providers.getExtensionList().stream()
                 .map(IExplorerNodeProvider::getRoot)
@@ -115,9 +109,9 @@ public class AzureExplorer extends Tree {
 
         @Nonnull
         @Override
-        public Node<?> createNode(@Nonnull Object o, Node<?> parent) {
+        public Node<?> createNode(@Nonnull Object o, Node<?> parent, IExplorerNodeProvider.ViewType type) {
             return providers.getExtensionList().stream()
-                .filter(p -> p.accept(o, parent)).findAny()
+                .filter(p -> p.accept(o, parent, type)).findAny()
                 .map(p -> p.createNode(o, parent, this))
                 .or(() -> Optional.of(o).filter(r -> r instanceof AbstractAzResource).map(AzureExplorerNodeProviderManager::createGenericNode))
                 .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("failed to render %s", o.toString())));
