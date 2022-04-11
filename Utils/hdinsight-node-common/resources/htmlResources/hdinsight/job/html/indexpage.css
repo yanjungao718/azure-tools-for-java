@@ -332,3 +332,7 @@ input[type=text]:focus {
   background: var(--selection-bg-color);
   color: var(--selection-text-color);
 }
+
+th, td {
+    word-break: break-all;
+}
