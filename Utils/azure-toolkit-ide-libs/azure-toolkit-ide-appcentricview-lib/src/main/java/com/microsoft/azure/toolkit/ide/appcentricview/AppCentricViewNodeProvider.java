@@ -30,10 +30,8 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
-        return type == ViewType.APP_CENTRIC &&
-            (data instanceof AzureResources ||
-                data instanceof ResourcesServiceSubscription ||
-                data instanceof ResourceGroup);
+        return (type == ViewType.APP_CENTRIC && (data instanceof AzureResources || data instanceof ResourceGroup)) ||
+            data instanceof ResourcesServiceSubscription;
     }
 
     @Nullable
@@ -49,6 +47,7 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
             return new Node<>(sub)
                 .view(new AzureSubscriptionLabelView<>(sub))
                 .actions(AppCentricViewActionsContributor.SUBSCRIPTION_ACTIONS)
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChildren(s -> s.resourceGroups().list(), (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourceGroup) {
             final ResourceGroup rg = (ResourceGroup) data;

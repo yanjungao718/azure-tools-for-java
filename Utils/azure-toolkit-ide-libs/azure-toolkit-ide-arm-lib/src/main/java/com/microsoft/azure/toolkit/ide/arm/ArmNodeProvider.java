@@ -22,7 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ArmNodeProvider implements IExplorerNodeProvider {
-    private static final String NAME = "Resource Management";
+    private static final String NAME = "Deployments";
     private static final String ICON = "/icons/Microsoft.Resources/default.svg";
 
     @Nullable
@@ -33,10 +33,8 @@ public class ArmNodeProvider implements IExplorerNodeProvider {
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull ViewType type) {
-        return type == ViewType.TYPE_CENTRIC &&
-            (data instanceof AzureResources ||
-                data instanceof ResourceGroup ||
-                data instanceof ResourceDeployment);
+        return (type == ViewType.TYPE_CENTRIC && (data instanceof AzureResources || data instanceof ResourceGroup)) ||
+            data instanceof ResourceDeployment;
     }
 
     @Nullable
