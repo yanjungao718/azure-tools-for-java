@@ -60,7 +60,7 @@ public class AppCentricViewActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
             ResourceCommonActionsContributor.DELETE,
-            ResourceCommonActionsContributor.CREATE // TODO: create any resource in this resource group.
+            ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS // TODO: create any resource in this resource group.
         );
         am.registerGroup(RESOURCE_GROUP_ACTIONS, resourceGroupActionGroup);
     }

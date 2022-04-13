@@ -11,7 +11,9 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
@@ -28,6 +30,7 @@ public class ArmActionsContributor implements IActionsContributor {
     public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("action.resourceDeployment.update");
     public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("action.resourceDeployment.export_template");
     public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("action.resourceDeployment.export_parameter");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("action.arm.create_deployment.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -52,6 +55,11 @@ public class ArmActionsContributor implements IActionsContributor {
         am.registerAction(UPDATE, new Action<>(updateDeployment));
         am.registerAction(EXPORT_TEMPLATE, exportTemplateAction);
         am.registerAction(EXPORT_PARAMETER, exportParameterAction);
+
+        final ActionView.Builder createDeploymentView = new ActionView.Builder("Deployment")
+            .title(s -> Optional.ofNullable(s).map(r -> title("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(createDeploymentView));
     }
 
     @Override
@@ -89,6 +97,9 @@ public class ArmActionsContributor implements IActionsContributor {
             ArmActionsContributor.EXPORT_PARAMETER
         );
         am.registerGroup(RESOURCE_DEPLOYMENT_ACTIONS, deploymentActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_DEPLOYMENT);
     }
 
     @Override

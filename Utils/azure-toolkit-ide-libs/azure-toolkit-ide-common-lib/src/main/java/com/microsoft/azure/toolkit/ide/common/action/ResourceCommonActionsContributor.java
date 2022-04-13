@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -22,8 +23,10 @@ import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Startable;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.view.IView;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -47,6 +50,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("action.resource.pin");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
+
+    public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -172,6 +177,13 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         }, pinView);
         pinAction.setShortcuts("F11");
         am.registerAction(PIN, pinAction);
+    }
+
+    @Override
+    public void registerGroups(AzureActionManager am) {
+        final IView.Label.Static view = new IView.Label.Static("Create", "/icons/action/create.svg");
+        final ActionGroup resourceGroupCreateActions = new ActionGroup(new ArrayList<>(), view);
+        am.registerGroup(RESOURCE_GROUP_CREATE_ACTIONS, resourceGroupCreateActions);
     }
 
     public int getOrder() {
