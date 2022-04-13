@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -83,9 +84,8 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Override
-    public ActionGroup getGroup(String id) {
-        final ActionGroupWrapper group = (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
-        return group.getGroup();
+    public IActionGroup getGroup(String id) {
+        return (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
     }
 
     @Getter
@@ -146,14 +146,13 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Getter
-    public static class ActionGroupWrapper extends DefaultActionGroup implements DumbAware {
+    public static class ActionGroupWrapper extends DefaultActionGroup implements IActionGroup, DumbAware {
 
         private final ActionGroup group;
 
         public ActionGroupWrapper(@Nonnull ActionGroup group) {
             super();
             this.group = group;
-            this.setSearchable(true);
             this.setPopup(true);
             final IView.Label view = this.group.getView();
             final Presentation template = this.getTemplatePresentation();
@@ -166,31 +165,53 @@ public class IntellijAzureActionManager extends AzureActionManager {
         }
 
         private void addActions(List<Object> actions) {
-            final ActionManager am = ActionManager.getInstance();
-            for (Object raw : actions) {
-                if (raw instanceof Action.Id) {
-                    raw = ((Action.Id<?>) raw).getId();
-                }
-                if (raw instanceof String) {
-                    final String actionId = (String) raw;
-                    if (actionId.startsWith("-")) {
-                        final String title = actionId.replaceAll("-", "").trim();
-                        if (StringUtils.isBlank(title)) {
-                            this.addSeparator();
-                        } else {
-                            this.addSeparator(title);
-                        }
-                    } else if (StringUtils.isNotBlank(actionId)) {
-                        final AnAction action = am.getAction(actionId);
-                        if (Objects.nonNull(action)) {
-                            this.add(EmptyAction.wrap(action));
-                        }
+            for (final Object raw : actions) {
+                doAddAction(raw);
+            }
+        }
+
+        @Override
+        public IView.Label getView() {
+            return group.getView();
+        }
+
+        @Override
+        public List<Object> getActions() {
+            return group.getActions();
+        }
+
+        @Override
+        public void addAction(Object raw) {
+            this.group.addAction(raw);
+            this.doAddAction(raw);
+        }
+
+        public void doAddAction(Object raw) {
+            if (raw instanceof Action.Id) {
+                raw = ((Action.Id<?>) raw).getId();
+            }
+            if (raw instanceof String) {
+                final String actionId = (String) raw;
+                if (actionId.startsWith("-")) {
+                    final String title = actionId.replaceAll("-", "").trim();
+                    if (StringUtils.isBlank(title)) {
+                        this.addSeparator();
+                    } else {
+                        this.addSeparator(title);
                     }
-                } else if (raw instanceof Action<?>) {
-                    this.add(new AnActionWrapper<>((Action<?>) raw));
-                } else if (raw instanceof ActionGroup) {
-                    this.add(new ActionGroupWrapper((ActionGroup) raw));
+                } else if (StringUtils.isNotBlank(actionId)) {
+                    final ActionManager am = ActionManager.getInstance();
+                    final AnAction action = am.getAction(actionId);
+                    if (action instanceof com.intellij.openapi.actionSystem.ActionGroup) {
+                        this.add(action);
+                    } else if (Objects.nonNull(action)) {
+                        this.add(EmptyAction.wrap(action));
+                    }
                 }
+            } else if (raw instanceof Action<?>) {
+                this.add(new AnActionWrapper<>((Action<?>) raw));
+            } else if (raw instanceof ActionGroup) {
+                this.add(new ActionGroupWrapper((ActionGroup) raw));
             }
         }
 
