@@ -19,11 +19,18 @@ import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServerDraft;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class CreatePostgreSqlAction {
-    public static void create(Project project) {
+    public static void create(@Nonnull Project project, @Nullable DatabaseServerConfig data) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final PostgreSqlCreationDialog dialog = new PostgreSqlCreationDialog(project);
+            if (Objects.nonNull(data)) {
+                dialog.getForm().setValue(data);
+            }
             dialog.setOkActionListener(config -> {
                 doCreate(config, project);
                 dialog.close();

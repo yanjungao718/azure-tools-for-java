@@ -26,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.intellij.util.AzureLoginHelper;
 import rx.Single;
 
 import javax.annotation.Nullable;
@@ -39,57 +38,46 @@ import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBun
 
 public class CreateWebAppAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
-    private final WebAppService webappService;
-    private final Project project;
-
-    public CreateWebAppAction(final Project project) {
-        super();
-        this.project = project;
-        this.webappService = WebAppService.getInstance();
-    }
-
-    @AzureOperation(name = "webapp.create", type = AzureOperation.Type.ACTION)
-    public void execute() {
-        AzureLoginHelper.requireSignedIn(project, () -> this.openDialog(project, null));
-    }
 
     @AzureOperation(name = "webapp.open_creation_dialog", type = AzureOperation.Type.ACTION)
-    private void openDialog(final Project project, @Nullable final WebAppConfig data) {
-        final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
-        if (Objects.nonNull(data)) {
-            dialog.setData(data);
-        }
-        dialog.setOkActionListener((config) -> {
-            dialog.close();
-            this.createWebApp(config)
-                .subscribe(webapp -> {
-                    final Path artifact = config.getApplication();
-                    if (Objects.nonNull(artifact) && artifact.toFile().exists()) {
-                        AzureTaskManager.getInstance().runLater("deploy", () -> deploy(webapp, artifact, project));
-                    }
-                }, (error) -> {
-                    final String title = String.format("Reopen dialog \"%s\"", dialog.getTitle());
-                    final Consumer<Object> act = t -> AzureTaskManager.getInstance().runLater("open dialog", () -> this.openDialog(project, config));
-                    final Action<?> action = new Action<>(act, new ActionView.Builder(title));
-                    AzureMessager.getMessager().error(error, null, action);
-                });
+    public static void openDialog(final Project project, @Nullable final WebAppConfig data) {
+        AzureTaskManager.getInstance().runLater(() -> {
+            final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
+            if (Objects.nonNull(data)) {
+                dialog.setData(data);
+            }
+            dialog.setOkActionListener((config) -> {
+                dialog.close();
+                createWebApp(config)
+                    .subscribe(webapp -> {
+                        final Path artifact = config.getApplication();
+                        if (Objects.nonNull(artifact) && artifact.toFile().exists()) {
+                            AzureTaskManager.getInstance().runLater("deploy", () -> deploy(webapp, artifact, project));
+                        }
+                    }, (error) -> {
+                        final String title = String.format("Reopen dialog \"%s\"", dialog.getTitle());
+                        final Consumer<Object> act = t -> openDialog(project, config);
+                        final Action<?> action = new Action<>(act, new ActionView.Builder(title));
+                        AzureMessager.getMessager().error(error, null, action);
+                    });
+            });
+            dialog.show();
         });
-        dialog.show();
     }
 
     @AzureOperation(name = "webapp.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
-    private Single<WebApp> createWebApp(final WebAppConfig config) {
+    private static Single<WebApp> createWebApp(final WebAppConfig config) {
         final AzureString title = title("webapp.create_app.app", config.getName());
         final AzureTask<WebApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
-            return webappService.createWebApp(config);
+            return WebAppService.getInstance().createWebApp(config);
         });
-        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(this::notifyCreationSuccess);
+        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(CreateWebAppAction::notifyCreationSuccess);
     }
 
     @AzureOperation(name = "webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
-    private void deploy(final WebApp webapp, final Path application, final Project project) {
+    private static void deploy(final WebApp webapp, final Path application, final Project project) {
         final AzureString title = title("webapp.deploy_artifact.app", webapp.name());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
@@ -100,17 +88,17 @@ public class CreateWebAppAction {
             consoleView.attachToProcess(processHandler);
             AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(webapp, application.toFile(), true, processHandler);
         });
-        AzureTaskManager.getInstance().runInModalAsObservable(task).single().subscribe((none) -> this.notifyDeploymentSuccess(webapp)); // let root exception handler to show the error.
+        AzureTaskManager.getInstance().runInModalAsObservable(task).single().subscribe((none) -> notifyDeploymentSuccess(webapp)); // let root exception handler to show the error.
     }
 
-    private void notifyCreationSuccess(final WebApp app) {
+    private static void notifyCreationSuccess(final WebApp app) {
         final String title = message("webapp.create.success.title");
         final String message = message("webapp.create.success.message", app.name());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
     }
 
-    private void notifyDeploymentSuccess(final WebApp app) {
+    private static void notifyDeploymentSuccess(final WebApp app) {
         final String title = message("webapp.deploy.success.title");
         final String message = message("webapp.deploy.success.message", app.name());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
