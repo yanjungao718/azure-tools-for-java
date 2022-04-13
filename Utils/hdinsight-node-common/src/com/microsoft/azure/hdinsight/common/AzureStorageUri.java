@@ -135,7 +135,7 @@ abstract public class AzureStorageUri {
      */
     public static String encodeAndNormalizePath(String rawPath) {
         try {
-            String encodedPath = URI.create("/").relativize(new URIBuilder().setPath("/" + rawPath).build()).getRawPath();
+            String encodedPath = URI.create("/").relativize(new URIBuilder().setPath(rawPath).build()).getRawPath();
             return rawPath.startsWith("/") ? "/" + encodedPath : encodedPath;
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(
