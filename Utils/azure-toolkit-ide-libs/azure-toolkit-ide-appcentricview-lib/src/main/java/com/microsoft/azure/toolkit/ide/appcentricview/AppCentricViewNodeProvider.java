@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.ide.appcentricview;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureSubscriptionLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
@@ -39,7 +38,7 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
     public Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager) {
         if (data instanceof AzureResources) {
             return new Node<>((AzureResources) data)
-                .view(new AzureServiceLabelView<>((AzureResources) data, NAME, ICON))
+                .view(new AppCentricRootLabelView((AzureResources) data, ICON))
                 .actions(AppCentricViewActionsContributor.SERVICE_ACTIONS)
                 .addChildren(AbstractAzResourceModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourcesServiceSubscription) {
