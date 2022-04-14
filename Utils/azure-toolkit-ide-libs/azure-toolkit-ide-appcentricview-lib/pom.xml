@@ -23,10 +23,6 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-toolkit-resource-lib</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-ide-common-lib</artifactId>
         </dependency>
     </dependencies>
