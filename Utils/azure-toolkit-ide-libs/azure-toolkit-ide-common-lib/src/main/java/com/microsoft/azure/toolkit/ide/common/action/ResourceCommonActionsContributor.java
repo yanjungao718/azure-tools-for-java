@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.view.IView;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -163,10 +164,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(CREATE, createAction);
 
         final Favorites favorites = Favorites.getInstance();
-        final Function<Object, String> title = s -> favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+        final Function<Object, String> title = s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
             "Unmark As Favorite" : "Mark As Favorite";
         final ActionView.Builder pinView = new ActionView.Builder(title).enabled(s -> s instanceof AbstractAzResource);
-        pinView.iconPath(s -> favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+        pinView.iconPath(s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
             "/icons/Common/pin.svg" : "/icons/Common/unpin.svg");
         final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>((r) -> {
             if (favorites.exists(r.getId(), null)) {
