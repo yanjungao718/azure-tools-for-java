@@ -7,6 +7,10 @@ package com.microsoft.azure.toolkit.ide.appcentricview;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -14,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourcesServiceSubscription;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
@@ -25,6 +30,7 @@ public class AppCentricViewActionsContributor implements IActionsContributor {
     public static final String RESOURCE_GROUP_ACTIONS = "actions.appCentric.group";
 
     public static final Action.Id<ResourcesServiceSubscription> CREATE_RESOURCE_GROUP = Action.Id.of("action.resource_group.create");
+    public static final Action.Id<Object> CREATE_SUBSCRIPTION = Action.Id.of("action.subscription.create");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -34,12 +40,25 @@ public class AppCentricViewActionsContributor implements IActionsContributor {
         final Action<ResourcesServiceSubscription> createAction = new Action<>(createResourceGroup);
         createAction.setShortcuts(am.getIDEDefaultShortcuts().add());
         am.registerAction(CREATE_RESOURCE_GROUP, createAction);
+
+        final Consumer<Object> openSubsCreationUrl = s -> {
+            final IAccount account = Azure.az(IAzureAccount.class).account();
+            final String url = String.format("%s/#blade/Microsoft_Azure_Billing/CatalogBlade/appId/AddSubscriptionButton", account.portalUrl());
+            am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+        };
+        final ActionView.Builder addSubscriptionView = new ActionView.Builder("Create Subscription", "/icons/action/create.svg").enabled(s -> true);
+        final Action<Object> createSubsAction = new Action<>(openSubsCreationUrl, addSubscriptionView);
+        createSubsAction.setShortcuts(am.getIDEDefaultShortcuts().add());
+        am.registerAction(CREATE_SUBSCRIPTION, createSubsAction);
     }
 
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.REFRESH
+            ResourceCommonActionsContributor.REFRESH,
+            "---",
+            IAccountActions.SELECT_SUBS,
+            CREATE_SUBSCRIPTION
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 

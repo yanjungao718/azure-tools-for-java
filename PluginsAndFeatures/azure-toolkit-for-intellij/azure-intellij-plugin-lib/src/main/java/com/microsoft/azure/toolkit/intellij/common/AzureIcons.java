@@ -40,6 +40,7 @@ public class AzureIcons {
             put("/icons/action/portal.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
             put("/icons/action/browser.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
             put("/icons/action/properties.svg", AllIcons.Actions.Properties);
+            put("/icons/action/select_subscription.svg", AllIcons.General.Filter);
             put("/icons/action/refresh", AllIcons.Actions.Refresh);
             put("/icons/action/add", AllIcons.General.Add);
             put("/icons/action/remove", AllIcons.Actions.GC);
