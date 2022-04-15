@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
-public class ArmActionsContributor implements IActionsContributor {
+public class DeploymentActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final String RESOURCE_MANAGEMENT_ACTIONS = "actions.resourceManagement.service";
@@ -89,12 +89,12 @@ public class ArmActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
             "---",
-            ArmActionsContributor.EDIT,
-            ArmActionsContributor.UPDATE,
+            DeploymentActionsContributor.EDIT,
+            DeploymentActionsContributor.UPDATE,
             ResourceCommonActionsContributor.DELETE,
             "---",
-            ArmActionsContributor.EXPORT_TEMPLATE,
-            ArmActionsContributor.EXPORT_PARAMETER
+            DeploymentActionsContributor.EXPORT_TEMPLATE,
+            DeploymentActionsContributor.EXPORT_PARAMETER
         );
         am.registerGroup(RESOURCE_DEPLOYMENT_ACTIONS, deploymentActionGroup);
 

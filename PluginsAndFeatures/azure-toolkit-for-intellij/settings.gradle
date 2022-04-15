@@ -12,5 +12,4 @@ include 'azure-intellij-plugin-database'
 include 'azure-intellij-plugin-appservice'
 include 'azure-intellij-plugin-arm'
 include 'azure-intellij-plugin-containerregistry'
-include 'azure-intellij-plugin-appcentricview'
 

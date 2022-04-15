@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.appcentricview;
+package com.microsoft.azure.toolkit.ide.arm;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
-public class AppCentricViewActionsContributor implements IActionsContributor {
+public class ResourceGroupActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final String SERVICE_ACTIONS = "actions.appCentric.service";

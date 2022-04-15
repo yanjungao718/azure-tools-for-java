@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.arm;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azure.toolkit.ide.arm.ArmActionsContributor;
+import com.microsoft.azure.toolkit.ide.arm.DeploymentActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.arm.action.DeploymentActions;
@@ -35,26 +35,26 @@ public class IntellijArmActionsContributor implements IActionsContributor {
         final BiPredicate<ResourceDeployment, AnActionEvent> editCondition = (r, e) -> r instanceof ResourceDeployment;
         final BiConsumer<ResourceDeployment, AnActionEvent> editHandler = (c, e) ->
             DeploymentActions.openTemplateView(Objects.requireNonNull(e.getProject()), c);
-        am.registerHandler(ArmActionsContributor.EDIT, editCondition, editHandler);
+        am.registerHandler(DeploymentActionsContributor.EDIT, editCondition, editHandler);
 
         final BiPredicate<ResourceDeployment, AnActionEvent> updateCondition = (r, e) -> r instanceof ResourceDeployment;
         final BiConsumer<ResourceDeployment, AnActionEvent> updateHandler = (c, e) ->
             DeploymentActions.updateDeployment(Objects.requireNonNull(e.getProject()), c);
-        am.registerHandler(ArmActionsContributor.UPDATE, updateCondition, updateHandler);
+        am.registerHandler(DeploymentActionsContributor.UPDATE, updateCondition, updateHandler);
 
         final BiPredicate<ResourceDeployment, AnActionEvent> exportParameterCondition = (r, e) -> r instanceof ResourceDeployment;
         final BiConsumer<ResourceDeployment, AnActionEvent> exportParameterHandler = (c, e) ->
             DeploymentActions.exportParameters(Objects.requireNonNull(e.getProject()), c);
-        am.registerHandler(ArmActionsContributor.EXPORT_PARAMETER, exportParameterCondition, exportParameterHandler);
+        am.registerHandler(DeploymentActionsContributor.EXPORT_PARAMETER, exportParameterCondition, exportParameterHandler);
 
         final BiPredicate<ResourceDeployment, AnActionEvent> exportTemplateCondition = (r, e) -> r instanceof ResourceDeployment;
         final BiConsumer<ResourceDeployment, AnActionEvent> exportTemplateHandler = (c, e) ->
             DeploymentActions.exportTemplate(Objects.requireNonNull(e.getProject()), c);
-        am.registerHandler(ArmActionsContributor.EXPORT_TEMPLATE, exportTemplateCondition, exportTemplateHandler);
+        am.registerHandler(DeploymentActionsContributor.EXPORT_TEMPLATE, exportTemplateCondition, exportTemplateHandler);
     }
 
     @Override
     public int getOrder() {
-        return ArmActionsContributor.INITIALIZE_ORDER + 1;
+        return DeploymentActionsContributor.INITIALIZE_ORDER + 1;
     }
 }

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.appcentricview;
+package com.microsoft.azure.toolkit.ide.arm;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
+public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Resource Management";
     private static final String ICON = "/icons/Microsoft.Resources/default.svg";
 
@@ -39,20 +39,20 @@ public class AppCentricViewNodeProvider implements IExplorerNodeProvider {
         if (data instanceof AzureResources) {
             return new Node<>((AzureResources) data)
                 .view(new AppCentricRootLabelView((AzureResources) data, ICON))
-                .actions(AppCentricViewActionsContributor.SERVICE_ACTIONS)
+                .actions(ResourceGroupActionsContributor.SERVICE_ACTIONS)
                 .addChildren(AbstractAzResourceModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourcesServiceSubscription) {
             final ResourcesServiceSubscription sub = (ResourcesServiceSubscription) data;
             return new Node<>(sub)
                 .view(new AzureSubscriptionLabelView<>(sub))
-                .actions(AppCentricViewActionsContributor.SUBSCRIPTION_ACTIONS)
+                .actions(ResourceGroupActionsContributor.SUBSCRIPTION_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChildren(s -> s.resourceGroups().list(), (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourceGroup) {
             final ResourceGroup rg = (ResourceGroup) data;
             return new Node<>(rg)
                 .view(new AzureResourceLabelView<>(rg))
-                .actions(AppCentricViewActionsContributor.RESOURCE_GROUP_ACTIONS)
+                .actions(ResourceGroupActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChildren(group -> group.genericResources().list().stream().map(GenericResource::toConcreteResource)
                     .map(r -> manager.createNode(r, parent, ViewType.APP_CENTRIC))
