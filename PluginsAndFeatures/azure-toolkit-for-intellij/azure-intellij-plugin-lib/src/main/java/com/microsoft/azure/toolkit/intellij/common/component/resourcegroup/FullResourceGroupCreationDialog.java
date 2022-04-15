@@ -41,18 +41,20 @@ public class FullResourceGroupCreationDialog extends AzureDialog<ResourceGroupDr
     private ResourceGroupNameTextField textName;
     private RegionComboBox selectorRegion;
 
-    public FullResourceGroupCreationDialog(Subscription subscription) {
+    public FullResourceGroupCreationDialog(@Nullable Subscription subscription) {
         super();
         this.init(subscription);
     }
 
-    protected void init(Subscription subscription) {
+    protected void init(@Nullable Subscription subscription) {
         super.init();
-        this.selectorSubscription.setValue(subscription);
+        if (Objects.nonNull(subscription)) {
+            this.selectorSubscription.setValue(subscription);
+            this.selectorRegion.setSubscription(subscription);
+            this.textName.setSubscription(subscription);
+        }
         this.selectorSubscription.putClientProperty(AccessibleRelation.LABELED_BY, this.lblSubscription);
-        this.selectorRegion.setSubscription(subscription);
         this.selectorRegion.putClientProperty(AccessibleRelation.LABELED_BY, this.lblRegion);
-        this.textName.setSubscription(subscription);
         this.textName.putClientProperty(AccessibleRelation.LABELED_BY, this.lblName);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, AzureMessageBundle.message("common.resourceGroup.description").toString());
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);

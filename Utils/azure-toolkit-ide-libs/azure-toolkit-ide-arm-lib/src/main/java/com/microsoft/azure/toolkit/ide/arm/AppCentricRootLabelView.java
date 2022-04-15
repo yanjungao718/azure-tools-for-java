@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResources> {
-    private static final String NAME = "Resource Management";
+    private static final String NAME = "Resource Groups";
     private final AzureEventBus.EventListener subscriptionListener;
     private final AzureEventBus.EventListener logoutListener;
 
