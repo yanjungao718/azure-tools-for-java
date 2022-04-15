@@ -205,7 +205,7 @@ public class Tree extends SimpleTree implements DataProvider {
             if (Objects.nonNull(this.getParent())) {
                 ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
             }
-            Optional.ofNullable(toSelect).ifPresent(p -> TreeUtil.selectPath(this.tree, p, true));
+            Optional.ofNullable(toSelect).ifPresent(p -> TreeUtil.selectPath(this.tree, p, false));
             this.loaded = true;
         }
 
