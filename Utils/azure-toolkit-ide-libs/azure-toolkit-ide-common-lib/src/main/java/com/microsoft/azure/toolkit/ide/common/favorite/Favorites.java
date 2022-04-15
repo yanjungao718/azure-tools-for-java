@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.favorite;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
@@ -28,11 +29,15 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,7 +54,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Getter
     private static final Favorites instance = new Favorites();
-    public static final String NAME = "toolkitFavorites";
+    public static final String NAME = "favorites";
     List<String> favorites = new LinkedList<>();
 
     private Favorites() {
@@ -109,9 +114,20 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
     @Override
-    protected void deleteResourceFromAzure(@Nonnull String resourceId) {
-        this.favorites.remove(resourceId.substring("$NONE$/toolkitFavorites/".length()));
+    @SneakyThrows
+    protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
+        final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
+        this.favorites.remove(resourceId);
         this.persist();
+    }
+
+    @Nonnull
+    @Override
+    @SneakyThrows
+    public String toResourceId(@Nonnull String resourceName, @Nullable String resourceGroup) {
+        final String encoded = URLEncoder.encode(resourceName, StandardCharsets.UTF_8.name());
+        final String template = "/subscriptions/%s/resourceGroups/%s/providers/AzureToolkits.Favorite/favorites/%s";
+        return String.format(template, NONE.getName(), NONE.getName(), encoded);
     }
 
     @Nonnull
