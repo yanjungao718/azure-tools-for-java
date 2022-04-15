@@ -7,11 +7,15 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.microsoft.azure.toolkit.ide.appcentricview.AppCentricViewActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.FullResourceGroupCreationDialog;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.ResourcesServiceSubscription;
 
 import java.util.Objects;
 
@@ -22,6 +26,18 @@ public class IntellijActionsContributor implements IActionsContributor {
         am.<AzResourceBase, AnActionEvent>registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES,
             (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()),
             (s, e) -> IntellijShowPropertiesViewAction.showPropertyView(s, Objects.requireNonNull(e.getProject())));
+        am.registerHandler(AppCentricViewActionsContributor.CREATE_RESOURCE_GROUP, Objects::nonNull, this::createResourceGroup);
+    }
+
+    private void createResourceGroup(ResourcesServiceSubscription s) {
+        AzureTaskManager.getInstance().runLater(() -> {
+            final FullResourceGroupCreationDialog dialog = new FullResourceGroupCreationDialog(s.getSubscription());
+            dialog.setOkActionListener((group) -> {
+                dialog.close();
+                group.createIfNotExist();
+            });
+            dialog.show();
+        });
     }
 
     @Override
