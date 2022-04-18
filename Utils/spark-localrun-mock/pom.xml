@@ -274,6 +274,10 @@
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-mapper-asl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-httpclient</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
