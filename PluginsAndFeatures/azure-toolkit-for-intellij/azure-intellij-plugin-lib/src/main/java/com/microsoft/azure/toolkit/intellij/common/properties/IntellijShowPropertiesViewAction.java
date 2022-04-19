@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.common.properties;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager.AzureResourceFileType;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
@@ -40,9 +40,9 @@ public class IntellijShowPropertiesViewAction {
 
     private static Icon getFileTypeIcon(@Nonnull AzResourceBase resource) {
         if (resource instanceof AzResource) {
-            return AzureIcons.getIcon(getNewFileTypeIcon((AzResource<?, ?, ?>) resource));
+            return IntelliJAzureIcons.getIcon(getNewFileTypeIcon((AzResource<?, ?, ?>) resource));
         }
-        return AzureIcons.getIcon(String.format("/icons/%s.svg", resource.getClass().getSimpleName().toLowerCase()));
+        return IntelliJAzureIcons.getIcon(String.format("/icons/%s.svg", resource.getClass().getSimpleName().toLowerCase()));
     }
 
     @Nonnull

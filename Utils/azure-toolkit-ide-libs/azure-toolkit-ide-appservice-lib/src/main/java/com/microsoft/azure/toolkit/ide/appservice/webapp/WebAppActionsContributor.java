@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.appservice.webapp;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
@@ -92,7 +93,7 @@ public class WebAppActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<WebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.list_deployments.app", ((WebApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof WebApp);
         final Action<WebApp> refreshAction = new Action<>(refresh, refreshView);
@@ -100,7 +101,7 @@ public class WebAppActionsContributor implements IActionsContributor {
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
         final Consumer<WebAppDeploymentSlot> swap = slot -> slot.getParent().swap(slot.getName());
-        final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")
+        final ActionView.Builder swapView = new ActionView.Builder("Swap With Production")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
                 ((WebAppDeploymentSlot) s).getName(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
             .enabled(s -> s instanceof WebAppDeploymentSlot && ((WebAppDeploymentSlot) s).getFormalStatus().isRunning());

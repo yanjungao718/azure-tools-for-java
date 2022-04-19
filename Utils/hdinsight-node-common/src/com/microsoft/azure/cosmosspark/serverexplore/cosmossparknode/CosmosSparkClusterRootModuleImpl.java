@@ -8,11 +8,12 @@ package com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -34,8 +35,8 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
-        return AzureIconSymbol.ApacheSparkOnCosmos.MODULE;
+    public @Nullable AzureIcon getIconSymbol() {
+        return AzureIcons.ApacheSparkOnCosmos.MODULE;
     }
 
     @Override

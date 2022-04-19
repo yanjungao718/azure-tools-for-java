@@ -24,13 +24,13 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
-import com.microsoft.intellij.helpers.AzureIconLoader
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons
 import javax.swing.Icon
 
 object CosmosSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
-        return AzureIconLoader.loadIcon(AzureIconSymbol.ApacheSparkOnCosmos.MODULE)
+        return IntelliJAzureIcons.getIcon(AzureIcons.ApacheSparkOnCosmos.MODULE)
     }
 
     override fun getConfigurationTypeDescription(): String {

@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IMachineStore;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -45,7 +46,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
-    private static final String FAVORITE_ICON = "/icons/Common/favorite.svg";
+    private static final String FAVORITE_ICON = AzureIcons.Common.FAVORITE.getIconPath();
 
     @Getter
     private static final Favorites instance = new Favorites();
@@ -174,13 +175,13 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     public static Node<Favorites> buildFavoriteRoot(IExplorerNodeProvider.Manager manager) {
         final AzureActionManager.Shortcuts shortcuts = AzureActionManager.getInstance().getIDEDefaultShortcuts();
 
-        final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", "/icons/Common/unpin.svg")
+        final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", AzureIcons.Action.UNPIN.getIconPath())
             .enabled(s -> s instanceof Favorites);
         final Consumer<Favorites> unpinAllHandler = Favorites::unpinAll;
         final Action<Favorites> unpinAllAction = new Action<>(unpinAllHandler, unpinAllView);
         unpinAllAction.setShortcuts("control F11");
 
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
             .enabled(s -> s instanceof Favorites);
         final Consumer<Favorites> refreshHandler = Favorites::refresh;
         final Action<Favorites> refreshAction = new Action<>(refreshHandler, refreshView);

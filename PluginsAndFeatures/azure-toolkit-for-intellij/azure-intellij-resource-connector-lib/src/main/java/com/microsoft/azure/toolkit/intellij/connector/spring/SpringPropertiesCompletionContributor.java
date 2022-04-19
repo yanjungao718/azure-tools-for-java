@@ -21,7 +21,8 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
@@ -54,7 +55,7 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
                         .filter(d -> CollectionUtils.isNotEmpty(d.getSpringProperties()))
                         .map(definition -> LookupElementBuilder
                                 .create(definition.getName(), definition.getSpringProperties().get(0).getKey())
-                                .withIcon(AzureIcons.getIcon("/icons/connector/connect.svg"))
+                                .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.Connector.CONNECT))
                                 .withInsertHandler(new MyInsertHandler(definition))
                                 .withBoldness(true)
                                 .withTypeText("String")

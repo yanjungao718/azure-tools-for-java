@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.vm;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -27,7 +28,7 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", "/icons/action/add")
+        final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", AzureIcons.Action.ADD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
             .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(ADD_SSH_CONFIG, new Action<>(addSshConfigView));

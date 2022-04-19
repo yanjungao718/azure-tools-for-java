@@ -7,6 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -201,7 +202,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
      * higher priority than iconPath and icon
      */
     @Nullable
-    public AzureIconSymbol getIconSymbol() {
+    public AzureIcon getIconSymbol() {
         return null;
     }
 

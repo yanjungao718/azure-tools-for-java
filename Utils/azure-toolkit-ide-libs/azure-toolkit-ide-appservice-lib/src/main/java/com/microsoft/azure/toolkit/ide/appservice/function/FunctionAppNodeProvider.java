@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
@@ -35,7 +36,7 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
             .withModifier(app -> new AzureIcon.Modifier("functionapp", AzureIcon.ModifierLocation.OTHER));
 
     private static final String NAME = "Function App";
-    private static final String ICON = "/icons/Microsoft.Web/functions.png";
+    private static final String ICON = AzureIcons.FunctionApp.MODULE.getIconPath();
 
     @Nullable
     @Override

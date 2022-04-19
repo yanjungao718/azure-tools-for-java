@@ -9,6 +9,8 @@ import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -17,12 +19,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,9 +38,9 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
+    public @Nullable AzureIcon getIconSymbol() {
         boolean running = isRunning();
-        return running ? AzureIconSymbol.VirtualMachine.RUNNING : AzureIconSymbol.VirtualMachine.STOPPED;
+        return running ? AzureIcons.VirtualMachine.RUNNING : AzureIcons.VirtualMachine.STOPPED;
     }
 
     @AzureOperation(name = "vm.delete_vm.vm", params = {"this.virtualMachine.name()"}, type = AzureOperation.Type.ACTION)

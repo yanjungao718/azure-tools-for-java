@@ -17,7 +17,8 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.psi.PsiElement;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -53,7 +54,7 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
             if (!properties.isEmpty() && properties.get(0).equals(keyProp)) {
                 final Resource<?> r = connection.getResource();
                 return new LineMarkerInfo<>(element, element.getTextRange(),
-                        AzureIcons.getIcon("/icons/connector/connect.svg"),
+                        IntelliJAzureIcons.getIcon(AzureIcons.Connector.CONNECT),
                         element2 -> String.format("%s (%s)", r.getName(), r.getDefinition().getTitle()),
                         new SpringDatasourceNavigationHandler(r),
                         GutterIconRenderer.Alignment.LEFT, () -> "");

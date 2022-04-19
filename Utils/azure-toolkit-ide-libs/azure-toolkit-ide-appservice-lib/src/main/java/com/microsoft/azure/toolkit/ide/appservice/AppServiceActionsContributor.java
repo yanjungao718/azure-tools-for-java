@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.appservice;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -34,17 +35,17 @@ public class AppServiceActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceAppBase<?, ?, ?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
             .handle("https://" + appService.getHostName());
-        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", "/icons/action/portal.svg")
+        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser",  AzureIcons.Action.PORTAL.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.open_browser")).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase);
         am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));
 
-        final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", "/icons/action/log.svg")
+        final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", AzureIcons.Action.LOG.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(START_STREAM_LOG, new Action<>(startStreamLogView));
 
-        final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", "/icons/action/log.svg")
+        final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", AzureIcons.Action.LOG.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(STOP_STREAM_LOG, new Action<>(stopStreamLogView));

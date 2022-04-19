@@ -10,10 +10,11 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.arm.creation.CreateDeploymentDialog;
 import com.microsoft.azure.toolkit.intellij.arm.template.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.arm.update.UpdateDeploymentDialog;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.FileChooser;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -60,7 +61,7 @@ public class DeploymentActions {
     public static void openTemplateView(@Nonnull final Project project, @Nonnull ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
-            final Icon icon = AzureIcons.getIcon("/icons/Microsoft.Resources/resourceGroups/deployments/default.svg");
+            final Icon icon = IntelliJAzureIcons.getIcon(AzureIcons.Resources.DEPLOYMENT);
             final String name = ResourceTemplateViewProvider.TYPE;
             final AzureResourceEditorViewManager.AzureResourceFileType type = new AzureResourceEditorViewManager.AzureResourceFileType(name, icon);
             final AzureResourceEditorViewManager manager = new AzureResourceEditorViewManager((resource) -> type);

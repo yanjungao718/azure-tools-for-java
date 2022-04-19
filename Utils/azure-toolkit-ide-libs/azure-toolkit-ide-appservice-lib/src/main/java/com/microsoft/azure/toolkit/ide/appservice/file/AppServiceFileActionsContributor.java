@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.appservice.file;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
@@ -46,7 +47,7 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceFile> refresh = file -> AzureEventBus.emit("resource.refresh.resource", file);
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh.resource", ((AppServiceFile) r).getName())).orElse(null))
                 .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> action = new Action<>(refresh, refreshView);

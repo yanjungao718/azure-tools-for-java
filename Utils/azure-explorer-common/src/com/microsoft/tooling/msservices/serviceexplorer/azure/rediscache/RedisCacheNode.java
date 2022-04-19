@@ -5,6 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -13,7 +15,6 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import lombok.Lombok;
@@ -69,10 +70,10 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
+    public @Nullable AzureIcon getIconSymbol() {
         boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState) || SUCCESS_STATE.equalsIgnoreCase(provisionState);
         boolean stopped = STOPPED_STATE.equalsIgnoreCase(provisionState);
-        return running ? AzureIconSymbol.RedisCache.RUNNING : !stopped ? AzureIconSymbol.RedisCache.UPDATING : AzureIconSymbol.RedisCache.STOPPED;
+        return running ? AzureIcons.RedisCache.RUNNING : !stopped ? AzureIcons.RedisCache.UPDATING : AzureIcons.RedisCache.STOPPED;
     }
 
     @Override

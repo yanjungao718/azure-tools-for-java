@@ -20,7 +20,8 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import lombok.Getter;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<ConnectionRunnerForRunConfiguration.MyBeforeRunTask> {
     private static final String NAME = "Connect Azure Resource";
     private static final String DESCRIPTION = "Connect Azure Resource";
-    private static final Icon ICON = AzureIcons.getIcon("/icons/Common/Azure.svg");
+    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE);
     private static final Key<MyBeforeRunTask> ID = Key.create("ConnectionRunnerForConfigurationId");
     @Getter
     public String name = NAME;

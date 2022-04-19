@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class ArmNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Resource Management";
-    private static final String ICON = "/icons/Microsoft.Resources/default.svg";
+    private static final String ICON = AzureIcons.Resources.MODULE.getIconPath();
 
     @Nullable
     @Override

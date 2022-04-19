@@ -24,14 +24,14 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
-import com.microsoft.intellij.helpers.AzureIconLoader
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons
 import javax.swing.Icon
 
 object ArisSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
         // TODO: should use Aris config icon
-        return AzureIconLoader.loadIcon(AzureIconSymbol.SQLServerBigDataCluster.MODULE)
+        return IntelliJAzureIcons.getIcon(AzureIcons.SQLServerBigDataCluster.MODULE)
     }
 
     override fun getDisplayName(): String {

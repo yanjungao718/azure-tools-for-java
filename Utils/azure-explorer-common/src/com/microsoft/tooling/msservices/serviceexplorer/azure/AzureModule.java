@@ -6,6 +6,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -16,7 +18,6 @@ import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
@@ -237,7 +238,7 @@ public class AzureModule extends AzureRefreshableNode {
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
-        return AzureIconSymbol.Common.AZURE;
+    public @Nullable AzureIcon getIconSymbol() {
+        return AzureIcons.Common.AZURE;
     }
 }

@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -33,7 +34,7 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
 
     private StorageAccountResourceDefinition() {
-        super("Azure.Storage", "Azure Storage Account", "/icons/Microsoft.Storage/default.svg");
+        super("Azure.Storage", "Azure Storage Account", AzureIcons.StorageAccount.MODULE.getIconPath());
     }
 
     @Override

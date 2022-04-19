@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.node.TriggerFunctionInBrowserAction;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -77,7 +78,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.refresh_funcs")).orElse(null))
                 .enabled(s -> s instanceof FunctionApp);
         final Action<FunctionApp> refreshAction = new Action<>(refresh, refreshView);

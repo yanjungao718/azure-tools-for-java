@@ -10,14 +10,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.ContainerRegistryPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -45,7 +45,7 @@ public class OpenContainerRegistryPropertyViewAction {
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registry.getName(), sid, resId);
             final AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE,
-                    AzureIcons.getIcon(AzureIconSymbol.ContainerRegistry.MODULE.getPath()));
+                    IntelliJAzureIcons.getIcon(AzureIcons.ContainerRegistry.MODULE));
             itemVirtualFile.setFileType(fileType);
         }
         final LightVirtualFile targetFile = itemVirtualFile;

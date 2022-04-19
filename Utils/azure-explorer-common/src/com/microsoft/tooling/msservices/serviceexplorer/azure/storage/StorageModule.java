@@ -5,11 +5,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
@@ -23,8 +24,8 @@ public class StorageModule extends AzureRefreshableNode {
     }
 
     @Override
-    public @Nullable AzureIconSymbol getIconSymbol() {
-        return AzureIconSymbol.StorageAccount.MODULE;
+    public @Nullable AzureIcon getIconSymbol() {
+        return AzureIcons.StorageAccount.MODULE;
     }
 
     @Override

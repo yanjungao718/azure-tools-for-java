@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.database.mysql;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -26,11 +27,11 @@ public class MySqlActionsContributor implements IActionsContributor {
     public static final String SERVER_ACTIONS = "actions.mysql.server";
 
     private static final String NAME_PREFIX = "MySQL Server - %s";
-    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.mysql.open_database_tool");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = com.microsoft.azure.toolkit.lib.common.action.Action.Id.of("action.mysql.open_database_tool");
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", "icons/action/open_database_tool.svg")
+        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("mysql.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof MySqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
