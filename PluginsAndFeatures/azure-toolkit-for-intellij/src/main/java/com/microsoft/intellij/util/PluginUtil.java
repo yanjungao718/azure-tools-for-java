@@ -19,6 +19,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -30,11 +31,13 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.CommonConst;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.swing.Icon;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Optional;
 
 
 public class PluginUtil {
@@ -86,7 +89,9 @@ public class PluginUtil {
     }
 
     public static String getModulePath(Module module) {
-        return new File(module.getModuleFilePath()).getParent();
+        return Optional.of(ModuleRootManager.getInstance(module).getContentRoots())
+                .filter(ArrayUtils::isNotEmpty)
+                .map(array -> array[0].getPath()).orElse(null);
     }
 
     /**

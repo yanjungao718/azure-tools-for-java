@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -19,13 +20,14 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.intellij.AzureAnAction;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -52,7 +54,7 @@ public class AddDockerSupportAction extends AzureAnAction {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return true;
         }
-        pomXmlBasePath = Paths.get(module.getModuleFilePath()).getParent().toString();
+        pomXmlBasePath = getModulePath(module);
         String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
         String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(module.getProject()).getProjects();
@@ -123,7 +125,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         module = DataKeys.MODULE.getData(event.getDataContext());
         boolean dockerFileExists = false;
         if (module != null) {
-            String basePath = Paths.get(module.getModuleFilePath()).getParent().toString();
+            String basePath = getModulePath(module);
             dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME).toFile().exists();
         }
@@ -140,5 +142,11 @@ public class AddDockerSupportAction extends AzureAnAction {
         Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
                 msg, NotificationType.ERROR);
         Notifications.Bus.notify(notification);
+    }
+
+    public static String getModulePath(Module module) {
+        return Optional.of(ModuleRootManager.getInstance(module).getContentRoots())
+                .filter(ArrayUtils::isNotEmpty)
+                .map(array -> array[0].getPath()).orElse(null);
     }
 }
