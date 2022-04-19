@@ -109,7 +109,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     }
 
     static class Factory extends ConfigurationFactory {
-        public static final String FACTORY_NAME = "Deploy Spring Cloud Services";
+        public static final String FACTORY_NAME = "Deploy Spring app";
 
         public Factory(@NotNull ConfigurationType type) {
             super(type);

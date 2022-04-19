@@ -24,7 +24,7 @@ public class CreateSpringCloudAppAction {
     private static final int GET_STATUS_TIMEOUT = 180;
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
             "you can check the app status from Azure Portal.";
-    private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
+    private static final String NOTIFICATION_TITLE = "Deploy Spring app";
 
     public static void createApp(@Nonnull SpringCloudCluster cluster, @Nullable Project project) {
         Azure.az(AzureAccount.class).account();
