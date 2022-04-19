@@ -44,7 +44,7 @@
         </constraints>
         <properties>
           <labelFor value="b26a2"/>
-          <text value="Service:"/>
+          <text value="Spring Apps:"/>
         </properties>
       </component>
       <component id="92371" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="selectorSubscription">

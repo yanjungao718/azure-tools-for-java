@@ -59,7 +59,7 @@
             </constraints>
             <properties>
               <labelFor value=""/>
-              <text value="Service:"/>
+              <text value="Spring Apps:"/>
             </properties>
           </component>
           <component id="7f14f" class="com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox" binding="selectorCluster">

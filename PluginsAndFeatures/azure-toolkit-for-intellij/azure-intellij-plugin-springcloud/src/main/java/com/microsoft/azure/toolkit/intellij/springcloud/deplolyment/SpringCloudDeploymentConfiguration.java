@@ -45,7 +45,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
     private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
     private static final String NEED_SPECIFY_APP_NAME = "Please select a target app.";
-    private static final String SERVICE_IS_NOT_READY = "Service is not ready for deploy, current status is ";
+    private static final String SERVICE_IS_NOT_READY = "Spring Apps is not ready for deploy, current status is ";
     private static final String TARGET_CLUSTER_DOES_NOT_EXISTS = "Target cluster does not exists.";
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
