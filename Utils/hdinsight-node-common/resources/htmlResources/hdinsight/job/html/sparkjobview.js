@@ -15,7 +15,13 @@ function initiate() {
     // $('#myTab li:eq(0)').hide();
     // show the job output tab
     var myTable = $('#myTable');
-    myTable.colResizable({liveDrag:true});
+    // myTable.colResizable will cause the coulumn width calculation error.
+    // Some column width are calculated as 0% which leads to display error.
+    // So we comment this line to fix the display error. Please see detailed bugs as
+    // below.
+    // Bug1: https://dev.azure.com/mseng/VSJava/_workitems/edit/1870900
+    // Bug2: https://dev.azure.com/mseng/VSJava/_workitems/edit/1870841
+    // myTable.colResizable({liveDrag:true});
     myTable.dragtable();
 
     var leftDiv = $('#leftDiv');
