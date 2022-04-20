@@ -6,49 +6,25 @@
 package com.microsoft.azure.toolkit.ide.common.genericresource;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Optional;
 
-public class GenericResourceLabelView<T extends AbstractAzResource<?, ?, ?>> implements NodeView {
+public class GenericResourceLabelView<T extends AbstractAzResource<?, ?, ?>> extends AzureResourceLabelView<T> {
 
-    @Nonnull
-    @Getter
-    private final T resource;
-    @Getter
-    private final String label;
-    @Getter
-    private final String description;
-    @Getter
-    private final AzureIcon icon;
-    @Nullable
-    @Setter
-    @Getter
-    private Refresher refresher;
-    @Getter
-    private final boolean enabled = true;
+    private final ResourceId resourceId;
 
     public GenericResourceLabelView(@Nonnull T resource) {
-        this.resource = resource;
-        final ResourceId resourceId = ResourceId.fromString(resource.getId());
-        this.label = resourceId.name();
-        this.description = resource.getResourceTypeName();
-        this.icon = AzureIcon.UNKNOWN_ICON;
-    }
-
-    public void dispose() {
-        this.refresher = null;
+        super(resource,
+            r -> (r.getFormalStatus().isUnknown() ? "" : resource.getStatus() + " ") + resource.getResourceTypeName(),
+            r -> r.getFormalStatus().isWaiting() ? AzureIcon.REFRESH_ICON : AzureIcon.UNKNOWN_ICON);
+        this.resourceId = ResourceId.fromString(resource.getId());
     }
 
     @Override
-    public String getIconPath() {
-        return Optional.ofNullable(getIcon()).map(AzureIcon::getIconPath).orElse(StringUtils.EMPTY);
+    public String getLabel() {
+        return this.resourceId.name();
     }
 }

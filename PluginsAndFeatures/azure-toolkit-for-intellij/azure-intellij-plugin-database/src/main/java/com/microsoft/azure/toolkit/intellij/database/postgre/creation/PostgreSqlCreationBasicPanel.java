@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
 import com.microsoft.azure.toolkit.intellij.database.BaseNameValidator;
 import com.microsoft.azure.toolkit.intellij.database.PasswordUtils;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
+import com.microsoft.azure.toolkit.intellij.database.mysql.creation.MySqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
@@ -23,6 +24,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
@@ -39,7 +41,7 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final DatabaseServerConfig config;
+    private DatabaseServerConfig config;
 
     PostgreSqlCreationBasicPanel(DatabaseServerConfig config) {
         super();
@@ -89,6 +91,7 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
 
     @Override
     public void setValue(DatabaseServerConfig data) {
+        this.config = Optional.ofNullable(data).orElseGet(MySqlCreationDialog::getDefaultConfig);
         if (StringUtils.isNotBlank(config.getName())) {
             serverNameTextField.setText(config.getName());
         }
