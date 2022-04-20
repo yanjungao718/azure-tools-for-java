@@ -18,7 +18,6 @@ public class GenericResourceActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup genericResourceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL
         );
         am.registerGroup(GENERIC_RESOURCE_ACTIONS, genericResourceActionGroup);

@@ -39,16 +39,16 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
 
         final AzureString authnTitle = AzureOperationBundle.title("account.authenticate");
         final ActionView.Builder authnView = new ActionView.Builder("Sign in").title((s) -> authnTitle);
-        final BiConsumer<Void, AnActionEvent> authnHandler = (Void v, AnActionEvent e) -> {
+        final BiConsumer<Object, AnActionEvent> authnHandler = (Object v, AnActionEvent e) -> {
             final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
             if (authMethodManager.isSignedIn()) authMethodManager.signOut();
             AzureSignInAction.onAzureSignIn(e.getProject());
         };
         am.registerAction(Action.AUTHENTICATE, new Action<>(authnHandler, authnView).setAuthRequired(false));
 
-        final AzureString selectSubsTitle = AzureOperationBundle.title("account.select_subscription");
-        final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions").title((s) -> authnTitle);
-        final BiConsumer<Void, AnActionEvent> selectSubsHandler = (Void v, AnActionEvent e) ->
+        final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions", "/icons/action/select_subscription.svg")
+            .title((s) -> authnTitle);
+        final BiConsumer<Object, AnActionEvent> selectSubsHandler = (Object v, AnActionEvent e) ->
             SelectSubscriptionsAction.selectSubscriptions(e.getProject()).subscribe();
         am.registerAction(IAccountActions.SELECT_SUBS, new Action<>(selectSubsHandler, selectSubsView).setAuthRequired(true));
     }
@@ -62,7 +62,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
             });
             final AzureString title = AzureOperationBundle.title("common.open_azure_settings");
             AzureTaskManager.getInstance().runAndWait(new AzureTask<>(title, () ->
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class)));
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class)));
         };
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
     }

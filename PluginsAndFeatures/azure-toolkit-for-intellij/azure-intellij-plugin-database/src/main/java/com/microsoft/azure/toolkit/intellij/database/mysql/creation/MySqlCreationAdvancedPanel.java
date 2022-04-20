@@ -32,6 +32,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MySqlCreationAdvancedPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
@@ -57,7 +58,7 @@ public class MySqlCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final DatabaseServerConfig config;
+    private DatabaseServerConfig config;
 
     MySqlCreationAdvancedPanel(DatabaseServerConfig config) {
         super();
@@ -139,6 +140,7 @@ public class MySqlCreationAdvancedPanel extends JPanel implements AzureFormPanel
 
     @Override
     public void setValue(DatabaseServerConfig data) {
+        this.config = Optional.ofNullable(data).orElseGet(MySqlCreationDialog::getDefaultConfig);
         if (StringUtils.isNotBlank(config.getName())) {
             serverNameTextField.setText(config.getName());
         }

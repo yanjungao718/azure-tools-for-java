@@ -1,1 +1,2 @@
-com.microsoft.azure.toolkit.ide.arm.ArmNodeProvider
+com.microsoft.azure.toolkit.ide.arm.DeploymentNodeProvider
+com.microsoft.azure.toolkit.ide.arm.ResourceGroupNodeProvider

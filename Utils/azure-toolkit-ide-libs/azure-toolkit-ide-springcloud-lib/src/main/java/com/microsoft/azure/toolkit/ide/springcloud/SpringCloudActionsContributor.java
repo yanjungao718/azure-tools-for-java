@@ -11,7 +11,9 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 
 import java.util.Optional;
@@ -28,6 +30,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("action.springcloud.app.open_public_url");
     public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("action.springcloud.app.open_test_url");
     public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("action.springcloud.app.stream_log");
+
+    public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("action.springcloud.create_cluster.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -51,6 +55,11 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(STREAM_LOG, new Action<>(streamLogView));
+
+        final ActionView.Builder createClusterView = new ActionView.Builder("Spring Cloud Service")
+            .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_CLUSTER, new Action<>(createClusterView));
     }
 
     @Override
@@ -93,6 +102,9 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_CLUSTER);
     }
 
     @Override
