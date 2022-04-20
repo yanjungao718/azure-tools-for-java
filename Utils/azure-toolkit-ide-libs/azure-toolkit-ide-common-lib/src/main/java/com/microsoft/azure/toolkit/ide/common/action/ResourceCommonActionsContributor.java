@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Startable;
@@ -152,12 +153,14 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> {
                 String name = r.getClass().getSimpleName();
                 if (r instanceof AzResource) {
-                    name = ((AzResource<?, ?, ?>) r).name();
+                    name = ((AzResource<?, ?, ?>) r).getName();
                 } else if (r instanceof AzService) {
                     name = ((AzService) r).getName();
+                } else if (r instanceof AzResourceModule) {
+                    name = ((AzResourceModule<?, ?, ?>) r).getResourceTypeName();
                 }
                 return title("resource.create_resource.service", name);
-            }).orElse(null)).enabled(s -> s instanceof AzService ||
+            }).orElse(null)).enabled(s -> s instanceof AzService || s instanceof AzResourceModule ||
                 (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)));
         final Action<Object> createAction = new Action<>(createView);
         createAction.setShortcuts(shortcuts.add());

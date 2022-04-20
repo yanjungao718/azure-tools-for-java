@@ -121,6 +121,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
+        azureModule.setClearResourcesListener(() -> acvRootNode.clearChildren());
         TreeUtils.installSelectionListener(tree);
         TreeUtils.installExpandListener(tree);
         TreeUtils.installMouseListener(tree);

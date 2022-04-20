@@ -4,7 +4,8 @@
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.arm.DeploymentNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.arm.ResourceGroupActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.arm.DeploymentActionsContributor"/>
-        <actions implementation="com.microsoft.azure.toolkit.intellij.arm.IntellijArmActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.arm.IntellijResourceGroupActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.arm.IntellijDeploymentActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.property.DeploymentPropertyViewProvider"/>

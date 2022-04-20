@@ -127,7 +127,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     public String toResourceId(@Nonnull String resourceName, @Nullable String resourceGroup) {
         final String encoded = URLEncoder.encode(resourceName, StandardCharsets.UTF_8.name());
         final String template = "/subscriptions/%s/resourceGroups/%s/providers/AzureToolkits.Favorite/favorites/%s";
-        return String.format(template, NONE.getName(), NONE.getName(), encoded);
+        return String.format(template, AzResource.NONE.getName(), AzResource.NONE.getName(), encoded);
     }
 
     @Nonnull

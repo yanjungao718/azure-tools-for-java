@@ -11,26 +11,20 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.arm.action.DeploymentActions;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceDeploymentModule;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
-public class IntellijArmActionsContributor implements IActionsContributor {
+public class IntellijDeploymentActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<Object, AnActionEvent> createCondition1 = (r, e) -> r instanceof AzureResources;
-        final BiConsumer<Object, AnActionEvent> createHandler1 = (c, e) ->
-            DeploymentActions.createDeployment((Objects.requireNonNull(e.getProject())), null);
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition1, createHandler1);
-
-        final BiPredicate<Object, AnActionEvent> createCondition2 = (r, e) -> r instanceof ResourceGroup;
-        final BiConsumer<Object, AnActionEvent> createHandler2 = (c, e) ->
-            DeploymentActions.createDeployment((Objects.requireNonNull(e.getProject())), (ResourceGroup) c);
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition2, createHandler2);
+        final BiPredicate<Object, AnActionEvent> createCondition = (r, e) -> r instanceof ResourceDeploymentModule;
+        final BiConsumer<Object, AnActionEvent> createHandler = (c, e) ->
+            DeploymentActions.createDeployment((Objects.requireNonNull(e.getProject())), ((ResourceDeploymentModule) c).getParent());
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
         final BiPredicate<ResourceDeployment, AnActionEvent> editCondition = (r, e) -> r instanceof ResourceDeployment;
         final BiConsumer<ResourceDeployment, AnActionEvent> editHandler = (c, e) ->

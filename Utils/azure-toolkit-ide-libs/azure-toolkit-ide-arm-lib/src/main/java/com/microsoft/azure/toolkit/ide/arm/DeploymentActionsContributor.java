@@ -22,9 +22,8 @@ import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBun
 public class DeploymentActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
-    public static final String RESOURCE_MANAGEMENT_ACTIONS = "actions.resourceManagement.service";
-    public static final String RESOURCE_GROUP_ACTIONS = "actions.resourceManagement.group";
-    public static final String RESOURCE_DEPLOYMENT_ACTIONS = "actions.resourceManagement.deployment";
+    public static final String DEPLOYMENT_ACTIONS = "actions.resourceDeployments.deployment";
+    public static final String DEPLOYMENTS_ACTIONS = "actions.resourceDeployments.deployments";
 
     public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("action.resourceDeployment.edit");
     public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("action.resourceDeployment.update");
@@ -64,25 +63,14 @@ public class DeploymentActionsContributor implements IActionsContributor {
 
     @Override
     public void registerGroups(AzureActionManager am) {
-        final ActionGroup serviceActionGroup = new ActionGroup(
+        final ActionGroup deploymentsActions = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
-        am.registerGroup(RESOURCE_MANAGEMENT_ACTIONS, serviceActionGroup);
+        am.registerGroup(DEPLOYMENTS_ACTIONS, deploymentsActions);
 
-        final ActionGroup groupActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.PIN,
-            "---",
-            ResourceCommonActionsContributor.REFRESH,
-            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-            "---",
-            ResourceCommonActionsContributor.CREATE,
-            ResourceCommonActionsContributor.DELETE
-        );
-        am.registerGroup(RESOURCE_GROUP_ACTIONS, groupActionGroup);
-
-        final ActionGroup deploymentActionGroup = new ActionGroup(
+        final ActionGroup deploymentActions = new ActionGroup(
             ResourceCommonActionsContributor.PIN,
             "---",
             ResourceCommonActionsContributor.REFRESH,
@@ -96,7 +84,7 @@ public class DeploymentActionsContributor implements IActionsContributor {
             DeploymentActionsContributor.EXPORT_TEMPLATE,
             DeploymentActionsContributor.EXPORT_PARAMETER
         );
-        am.registerGroup(RESOURCE_DEPLOYMENT_ACTIONS, deploymentActionGroup);
+        am.registerGroup(DEPLOYMENT_ACTIONS, deploymentActions);
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
         group.addAction(GROUP_CREATE_DEPLOYMENT);
