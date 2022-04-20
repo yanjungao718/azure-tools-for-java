@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -25,13 +26,13 @@ public class IntellijAccountActionsContributor implements IActionsContributor, I
     public void registerActions(AzureActionManager am) {
         final AzureString tryAzureTitle = AzureOperationBundle.title("account.try_aure");
         final ActionView.Builder tryAzureView = new ActionView.Builder("Try Azure for Free").title((s) -> tryAzureTitle);
-        final BiConsumer<Void, AnActionEvent> tryAzureHandler = (Void v, AnActionEvent e) ->
+        final BiConsumer<Object, AnActionEvent> tryAzureHandler = (Object v, AnActionEvent e) ->
             AzureActionManager.getInstance().getAction(OPEN_URL).handle(URL_TRY_AZURE_FOR_FREE);
         am.registerAction(IAccountActions.TRY_AZURE, new Action<>(tryAzureHandler, tryAzureView).setAuthRequired(false));
     }
 
     @Override
     public int getOrder() {
-        return 2; //after azure resource common actions registered
+        return ResourceCommonActionsContributor.INITIALIZE_ORDER + 1; //after azure resource common actions registered
     }
 }

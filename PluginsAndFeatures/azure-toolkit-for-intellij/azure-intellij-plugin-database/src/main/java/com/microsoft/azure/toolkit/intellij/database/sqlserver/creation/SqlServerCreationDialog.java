@@ -9,14 +9,12 @@ import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
-import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -100,8 +98,7 @@ public class SqlServerCreationDialog extends AzureDialog<DatabaseServerConfig> {
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
         final Subscription subscription = selectedSubscriptions.get(0);
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
-        final Region region = Utils.selectFirstOptionIfCurrentInvalid("region", az(AzureSqlServer.class)
-            .forSubscription(subscription.getId()).listSupportedRegions(), Region.US_EAST);
+        final Region region = Region.US_EAST;
         final DatabaseServerConfig config = new DatabaseServerConfig("sqlserver-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);

@@ -29,7 +29,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
 
     @Nonnull
     @Getter
-    private final T resource;
+    protected final T resource;
     @Getter
     private final String label;
     @Getter

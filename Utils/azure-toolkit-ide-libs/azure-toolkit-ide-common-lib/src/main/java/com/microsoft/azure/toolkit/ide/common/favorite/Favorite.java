@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.ide.common.favorite;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
 
     @Nonnull
     @Override
-    public List<AzResourceModule<?, Favorite, ?>> getSubModules() {
+    public List<AbstractAzResourceModule<?, Favorite, ?>> getSubModules() {
         return Collections.emptyList();
     }
 

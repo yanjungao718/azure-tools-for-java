@@ -43,6 +43,7 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
             am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
         };
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
+        am.registerHandler(SpringCloudActionsContributor.GROUP_CREATE_CLUSTER, (r, e) -> true, handler);
     }
 
     private void registerCreateAppActionHandler(AzureActionManager am) {

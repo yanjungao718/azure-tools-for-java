@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.common.icon;
 public final class AzureIcons {
     public static final class Common {
         public static final AzureIcon REFRESH_ICON = AzureIcon.builder().iconPath("/icons/refresh").build();
+        public static final AzureIcon UNKNOWN_ICON = AzureIcon.builder().iconPath("/icons/unknown").build();
         public static final AzureIcon AZURE = AzureIcon.builder().iconPath("/icons/Common/Azure.svg").build();
         public static final AzureIcon SELECT_SUBSCRIPTIONS = AzureIcon.builder().iconPath("/icons/Common/SelectSubscriptions.svg").build();
         public static final AzureIcon AZURE_ACTIVE_LOG = AzureIcon.builder().iconPath("/icons/Common/AzureActiveLog.svg").build();

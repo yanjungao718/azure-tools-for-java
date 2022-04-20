@@ -38,6 +38,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
@@ -124,7 +125,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
     protected Boolean executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
-        AzureMessager.getContext().setMessager(new RunProcessHandlerMessenger(processHandler));
+        OperationContext.current().setMessager(new RunProcessHandlerMessenger(processHandler));
         validateFunctionRuntime();
         stagingFolder = FunctionUtils.getTempStagingFolder();
         addProcessTerminatedListener(processHandler);
@@ -285,7 +286,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                                       RunProcessHandler processHandler,
                                       final @NotNull Operation operation) throws Exception {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
-        AzureMessager.getContext().setMessager(messenger);
+        OperationContext.current().setMessager(messenger);
         final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
         final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
         final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule()));

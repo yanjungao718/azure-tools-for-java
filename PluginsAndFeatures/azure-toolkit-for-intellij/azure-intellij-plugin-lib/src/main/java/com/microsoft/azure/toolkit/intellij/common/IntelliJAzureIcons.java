@@ -31,6 +31,7 @@ public class IntelliJAzureIcons {
             put("/icons/module", AllIcons.Nodes.Module);
             put("/icons/spinner", AnimatedIcon.Default.INSTANCE);
             put("/icons/error", AllIcons.General.Error);
+            put("/icons/unknown", AllIcons.Nodes.Unknown);
         }
     };
     private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>() {
@@ -56,6 +57,7 @@ public class IntelliJAzureIcons {
             put(AzureIcons.Common.DELETE, AllIcons.Actions.GC);
             put(AzureIcons.Common.RESTART, AllIcons.Actions.Restart);
             put(AzureIcons.Common.SHOW_PROPERTIES, AllIcons.Actions.Properties);
+            put(AzureIcons.Common.UNKNOWN_ICON, AllIcons.Nodes.Unknown);
         }
     };
 
@@ -86,7 +88,7 @@ public class IntelliJAzureIcons {
             return getFileTypeIcon(fileExtension);
         }
         return icons.computeIfAbsent(iconPathOrName, path -> Optional.ofNullable(loadIcon(iconPathOrName, clazz))
-                .orElseGet(() -> StringUtils.isEmpty(fallback) ? null : loadIcon(fallback, clazz)));
+            .orElseGet(() -> StringUtils.isEmpty(fallback) ? null : loadIcon(fallback, clazz)));
     }
 
     private static Icon getFileTypeIcon(final String name) {

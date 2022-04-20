@@ -22,7 +22,7 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
     @Getter
     private final T service;
     @Getter
-    private final String label;
+    protected String label;
     @Getter
     private final String iconPath;
     private final AzureEventBus.EventListener listener;

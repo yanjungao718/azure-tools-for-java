@@ -19,6 +19,7 @@ import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.St
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 
@@ -64,7 +65,7 @@ public class TriggerFunctionAction {
     }
 
     private static CharSequence getRequestContent(FunctionEntity functionEntity) {
-        final FunctionApp functionApp = Azure.az(AzureAppService.class).functionApp(functionEntity.getFunctionAppId());
+        final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(functionEntity.getFunctionAppId());
         final String triggerType = Optional.ofNullable(functionEntity.getTrigger())
                 .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
         final String content = StringUtils.equalsIgnoreCase(triggerType, "timerTrigger") ? EMPTY_CONTENT : INPUT_CONTENT;

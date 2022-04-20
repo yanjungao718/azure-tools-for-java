@@ -22,7 +22,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
@@ -84,12 +84,12 @@ public class FunctionAppService {
     }
 
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {
-        AzureTelemetry.getActionContext().setProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
+        OperationContext.action().setTelemetryProperty(CREATE_NEW_FUNCTION_APP, String.valueOf(true));
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(config);
         final AppServicePlan appServicePlan = getOrCreateAppServicePlan(config);
         final Map<String, String> appSettings = getAppSettings(config);
         // get/create ai instances only if user didn't specify ai connection string in app settings
-        AzureTelemetry.getActionContext().setProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
+        OperationContext.action().setTelemetryProperty(DISABLE_APP_INSIGHTS, String.valueOf(config.getMonitorConfig().getApplicationInsightsConfig() == null));
         bindApplicationInsights(appSettings, config);
         final FunctionAppDraft draft = Azure.az(AzureFunctions.class).functionApps(config.getSubscription().getId())
             .create(config.getName(), resourceGroup.getName());
@@ -135,7 +135,7 @@ public class FunctionAppService {
         final AppServicePlan appServicePlan = Azure.az(AzureAppService.class).plans(config.getSubscription().getId())
             .getOrDraft(servicePlanName, servicePlanGroup);
         if (!appServicePlan.exists()) {
-            AzureTelemetry.getActionContext().setProperty(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
+            OperationContext.action().setTelemetryProperty(CREATE_NEW_APP_SERVICE_PLAN, String.valueOf(true));
             final AppServicePlanDraft draft = (AppServicePlanDraft) appServicePlan;
             draft.setRegion(config.getRegion());
             draft.setPricingTier(config.getServicePlan().getPricingTier());
@@ -170,7 +170,7 @@ public class FunctionAppService {
     public void deployFunctionApp(final FunctionApp functionApp, final File stagingFolder) throws IOException {
         AzureMessager.getMessager().info(DEPLOY_START);
         final FunctionDeployType deployType = getDeployType(functionApp);
-        AzureTelemetry.getActionContext().setProperty(DEPLOYMENT_TYPE, deployType.name());
+        OperationContext.action().setTelemetryProperty(DEPLOYMENT_TYPE, deployType.name());
         functionApp.deploy(packageStagingDirectory(stagingFolder), deployType);
         if (!StringUtils.equalsIgnoreCase(functionApp.getStatus(), RUNNING)) {
             functionApp.start();

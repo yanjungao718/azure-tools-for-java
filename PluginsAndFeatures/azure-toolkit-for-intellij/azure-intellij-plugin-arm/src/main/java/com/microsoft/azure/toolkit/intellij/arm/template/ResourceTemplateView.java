@@ -27,8 +27,8 @@ import com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateLanguage;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeploymentDraft;
 import com.microsoft.intellij.ui.util.UIUtils;
@@ -131,7 +131,7 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
             final String subscriptionId = draft.getSubscriptionId();
             this.draft.setTemplateAsJson(getTemplate());
             this.draft.setParametersAsJson(getParameters());
-            AzureTelemetry.getActionContext().setProperty("subscriptionId", subscriptionId);
+            OperationContext.action().setTelemetryProperty("subscriptionId", subscriptionId);
             this.draft.commit();
             this.updateDeploymentButton.setEnabled(this.isModified());
         };

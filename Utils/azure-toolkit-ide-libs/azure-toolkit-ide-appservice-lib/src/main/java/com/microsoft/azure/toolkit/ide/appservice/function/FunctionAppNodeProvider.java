@@ -27,8 +27,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
-import static com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider.WEBAPP_ICON_PROVIDER;
-
 public class FunctionAppNodeProvider implements IExplorerNodeProvider {
     public static final AzureIconProvider<AppServiceAppBase<?, ?, ?>> FUNCTIONAPP_ICON_PROVIDER =
         new AzureResourceIconProvider<AppServiceAppBase<?, ?, ?>>()
@@ -45,7 +43,7 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureFunctions ||
             data instanceof FunctionApp ||
             data instanceof AppServiceFile;

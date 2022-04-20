@@ -15,9 +15,9 @@ import com.microsoft.azure.toolkit.intellij.database.component.ConnectionStrings
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseServerPropertyActionPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlDatabase;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServerDraft;
@@ -164,10 +164,10 @@ public class SqlServerPropertiesEditor extends AzResourcePropertiesEditor<Micros
             final boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             this.draft.setAzureServiceAccessAllowed(allowAccessToAzureServices);
             this.draft.setLocalMachineAccessAllowed(allowAccessToLocal);
-            final AzureTelemetry.Context context = AzureTelemetry.getActionContext();
-            context.setProperty("subscriptionId", subscriptionId);
-            context.setProperty("allowAccessToLocal", String.valueOf(allowAccessToLocal));
-            context.setProperty("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
+            final OperationContext context = OperationContext.action();
+            context.setTelemetryProperty("subscriptionId", subscriptionId);
+            context.setTelemetryProperty("allowAccessToLocal", String.valueOf(allowAccessToLocal));
+            context.setTelemetryProperty("allowAccessToAzureServices", String.valueOf(allowAccessToAzureServices));
             this.draft.commit();
             this.refreshButtons();
         };

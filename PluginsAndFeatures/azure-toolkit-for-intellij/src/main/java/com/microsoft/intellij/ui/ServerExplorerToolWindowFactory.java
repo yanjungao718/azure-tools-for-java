@@ -99,9 +99,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final JTree tree = new Tree(treeModel);
 
         final var favorRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildFavoriteRoot(), tree);
+        final var acvRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildAppCentricViewRoot(), tree);
         final var azureRootNode = createTreeNode(azureModule, project);
         final var arisRootNode = createTreeNode(arisModule, project);
         hiddenRoot.add(favorRootNode);
+        hiddenRoot.add(acvRootNode);
         hiddenRoot.add(azureRootNode);
         azureModule.load(false); // kick-off asynchronous load of child nodes on all the modules
         hiddenRoot.add(arisRootNode);
@@ -118,6 +120,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
+        azureModule.setClearResourcesListener(() -> acvRootNode.clearChildren());
         TreeUtils.installSelectionListener(tree);
         TreeUtils.installExpandListener(tree);
         TreeUtils.installMouseListener(tree);

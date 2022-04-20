@@ -12,23 +12,25 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
-public class ArmActionsContributor implements IActionsContributor {
+public class DeploymentActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
-    public static final String RESOURCE_MANAGEMENT_ACTIONS = "actions.resourceManagement.service";
-    public static final String RESOURCE_GROUP_ACTIONS = "actions.resourceManagement.group";
-    public static final String RESOURCE_DEPLOYMENT_ACTIONS = "actions.resourceManagement.deployment";
+    public static final String DEPLOYMENT_ACTIONS = "actions.resourceDeployments.deployment";
+    public static final String DEPLOYMENTS_ACTIONS = "actions.resourceDeployments.deployments";
 
     public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("action.resourceDeployment.edit");
     public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("action.resourceDeployment.update");
     public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("action.resourceDeployment.export_template");
     public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("action.resourceDeployment.export_parameter");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("action.arm.create_deployment.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -53,43 +55,40 @@ public class ArmActionsContributor implements IActionsContributor {
         am.registerAction(UPDATE, new Action<>(updateDeployment));
         am.registerAction(EXPORT_TEMPLATE, exportTemplateAction);
         am.registerAction(EXPORT_PARAMETER, exportParameterAction);
+
+        final ActionView.Builder createDeploymentView = new ActionView.Builder("Deployment")
+            .title(s -> Optional.ofNullable(s).map(r -> title("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(createDeploymentView));
     }
 
     @Override
     public void registerGroups(AzureActionManager am) {
-        final ActionGroup serviceActionGroup = new ActionGroup(
+        final ActionGroup deploymentsActions = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
-        am.registerGroup(RESOURCE_MANAGEMENT_ACTIONS, serviceActionGroup);
+        am.registerGroup(DEPLOYMENTS_ACTIONS, deploymentsActions);
 
-        final ActionGroup groupActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.PIN,
-            "---",
-            ResourceCommonActionsContributor.REFRESH,
-            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-            "---",
-            ResourceCommonActionsContributor.CREATE,
-            ResourceCommonActionsContributor.DELETE
-        );
-        am.registerGroup(RESOURCE_GROUP_ACTIONS, groupActionGroup);
-
-        final ActionGroup deploymentActionGroup = new ActionGroup(
+        final ActionGroup deploymentActions = new ActionGroup(
             ResourceCommonActionsContributor.PIN,
             "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
             "---",
-            ArmActionsContributor.EDIT,
-            ArmActionsContributor.UPDATE,
+            DeploymentActionsContributor.EDIT,
+            DeploymentActionsContributor.UPDATE,
             ResourceCommonActionsContributor.DELETE,
             "---",
-            ArmActionsContributor.EXPORT_TEMPLATE,
-            ArmActionsContributor.EXPORT_PARAMETER
+            DeploymentActionsContributor.EXPORT_TEMPLATE,
+            DeploymentActionsContributor.EXPORT_PARAMETER
         );
-        am.registerGroup(RESOURCE_DEPLOYMENT_ACTIONS, deploymentActionGroup);
+        am.registerGroup(DEPLOYMENT_ACTIONS, deploymentActions);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_DEPLOYMENT);
     }
 
     @Override

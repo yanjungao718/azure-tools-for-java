@@ -14,13 +14,15 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachineDraft;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.task.CreateVirtualMachineTask;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -28,8 +30,8 @@ public class CreateVirtualMachineAction {
 
     public static final String REOPEN_CREATION_DIALOG = "Reopen Creation Dialog";
 
-    public static void createVirtualMachine(Project project) {
-        AzureTaskManager.getInstance().runLater(() -> openDialog(project, null));
+    public static void create(@Nonnull Project project, @Nullable final VirtualMachineDraft draft) {
+        AzureTaskManager.getInstance().runLater(() -> openDialog(project, draft));
     }
 
     private static void openDialog(final Project project, final VirtualMachineDraft draft) {
@@ -54,7 +56,7 @@ public class CreateVirtualMachineAction {
     private static void doCreateVirtualMachine(final Project project, final VirtualMachineDraft draft) {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         tm.runInBackground(AzureOperationBundle.title("vm.create_vm.vm", draft.getName()), () -> {
-            AzureTelemetry.getActionContext().setProperty("subscriptionId", draft.getSubscriptionId());
+            OperationContext.action().setTelemetryProperty("subscriptionId", draft.getSubscriptionId());
             try {
                 new CreateVirtualMachineTask(draft).execute();
             } catch (final Exception e) {

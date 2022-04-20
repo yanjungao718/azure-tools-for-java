@@ -16,7 +16,9 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -40,6 +42,8 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
     public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
+
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("action.function.create_app.group");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -73,6 +77,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         am.registerGroup(FUNCTION_ACTION, new ActionGroup(FunctionAppActionsContributor.TRIGGER_FUNCTION,
                 FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER, FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT));
         am.registerGroup(FUNCTIONS_ACTIONS, new ActionGroup(FunctionAppActionsContributor.REFRESH_FUNCTIONS));
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_FUNCTION);
     }
 
     @Override
@@ -113,6 +120,11 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         final Action<Object> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
         configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
+
+        final ActionView.Builder createFunctionView = new ActionView.Builder("Function App")
+            .title(s -> Optional.ofNullable(s).map(r -> title("function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(createFunctionView));
     }
 
     @Override
