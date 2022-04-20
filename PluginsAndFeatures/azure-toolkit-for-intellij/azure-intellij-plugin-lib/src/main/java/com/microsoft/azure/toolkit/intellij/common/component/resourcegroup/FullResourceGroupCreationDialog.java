@@ -92,6 +92,7 @@ public class FullResourceGroupCreationDialog extends AzureDialog<ResourceGroupDr
         final String name = this.textName.getValue();
         if (Objects.isNull(subscription) || Objects.isNull(region) || StringUtils.isBlank(name)) {
             final String msg = "\"subscription\", \"region\" and \"name\" are all required to create a resource group";
+            this.setErrorText(msg);
             AzureMessager.getMessager().warning(msg);
             return null;
         }

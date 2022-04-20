@@ -14,6 +14,8 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourcesServiceSubscription;
 
+import java.util.Objects;
+
 public class IntellijResourceGroupActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
@@ -26,8 +28,10 @@ public class IntellijResourceGroupActionsContributor implements IActionsContribu
             final Subscription s = o instanceof ResourcesServiceSubscription ? ((ResourcesServiceSubscription) o).getSubscription() : null;
             final FullResourceGroupCreationDialog dialog = new FullResourceGroupCreationDialog(s);
             dialog.setOkActionListener((group) -> {
-                dialog.close();
-                group.createIfNotExist();
+                if (Objects.nonNull(group)) {
+                    dialog.close();
+                    group.createIfNotExist();
+                }
             });
             dialog.show();
         });
