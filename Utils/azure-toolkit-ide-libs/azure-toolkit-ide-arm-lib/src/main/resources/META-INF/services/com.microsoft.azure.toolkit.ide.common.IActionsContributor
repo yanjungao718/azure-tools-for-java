@@ -1,1 +1,2 @@
-com.microsoft.azure.toolkit.ide.arm.ArmActionsContributor
+com.microsoft.azure.toolkit.ide.arm.DeploymentActionsContributor
+com.microsoft.azure.toolkit.ide.arm.ResourceGroupActionsContributor

@@ -1,8 +1,0 @@
-intellij {
-}
-
-dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-appcentricview-lib:' + azureToolkitVersion
-}
