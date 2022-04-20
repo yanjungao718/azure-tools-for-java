@@ -21,11 +21,18 @@ import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccountDraft;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class CreateStorageAccountAction {
-    public static void createStorageAccount(Project project) {
+    public static void create(@Nonnull Project project, @Nullable final StorageAccountConfig data) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final StorageAccountCreationDialog dialog = new StorageAccountCreationDialog(project);
+            if (Objects.nonNull(data)) {
+                dialog.getForm().setValue(data);
+            }
             dialog.setOkActionListener((config) -> {
                 dialog.close();
                 create(config);

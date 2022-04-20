@@ -9,28 +9,29 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public interface IExplorerNodeProvider {
-    @Nullable
-    default Node<?> getModuleNode(@Nullable Node<?> parent, @Nonnull Manager manager) {
-        return Optional.ofNullable(this.getRoot()).map(r -> manager.createNode(r, parent)).orElse(null);
-    }
 
     default int getOrder() {
         return 0;
     }
 
     @Nullable
-    Object getRoot();
+    default Object getRoot() {
+        return null;
+    }
 
-    boolean accept(@Nonnull Object data, @Nullable Node<?> parent);
+    boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type);
 
     @Nullable
     Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager);
 
     interface Manager {
-        @Nullable
-        Node<?> createNode(@Nonnull Object data, Node<?> parent);
+        @Nonnull
+        Node<?> createNode(@Nonnull Object data, Node<?> parent, ViewType type);
+    }
+
+    enum ViewType {
+        APP_CENTRIC, TYPE_CENTRIC
     }
 }

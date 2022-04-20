@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class AzureIcon {
     public static final AzureIcon REFRESH_ICON = AzureIcon.builder().iconPath("/icons/refresh").build();
+    public static final AzureIcon UNKNOWN_ICON = AzureIcon.builder().iconPath("/icons/unknown").build();
 
     private String iconPath;
     private List<Modifier> modifierList;

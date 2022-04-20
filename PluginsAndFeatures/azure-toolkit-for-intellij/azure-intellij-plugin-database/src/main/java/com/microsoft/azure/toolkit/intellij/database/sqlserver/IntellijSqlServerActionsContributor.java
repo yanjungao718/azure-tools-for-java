@@ -15,16 +15,21 @@ import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResource;
 import com.microsoft.azure.toolkit.intellij.database.sqlserver.connection.SqlServerDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.sqlserver.creation.CreateSqlServerAction;
+import com.microsoft.azure.toolkit.intellij.database.sqlserver.creation.SqlServerCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -35,7 +40,7 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzureSqlServer;
-        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateSqlServerAction.create((e.getProject()));
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateSqlServerAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MicrosoftSqlServer,
@@ -49,6 +54,20 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
 
         final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MicrosoftSqlServer) c);
         am.registerHandler(SqlServerActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
+
+        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateServerHandler = (r, e) -> {
+            final DatabaseServerConfig config = SqlServerCreationDialog.getDefaultConfig();
+            config.setSubscription(r.getSubscription());
+            config.setRegion(r.getRegion());
+            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .subscriptionId(r.getSubscriptionId())
+                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
+                .build());
+            CreateSqlServerAction.create(e.getProject(), config);
+        };
+        am.registerHandler(SqlServerActionsContributor.GROUP_CREATE_SQLSERVER, (r, e) -> true, groupCreateServerHandler);
     }
 
     @AzureOperation(name = "sqlserver.open_by_database_tools.server", params = {"server.getName()"}, type = AzureOperation.Type.ACTION)

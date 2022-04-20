@@ -15,16 +15,21 @@ import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResource;
 import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.postgre.creation.CreatePostgreSqlAction;
+import com.microsoft.azure.toolkit.intellij.database.postgre.creation.PostgreSqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -35,7 +40,7 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzurePostgreSql;
-        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreatePostgreSqlAction.create((e.getProject()));
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreatePostgreSqlAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof PostgreSqlServer,
@@ -49,6 +54,20 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
 
         final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (PostgreSqlServer) c);
         am.registerHandler(PostgreSqlActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
+
+        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateServerHandler = (r, e) -> {
+            final DatabaseServerConfig config = PostgreSqlCreationDialog.getDefaultConfig();
+            config.setSubscription(r.getSubscription());
+            config.setRegion(r.getRegion());
+            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .subscriptionId(r.getSubscriptionId())
+                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
+                .build());
+            CreatePostgreSqlAction.create(e.getProject(), config);
+        };
+        am.registerHandler(PostgreSqlActionsContributor.GROUP_CREATE_POSTGRE, (r, e) -> true, groupCreateServerHandler);
     }
 
     @AzureOperation(name = "postgre.open_by_database_tools.server", params = {"server.getName()"}, type = AzureOperation.Type.ACTION)

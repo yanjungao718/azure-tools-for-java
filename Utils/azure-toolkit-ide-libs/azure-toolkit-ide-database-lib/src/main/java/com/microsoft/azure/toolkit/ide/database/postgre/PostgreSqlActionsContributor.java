@@ -11,9 +11,11 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
@@ -27,6 +29,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
 
     private static final String NAME_PREFIX = "PostgreSQL Server - %s";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.postgre.open_database_tool");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_POSTGRE = Action.Id.of("action.postgre.create_server.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -36,6 +39,11 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
         final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
+
+        final ActionView.Builder createServerView = new ActionView.Builder("PostgreSQL server")
+            .title(s -> Optional.ofNullable(s).map(r -> title("postgre.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_POSTGRE, new Action<>(createServerView));
     }
 
     public int getOrder() {
@@ -65,5 +73,8 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(SERVER_ACTIONS, serverActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_POSTGRE);
     }
 }

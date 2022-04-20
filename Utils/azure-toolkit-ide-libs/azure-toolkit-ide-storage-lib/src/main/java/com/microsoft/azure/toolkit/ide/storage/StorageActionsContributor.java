@@ -12,7 +12,9 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
 import java.awt.*;
@@ -31,6 +33,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final Action.Id<StorageAccount> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer.account");
     public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string.account");
     public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key.account");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("action.storage.create_account.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -61,6 +64,11 @@ public class StorageActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(copyPrimaryKey, copyPrimaryView);
         am.registerAction(COPY_PRIMARY_KEY, copyPrimaryKeyAction);
+
+        final ActionView.Builder createAccountView = new ActionView.Builder("Storage Account")
+            .title(s -> Optional.ofNullable(s).map(r -> title("storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_ACCOUNT, new Action<>(createAccountView));
     }
 
     @Override
@@ -87,6 +95,9 @@ public class StorageActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_ACCOUNT);
     }
 
     @Override
