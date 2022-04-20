@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.appcentricview;
+package com.microsoft.azure.toolkit.ide.arm;
 
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResources> {
-    private static final String NAME = "Resource Management";
+    private static final String NAME = "Resource Groups";
     private final AzureEventBus.EventListener subscriptionListener;
     private final AzureEventBus.EventListener logoutListener;
 

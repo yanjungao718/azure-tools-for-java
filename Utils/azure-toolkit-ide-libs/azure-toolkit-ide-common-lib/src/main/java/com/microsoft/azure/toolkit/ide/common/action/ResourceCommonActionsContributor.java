@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Startable;
@@ -27,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.view.IView;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -151,22 +153,24 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> {
                 String name = r.getClass().getSimpleName();
                 if (r instanceof AzResource) {
-                    name = ((AzResource<?, ?, ?>) r).name();
+                    name = ((AzResource<?, ?, ?>) r).getName();
                 } else if (r instanceof AzService) {
                     name = ((AzService) r).getName();
+                } else if (r instanceof AzResourceModule) {
+                    name = ((AzResourceModule<?, ?, ?>) r).getResourceTypeName();
                 }
                 return title("resource.create_resource.service", name);
-            }).orElse(null)).enabled(s -> s instanceof AzService ||
+            }).orElse(null)).enabled(s -> s instanceof AzService || s instanceof AzResourceModule ||
                 (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)));
         final Action<Object> createAction = new Action<>(createView);
         createAction.setShortcuts(shortcuts.add());
         am.registerAction(CREATE, createAction);
 
         final Favorites favorites = Favorites.getInstance();
-        final Function<Object, String> title = s -> favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+        final Function<Object, String> title = s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
             "Unmark As Favorite" : "Mark As Favorite";
         final ActionView.Builder pinView = new ActionView.Builder(title).enabled(s -> s instanceof AbstractAzResource);
-        pinView.iconPath(s -> favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+        pinView.iconPath(s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
             "/icons/Common/pin.svg" : "/icons/Common/unpin.svg");
         final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>((r) -> {
             if (favorites.exists(r.getId(), null)) {
