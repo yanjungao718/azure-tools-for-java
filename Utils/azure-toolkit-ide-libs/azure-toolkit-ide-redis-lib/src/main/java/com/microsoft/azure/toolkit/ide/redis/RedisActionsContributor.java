@@ -11,8 +11,10 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 
 import java.util.Optional;
@@ -25,6 +27,7 @@ public class RedisActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_EXPLORER = Action.Id.of("action.redis.open_explorer");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("action.redis.create_redis.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -34,6 +37,11 @@ public class RedisActionsContributor implements IActionsContributor {
         final Action<AzResource<?, ?, ?>> action = new Action<>(showExplorerView);
         action.setShortcuts(am.getIDEDefaultShortcuts().view());
         am.registerAction(OPEN_EXPLORER, action);
+
+        final ActionView.Builder createRedisView = new ActionView.Builder("Redis Cache")
+            .title(s -> Optional.ofNullable(s).map(r -> title("redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_REDIS, new Action<>(createRedisView));
     }
 
     @Override
@@ -58,6 +66,9 @@ public class RedisActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(REDIS_ACTIONS, redisActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_REDIS);
     }
 
     @Override

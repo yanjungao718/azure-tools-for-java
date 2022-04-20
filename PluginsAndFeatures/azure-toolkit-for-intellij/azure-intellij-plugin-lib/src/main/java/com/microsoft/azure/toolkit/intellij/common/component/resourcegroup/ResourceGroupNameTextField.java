@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Pattern;
@@ -22,13 +21,17 @@ public class ResourceGroupNameTextField extends AzureTextInput {
         "and cannot end in a period.";
     public static final String INVALID_LENGTH = "Resource group names only allow up to 90 characters.";
     public static final String CONFLICT_NAME = "A resource group with the same name already exists in the selected subscription %s";
-    @Setter
     private Subscription subscription;
 
     public ResourceGroupNameTextField() {
         super();
         this.addValidator(this::doValidateValue);
         this.setRequired(true);
+    }
+
+    public void setSubscription(Subscription subscription) {
+        this.subscription = subscription;
+        this.validateValueAsync();
     }
 
     public AzureValidationInfo doValidateValue() {

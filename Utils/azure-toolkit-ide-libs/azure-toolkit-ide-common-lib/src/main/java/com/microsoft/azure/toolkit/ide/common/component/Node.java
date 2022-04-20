@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,7 +41,7 @@ public class Node<D> {
     @Setter
     private boolean lazy = true;
     @Nullable
-    private ActionGroup actions;
+    private IActionGroup actions;
     private int order;
     private Action<? super D> doubleClickAction;
     private Action<? super D> inlineAction;
@@ -75,6 +75,10 @@ public class Node<D> {
 
     public Node<D> addChildren(@Nonnull List<Node<?>> children) {
         return this.addChildren((d) -> children, (cd, n) -> cd);
+    }
+
+    public Node<D> addChildren(@Nonnull Function<? super D, ? extends List<Node<?>>> getChildrenNodes) {
+        return this.addChildren(getChildrenNodes, (cd, n) -> cd);
     }
 
     public Node<D> addChild(@Nonnull Node<?> childNode) {
@@ -115,7 +119,7 @@ public class Node<D> {
         return this.actions(AzureActionManager.getInstance().getGroup(groupId));
     }
 
-    public Node<D> actions(ActionGroup group) {
+    public Node<D> actions(IActionGroup group) {
         this.actions = group;
         return this;
     }
