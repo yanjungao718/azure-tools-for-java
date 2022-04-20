@@ -14,9 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
-import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -100,9 +98,7 @@ public class MySqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
         final Subscription subscription = selectedSubscriptions.get(0);
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
-        final Region region = Utils.selectFirstOptionIfCurrentInvalid("region",
-            az(AzureMySql.class).forSubscription(subscription.getId()).listSupportedRegions(),
-            Region.US_EAST);
+        final Region region = Region.US_EAST;
         final DatabaseServerConfig config = new DatabaseServerConfig("mysql-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
