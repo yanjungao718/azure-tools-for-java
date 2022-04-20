@@ -8,10 +8,10 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class NodeAction implements Sortable, Groupable {
     private String iconPath;
     @Getter
     @Setter
-    private AzureIconSymbol iconSymbol;
+    private AzureIcon iconSymbol;
 
     public NodeAction(Node node, String name) {
         this.node = node;

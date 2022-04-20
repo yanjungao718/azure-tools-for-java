@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.arm;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -31,16 +32,16 @@ public class ArmActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder editDeployment = new ActionView.Builder("Edit Deployment", "/icons/action/edit")
+        final ActionView.Builder editDeployment = new ActionView.Builder("Edit Deployment", AzureIcons.Action.EDIT.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("arm.edit_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable());
-        final ActionView.Builder updateDeployment = new ActionView.Builder("Update Deployment", "/icons/action/update")
+        final ActionView.Builder updateDeployment = new ActionView.Builder("Update Deployment",  AzureIcons.Action.EDIT.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("arm.update_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable());
-        final ActionView.Builder exportTemplate = new ActionView.Builder("Export Template File", "/icons/action/export")
+        final ActionView.Builder exportTemplate = new ActionView.Builder("Export Template File",   AzureIcons.Action.EDIT.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("arm.export_template.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
-        final ActionView.Builder exportParameter = new ActionView.Builder("Export Parameter File", "/icons/action/export")
+        final ActionView.Builder exportParameter = new ActionView.Builder("Export Parameter File",  AzureIcons.Action.EDIT.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("arm.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
         final Action<ResourceDeployment> editAction = new Action<>(editDeployment);

@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -25,7 +26,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class SpringCloudNodeProvider implements IExplorerNodeProvider {
 
     private static final String NAME = "Spring Cloud";
-    private static final String ICON = "/icons/Microsoft.AppPlatform/default.svg";
+    private static final String ICON = AzureIcons.SpringCloud.MODULE.getIconPath();
 
     @Nullable
     @Override

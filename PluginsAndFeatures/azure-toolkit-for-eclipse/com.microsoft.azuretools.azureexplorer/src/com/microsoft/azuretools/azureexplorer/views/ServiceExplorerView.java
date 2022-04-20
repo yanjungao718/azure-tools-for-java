@@ -329,7 +329,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             if (obj instanceof TreeNode) {
                 final Node node = ((TreeNode) obj).node;
                 iconPath = Optional.ofNullable(node.getIconPath()).map(path -> "icons/" + path)
-                        .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getPath()).orElse(null));
+                        .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getIconPath()).orElse(null));
             } else if (obj instanceof AzureTreeNode) {
                 iconPath = ((AzureTreeNode) obj).getIconPath();
             }

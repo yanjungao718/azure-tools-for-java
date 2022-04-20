@@ -7,6 +7,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -67,7 +68,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
-    public AzureIconSymbol getIconSymbol() {
+    public AzureIcon getIconSymbol() {
         return null;
     }
 

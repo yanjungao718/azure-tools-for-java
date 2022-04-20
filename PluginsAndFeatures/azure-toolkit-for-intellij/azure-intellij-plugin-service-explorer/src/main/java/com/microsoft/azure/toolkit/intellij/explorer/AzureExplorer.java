@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
     private static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
-    public static final String AZURE_ICON = "/icons/Common/Azure.svg";
+    public static final String AZURE_ICON = AzureIcons.Common.AZURE.getIconPath();
 
     private AzureExplorer() {
         super();

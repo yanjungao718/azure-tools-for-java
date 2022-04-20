@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
@@ -23,7 +24,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class PostgreSqlNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Azure Database for PostgreSQL";
-    private static final String ICON = "/icons/Microsoft.DBforPostgreSQL/default.svg";
+    private static final String ICON = AzureIcons.Postgre.MODULE.getIconPath();
 
     @Nullable
     @Override

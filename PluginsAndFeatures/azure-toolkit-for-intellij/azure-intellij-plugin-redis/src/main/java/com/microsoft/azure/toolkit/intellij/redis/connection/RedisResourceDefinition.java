@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -34,7 +35,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     public static final RedisResourceDefinition INSTANCE = new RedisResourceDefinition();
 
     private RedisResourceDefinition() {
-        super("Azure.Redis", "Azure Redis Cache", "/icons/Microsoft.Cache/default.svg");
+        super("Azure.Redis", "Azure Redis Cache", AzureIcons.RedisCache.MODULE.getIconPath());
     }
 
     @Override

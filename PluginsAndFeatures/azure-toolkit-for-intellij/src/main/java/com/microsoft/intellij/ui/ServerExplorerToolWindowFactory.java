@@ -28,7 +28,8 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -36,13 +37,11 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
@@ -219,9 +218,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
         final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
         menuItem.setEnabled(nodeAction.isEnabled());
-        AzureIconSymbol iconSymbol = nodeAction.getIconSymbol();
+        final AzureIcon iconSymbol = nodeAction.getIconSymbol();
         if (Objects.nonNull(iconSymbol)) {
-            menuItem.setIcon(AzureIconLoader.loadIcon(iconSymbol));
+            menuItem.setIcon(IntelliJAzureIcons.getIcon(iconSymbol));
         } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
             menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
         }
@@ -359,7 +358,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
                 final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
                 inlineActionIcon = Optional.ofNullable(node.getInlineActionView())
-                    .map(av -> AzureIcons.getIcon(av.getIconPath())).orElse(null);
+                    .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath())).orElse(null);
                 if (hoveredRow != row && inlineActionIcon == AllIcons.Nodes.NotFavoriteOnHover) {
                     // TODO: should not check the value of inlineActionIcon
                     inlineActionIcon = null;
@@ -384,11 +383,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
             final Icon icon = node.getIcon();
             final String iconPath = node.getIconPath();
-            final AzureIconSymbol iconSymbol = node.getIconSymbol();
+            final AzureIcon iconSymbol = node.getIconSymbol();
             if (Objects.nonNull(icon)) {
                 setIcon(icon);
             } else if (Objects.nonNull(iconSymbol)) {
-                setIcon(AzureIconLoader.loadIcon(iconSymbol));
+                setIcon(IntelliJAzureIcons.getIcon(iconSymbol));
             } else if (StringUtils.isNotBlank(iconPath)) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }

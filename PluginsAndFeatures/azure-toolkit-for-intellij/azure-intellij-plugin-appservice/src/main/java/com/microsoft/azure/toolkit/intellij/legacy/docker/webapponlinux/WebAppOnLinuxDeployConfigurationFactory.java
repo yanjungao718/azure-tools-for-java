@@ -8,10 +8,10 @@ package com.microsoft.azure.toolkit.intellij.legacy.docker.webapponlinux;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.AzureDockerSupportConfigurationType;
 
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,7 +43,7 @@ public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactor
 
     @Override
     public Icon getIcon() {
-        return AzureIcons.getIcon(AzureIconSymbol.DockerSupport.RUN_ON_WEB_APP.getPath());
+        return IntelliJAzureIcons.getIcon(AzureIcons.DockerSupport.RUN_ON_WEB_APP);
     }
 
     @Override

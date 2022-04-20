@@ -19,7 +19,7 @@ import com.intellij.openapi.actionSystem.ShortcutSet;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -139,7 +139,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         private static void applyView(IView.Label view, Presentation presentation) {
             if (Objects.nonNull(view)) {
                 if (Objects.nonNull(view.getIconPath())) {
-                    presentation.setIcon(AzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
+                    presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
                 }
                 presentation.setText(view.getLabel());
                 presentation.setDescription(view.getDescription());

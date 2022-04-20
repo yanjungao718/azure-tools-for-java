@@ -9,7 +9,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionsConstants;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 
@@ -63,7 +64,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
             @Override
             public void customize(JList list, Object object, int index, boolean isSelected, boolean cellHasFocus) {
                 if (object instanceof FunctionApp) {
-                    setIcon(AzureIcons.getIcon("/icons/" + AzureFunctionsConstants.AZURE_FUNCTIONS_ICON));
+                    setIcon(IntelliJAzureIcons.getIcon(AzureIcons.FunctionApp.MODULE));
                     setText(((FunctionApp) object).name());
                 } else if (LOCAL_SETTINGS_JSON.equals(object)) {
                     setText(object.toString());

@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -30,7 +31,7 @@ class DelegateActionListener extends NodeActionListener {
     }
 
     @Override
-    public AzureIconSymbol getIconSymbol() {
+    public AzureIcon getIconSymbol() {
         return delegate.getIconSymbol();
     }
 
@@ -165,7 +166,7 @@ class DelegateActionListener extends NodeActionListener {
         }
 
         @Override
-        public AzureIconSymbol getIconSymbol() {
+        public AzureIcon getIconSymbol() {
             return actionEnum.getIconSymbol();
         }
 

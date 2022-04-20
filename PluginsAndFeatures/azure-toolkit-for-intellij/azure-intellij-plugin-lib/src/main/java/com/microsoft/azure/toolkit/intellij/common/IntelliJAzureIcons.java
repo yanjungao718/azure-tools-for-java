@@ -11,6 +11,7 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,28 +23,11 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class AzureIcons {
+public class IntelliJAzureIcons {
     public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
 
     private static final Map<String, Icon> icons = new ConcurrentHashMap<>() {
         {
-            put("/icons/Common/pin.svg", AllIcons.Nodes.Favorite);
-            put("/icons/Common/unpin.svg", AllIcons.Nodes.NotFavoriteOnHover);
-            put("/icons/Common/favorite.svg", AllIcons.Nodes.Favorite);
-            put("/icons/action/restart.svg", AllIcons.Actions.Restart);
-            put("/icons/action/start.svg", AllIcons.Actions.Execute);
-            put("/icons/action/stop.svg", AllIcons.Actions.Suspend);
-            put("/icons/action/refresh.svg", AllIcons.Actions.Refresh);
-            put("/icons/action/deploy.svg", AllIcons.Nodes.Deploy);
-            put("/icons/action/create.svg", AllIcons.General.Add);
-            put("/icons/action/delete.svg", AllIcons.Actions.GC);
-            put("/icons/action/portal.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
-            put("/icons/action/browser.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
-            put("/icons/action/properties.svg", AllIcons.Actions.Properties);
-            put("/icons/action/refresh", AllIcons.Actions.Refresh);
-            put("/icons/action/add", AllIcons.General.Add);
-            put("/icons/action/remove", AllIcons.Actions.GC);
-            put("/icons/action/edit", AllIcons.Actions.Edit);
             put("/icons/module", AllIcons.Nodes.Module);
             put("/icons/spinner", AnimatedIcon.Default.INSTANCE);
             put("/icons/error", AllIcons.General.Error);
@@ -51,12 +35,36 @@ public class AzureIcons {
     };
     private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>() {
         {
-            put(AzureIcon.REFRESH_ICON, AnimatedIcon.Default.INSTANCE);
+            put(AzureIcons.Common.REFRESH_ICON, AnimatedIcon.Default.INSTANCE);
+            put(AzureIcons.Common.FAVORITE, AllIcons.Nodes.Favorite);
+            put(AzureIcons.Action.PIN, AllIcons.Nodes.Favorite);
+            put(AzureIcons.Action.UNPIN, AllIcons.Nodes.NotFavoriteOnHover);
+            put(AzureIcons.Action.START, AllIcons.Actions.Execute);
+            put(AzureIcons.Action.STOP, AllIcons.Actions.Suspend);
+            put(AzureIcons.Action.RESTART, AllIcons.Actions.Restart);
+            put(AzureIcons.Action.REFRESH, AllIcons.Actions.Refresh);
+            put(AzureIcons.Action.DEPLOY, AllIcons.Nodes.Deploy);
+            put(AzureIcons.Action.CREATE, AllIcons.General.Add);
+            put(AzureIcons.Action.DELETE, AllIcons.Actions.GC);
+            put(AzureIcons.Action.PORTAL, IconLoader.getIcon("icons/Common/OpenInPortal.svg", IntelliJAzureIcons.class));
+            put(AzureIcons.Action.BROWSER, IconLoader.getIcon("icons/Common/OpenInPortal.svg", IntelliJAzureIcons.class));
+            put(AzureIcons.Action.ADD, AllIcons.General.Add);
+            put(AzureIcons.Action.REMOVE, AllIcons.Actions.GC);
+            put(AzureIcons.Action.EDIT, AllIcons.Actions.Edit);
+            put(AzureIcons.Action.PROPERTIES, AllIcons.Actions.Properties);
+            put(AzureIcons.Common.SELECT_SUBSCRIPTIONS, AllIcons.General.Filter);
+            put(AzureIcons.Common.DELETE, AllIcons.Actions.GC);
+            put(AzureIcons.Common.RESTART, AllIcons.Actions.Restart);
+            put(AzureIcons.Common.SHOW_PROPERTIES, AllIcons.Actions.Properties);
         }
     };
 
+    static {
+        azureIcons.entrySet().forEach(entry -> icons.put(entry.getKey().getIconPath(), entry.getValue()));
+    }
+
     public static Icon getIcon(@Nonnull String iconPathOrName) {
-        return getIcon(iconPathOrName, AzureIcons.class);
+        return getIcon(iconPathOrName, IntelliJAzureIcons.class);
     }
 
     public static Icon getIcon(@Nonnull String iconPathOrName, Class<?> clazz) {
@@ -103,10 +111,10 @@ public class AzureIcons {
     }
 
     public static Icon getIcon(@Nonnull AzureIcon azureIcon) {
-        return azureIcons.computeIfAbsent(azureIcon, AzureIcons::getAzureIcon);
+        return azureIcons.computeIfAbsent(azureIcon, IntelliJAzureIcons::getAzureIcon);
     }
 
     private static Icon getAzureIcon(@Nonnull AzureIcon azureIcon) {
-        return doGetIcon(AzureIcon.getIconPathWithModifier(azureIcon), azureIcon.getIconPath(), AzureIcons.class);
+        return doGetIcon(AzureIcon.getIconPathWithModifier(azureIcon), azureIcon.getIconPath(), IntelliJAzureIcons.class);
     }
 }

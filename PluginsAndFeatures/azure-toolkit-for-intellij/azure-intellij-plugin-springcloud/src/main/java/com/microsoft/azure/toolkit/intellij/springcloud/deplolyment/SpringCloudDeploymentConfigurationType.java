@@ -9,7 +9,8 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.intellij.icons.AllIcons;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 
 import javax.swing.*;
 
@@ -34,6 +35,6 @@ public class SpringCloudDeploymentConfigurationType extends ConfigurationTypeBas
 
     @Override
     public Icon getIcon() {
-        return AzureIcons.getIcon("/icons/Microsoft.AppPlatform/default.svg");
+        return IntelliJAzureIcons.getIcon(AzureIcons.SpringCloud.MODULE);
     }
 }

@@ -21,7 +21,8 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.AzureFunctionsConstants;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.helper.GradleFunctionsModuleBuilderHelper;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.helper.MavenFunctionsModuleBuilderHelper;
@@ -31,7 +32,6 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -67,7 +67,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
     @Override
     public Icon getNodeIcon() {
-        return AzureIcons.getIcon(AzureIconSymbol.FunctionApp.MODULE.getPath());
+        return IntelliJAzureIcons.getIcon(AzureIcons.FunctionApp.MODULE);
     }
 
     @Override

@@ -6,12 +6,12 @@
 package com.microsoft.intellij.serviceexplorer.azure;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.SelectSubscriptionsAction;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -29,8 +29,8 @@ public class ManageSubscriptionsAction extends NodeAction {
     }
 
     @Override
-    public AzureIconSymbol getIconSymbol() {
-        return AzureIconSymbol.Common.SELECT_SUBSCRIPTIONS;
+    public AzureIcon getIconSymbol() {
+        return AzureIcons.Common.SELECT_SUBSCRIPTIONS;
     }
 
     public boolean isEnabled() {

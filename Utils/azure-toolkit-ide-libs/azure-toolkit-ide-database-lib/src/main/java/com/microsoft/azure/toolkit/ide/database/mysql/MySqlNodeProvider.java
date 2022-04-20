@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 
@@ -23,7 +24,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySqlNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Azure Database for MySQL";
-    private static final String ICON = "/icons/Microsoft.DBforMySQL/default.svg";
+    private static final String ICON = AzureIcons.MySQL.MODULE.getIconPath();
 
     @Nullable
     @Override

@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.appservice.function.node;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
@@ -69,7 +70,7 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         @Override
         public String getIconPath() {
-            return "/icons/Microsoft.Web/functions.png";
+            return AzureIcons.FunctionApp.MODULE.getIconPath();
         }
 
         @Override

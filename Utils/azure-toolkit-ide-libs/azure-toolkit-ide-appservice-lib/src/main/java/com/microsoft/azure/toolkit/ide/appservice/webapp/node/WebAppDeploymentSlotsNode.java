@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributo
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
@@ -61,7 +62,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebApp> {
 
         @Override
         public String getIconPath() {
-            return "/icons/Microsoft.Web/sites/slots/default.svg";
+            return AzureIcons.WebApp.DEPLOYMENT_SLOT.getIconPath();
         }
 
         @Override

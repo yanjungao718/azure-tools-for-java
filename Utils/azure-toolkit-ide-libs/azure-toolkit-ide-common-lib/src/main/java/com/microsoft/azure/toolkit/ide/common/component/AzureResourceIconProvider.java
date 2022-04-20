@@ -6,6 +6,7 @@ package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 
@@ -34,7 +35,7 @@ public class AzureResourceIconProvider<T extends AzResource<?, ?, ?>> implements
     public AzureIcon getIcon(T resource) {
         final AzResourceBase.FormalStatus formalStatus = resource.getFormalStatus();
         if (formalStatus.isWaiting()) {
-            return AzureIcon.REFRESH_ICON;
+            return AzureIcons.Common.REFRESH_ICON;
         }
         final String iconPath = getAzureBaseResourceIconPath(resource);
         final List<AzureIcon.Modifier> modifiers = modifierFunctionList.stream().map(function -> function.apply(resource)).collect(Collectors.toList());

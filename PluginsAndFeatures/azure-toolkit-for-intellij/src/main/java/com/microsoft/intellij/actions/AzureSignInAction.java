@@ -14,6 +14,8 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.aad.msal4j.MsalClientException;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -40,7 +42,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.AzureAnAction;
-import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.intellij.ui.DeviceLoginUI;
@@ -49,7 +50,6 @@ import com.microsoft.intellij.ui.ServicePrincipalLoginDialog;
 import com.microsoft.intellij.ui.SignInWindow;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +61,7 @@ import reactor.core.scheduler.Schedulers;
 import rx.Single;
 import rx.exceptions.Exceptions;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,12 +71,12 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AzureSignInAction extends AzureAnAction implements DumbAware {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
@@ -156,7 +156,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         boolean isSignIn = authMethodManager.isSignedIn();
         if (isSignIn) {
             boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), getSignOutWarningMessage(authMethodManager),
-                "Azure Sign Out", AzureIconLoader.loadIcon(AzureIconSymbol.Common.AZURE));
+                "Azure Sign Out", IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
             if (res) {
                 EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
                     authMethodManager.signOut();
