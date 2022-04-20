@@ -25,7 +25,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SpringCloudNodeProvider implements IExplorerNodeProvider {
 
-    private static final String NAME = "Spring Cloud";
+    private static final String NAME = "Spring Apps";
     private static final String ICON = AzureIcons.SpringCloud.MODULE.getIconPath();
 
     @Nullable
@@ -48,7 +48,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
             final AzureSpringCloud service = (AzureSpringCloud) data;
             final Function<AzureSpringCloud, List<SpringCloudCluster>> clusters = asc -> asc.list().stream().flatMap(m -> m.clusters().list().stream())
                 .collect(Collectors.toList());
-            return new Node<>(service).view(new AzureServiceLabelView<>(service, "Spring Cloud", ICON))
+            return new Node<>(service).view(new AzureServiceLabelView<>(service, "Spring Apps", ICON))
                 .actions(SpringCloudActionsContributor.SERVICE_ACTIONS)
                 .addChildren(clusters, (cluster, ascNode) -> this.createNode(cluster, ascNode, manager));
         } else if (data instanceof SpringCloudCluster) {

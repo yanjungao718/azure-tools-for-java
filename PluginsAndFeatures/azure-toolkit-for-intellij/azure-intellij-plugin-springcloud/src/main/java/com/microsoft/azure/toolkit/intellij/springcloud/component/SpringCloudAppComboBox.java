@@ -72,7 +72,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, "Create Azure Spring Cloud app", this::showAppCreationPopup);
+            AllIcons.General.Add, "Create Azure Spring app", this::showAppCreationPopup);
     }
 
     private void showAppCreationPopup() {
