@@ -16,7 +16,6 @@ sourceSets {
 }
 
 dependencies {
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib'
     compile 'com.microsoft.azure:azure-toolkit-auth-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     compile 'org.dom4j:dom4j:2.1.3', {

@@ -12,10 +12,11 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
-import com.microsoft.azure.toolkit.ide.common.component.GenericResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
+import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -24,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -47,6 +49,11 @@ public class AzureExplorer extends Tree {
         return new Node<>(Azure.az(), new NodeView.Static(getTitle(), AZURE_ICON)).lazy(false).addChildren(modules);
     }
 
+    public static Node<?> buildAppCentricViewRoot() {
+        final AzureResources resources = Azure.az(AzureResources.class);
+        return manager.createNode(resources, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
+    }
+
     public static Node<?> buildFavoriteRoot() {
         return Favorites.buildFavoriteRoot(manager);
     }
@@ -66,7 +73,10 @@ public class AzureExplorer extends Tree {
 
     @Nonnull
     public static List<Node<?>> getModules() {
-        return manager.getRootNodes();
+        return manager.getRoots().stream()
+            .map(r -> manager.createNode(r, null, IExplorerNodeProvider.ViewType.TYPE_CENTRIC))
+            .sorted(Comparator.comparing(Node::order))
+            .collect(Collectors.toList());
     }
 
     public static void refreshAll() {
@@ -90,15 +100,6 @@ public class AzureExplorer extends Tree {
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.explorerNodeProvider");
 
         @Nonnull
-        public List<Node<?>> getRootNodes() {
-            return providers.getExtensionList().stream()
-                .map(p -> p.getModuleNode(null, this))
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(Node::order))
-                .collect(Collectors.toList());
-        }
-
-        @Nonnull
         public List<Object> getRoots() {
             return providers.getExtensionList().stream()
                 .map(IExplorerNodeProvider::getRoot)
@@ -108,9 +109,9 @@ public class AzureExplorer extends Tree {
 
         @Nonnull
         @Override
-        public Node<?> createNode(@Nonnull Object o, Node<?> parent) {
+        public Node<?> createNode(@Nonnull Object o, Node<?> parent, IExplorerNodeProvider.ViewType type) {
             return providers.getExtensionList().stream()
-                .filter(p -> p.accept(o, parent)).findAny()
+                .filter(p -> p.accept(o, parent, type)).findAny()
                 .map(p -> p.createNode(o, parent, this))
                 .or(() -> Optional.of(o).filter(r -> r instanceof AbstractAzResource).map(AzureExplorerNodeProviderManager::createGenericNode))
                 .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("failed to render %s", o.toString())));
@@ -118,7 +119,8 @@ public class AzureExplorer extends Tree {
 
         private static <U> U createGenericNode(Object o) {
             final var view = new GenericResourceLabelView<>(((AbstractAzResource<?, ?, ?>) o));
-            return (U) new Node<>(o).view(view);
+            return (U) new Node<>(o).view(view)
+                .actions(GenericResourceActionsContributor.GENERIC_RESOURCE_ACTIONS);
         }
     }
 }
