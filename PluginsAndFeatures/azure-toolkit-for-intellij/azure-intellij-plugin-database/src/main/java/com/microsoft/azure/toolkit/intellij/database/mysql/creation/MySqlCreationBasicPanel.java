@@ -19,10 +19,13 @@ import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MySqlCreationBasicPanel extends JPanel implements AzureFormPanel<DatabaseServerConfig> {
 
@@ -39,7 +42,7 @@ public class MySqlCreationBasicPanel extends JPanel implements AzureFormPanel<Da
     private AzurePasswordFieldInput passwordFieldInput;
     private AzurePasswordFieldInput confirmPasswordFieldInput;
 
-    private final DatabaseServerConfig config;
+    private DatabaseServerConfig config;
 
     MySqlCreationBasicPanel(DatabaseServerConfig config) {
         super();
@@ -89,6 +92,7 @@ public class MySqlCreationBasicPanel extends JPanel implements AzureFormPanel<Da
 
     @Override
     public void setValue(DatabaseServerConfig data) {
+        this.config = Optional.ofNullable(data).orElseGet(MySqlCreationDialog::getDefaultConfig);
         if (StringUtils.isNotBlank(config.getName())) {
             serverNameTextField.setText(config.getName());
         }

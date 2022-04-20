@@ -11,8 +11,10 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 
 import java.util.Optional;
@@ -27,6 +29,7 @@ public class SqlServerActionsContributor implements IActionsContributor {
 
     private static final String NAME_PREFIX = "SqlServer Server - %s";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.sqlserver.open_database_tool");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_SQLSERVER = Action.Id.of("action.sqlserver.create_server.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -36,6 +39,11 @@ public class SqlServerActionsContributor implements IActionsContributor {
         final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
+
+        final ActionView.Builder createServerView = new ActionView.Builder("SQL Server")
+            .title(s -> Optional.ofNullable(s).map(r -> title("sqlserver.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_SQLSERVER, new Action<>(createServerView));
     }
 
     public int getOrder() {
@@ -64,5 +72,8 @@ public class SqlServerActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(SERVER_ACTIONS, serverActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_SQLSERVER);
     }
 }

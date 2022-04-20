@@ -40,6 +40,7 @@ public class AzureIcons {
             put("/icons/action/portal.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
             put("/icons/action/browser.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
             put("/icons/action/properties.svg", AllIcons.Actions.Properties);
+            put("/icons/action/select_subscription.svg", AllIcons.General.Filter);
             put("/icons/action/refresh", AllIcons.Actions.Refresh);
             put("/icons/action/add", AllIcons.General.Add);
             put("/icons/action/remove", AllIcons.Actions.GC);
@@ -47,11 +48,15 @@ public class AzureIcons {
             put("/icons/module", AllIcons.Nodes.Module);
             put("/icons/spinner", AnimatedIcon.Default.INSTANCE);
             put("/icons/error", AllIcons.General.Error);
+            put("/icons/unknown", AllIcons.Nodes.Unknown);
+            put("/icons/Microsoft.Resources/resourceGroups/genericResources/default.svg", AllIcons.Nodes.Unknown);
+            put("/icons/Microsoft.Resources/resourceGroups/genericResources/unknown.svg", AllIcons.Nodes.Unknown);
         }
     };
     private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>() {
         {
             put(AzureIcon.REFRESH_ICON, AnimatedIcon.Default.INSTANCE);
+            put(AzureIcon.UNKNOWN_ICON, AllIcons.Nodes.Unknown);
         }
     };
 
@@ -78,7 +83,7 @@ public class AzureIcons {
             return getFileTypeIcon(fileExtension);
         }
         return icons.computeIfAbsent(iconPathOrName, path -> Optional.ofNullable(loadIcon(iconPathOrName, clazz))
-                .orElseGet(() -> StringUtils.isEmpty(fallback) ? null : loadIcon(fallback, clazz)));
+            .orElseGet(() -> StringUtils.isEmpty(fallback) ? null : loadIcon(fallback, clazz)));
     }
 
     private static Icon getFileTypeIcon(final String name) {

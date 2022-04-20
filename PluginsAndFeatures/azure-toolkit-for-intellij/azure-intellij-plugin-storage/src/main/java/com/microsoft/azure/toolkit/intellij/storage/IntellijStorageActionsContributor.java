@@ -15,11 +15,15 @@ import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountRes
 import com.microsoft.azure.toolkit.intellij.storage.creation.CreateStorageAccountAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -27,7 +31,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzureStorageAccount;
-        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateStorageAccountAction.createStorageAccount((e.getProject()));
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateStorageAccountAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof StorageAccount,
@@ -36,6 +40,20 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
                 dialog.setResource(new AzureServiceResource<>(((StorageAccount) r), StorageAccountResourceDefinition.INSTANCE));
                 dialog.show();
             }));
+
+        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateAccountHandler = (r, e) -> {
+            final StorageAccountConfig config = StorageAccountConfig.builder().build();
+            config.setSubscription(r.getSubscription());
+            config.setRegion(r.getRegion());
+            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .subscriptionId(r.getSubscriptionId())
+                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
+                .build());
+            CreateStorageAccountAction.create(e.getProject(), config);
+        };
+        am.registerHandler(StorageActionsContributor.GROUP_CREATE_ACCOUNT, (r, e) -> true, groupCreateAccountHandler);
     }
 
     @Override

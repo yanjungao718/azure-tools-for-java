@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -46,11 +47,11 @@ public class TreeUtils {
             final Object node = tree.getLastSelectedPathComponent();
             Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
             if (selectionDisposable != null) {
-                selectionDisposable.dispose();
+                Disposer.dispose(selectionDisposable);
             }
             if (node instanceof Tree.TreeNode) {
                 final String place = "azure.component.tree";
-                final ActionGroup actions = ((Tree.TreeNode<?>) node).inner.actions();
+                final IActionGroup actions = ((Tree.TreeNode<?>) node).inner.actions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
                     selectionDisposable = Disposer.newDisposable();
@@ -103,7 +104,7 @@ public class TreeUtils {
                     final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
                     final String place = "azure.component.tree";
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-                        final ActionGroup actions = node.inner.actions();
+                        final IActionGroup actions = node.inner.actions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
                             final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
@@ -154,12 +155,12 @@ public class TreeUtils {
         return x > width - (INLINE_ACTION_ICON_OFFSET + INLINE_ACTION_ICON_WIDTH) && x < width - INLINE_ACTION_ICON_OFFSET;
     }
 
-    private static IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(ActionGroup actions) {
+    private static IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(IActionGroup actions) {
         final ActionManager am = ActionManager.getInstance();
-        if (actions.getOrigin() instanceof IntellijAzureActionManager.ActionGroupWrapper) {
-            return (IntellijAzureActionManager.ActionGroupWrapper) actions.getOrigin();
+        if (actions instanceof IntellijAzureActionManager.ActionGroupWrapper) {
+            return (IntellijAzureActionManager.ActionGroupWrapper) actions;
         }
-        return new IntellijAzureActionManager.ActionGroupWrapper(actions);
+        return new IntellijAzureActionManager.ActionGroupWrapper((ActionGroup) actions);
     }
 
     public static void renderMyTreeNode(@Nonnull Tree.TreeNode<?> node, @Nonnull SimpleColoredComponent renderer) {

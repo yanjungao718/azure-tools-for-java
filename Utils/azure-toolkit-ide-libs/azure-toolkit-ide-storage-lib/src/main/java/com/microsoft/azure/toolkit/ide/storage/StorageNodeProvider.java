@@ -32,7 +32,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureStorageAccount || data instanceof StorageAccount;
     }
 
