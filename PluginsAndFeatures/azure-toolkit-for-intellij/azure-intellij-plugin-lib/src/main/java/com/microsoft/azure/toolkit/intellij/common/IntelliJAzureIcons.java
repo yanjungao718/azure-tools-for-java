@@ -53,6 +53,7 @@ public class IntelliJAzureIcons {
             put(AzureIcons.Action.REMOVE, AllIcons.Actions.GC);
             put(AzureIcons.Action.EDIT, AllIcons.Actions.Edit);
             put(AzureIcons.Action.PROPERTIES, AllIcons.Actions.Properties);
+            put(AzureIcons.Action.SELECT_SUBSCRIPTION, AllIcons.General.Filter);
             put(AzureIcons.Common.SELECT_SUBSCRIPTIONS, AllIcons.General.Filter);
             put(AzureIcons.Common.DELETE, AllIcons.Actions.GC);
             put(AzureIcons.Common.RESTART, AllIcons.Actions.Restart);
@@ -62,7 +63,7 @@ public class IntelliJAzureIcons {
     };
 
     static {
-        azureIcons.entrySet().forEach(entry -> icons.put(entry.getKey().getIconPath(), entry.getValue()));
+        azureIcons.forEach((key, value) -> icons.put(key.getIconPath(), value));
     }
 
     public static Icon getIcon(@Nonnull String iconPathOrName) {

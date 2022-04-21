@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ex.ProjectManagerEx;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -46,7 +47,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         };
         am.registerAction(Action.AUTHENTICATE, new Action<>(authnHandler, authnView).setAuthRequired(false));
 
-        final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions", "/icons/action/select_subscription.svg")
+        final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions", AzureIcons.Action.SELECT_SUBSCRIPTION.getIconPath())
             .title((s) -> authnTitle);
         final BiConsumer<Object, AnActionEvent> selectSubsHandler = (Object v, AnActionEvent e) ->
             SelectSubscriptionsAction.selectSubscriptions(e.getProject()).subscribe();
