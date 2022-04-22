@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.GenericResource;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -21,8 +22,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 
 public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Resource Management";
@@ -48,7 +52,9 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof ResourceGroup) {
             final ResourceGroup rg = (ResourceGroup) data;
             return new Node<>(rg)
-                .view(new AzureResourceLabelView<>(rg))
+                .view(new AzureResourceLabelView<>(rg,
+                    (r) -> Optional.ofNullable(r).map(ResourceGroup::getRegion).map(Region::getLabel).orElse(null),
+                    DEFAULT_AZURE_RESOURCE_ICON_PROVIDER))
                 .actions(ResourceGroupActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChild(ResourceGroup::deployments, (module, p) -> new Node<>(module)

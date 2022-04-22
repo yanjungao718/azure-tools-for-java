@@ -45,7 +45,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     public AbstractSpringCloudAppInfoPanel(@Nullable final SpringCloudCluster cluster) {
         super();
         this.cluster = cluster;
-        this.defaultAppName = String.format("springcloud-app-%s", DATE_FORMAT.format(new Date()));
+        this.defaultAppName = String.format("spring-app-%s", DATE_FORMAT.format(new Date()));
     }
 
     protected void init() {

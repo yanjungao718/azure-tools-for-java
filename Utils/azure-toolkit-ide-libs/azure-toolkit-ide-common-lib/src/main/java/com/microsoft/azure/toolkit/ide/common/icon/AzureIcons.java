@@ -25,6 +25,7 @@ public final class AzureIcons {
     }
 
     public static final class Action {
+        public static final AzureIcon SELECT_SUBSCRIPTION = AzureIcon.builder().iconPath("/icons/action/select_subscription.svg").build();
         public static final AzureIcon OPEN_DATABASE_TOOL = AzureIcon.builder().iconPath("/icons/action/open_database_tool.svg").build();
         public static final AzureIcon PIN = AzureIcon.builder().iconPath("/icons/action/pin").build();
         public static final AzureIcon UNPIN = AzureIcon.builder().iconPath("/icons/action/unpin").build();
