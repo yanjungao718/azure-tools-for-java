@@ -12,10 +12,10 @@ import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.Optional;
@@ -128,7 +128,7 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
         // for cluster which is not reader
-        if (StringUtils.isNullOrEmpty(defaultStorageRootPath)) {
+        if (StringUtils.isEmpty(defaultStorageRootPath)) {
             return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterWithUndetermineStorage;
         }
 

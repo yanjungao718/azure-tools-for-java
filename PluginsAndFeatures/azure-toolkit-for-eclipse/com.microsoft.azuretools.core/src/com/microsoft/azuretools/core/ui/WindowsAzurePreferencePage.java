@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
@@ -28,6 +27,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -194,7 +194,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
                     // Its necessary to call application insights custom create
                     // event after saving data.xml
                     final boolean acceptTelemetry = btnPreference.getSelection();
-                    if (StringUtils.isNullOrEmpty(oldPrefVal) || Boolean.valueOf(oldPrefVal) != acceptTelemetry) {
+                    if (StringUtils.isEmpty(oldPrefVal) || Boolean.valueOf(oldPrefVal) != acceptTelemetry) {
                         // Boolean.valueOf(oldPrefVal) != acceptTelemetry means
                         // user changes his mind.
                         // Either from Agree to Deny, or from Deny to Agree.

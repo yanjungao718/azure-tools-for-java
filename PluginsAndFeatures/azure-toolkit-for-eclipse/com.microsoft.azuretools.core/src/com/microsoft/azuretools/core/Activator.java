@@ -25,6 +25,7 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.event.EventListenerList;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -50,7 +51,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.Constants;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -212,7 +212,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
             while (e.hasMoreElements()) {
                 String key = (String) e.nextElement();
-                if (!StringUtils.isNullOrWhiteSpace(key)) {
+                if (!StringUtils.isBlank(key)) {
                     obsoletePackageMap.put(key, prop.getProperty(key));
                 }
             }

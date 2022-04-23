@@ -7,9 +7,9 @@ package com.microsoft.azuretools.telemetry;
 
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,9 +68,9 @@ public class AppInsightsClient {
 
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(configuration.eventNamePrefix()).append(eventType.name());
-        if (!StringUtils.isNullOrEmpty(objectName))
+        if (!StringUtils.isEmpty(objectName))
             stringBuilder.append(".").append(objectName.replaceAll("[\\s+.]", ""));
-        if (!StringUtils.isNullOrEmpty(action)) stringBuilder.append(".").append(action.replaceAll("[\\s+.]", ""));
+        if (!StringUtils.isEmpty(action)) stringBuilder.append(".").append(action.replaceAll("[\\s+.]", ""));
         create(stringBuilder.toString(), null, properties, force);
     }
 
@@ -112,17 +112,17 @@ public class AppInsightsClient {
         properties.put("IDE", configuration.ide());
 
         // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
-        properties.entrySet().removeIf(entry -> StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue()));
+        properties.entrySet().removeIf(entry -> StringUtils.isEmpty(entry.getKey()) || StringUtils.isEmpty(entry.getValue()));
         if (version != null && !version.isEmpty()) {
             properties.put("Library Version", version);
         }
         String pluginVersion = configuration.pluginVersion();
-        if (!StringUtils.isNullOrEmpty(pluginVersion)) {
+        if (!StringUtils.isEmpty(pluginVersion)) {
             properties.put("Plugin Version", pluginVersion);
         }
 
         String instID = configuration.installationId();
-        if (!StringUtils.isNullOrEmpty(instID)) {
+        if (!StringUtils.isEmpty(instID)) {
             properties.put("Installation ID", instID);
         }
         return properties;
