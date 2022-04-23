@@ -166,6 +166,8 @@ public final class AzureIcons {
     public static final class Resources {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.Resources/default.svg").build();
         public static final AzureIcon DEPLOYMENT = AzureIcon.builder().iconPath("/icons/Microsoft.Resources/resourceGroups/deployments/default.svg").build();
+        public static final AzureIcon DEPLOYMENT_MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.Resources/resourceGroups/deployments/folder.svg").build();
+        public static final AzureIcon GENERIC_RESOURCE = AzureIcon.builder().iconPath("/icons/Microsoft.Resources/resourceGroups/genericResources/default.svg").build();
     }
 
     public static final class Connector {
