@@ -11,13 +11,13 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.interact.INotification;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
@@ -29,22 +29,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
-import static com.microsoft.azuretools.authmanage.Environment.CHINA;
-import static com.microsoft.azuretools.authmanage.Environment.GERMAN;
-import static com.microsoft.azuretools.authmanage.Environment.GLOBAL;
-import static com.microsoft.azuretools.authmanage.Environment.US_GOVERNMENT;
+import static com.microsoft.azuretools.authmanage.Environment.*;
 
 /**
  * Created by vlashch on 1/27/17.
@@ -123,8 +115,8 @@ public abstract class AzureManagerBase implements AzureManager {
             }
         }
         if (!failedTenantIds.isEmpty()) {
-            final INotification nw = CommonSettings.getUiFactory().getNotificationWindow();
-            nw.deliver("Lack permission for some tenants", "You don't have permission on the tenant(s): " + StringUtils.join(failedTenantIds, ","));
+            AzureMessager.getMessager().warning("You don't have permission on the tenant(s): " + StringUtils.join(failedTenantIds, ","),
+                    "Lack permission for some tenants");
         }
 
         return subscriptions;

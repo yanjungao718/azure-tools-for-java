@@ -64,7 +64,6 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.store.EclipseSecureStore;
 import com.microsoft.azuretools.core.store.EclipseStore;
-import com.microsoft.azuretools.core.ui.UIFactory;
 import com.microsoft.azuretools.core.ui.views.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -164,9 +163,6 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             CommonSettings.setUserAgent(String.format(USER_AGENT,
                     Azure.az().config().getVersion(),
                     Azure.az().config().getMachineId()));
-            if (CommonSettings.getUiFactory() == null) {
-                CommonSettings.setUiFactory(new UIFactory());
-            }
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
             final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
             CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
