@@ -19,7 +19,7 @@ public class GenericResourceLabelView<T extends AbstractAzResource<?, ?, ?>> ext
     public GenericResourceLabelView(@Nonnull T resource) {
         super(resource,
             r -> (r.getFormalStatus().isUnknown() ? "" : resource.getStatus() + " ") + resource.getResourceTypeName(),
-            r -> r.getFormalStatus().isWaiting() ? AzureIcons.Common.REFRESH_ICON : AzureIcons.Common.UNKNOWN_ICON);
+            r -> r.getFormalStatus().isWaiting() ? AzureIcons.Common.REFRESH_ICON : AzureIcons.Resources.GENERIC_RESOURCE);
         this.resourceId = ResourceId.fromString(resource.getId());
     }
 

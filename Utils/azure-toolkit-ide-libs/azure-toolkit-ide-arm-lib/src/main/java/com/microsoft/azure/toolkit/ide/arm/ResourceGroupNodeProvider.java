@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -30,8 +31,6 @@ import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIcon
 
 public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Resource Management";
-    private static final String RESOURCE_GROUPS_ICON = "/icons/Microsoft.Resources/resourceGroups/default.svg";
-    private static final String DEPLOYMENTS_ICON = "/icons/Microsoft.Resources/resourceGroups/deployments/default.svg";
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
@@ -46,7 +45,7 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
             final Function<AzureResources, List<ResourceGroup>> groupsLoader = s -> s.list().stream()
                 .flatMap(m -> m.resourceGroups().list().stream()).collect(Collectors.toList());
             return new Node<>((AzureResources) data)
-                .view(new AppCentricRootLabelView((AzureResources) data, RESOURCE_GROUPS_ICON))
+                .view(new AppCentricRootLabelView((AzureResources) data, AzureIcons.Resources.MODULE.getIconPath()))
                 .actions(ResourceGroupActionsContributor.APPCENTRIC_RESOURCE_GROUPS_ACTIONS)
                 .addChildren(groupsLoader, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourceGroup) {
@@ -58,7 +57,7 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
                 .actions(ResourceGroupActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChild(ResourceGroup::deployments, (module, p) -> new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "Deployments", DEPLOYMENTS_ICON))
+                    .view(new AzureModuleLabelView<>(module, "Deployments", AzureIcons.Resources.DEPLOYMENT_MODULE.getIconPath()))
                     .actions(DeploymentActionsContributor.DEPLOYMENTS_ACTIONS)
                     .addChildren(AbstractAzResourceModule::list, (d, mn) -> manager.createNode(d, mn, ViewType.APP_CENTRIC)))
                 .addChildren(group -> group.genericResources().list().stream().map(GenericResource::toConcreteResource)
