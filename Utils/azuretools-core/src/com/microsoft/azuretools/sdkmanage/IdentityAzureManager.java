@@ -5,9 +5,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.aad.msal4jextensions.persistence.mac.ISecurityLibrary;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
-import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -21,13 +19,11 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -39,10 +35,10 @@ import java.util.stream.Collectors;
 public class IdentityAzureManager extends AzureManagerBase {
 
     private static final String SERVICE_PRINCIPAL_STORE_SERVICE = "Service Principal";
-    private ISecureStore secureStore;
-
     private static final String LEGACY_SECURE_STORE_SERVICE = "ADAuthManager";
     private static final String LEGACY_SECURE_STORE_KEY = "cachedAuthResult";
+
+    private final ISecureStore secureStore;
 
     public IdentityAzureManager() {
         secureStore = AzureStoreManager.getInstance().getSecureStore();
@@ -90,33 +86,12 @@ public class IdentityAzureManager extends AzureManagerBase {
         return Azure.az(AzureAccount.class).account().getSubscription(sid);
     }
 
-    public List<String> getSelectedSubscriptionIds() {
-        if (!isSignedIn()) {
-            return new ArrayList<>();
-        }
-        List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
-        if (CollectionUtils.isNotEmpty(selectedSubscriptions)) {
-            return selectedSubscriptions.stream().map(Subscription::getId).collect(Collectors.toList());
-        }
-        return null;
-    }
-
     @Override
     public List<Subscription> getSelectedSubscriptions() {
         if (!isSignedIn()) {
             return new ArrayList<>();
         }
         return Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
-    }
-
-    @Override
-    protected List<Tenant> getTenants(com.microsoft.azure.management.Azure.Authenticated authentication) {
-        if (!isSignedIn()) {
-            return new ArrayList<>();
-        }
-        final List<String> tenantIds = Azure.az(AzureAccount.class).account().getEntity().getTenantIds();
-        // override the tenants from super
-        return super.getTenants(authentication).stream().filter(tenant -> tenantIds.contains(tenant.tenantId())).collect(Collectors.toList());
     }
 
     public Mono<AuthMethodDetails> signInAzureCli() {
@@ -205,10 +180,6 @@ public class IdentityAzureManager extends AzureManagerBase {
         }
     }
 
-    private static String getSecureStoreKey(String clientId) {
-        return StringUtils.joinWith("|", "account", clientId);
-    }
-
     public Mono<AuthMethodDetails> signInServicePrincipal(AuthConfiguration auth) {
         return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
             if (secureStore != null && StringUtils.isNotBlank(auth.getKey())) {
@@ -231,21 +202,8 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getCurrentUserId() {
-        if (!isSignedIn()) {
-            return null;
-        }
-        return StringUtils.firstNonBlank(Azure.az(AzureAccount.class).account().getEntity().getEmail(), "unknown");
-    }
-
-    @Override
-    public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
+    public String getAccessToken(String tid, String resource) throws IOException {
         return Azure.az(AzureAccount.class).account().getTokenCredentialForTenantV1(tid).getToken(resource);
-    }
-
-    @Override
-    protected String getCurrentTenantId() {
-        return "common";
     }
 
     @Override
