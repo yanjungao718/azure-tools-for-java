@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -285,6 +286,7 @@ public class AuthMethodManager {
                 json = new String(data);
                 AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, json);
                 fs.removeFile();
+                OperationContext.action().setTelemetryProperty("isLoadAuthMethodDetailsFromDisk", String.valueOf(true));
             }
             if (StringUtils.isBlank(json)) {
                 System.out.println("No auth method details are saved.");

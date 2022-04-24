@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.azure.identity.implementation.util.IdentityConstants;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
@@ -20,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
@@ -246,7 +248,6 @@ public class IdentityAzureManager implements AzureManager {
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
                 } else {
-
                     secureStore.migratePassword(
                         "account|" + auth.getClient(),
                         null,
@@ -262,27 +263,23 @@ public class IdentityAzureManager implements AzureManager {
                 }
                 return signInServicePrincipal(auth).map(ac -> authMethodDetails);
             } else {
-                if (StringUtils.isNotBlank(authMethodDetails.getClientId())) {
-                    AccountEntity entity = new AccountEntity();
-                    entity.setType(authType);
-                    entity.setEnvironment(Azure.az(AzureCloud.class).get());
-                    entity.setEmail(authMethodDetails.getAccountEmail());
-                    entity.setClientId(authMethodDetails.getClientId());
-                    entity.setTenantIds(authMethodDetails.getTenantIds());
-                    entity.setSubscriptions(authMethodDetails.getSubscriptions());
-                    Account account = Azure.az(AzureAccount.class).account(entity);
-                    return Mono.just(fromAccountEntity(account.getEntity()));
-                } else {
-                    throw new AzureToolkitRuntimeException("Cannot restore credentials due to version change.");
-                }
+                final AccountEntity entity = new AccountEntity();
+                entity.setType(authType);
+                entity.setEnvironment(Azure.az(AzureCloud.class).get());
+                entity.setEmail(authMethodDetails.getAccountEmail());
+                entity.setClientId(StringUtils.isBlank(authMethodDetails.getClientId()) ?
+                        IdentityConstants.DEVELOPER_SINGLE_SIGN_ON_ID : authMethodDetails.getClientId());
+                entity.setTenantIds(authMethodDetails.getTenantIds());
+                entity.setSubscriptions(authMethodDetails.getSubscriptions());
+                Account account = Azure.az(AzureAccount.class).account(entity);
+                return Mono.just(fromAccountEntity(account.getEntity()));
             }
-
         } catch (Throwable e) {
             if (StringUtils.isNotBlank(authMethodDetails.getClientId()) && authMethodDetails.getAuthType() == AuthType.SERVICE_PRINCIPAL &&
                     secureStore != null) {
                 secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, authMethodDetails.getClientId(), null);
             }
-            return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
+            return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage()), e));
         }
     }
 
@@ -336,6 +333,10 @@ public class IdentityAzureManager implements AzureManager {
         authMethodDetails.setSubscriptions(entity.getSubscriptions());
         authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudName(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());
+        if (StringUtils.isBlank(entity.getClientId())) {
+            // check whether toolkit will receive empty client id during authentication
+            OperationContext.action().setTelemetryProperty("isEmptyClientId", String.valueOf(true));
+        }
         return authMethodDetails;
     }
 }
