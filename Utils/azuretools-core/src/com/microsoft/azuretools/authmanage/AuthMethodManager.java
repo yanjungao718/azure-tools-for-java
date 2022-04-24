@@ -7,7 +7,6 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
