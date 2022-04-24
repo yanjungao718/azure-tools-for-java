@@ -83,13 +83,13 @@ public class IdentityAzureManager implements AzureManager {
 
     @Override
     public String getPortalUrl() {
-        final com.azure.core.management.AzureEnvironment azureEnvironment = getAzureEnvironment();
-        if (azureEnvironment == null || azureEnvironment == com.azure.core.management.AzureEnvironment.AZURE) {
+        final Environment azureEnvironment = getEnvironment();
+        if (azureEnvironment == null || azureEnvironment == Environment.GLOBAL) {
             return GLOBAL_PORTAL;
-        } else if (azureEnvironment == com.azure.core.management.AzureEnvironment.AZURE_CHINA) {
+        } else if (azureEnvironment == Environment.CHINA) {
             return CHINA_PORTAL;
         } else {
-            return azureEnvironment.getPortal();
+            return azureEnvironment.getAzureEnvironment().portal();
         }
     }
 
@@ -134,7 +134,7 @@ public class IdentityAzureManager implements AzureManager {
         if (!isSignedIn()) {
             return null;
         }
-        return getAzureEnvironment().getResourceManagerEndpoint();
+        return getEnvironment().getAzureEnvironment().managementEndpoint();
     }
 
     @Override
@@ -142,11 +142,7 @@ public class IdentityAzureManager implements AzureManager {
         if (!isSignedIn()) {
             return null;
         }
-        return getAzureEnvironment().getStorageEndpointSuffix();
-    }
-
-    protected com.azure.core.management.AzureEnvironment getAzureEnvironment() {
-        return com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getEnvironment();
+        return getEnvironment().getAzureEnvironment().storageEndpointSuffix();
     }
 
     private static Proxy createProxyFromConfig() {
