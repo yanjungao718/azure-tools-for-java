@@ -46,6 +46,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 @Slf4j
 public class AuthMethodManager {
     public static final String AUTH_METHOD_DETAIL = "auth_method_detail";
+    public static final String AUTH_TYPE = "authType";
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
@@ -258,6 +259,7 @@ public class AuthMethodManager {
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {
                         put(SIGNIN_METHOD, authMethod);
+                        put(AUTH_TYPE, Optional.ofNullable(authMethodDetails.getAuthType()).map(AuthType::name).orElse("Empty"));
                         put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
                     }
                 };
