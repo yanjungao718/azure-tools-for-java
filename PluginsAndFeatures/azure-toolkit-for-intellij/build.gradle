@@ -9,6 +9,7 @@ plugins {
 
 ext {
     azureToolkitVersion = "0.20.0-SNAPSHOT"
+    azureToolkitUtilsVersion = "3.64.0-SNAPSHOT"
 }
 
 compileKotlin {
@@ -82,6 +83,7 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     ext {
         azureToolkitVersion = "0.20.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.64.0-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
@@ -105,6 +107,7 @@ subprojects {
         imports {
             mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
             mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+            mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
         }
     }
 
@@ -160,6 +163,7 @@ dependencyManagement {
     imports {
         mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
         mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+        mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
     }
 }
 

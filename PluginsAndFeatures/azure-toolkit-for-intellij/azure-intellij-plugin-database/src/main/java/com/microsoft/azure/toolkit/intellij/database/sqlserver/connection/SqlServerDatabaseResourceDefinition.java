@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
@@ -26,7 +27,7 @@ public class SqlServerDatabaseResourceDefinition extends SqlDatabaseResourceDefi
     public static final SqlServerDatabaseResourceDefinition INSTANCE = new SqlServerDatabaseResourceDefinition();
 
     public SqlServerDatabaseResourceDefinition() {
-        super("Azure.SqlServer", "SQL Server", "/icons/Microsoft.Sql/default.svg");
+        super("Azure.SqlServer", "SQL Server", AzureIcons.SqlServer.MODULE.getIconPath());
     }
 
     @Override

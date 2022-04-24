@@ -8,11 +8,11 @@ package com.microsoft.azure.toolkit.intellij.legacy.docker;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.dockerhost.DockerHostRunConfigurationFactory;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.pushimage.PushImageRunConfigurationFactory;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.webapponlinux.WebAppOnLinuxDeployConfigurationFactory;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -35,7 +35,7 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
 
     @Override
     public Icon getIcon() {
-        return AzureIcons.getIcon(AzureIconSymbol.DockerSupport.MODULE.getPath());
+        return IntelliJAzureIcons.getIcon(AzureIcons.DockerSupport.MODULE);
     }
 
     @NotNull

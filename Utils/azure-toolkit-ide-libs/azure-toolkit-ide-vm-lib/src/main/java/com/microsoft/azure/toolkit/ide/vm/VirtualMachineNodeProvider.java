@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
@@ -26,7 +27,7 @@ public class VirtualMachineNodeProvider implements IExplorerNodeProvider {
             new AzureResourceIconProvider<VirtualMachine>().withModifier(VirtualMachineNodeProvider::getOperatingSystemModifier);
 
     private static final String NAME = "Virtual Machines";
-    private static final String ICON = "/icons/Microsoft.Compute/default.svg";
+    private static final String ICON = AzureIcons.VirtualMachine.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -35,7 +36,7 @@ public class VirtualMachineNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureCompute ||
             data instanceof VirtualMachine;
     }

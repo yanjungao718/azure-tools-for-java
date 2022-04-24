@@ -7,11 +7,14 @@ package com.microsoft.azure.toolkit.ide.vm;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
@@ -24,13 +27,19 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
     public static final String VM_ACTIONS = "actions.vm.management";
 
     public static final Action.Id<VirtualMachine> ADD_SSH_CONFIG = Action.Id.of("action.vm.add_ssh_configuration");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_VM = Action.Id.of("action.vm.create_server.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", "/icons/action/add")
+        final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", AzureIcons.Action.ADD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
             .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(ADD_SSH_CONFIG, new Action<>(addSshConfigView));
+
+        final ActionView.Builder createVmView = new ActionView.Builder("Virtual Machine")
+            .title(s -> Optional.ofNullable(s).map(r -> title("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_VM, new Action<>(createVmView));
     }
 
     @Override
@@ -56,6 +65,9 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(VM_ACTIONS, accountActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_VM);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 
@@ -23,7 +24,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class ContainerRegistryNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Container Registries";
-    private static final String ICON = "/icons/ContainerRegistry/ContainerRegistry.svg";
+    private static final String ICON = AzureIcons.ContainerRegistry.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -32,7 +33,7 @@ public class ContainerRegistryNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureContainerRegistry || data instanceof ContainerRegistry;
     }
 

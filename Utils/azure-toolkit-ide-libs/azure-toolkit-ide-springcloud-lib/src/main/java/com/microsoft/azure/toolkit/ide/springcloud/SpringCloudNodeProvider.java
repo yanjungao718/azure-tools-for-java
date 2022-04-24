@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -24,8 +25,8 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SpringCloudNodeProvider implements IExplorerNodeProvider {
 
-    private static final String NAME = "Spring Cloud";
-    private static final String ICON = "/icons/Microsoft.AppPlatform/default.svg";
+    private static final String NAME = "Spring Apps";
+    private static final String ICON = AzureIcons.SpringCloud.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -34,7 +35,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureSpringCloud ||
             data instanceof SpringCloudCluster ||
             data instanceof SpringCloudApp;
@@ -47,7 +48,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
             final AzureSpringCloud service = (AzureSpringCloud) data;
             final Function<AzureSpringCloud, List<SpringCloudCluster>> clusters = asc -> asc.list().stream().flatMap(m -> m.clusters().list().stream())
                 .collect(Collectors.toList());
-            return new Node<>(service).view(new AzureServiceLabelView<>(service, "Spring Cloud", ICON))
+            return new Node<>(service).view(new AzureServiceLabelView<>(service, "Spring Apps", ICON))
                 .actions(SpringCloudActionsContributor.SERVICE_ACTIONS)
                 .addChildren(clusters, (cluster, ascNode) -> this.createNode(cluster, ascNode, manager));
         } else if (data instanceof SpringCloudCluster) {

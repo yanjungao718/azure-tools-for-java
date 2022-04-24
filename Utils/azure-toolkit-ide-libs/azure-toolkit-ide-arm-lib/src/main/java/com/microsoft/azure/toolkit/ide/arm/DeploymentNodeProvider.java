@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
@@ -21,9 +22,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ArmNodeProvider implements IExplorerNodeProvider {
-    private static final String NAME = "Resource Management";
-    private static final String ICON = "/icons/Microsoft.Resources/default.svg";
+public class DeploymentNodeProvider implements IExplorerNodeProvider {
+    private static final String NAME = "Resource Groups";
+    private static final String ICON = AzureIcons.Resources.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -32,10 +33,8 @@ public class ArmNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
-        return data instanceof AzureResources ||
-            data instanceof ResourceGroup ||
-            data instanceof ResourceDeployment;
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull ViewType type) {
+        return (type == ViewType.TYPE_CENTRIC && data instanceof AzureResources) || data instanceof ResourceDeployment;
     }
 
     @Nullable
@@ -47,21 +46,14 @@ public class ArmNodeProvider implements IExplorerNodeProvider {
                 .flatMap(m -> m.resourceGroups().list().stream()).collect(Collectors.toList());
             return new Node<>(service)
                 .view(new AzureServiceLabelView<>(service, NAME, ICON))
-                .actions(ArmActionsContributor.RESOURCE_MANAGEMENT_ACTIONS)
-                .addChildren(groupsLoader, (d, p) -> this.createNode(d, p, manager));
-        } else if (data instanceof ResourceGroup) {
-            final ResourceGroup rg = (ResourceGroup) data;
-            return new Node<>(rg)
-                .view(new AzureResourceLabelView<>(rg))
-                .inlineAction(ResourceCommonActionsContributor.PIN)
-                .actions(ArmActionsContributor.RESOURCE_GROUP_ACTIONS)
-                .addChildren(g -> g.deployments().list(), (d, p) -> this.createNode(d, p, manager));
+                .actions(ResourceGroupActionsContributor.TYPECENTRIC_RESOURCE_GROUPS_ACTIONS)
+                .addChildren(groupsLoader, (d, p) -> manager.createNode(d, p, ViewType.TYPE_CENTRIC));
         } else if (data instanceof ResourceDeployment) {
             final ResourceDeployment deployment = (ResourceDeployment) data;
             return new Node<>(deployment)
                 .view(new AzureResourceLabelView<>(deployment))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
-                .actions(ArmActionsContributor.RESOURCE_DEPLOYMENT_ACTIONS);
+                .actions(DeploymentActionsContributor.DEPLOYMENT_ACTIONS);
         }
         return null;
     }

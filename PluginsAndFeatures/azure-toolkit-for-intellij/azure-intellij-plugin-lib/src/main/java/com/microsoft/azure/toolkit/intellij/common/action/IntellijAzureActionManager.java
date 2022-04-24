@@ -13,18 +13,19 @@ import com.intellij.openapi.actionSystem.CommonShortcuts;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ShortcutSet;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -83,9 +84,8 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Override
-    public ActionGroup getGroup(String id) {
-        final ActionGroupWrapper group = (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
-        return group.getGroup();
+    public IActionGroup getGroup(String id) {
+        return (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
     }
 
     @Getter
@@ -99,23 +99,20 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final IView.Label view = action.getView(null);
         }
 
-        public void registerShortcuts(JComponent component, @Nullable Disposable disposable) {
+        @Nullable
+        public ShortcutSet getShortcuts() {
             final Object shortcuts = action.getShortcuts();
-            final ShortcutSet shortcutSet;
-            if (shortcuts == null) {
-                return;
-            } else if (shortcuts instanceof Action.Id) {
-                shortcutSet = ActionManager.getInstance().getAction(((Action.Id<?>) shortcuts).getId()).getShortcutSet();
+            if (shortcuts instanceof Action.Id) {
+                return ActionManager.getInstance().getAction(((Action.Id<?>) shortcuts).getId()).getShortcutSet();
             } else if (shortcuts instanceof String) {
-                shortcutSet = CustomShortcutSet.fromString((String) shortcuts);
+                return CustomShortcutSet.fromString((String) shortcuts);
             } else if (shortcuts instanceof String[]) {
-                shortcutSet = CustomShortcutSet.fromString((String[]) shortcuts);
+                return CustomShortcutSet.fromString((String[]) shortcuts);
             } else if (shortcuts instanceof ShortcutSet) {
-                shortcutSet = (ShortcutSet) shortcuts;
+                return (ShortcutSet) shortcuts;
             } else {
-                throw new AzureToolkitRuntimeException("invalid shortcuts:" + shortcuts);
+                return null;
             }
-            this.registerCustomShortcutSet(shortcutSet, component, disposable);
         }
 
         @Override
@@ -138,7 +135,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         private static void applyView(IView.Label view, Presentation presentation) {
             if (Objects.nonNull(view)) {
                 if (Objects.nonNull(view.getIconPath())) {
-                    presentation.setIcon(AzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
+                    presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
                 }
                 presentation.setText(view.getLabel());
                 presentation.setDescription(view.getDescription());
@@ -148,14 +145,13 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Getter
-    public static class ActionGroupWrapper extends DefaultActionGroup implements DumbAware {
+    public static class ActionGroupWrapper extends DefaultActionGroup implements IActionGroup, DumbAware {
 
         private final ActionGroup group;
 
         public ActionGroupWrapper(@Nonnull ActionGroup group) {
             super();
             this.group = group;
-            this.setSearchable(true);
             this.setPopup(true);
             final IView.Label view = this.group.getView();
             final Presentation template = this.getTemplatePresentation();
@@ -168,38 +164,65 @@ public class IntellijAzureActionManager extends AzureActionManager {
         }
 
         private void addActions(List<Object> actions) {
-            final ActionManager am = ActionManager.getInstance();
-            for (Object raw : actions) {
-                if (raw instanceof Action.Id) {
-                    raw = ((Action.Id<?>) raw).getId();
-                }
-                if (raw instanceof String) {
-                    final String actionId = (String) raw;
-                    if (actionId.startsWith("-")) {
-                        final String title = actionId.replaceAll("-", "").trim();
-                        if (StringUtils.isBlank(title)) {
-                            this.addSeparator();
-                        } else {
-                            this.addSeparator(title);
-                        }
-                    } else if (StringUtils.isNotBlank(actionId)) {
-                        final AnAction action = am.getAction(actionId);
-                        if (Objects.nonNull(action)) {
-                            this.add(action);
-                        }
-                    }
-                } else if (raw instanceof Action<?>) {
-                    this.add(new AnActionWrapper<>((Action<?>) raw));
-                } else if (raw instanceof ActionGroup) {
-                    this.add(new ActionGroupWrapper((ActionGroup) raw));
-                }
+            for (final Object raw : actions) {
+                doAddAction(raw);
             }
         }
 
-        public void registerCustomShortcutSetForActions(JComponent tree, @Nullable Disposable disposable) {
-            for (final AnAction action : this.getChildActionsOrStubs()) {
-                if (action instanceof AnActionWrapper) {
-                    ((AnActionWrapper<?>) action).registerShortcuts(tree, disposable);
+        @Override
+        public IView.Label getView() {
+            return group.getView();
+        }
+
+        @Override
+        public List<Object> getActions() {
+            return group.getActions();
+        }
+
+        @Override
+        public void addAction(Object raw) {
+            this.group.addAction(raw);
+            this.doAddAction(raw);
+        }
+
+        public void doAddAction(Object raw) {
+            if (raw instanceof Action.Id) {
+                raw = ((Action.Id<?>) raw).getId();
+            }
+            if (raw instanceof String) {
+                final String actionId = (String) raw;
+                if (actionId.startsWith("-")) {
+                    final String title = actionId.replaceAll("-", "").trim();
+                    if (StringUtils.isBlank(title)) {
+                        this.addSeparator();
+                    } else {
+                        this.addSeparator(title);
+                    }
+                } else if (StringUtils.isNotBlank(actionId)) {
+                    final ActionManager am = ActionManager.getInstance();
+                    final AnAction action = am.getAction(actionId);
+                    if (action instanceof com.intellij.openapi.actionSystem.ActionGroup) {
+                        this.add(action);
+                    } else if (Objects.nonNull(action)) {
+                        this.add(EmptyAction.wrap(action));
+                    }
+                }
+            } else if (raw instanceof Action<?>) {
+                this.add(new AnActionWrapper<>((Action<?>) raw));
+            } else if (raw instanceof ActionGroup) {
+                this.add(new ActionGroupWrapper((ActionGroup) raw));
+            }
+        }
+
+        public void registerCustomShortcutSetForActions(JComponent component, @Nullable Disposable disposable) {
+            for (final AnAction origin : this.getChildActionsOrStubs()) {
+                final AnAction real = origin instanceof EmptyAction.MyDelegatingAction ?
+                    ((EmptyAction.MyDelegatingAction) origin).getDelegate() : origin;
+                if (real instanceof AnActionWrapper) {
+                    final ShortcutSet shortcuts = ((AnActionWrapper<?>) real).getShortcuts();
+                    if (Objects.nonNull(shortcuts)) {
+                        origin.registerCustomShortcutSet(shortcuts, component, disposable);
+                    }
                 }
             }
         }

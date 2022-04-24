@@ -9,8 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppPropertyViewProvider;
@@ -19,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,7 +50,7 @@ public class OpenAppServicePropertyViewAction {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(webApp.getName(), sid, webAppId);
-            itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.WebApp.MODULE.getPath())));
+            itemVirtualFile.setFileType(new AzureFileType(type, IntelliJAzureIcons.getIcon(AzureIcons.WebApp.MODULE)));
         }
         final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));
@@ -73,7 +73,7 @@ public class OpenAppServicePropertyViewAction {
             userData.put(WEBAPP_ID, slot.getParent().getId());
             userData.put(SLOT_NAME, slot.getName());
             itemVirtualFile = createVirtualFile(slot.getParent().getName() + "-" + slot.getName(), userData);
-            itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.DeploymentSlot.MODULE.getPath())));
+            itemVirtualFile.setFileType(new AzureFileType(type, IntelliJAzureIcons.getIcon(AzureIcons.DeploymentSlot.MODULE)));
         }
         final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));
@@ -90,7 +90,7 @@ public class OpenAppServicePropertyViewAction {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, functionApId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(functionApp.name(), subscriptionId, functionApId);
-            itemVirtualFile.setFileType(new AzureFileType(type, AzureIcons.getIcon(AzureIconSymbol.FunctionApp.MODULE.getPath())));
+            itemVirtualFile.setFileType(new AzureFileType(type, IntelliJAzureIcons.getIcon(AzureIcons.FunctionApp.MODULE)));
         }
         final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));

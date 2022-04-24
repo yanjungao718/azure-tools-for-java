@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -28,7 +29,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
 
     @Nonnull
     @Getter
-    private final T resource;
+    protected final T resource;
     @Getter
     private final String label;
     @Getter
@@ -58,7 +59,7 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         this.iconProvider = iconProvider;
         this.descriptionLoader = descriptionLoader;
         this.listener = new AzureEventBus.EventListener(this::onEvent);
-        this.icon = AzureIcon.REFRESH_ICON;
+        this.icon = AzureIcons.Common.REFRESH_ICON;
         AzureEventBus.on("resource.refreshed.resource", listener);
         AzureEventBus.on("resource.status_changed.resource", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);

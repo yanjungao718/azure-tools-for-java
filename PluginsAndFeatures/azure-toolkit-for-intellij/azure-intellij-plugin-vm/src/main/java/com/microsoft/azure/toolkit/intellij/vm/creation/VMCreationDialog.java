@@ -450,7 +450,8 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         Optional.of(data.getSubscriptionId()).ifPresent(id -> cbSubscription.setValue(
             new AzureComboBox.ItemReference<>(subscription -> StringUtils.equalsIgnoreCase(subscription.getId(), id))));
         Optional.of(data.getName()).ifPresent(name -> txtVisualMachineName.setText(name));
-        Optional.ofNullable(data.getRegion()).ifPresent(region -> cbRegion.setValue(region));
+        Optional.ofNullable(data.getRegion()).or(() -> Optional.ofNullable(data.getResourceGroup()).map(r -> r.getRegion()))
+            .ifPresent(region -> cbRegion.setValue(region));
         Optional.ofNullable(data.getImage()).ifPresent(image -> cbImage.setValue(image));
         Optional.ofNullable(data.getSize()).ifPresent(size -> cbSize.setValue(size));
         Optional.ofNullable(data.getAdminUserName()).ifPresent(name -> txtUserName.setText(name));

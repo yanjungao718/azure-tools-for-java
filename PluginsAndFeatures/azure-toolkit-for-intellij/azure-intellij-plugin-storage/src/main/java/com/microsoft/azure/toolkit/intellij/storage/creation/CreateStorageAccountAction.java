@@ -13,19 +13,26 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccountDraft;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class CreateStorageAccountAction {
-    public static void createStorageAccount(Project project) {
+    public static void create(@Nonnull Project project, @Nullable final StorageAccountConfig data) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final StorageAccountCreationDialog dialog = new StorageAccountCreationDialog(project);
+            if (Objects.nonNull(data)) {
+                dialog.getForm().setValue(data);
+            }
             dialog.setOkActionListener((config) -> {
                 dialog.close();
                 create(config);
@@ -42,7 +49,7 @@ public class CreateStorageAccountAction {
 
     public static StorageAccount createStorageAccount(StorageAccountConfig config) {
         final String subscriptionId = config.getSubscription().getId();
-        AzureTelemetry.getActionContext().setProperty("subscriptionId", subscriptionId);
+        OperationContext.action().setTelemetryProperty("subscriptionId", subscriptionId);
         if (config.getResourceGroup() instanceof Draft) { // create resource group if necessary.
             final ResourceGroup newResourceGroup = Azure.az(AzureResources.class)
                 .groups(subscriptionId).createResourceGroupIfNotExist(config.getResourceGroup().getName(), config.getRegion());

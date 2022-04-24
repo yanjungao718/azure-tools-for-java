@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.appservice.webapp;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
@@ -15,8 +16,10 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
@@ -36,6 +39,7 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
     public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_WEBAPP = Action.Id.of("action.webapp.create_app.group");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -87,12 +91,15 @@ public class WebAppActionsContributor implements IActionsContributor {
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, deploymentSlotActionGroup);
 
         am.registerGroup(DEPLOYMENT_SLOTS_ACTIONS, new ActionGroup(REFRESH_DEPLOYMENT_SLOTS));
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_WEBAPP);
     }
 
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<WebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.list_deployments.app", ((WebApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof WebApp);
         final Action<WebApp> refreshAction = new Action<>(refresh, refreshView);
@@ -100,11 +107,16 @@ public class WebAppActionsContributor implements IActionsContributor {
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
         final Consumer<WebAppDeploymentSlot> swap = slot -> slot.getParent().swap(slot.getName());
-        final ActionView.Builder swapView = new ActionView.Builder("Swap With Production", "/icons/action/refresh.svg")
+        final ActionView.Builder swapView = new ActionView.Builder("Swap With Production")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
                 ((WebAppDeploymentSlot) s).getName(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
             .enabled(s -> s instanceof WebAppDeploymentSlot && ((WebAppDeploymentSlot) s).getFormalStatus().isRunning());
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
+
+        final ActionView.Builder createWebAppView = new ActionView.Builder("Web App")
+            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
+            .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_WEBAPP, new Action<>(createWebAppView));
     }
 
     @Override

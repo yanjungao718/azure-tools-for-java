@@ -20,13 +20,20 @@ import com.microsoft.azure.toolkit.redis.RedisCacheDraft;
 import com.microsoft.azure.toolkit.redis.RedisCacheModule;
 import com.microsoft.azure.toolkit.redis.model.RedisConfig;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class CreateRedisCacheAction {
     private static final String ERROR_CREATING_REDIS_CACHE = "Error creating Redis cache";
 
-    public static void createRedisCache(Project project) {
+    public static void create(@Nonnull Project project, @Nullable RedisConfig data) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final RedisCreationDialog dialog = new RedisCreationDialog(project);
+            if (Objects.nonNull(data)) {
+                dialog.getForm().setValue(data);
+            }
             dialog.setOkActionListener(config -> {
                 doCreate(config, project);
                 dialog.close();

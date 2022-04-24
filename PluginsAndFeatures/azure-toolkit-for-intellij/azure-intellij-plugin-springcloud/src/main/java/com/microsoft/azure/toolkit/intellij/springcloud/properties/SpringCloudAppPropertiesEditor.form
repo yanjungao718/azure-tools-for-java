@@ -131,7 +131,7 @@
             </constraints>
             <properties>
               <labelFor value=""/>
-              <text value="Service:"/>
+              <text value="Spring Apps:"/>
             </properties>
           </component>
           <component id="46af1" class="com.intellij.ui.components.JBLabel" binding="lblCluster">

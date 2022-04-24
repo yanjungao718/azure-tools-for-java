@@ -24,7 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
@@ -52,7 +52,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     private static final String UPDATE_APP_WARNING = "It may take some moments for the configuration to be applied at server side!";
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
         "you can check the app status from Azure Portal.";
-    private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
+    private static final String NOTIFICATION_TITLE = "Deploy Spring app";
 
     private final SpringCloudDeploymentConfiguration config;
     private final Project project;
@@ -95,8 +95,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
 
     @AzureOperation(name = "springcloud.deploy_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
     public SpringCloudDeployment execute(IAzureMessager messager) {
-        AzureMessager.getContext().setMessager(messager);
-        AzureTelemetry.getContext().setProperties(getTelemetryProperties());
+        OperationContext.current().setMessager(messager);
+        OperationContext.current().setTelemetryProperties(getTelemetryProperties());
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         if (Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).filter(a -> a.getFile().exists()).isEmpty()) {
             throw new AzureToolkitRuntimeException(

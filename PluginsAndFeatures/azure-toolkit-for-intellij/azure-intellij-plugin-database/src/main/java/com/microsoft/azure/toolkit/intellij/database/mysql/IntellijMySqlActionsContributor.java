@@ -15,16 +15,21 @@ import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResource;
 import com.microsoft.azure.toolkit.intellij.database.mysql.connection.MySqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.mysql.creation.CreateMySqlAction;
+import com.microsoft.azure.toolkit.intellij.database.mysql.creation.MySqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -35,7 +40,7 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzureMySql;
-        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateMySqlAction.create((e.getProject()));
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateMySqlAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MySqlServer,
@@ -49,6 +54,20 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
 
         final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MySqlServer) c);
         am.registerHandler(MySqlActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
+
+        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateMySqlHandler = (r, e) -> {
+            final DatabaseServerConfig config = MySqlCreationDialog.getDefaultConfig();
+            config.setSubscription(r.getSubscription());
+            config.setRegion(r.getRegion());
+            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .subscriptionId(r.getSubscriptionId())
+                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
+                .build());
+            CreateMySqlAction.create(e.getProject(), config);
+        };
+        am.registerHandler(MySqlActionsContributor.GROUP_CREATE_MYSQL, (r, e) -> true, groupCreateMySqlHandler);
     }
 
     @AzureOperation(name = "mysql.open_by_database_tools.server", params = {"server.getName()"}, type = AzureOperation.Type.ACTION)

@@ -6,8 +6,9 @@
 package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Accessors(chain = true, fluent = true)
@@ -41,7 +43,7 @@ public class Node<D> {
     @Setter
     private boolean lazy = true;
     @Nullable
-    private ActionGroup actions;
+    private IActionGroup actions;
     private int order;
     private Action<? super D> doubleClickAction;
     private Action<? super D> inlineAction;
@@ -77,12 +79,23 @@ public class Node<D> {
         return this.addChildren((d) -> children, (cd, n) -> cd);
     }
 
+    public Node<D> addChildren(@Nonnull Function<? super D, ? extends List<Node<?>>> getChildrenNodes) {
+        return this.addChildren(getChildrenNodes, (cd, n) -> cd);
+    }
+
     public Node<D> addChild(@Nonnull Node<?> childNode) {
         return this.addChildren(Collections.singletonList(childNode));
     }
 
     public List<Node<?>> getChildren() {
-        return this.childrenBuilders.stream().flatMap((builder) -> builder.build(this).stream()).collect(Collectors.toList());
+        return this.childrenBuilders.stream().flatMap((builder) -> {
+            try {
+                return builder.build(this).stream();
+            } catch (final Exception e) {
+                AzureMessager.getMessager().error(e);
+                return Stream.empty();
+            }
+        }).collect(Collectors.toList());
     }
 
     public boolean hasChildren() {
@@ -115,7 +128,7 @@ public class Node<D> {
         return this.actions(AzureActionManager.getInstance().getGroup(groupId));
     }
 
-    public Node<D> actions(ActionGroup group) {
+    public Node<D> actions(IActionGroup group) {
         this.actions = group;
         return this;
     }

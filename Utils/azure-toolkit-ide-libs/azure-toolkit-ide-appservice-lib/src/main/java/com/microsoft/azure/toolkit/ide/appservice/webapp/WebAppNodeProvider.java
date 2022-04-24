@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
@@ -35,7 +36,7 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
             .withModifier(app -> new AzureIcon.Modifier("webapp", AzureIcon.ModifierLocation.OTHER));
 
     private static final String NAME = "Web Apps";
-    private static final String ICON = "/icons/Microsoft.Web/webapps.svg";
+    private static final String ICON = AzureIcons.WebApp.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -44,7 +45,7 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureWebApp ||
             data instanceof WebApp ||
             data instanceof AppServiceFile;

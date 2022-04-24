@@ -21,6 +21,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
@@ -45,7 +46,7 @@ public class ResourceConnectionExplorer extends Tree {
     private Node<Project> buildRoot() {
         final ConnectionManager cm = this.project.getService(ConnectionManager.class);
         return new Node<>(project).lazy(false)
-                .view(new NodeView.Static("Resource Connections", "/icons/azure"))
+                .view(new NodeView.Static("Resource Connections", AzureIcons.Common.AZURE.getIconPath()))
                 .addChildren(project -> Arrays.asList(ModuleManager.getInstance(project).getModules().clone()), (m, n) -> new ModuleNode(m).lazy(false)
                         .view(new NodeView.Static(m.getName(), "/icons/module"))
                         .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)

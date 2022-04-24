@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
@@ -26,7 +27,7 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
     public static final MySqlDatabaseResourceDefinition INSTANCE = new MySqlDatabaseResourceDefinition();
 
     public MySqlDatabaseResourceDefinition() {
-        super("Azure.MySQL", "Azure Database for MySQL", "/icons/Microsoft.DBforMySQL/default.svg");
+        super("Azure.MySQL", "Azure Database for MySQL", AzureIcons.MySQL.MODULE.getIconPath());
     }
 
     @Override

@@ -5,12 +5,14 @@
 
 package com.microsoft.azure.toolkit.ide.common.favorite;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IMachineStore;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -28,11 +30,15 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,11 +51,11 @@ import java.util.stream.Stream;
 
 @Slf4j
 public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
-    private static final String FAVORITE_ICON = "/icons/Common/favorite.svg";
+    private static final String FAVORITE_ICON = AzureIcons.Common.FAVORITE.getIconPath();
 
     @Getter
     private static final Favorites instance = new Favorites();
-    public static final String NAME = "toolkitFavorites";
+    public static final String NAME = "favorites";
     List<String> favorites = new LinkedList<>();
 
     private Favorites() {
@@ -95,7 +101,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 this.favorites = new LinkedList<>();
             }
         }
-        return this.favorites.stream().map(id -> Azure.az().getById(id)).filter(Objects::nonNull)
+        return this.favorites.stream().map(id -> this.loadResourceFromAzure(id, null)).filter(Objects::nonNull)
             .map(c -> ((AbstractAzResource<?, ?, ?>) c));
     }
 
@@ -109,15 +115,32 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
     @Override
-    protected void deleteResourceFromAzure(@Nonnull String resourceId) {
-        this.favorites.remove(resourceId.substring("$NONE$/toolkitFavorites/".length()));
+    @SneakyThrows
+    protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
+        final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
+        this.favorites.remove(resourceId);
         this.persist();
+    }
+
+    @Nonnull
+    @Override
+    @SneakyThrows
+    public String toResourceId(@Nonnull String resourceName, @Nullable String resourceGroup) {
+        final String encoded = URLEncoder.encode(resourceName, StandardCharsets.UTF_8.name());
+        final String template = "/subscriptions/%s/resourceGroups/%s/providers/AzureToolkits.Favorite/favorites/%s";
+        return String.format(template, AzResource.NONE.getName(), AzResource.NONE.getName(), encoded);
     }
 
     @Nonnull
     @Override
     protected Favorite newResource(@Nonnull AbstractAzResource<?, ?, ?> remote) {
         return new Favorite(remote, this);
+    }
+
+    @Nonnull
+    @Override
+    protected Favorite newResource(@Nonnull String name, @Nullable String resourceGroupName) {
+        throw new AzureToolkitRuntimeException("not supported");
     }
 
     @Nonnull
@@ -174,13 +197,13 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     public static Node<Favorites> buildFavoriteRoot(IExplorerNodeProvider.Manager manager) {
         final AzureActionManager.Shortcuts shortcuts = AzureActionManager.getInstance().getIDEDefaultShortcuts();
 
-        final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", "/icons/Common/unpin.svg")
+        final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", AzureIcons.Action.UNPIN.getIconPath())
             .enabled(s -> s instanceof Favorites);
         final Consumer<Favorites> unpinAllHandler = Favorites::unpinAll;
         final Action<Favorites> unpinAllAction = new Action<>(unpinAllHandler, unpinAllView);
         unpinAllAction.setShortcuts("control F11");
 
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
             .enabled(s -> s instanceof Favorites);
         final Consumer<Favorites> refreshHandler = Favorites::refresh;
         final Action<Favorites> refreshAction = new Action<>(refreshHandler, refreshView);
@@ -190,11 +213,9 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         return new Node<>(Favorites.getInstance(), rootView).lazy(false)
             .actions(new ActionGroup(unpinAllAction, "---", refreshAction))
             .addChildren(Favorites::list, (o, parent) -> {
-                final Node<?> node = manager.createNode(o.getResource(), parent);
-                if (Objects.nonNull(node) && node.view() instanceof AzureResourceLabelView) {
+                final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
+                if (node.view() instanceof AzureResourceLabelView) {
                     node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
-                } else if (Objects.isNull(node)) {
-                    throw new AzureToolkitRuntimeException("failed to render Favorite node from " + o.getResource());
                 }
                 return node;
             });

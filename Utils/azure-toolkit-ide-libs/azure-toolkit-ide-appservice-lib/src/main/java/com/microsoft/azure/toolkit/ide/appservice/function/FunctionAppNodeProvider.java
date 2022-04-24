@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
@@ -26,8 +27,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
-import static com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider.WEBAPP_ICON_PROVIDER;
-
 public class FunctionAppNodeProvider implements IExplorerNodeProvider {
     public static final AzureIconProvider<AppServiceAppBase<?, ?, ?>> FUNCTIONAPP_ICON_PROVIDER =
         new AzureResourceIconProvider<AppServiceAppBase<?, ?, ?>>()
@@ -35,7 +34,7 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
             .withModifier(app -> new AzureIcon.Modifier("functionapp", AzureIcon.ModifierLocation.OTHER));
 
     private static final String NAME = "Function App";
-    private static final String ICON = "/icons/Microsoft.Web/functions.png";
+    private static final String ICON = AzureIcons.FunctionApp.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -44,7 +43,7 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureFunctions ||
             data instanceof FunctionApp ||
             data instanceof AppServiceFile;

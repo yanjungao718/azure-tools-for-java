@@ -7,6 +7,7 @@
         <actions implementation="com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijAccountActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow anchor="bottom"

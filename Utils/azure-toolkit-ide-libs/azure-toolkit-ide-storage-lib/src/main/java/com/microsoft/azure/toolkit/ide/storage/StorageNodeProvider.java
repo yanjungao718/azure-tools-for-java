@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
@@ -23,7 +24,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class StorageNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Storage Account";
-    private static final String ICON = "/icons/Microsoft.Storage/default.svg";
+    private static final String ICON = AzureIcons.StorageAccount.MODULE.getIconPath();
 
     @Nullable
     @Override
@@ -32,7 +33,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureStorageAccount || data instanceof StorageAccount;
     }
 

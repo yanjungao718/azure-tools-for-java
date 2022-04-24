@@ -28,8 +28,8 @@ public class SpringCloudStreamingLogAction {
 
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app.";
     private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app.";
-    private static final String FAILED_TO_LIST_INSTANCES = "Failed to list spring cloud app instances.";
-    private static final String FAILED_TO_LIST_INSTANCES_WITH_MESSAGE = "Failed to list spring cloud app instances: %s";
+    private static final String FAILED_TO_LIST_INSTANCES = "Failed to list Spring app instances.";
+    private static final String FAILED_TO_LIST_INSTANCES_WITH_MESSAGE = "Failed to list Spring app instances: %s";
 
     public static void startLogStreaming(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final IAzureMessager messager = AzureMessager.getMessager();

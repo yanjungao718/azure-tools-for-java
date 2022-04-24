@@ -33,6 +33,8 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -44,8 +46,6 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.helpers.AzureIconLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
@@ -63,8 +63,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
             "SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-SAS-key>;";
 
     public CreateFunctionAction() {
-        super(message("function.createFunction.action.title"),
-                "newPage.dialog.prompt", AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE));
+        super(message("function.createFunction.action.title"), "newPage.dialog.prompt", IntelliJAzureIcons.getIcon(AzureIcons.FunctionApp.MODULE));
     }
 
     @Override

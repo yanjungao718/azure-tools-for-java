@@ -80,8 +80,8 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
         final String deleteTitle = String.format("Deleting app(%s)", this.draft.getName());
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         this.deleteButton.addActionListener(e -> {
-            final String message = String.format("Are you sure to delete Spring Cloud App(%s)", this.draft.name());
-            if (AzureMessager.getMessager().confirm(message, "Delete Spring Cloud App")) {
+            final String message = String.format("Are you sure to delete Spring app(%s)", this.draft.name());
+            if (AzureMessager.getMessager().confirm(message, "Delete Spring app")) {
                 tm.runInModal(deleteTitle, () -> {
                     IntellijShowPropertiesViewAction.closePropertiesView(this.draft, this.project);
                     this.draft.delete();
