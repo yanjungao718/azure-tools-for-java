@@ -6,7 +6,6 @@
 package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -44,7 +43,7 @@ public class ADLSGen2OAuthHttpObservable extends OAuthTokenHttpObservable {
             throw new AuthException("Not signed in. Can't send out the request.");
         }
 
-        return azureManager.getAccessToken(tenantId, resource, PromptBehavior.Auto);
+        return azureManager.getAccessToken(tenantId, resource);
     }
 
     @Override

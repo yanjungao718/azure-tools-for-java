@@ -8,7 +8,6 @@ package com.microsoft.azuretools.authmanage;
 import com.google.gson.*;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
 import com.microsoft.azure.AzureEnvironment;
-import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -43,7 +42,6 @@ public class CommonSettings {
     );
 
     private static String settingsBaseDir = null;
-    private static IUIFactory uiFactory;
     private static Environment env = Environment.GLOBAL;
 
     public static String getSettingsBaseDir() {
@@ -112,14 +110,6 @@ public class CommonSettings {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static IUIFactory getUiFactory() {
-        return uiFactory;
-    }
-
-    public static void setUiFactory(IUIFactory uiFactory) {
-        CommonSettings.uiFactory = uiFactory;
     }
 
     public static AzureEnvironment getAdEnvironment() {
