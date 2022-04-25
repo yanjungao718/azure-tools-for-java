@@ -168,13 +168,13 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(CREATE, createAction);
 
         final Favorites favorites = Favorites.getInstance();
-        final Function<Object, String> title = s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+        final Function<Object, String> title = s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId()) ?
             "Unmark As Favorite" : "Mark As Favorite";
         final ActionView.Builder pinView = new ActionView.Builder(title).enabled(s -> s instanceof AbstractAzResource);
-        pinView.iconPath(s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+        pinView.iconPath(s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId()) ?
             AzureIcons.Action.PIN.getIconPath() : AzureIcons.Action.UNPIN.getIconPath());
         final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>((r) -> {
-            if (favorites.exists(r.getId(), null)) {
+            if (favorites.exists(r.getId())) {
                 favorites.unpin(r.getId());
             } else {
                 favorites.pin(r);
