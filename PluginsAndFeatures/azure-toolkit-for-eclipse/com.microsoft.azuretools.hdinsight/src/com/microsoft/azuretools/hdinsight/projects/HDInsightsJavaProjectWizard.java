@@ -8,6 +8,7 @@ package com.microsoft.azuretools.hdinsight.projects;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -48,7 +49,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
@@ -136,7 +136,7 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
         public boolean canFlipToNextPage() {
             if (!sparkLibraryOptionsPanel.getUsingMaven()) {
                 final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
-                if(StringUtils.isNullOrEmpty(jarPathString)) {
+                if(StringUtils.isEmpty(jarPathString)) {
                     return false;
                 }
             }
@@ -153,7 +153,7 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
                 public void run() {
                     if (!sparkLibraryOptionsPanel.getUsingMaven()) {
                         final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
-                        if (StringUtils.isNullOrEmpty(jarPathString)) {
+                        if (StringUtils.isEmpty(jarPathString)) {
                             DefaultLoader.getUIHelper().showError("Spark Library Path cannot be null",
                                     "Spark Project Settings");
                         } else {

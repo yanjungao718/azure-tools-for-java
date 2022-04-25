@@ -25,15 +25,9 @@ package com.microsoft.azure.hdinsight.common
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
-import com.microsoft.azuretools.adauth.IDeviceLoginUI
-import com.microsoft.azuretools.adauth.IWebUi
-import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.azuretools.authmanage.SubscriptionManager
-import com.microsoft.azuretools.authmanage.interact.INotification
-import com.microsoft.azuretools.authmanage.interact.IUIFactory
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
-import com.microsoft.azuretools.utils.IProgressTaskImpl
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.helpers.IDEHelper
 import cucumber.api.DataTable
@@ -44,7 +38,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.mockito.Mockito.*
-import java.util.*
 
 class ClusterManagerExScenario {
     data class SimpleCluster(val name: String,
@@ -66,20 +59,6 @@ class ClusterManagerExScenario {
 
     @Before
     fun setUp() {
-        CommonSettings.setUiFactory(object : IUIFactory {
-            override fun getDeviceLoginUI(): IDeviceLoginUI {
-                return mock(IDeviceLoginUI::class.java)
-            }
-
-            override fun getNotificationWindow(): INotification {
-                return mock(INotification::class.java)
-            }
-
-            override fun getProgressTaskImpl(): IProgressTaskImpl {
-                return mock(IProgressTaskImpl::class.java)
-            }
-        })
-
         val mockedIdeHelper = mock(IDEHelper::class.java)
         doAnswer { mockedApplicationProperties[it.getArgument(0)] }.`when`(mockedIdeHelper).getApplicationProperty(anyString())
 

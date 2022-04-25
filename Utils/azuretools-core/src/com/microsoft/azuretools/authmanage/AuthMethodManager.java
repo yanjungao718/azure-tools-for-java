@@ -7,11 +7,11 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -46,6 +46,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 @Slf4j
 public class AuthMethodManager {
     public static final String AUTH_METHOD_DETAIL = "auth_method_detail";
+    public static final String AUTH_TYPE = "authType";
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
@@ -258,6 +259,7 @@ public class AuthMethodManager {
                 final Map<String, String> telemetryProperties = new HashMap<String, String>() {
                     {
                         put(SIGNIN_METHOD, authMethod);
+                        put(AUTH_TYPE, Optional.ofNullable(authMethodDetails.getAuthType()).map(AuthType::name).orElse("Empty"));
                         put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
                     }
                 };
@@ -286,6 +288,7 @@ public class AuthMethodManager {
                 json = new String(data);
                 AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, json);
                 fs.removeFile();
+                OperationContext.action().setTelemetryProperty("isLoadAuthMethodDetailsFromDisk", String.valueOf(true));
             }
             if (StringUtils.isBlank(json)) {
                 System.out.println("No auth method details are saved.");

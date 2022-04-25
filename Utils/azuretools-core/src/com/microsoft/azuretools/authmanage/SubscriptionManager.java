@@ -141,9 +141,4 @@ public class SubscriptionManager {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.UPDATE, null));
         }
     }
-
-    public String getSubscriptionTenant(String sid) {
-        System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionTenant()");
-        return Azure.az(AzureAccount.class).account().getSubscription(sid).getTenantId();
-    }
 }

@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.ILog;
@@ -87,7 +88,6 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -703,7 +703,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         }
         if (isCreateNewSlot) {
             String slotName = webAppSettingModel.getNewSlotName();
-            if (StringUtils.isNullOrWhiteSpace(slotName)) {
+            if (StringUtils.isBlank(slotName)) {
                 setError(decTextSlotName, ENTER_VALID_SLOT_NAME);
                 return false;
             }
@@ -717,12 +717,12 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     return false;
                 }
             }
-            if (StringUtils.isNullOrWhiteSpace(webAppSettingModel.getNewSlotConfigurationSource())) {
+            if (StringUtils.isBlank(webAppSettingModel.getNewSlotConfigurationSource())) {
                 setError(decComboSlotConf, SELECT_SLOT_CLONE_SETTING);
                 return false;
             }
         } else {
-            if (StringUtils.isNullOrWhiteSpace(webAppSettingModel.getSlotName())) {
+            if (StringUtils.isBlank(webAppSettingModel.getSlotName())) {
                 setError(decComboSlot, SELECT_SLOT_NAME);
                 return false;
             }
