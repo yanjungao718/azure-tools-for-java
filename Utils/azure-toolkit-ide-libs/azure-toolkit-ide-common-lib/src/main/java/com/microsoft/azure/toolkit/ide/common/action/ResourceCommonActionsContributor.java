@@ -160,7 +160,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 } else if (r instanceof AzResourceModule) {
                     name = ((AzResourceModule<?, ?, ?>) r).getResourceTypeName();
                 }
-                return title("resource.create_resource.service", name);
+                return title("resource.create_resource.type", name);
             }).orElse(null)).enabled(s -> s instanceof AzService || s instanceof AzResourceModule ||
                 (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)));
         final Action<Object> createAction = new Action<>(createView);
