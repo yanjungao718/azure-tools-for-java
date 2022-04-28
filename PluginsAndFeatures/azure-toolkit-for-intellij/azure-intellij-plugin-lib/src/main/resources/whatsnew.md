@@ -1,5 +1,21 @@
-<!-- Version: 3.63.0 -->
+<!-- Version: 3.64.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.64.0
+### Added
+- Azure Explorer: add `Resource Groups` root node to enable "app-centric" resource management.   
+  <img src="https://user-images.githubusercontent.com/69189193/160977559-0099d286-304a-42de-88c9-6407b8a0c09e.png" alt="resource groups" width="400"/>
+
+### Changed
+- `Resource Management` (ARM) in Azure Explorer is migrated to `Resource Groups`: Azure Resource Management deployments are 
+  reorganized from `Azure/Resource Management/{resource_group}/` to `Azure/Resource Groups/{resource_group}/Deployments/`.
+- Rename `Azure Spring Cloud` to `Azure Spring Apps`.
+- Improve stability/reliability of Authentication.
+
+### Fixed
+- All level of CVE issues until now.
+- Action `Access Test Endpoint` is missing from context menu of Azure Spring app.
+- `Test Endpoint` entry is missing properties view of Azure Spring app.
 
 ## 3.63.0
 ### Added
@@ -20,7 +36,7 @@
 ### Fixed
 - [#6505](https://github.com/microsoft/azure-tools-for-java/issues/6505): IntelliJ Crash When logging in to Azure on Mac OS X.
 - [#6511](https://github.com/microsoft/azure-tools-for-java/issues/6511): Failed to open streaming log for Function App.
-- [Test] Some apps keep loading when expand a Spring cloud service node at first time.
+- Some apps keep loading when expand a Spring cloud service node at first time.
 
 ## 3.62.0
 ### Added
