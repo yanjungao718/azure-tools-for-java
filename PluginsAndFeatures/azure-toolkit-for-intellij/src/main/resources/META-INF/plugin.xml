@@ -28,24 +28,20 @@
         <h3>3.63.0</h3>
         <h4>Added</h4>
         <ul>
-          <li>Azure Explorer: add `Provide feedback` on toolbar of Azure explorer.</li>
-          <li>Azure Explorer: add support for pinning favorite resources.</li>
-          <li>Storage account: add `Open in Azure Storage Explorer` action on storage account nodes to open Storage account in local Azure Storage Explorer.</li>
-          <li>Functions: add action on Function app node to trigger http function with IntelliJ native http client(Ultimate Edition only) directly.</li>
-          <li>App service: add support for `Tomcat 10`/`Java 17`.</li>
+          <li>Azure Explorer: add `Resource Groups` root node to enable "app-centric" resource management.</li>
         </ul>
         <h4>Changed</h4>
         <ul>
-          <li>Azure Explorer: node of newly created resource would be automatically focused.</li>
-          <li>Storage account: more actions (e.g. copy Primary/Secondary key...) are added on Storage accounts' nodes.</li>
-          <li>Authentication: performance of authentication with `Azure CLI` is improved a lot.</li>
-          <li>Proper input would be focused automatically once a dialog is opened.</li>
+          <li>`Resource Management` (ARM) in Azure Explorer is migrated to `Resource Groups`: Azure Resource Management deployments are
+            reorganized from `Azure/Resource Management/{resource_group}/` to `Azure/Resource Groups/{resource_group}/Deployments/`.</li>
+          <li>Rename `Azure Spring Cloud` to `Azure Spring Apps`.</li>
+          <li>Improve stability/reliability of Authentication.</li>
         </ul>
         <h4>Fixed</h4>
         <ul>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6505">#6505</a>: IntelliJ Crash When logging in to Azure on Mac OS X.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6511">#6511</a>: Failed to open streaming log for Function App.</li>
-          <li>[Test] Some apps keep loading when expand a Spring cloud service node at first time.</li>
+          <li>All level of CVE issues until now.</li>
+          <li>Action `Access Test Endpoint` is missing from context menu of Azure Spring app.</li>
+          <li>`Test Endpoint` entry is missing properties view of Azure Spring app.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
