@@ -56,8 +56,7 @@ public class AzureModule extends AzureRefreshableNode {
     @NotNull
     private final ContainerRegistryModule containerRegistryModule;
 
-    private final AzureEventBus.EventListener subscriptionListener;
-    private final AzureEventBus.EventListener logoutListener;
+    private final AzureEventBus.EventListener accountListener;
 
     /**
      * Constructor.
@@ -73,10 +72,9 @@ public class AzureModule extends AzureRefreshableNode {
         redisCacheModule = new RedisCacheModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
 
-        this.subscriptionListener = new AzureEventBus.EventListener(e -> handleSubscriptionChange());
-        this.logoutListener = new AzureEventBus.EventListener(e -> handleSubscriptionChange());
-        AzureEventBus.on("account.subscription_changed.account", subscriptionListener);
-        AzureEventBus.on("account.logout.account", logoutListener);
+        this.accountListener = new AzureEventBus.EventListener(e -> handleSubscriptionChange());
+        AzureEventBus.on("account.subscription_changed.account", accountListener);
+        AzureEventBus.on("account.logout.account", accountListener);
         handleSubscriptionChange();
     }
 
