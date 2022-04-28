@@ -4,7 +4,7 @@
 ## 3.64.0
 ### Added
 - Azure Explorer: add `Resource Groups` root node to enable "app-centric" resource management.   
-  <img src="https://user-images.githubusercontent.com/69189193/160977559-0099d286-304a-42de-88c9-6407b8a0c09e.png" alt="resource groups" width="400"/>
+  <img src="https://user-images.githubusercontent.com/69189193/165674211-c21161e8-56a0-4dd9-95a5-677755112715.png" alt="resource groups" width="400"/>
 
 ### Changed
 - `Resource Management` (ARM) in Azure Explorer is migrated to `Resource Groups`: Azure Resource Management deployments are 
