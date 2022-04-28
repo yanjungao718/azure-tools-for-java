@@ -8,6 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -55,6 +56,8 @@ public class AzureModule extends AzureRefreshableNode {
     @NotNull
     private final ContainerRegistryModule containerRegistryModule;
 
+    private final AzureEventBus.EventListener accountListener;
+
     /**
      * Constructor.
      *
@@ -68,16 +71,11 @@ public class AzureModule extends AzureRefreshableNode {
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
-        try {
-            SignInOutListener signInOutListener = new SignInOutListener();
-            AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
-            AuthMethodManager.getInstance().addSignOutEventListener(signInOutListener);
-            signInOutListener.run();
-        } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
-        }
-        // in case we already signed in with service principal between restarts, sign in event was not fired
-        addSubscriptionSelectionListener();
+
+        this.accountListener = new AzureEventBus.EventListener(e -> handleSubscriptionChange());
+        AzureEventBus.on("account.subscription_changed.account", accountListener);
+        AzureEventBus.on("account.logout.account", accountListener);
+        handleSubscriptionChange();
     }
 
     private static String composeName() {
@@ -185,23 +183,6 @@ public class AzureModule extends AzureRefreshableNode {
         return project;
     }
 
-    private void addSubscriptionSelectionListener() {
-        try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null || !hasSubscription()) {
-                return;
-            }
-            azureManager.getSubscriptionManager().addListener(isRefresh -> {
-                if (!isRefresh) {
-                    handleSubscriptionChange();
-                }
-            });
-        } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
-        }
-    }
-
     private void handleSubscriptionChange() {
         setName(composeName());
         for (Node child : getChildNodes()) {
@@ -212,14 +193,6 @@ public class AzureModule extends AzureRefreshableNode {
 
     @Setter
     private Runnable clearResourcesListener;
-
-    private class SignInOutListener implements Runnable {
-        @Override
-        public void run() {
-            handleSubscriptionChange();
-            addSubscriptionSelectionListener();
-        }
-    }
 
     private static String getAccountDescription(List<SubscriptionDetail> selectedSubscriptions) {
         final int subsCount = selectedSubscriptions.size();
