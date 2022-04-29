@@ -97,6 +97,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - All level of CVE issues until now.
 - Action `Access Test Endpoint` is missing from context menu of Azure Spring app.
 - `Test Endpoint` entry is missing properties view of Azure Spring app.
+- [#6590](https://github.com/microsoft/azure-tools-for-java/issues/6590): ClassCastException when get Azure Functions configuration
+- [#6585](https://github.com/microsoft/azure-tools-for-java/issues/6585): ClassCastException when create application insights in Azure setting panel
+- [#6569](https://github.com/microsoft/azure-tools-for-java/issues/6569): Uncaught Exception: Illegal char <:> at func path
+- [#6568](https://github.com/microsoft/azure-tools-for-java/issues/6568): Uncaught Exception com.intellij.serviceContainer.AlreadyDisposedException: Already disposed
 
 ## 3.63.0
 ### Added
