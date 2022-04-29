@@ -116,8 +116,12 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
-        final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
-            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
+        final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules()
+                                                                                                                            .stream()
+                                                                                                                            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(
+                                                                                                                                m,
+                                                                                                                                tree))
+                                                                                                                            .collect(Collectors.toList());
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> {
             modules.forEach(m -> m.clearChildren());
@@ -341,8 +345,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 default:
                     break;
             }
-            if (treeModelMap.get(project) != null) {
-                treeModelMap.get(project).reload(treeNode);
+            final DefaultTreeModel model = treeModelMap.get(project);
+            if (model != null) {
+                synchronized (model) {
+                    model.reload(treeNode);
+                }
             }
         }
     }
@@ -365,7 +372,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
                 final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
                 inlineActionIcon = Optional.ofNullable(node.getInlineActionView())
-                    .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath())).orElse(null);
+                                           .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath())).orElse(null);
                 if (hoveredRow != row && inlineActionIcon == AllIcons.Nodes.NotFavoriteOnHover) {
                     // TODO: should not check the value of inlineActionIcon
                     inlineActionIcon = null;
@@ -425,7 +432,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
             super.paintComponent(g);
             // restore clip area if needed
-            if (clip != null) g.setClip(clip);
+            if (clip != null) {
+                g.setClip(clip);
+            }
         }
     }
 
