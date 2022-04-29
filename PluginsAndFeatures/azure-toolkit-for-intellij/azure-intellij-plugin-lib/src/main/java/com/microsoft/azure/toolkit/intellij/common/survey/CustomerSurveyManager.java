@@ -56,7 +56,7 @@ public class CustomerSurveyManager {
     }
 
     public synchronized void takeSurvey(@Nonnull final Project project, final ICustomerSurvey survey) {
-        if (!customerSurveyConfiguration.isAcceptSurvey()) {
+        if (project.isDisposed() || !customerSurveyConfiguration.isAcceptSurvey()) {
             return;
         }
         final CustomerSurveyConfiguration.CustomerSurveyStatus status = getSurveyStatus(survey);

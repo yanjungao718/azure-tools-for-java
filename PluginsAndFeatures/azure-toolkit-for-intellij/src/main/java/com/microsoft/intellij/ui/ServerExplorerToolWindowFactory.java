@@ -290,9 +290,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // the treeModel object can be null before it is initialized
         // from createToolWindowContent; we ignore property change
         // notifications till we have a valid model object
-        DefaultTreeModel treeModel = treeModelMap.get(node.getProject());
+        final DefaultTreeModel treeModel = treeModelMap.get((Project) node.getProject());
         if (treeModel != null) {
-            treeModel.nodeChanged((TreeNode) node.getViewData());
+            synchronized (treeModel) {
+                treeModel.nodeChanged((TreeNode) node.getViewData());
+            }
         }
     }
 
