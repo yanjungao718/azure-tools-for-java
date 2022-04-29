@@ -43,7 +43,6 @@ import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.secure.IntelliJSecureStore;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
-import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.intellij.util.NetworkDiagnose;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
@@ -168,9 +167,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
     }
 
     private void initAuthManage() {
-        if (CommonSettings.getUiFactory() == null) {
-            CommonSettings.setUiFactory(new UIFactory());
-        }
         try {
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
             final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();

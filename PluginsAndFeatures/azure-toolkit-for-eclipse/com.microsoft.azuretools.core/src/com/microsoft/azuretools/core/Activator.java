@@ -25,6 +25,7 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.event.EventListenerList;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -50,7 +51,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.Constants;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -64,7 +64,6 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.store.EclipseSecureStore;
 import com.microsoft.azuretools.core.store.EclipseStore;
-import com.microsoft.azuretools.core.ui.UIFactory;
 import com.microsoft.azuretools.core.ui.views.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -164,9 +163,6 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             CommonSettings.setUserAgent(String.format(USER_AGENT,
                     Azure.az().config().getVersion(),
                     Azure.az().config().getMachineId()));
-            if (CommonSettings.getUiFactory() == null) {
-                CommonSettings.setUiFactory(new UIFactory());
-            }
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
             final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
             CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
@@ -216,7 +212,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
             while (e.hasMoreElements()) {
                 String key = (String) e.nextElement();
-                if (!StringUtils.isNullOrWhiteSpace(key)) {
+                if (!StringUtils.isBlank(key)) {
                     obsoletePackageMap.put(key, prop.getProperty(key));
                 }
             }

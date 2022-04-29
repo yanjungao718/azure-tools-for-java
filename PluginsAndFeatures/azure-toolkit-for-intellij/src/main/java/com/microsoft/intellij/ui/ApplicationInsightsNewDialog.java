@@ -99,10 +99,10 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
             Subscription newSub = (Subscription) comboSub.getSelectedItem();
             String prevResGrpVal = (String) comboGrp.getSelectedItem();
             this.comboReg.setSubscription(newSub);
-            if (currentSub.equals(newSub)) {
+            if (Objects.equals(currentSub, newSub)) {
                 populateResourceGroupValues(currentSub.getId(), prevResGrpVal);
             } else {
-                populateResourceGroupValues(currentSub.getId(), "");
+                populateResourceGroupValues(newSub.getId(), "");
             }
             currentSub = newSub;
         };
@@ -140,7 +140,7 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
     @Override
     protected void doOKAction() {
         final boolean grpNotSelected = Objects.isNull(comboGrp.getSelectedItem()) || ((String) comboGrp.getSelectedItem()).isEmpty();
-        final boolean regNotSelected = Objects.isNull(comboReg.getSelectedItem()) || ((String) comboReg.getSelectedItem()).isEmpty();
+        final boolean regNotSelected = Objects.isNull(comboReg.getSelectedItem());
         final boolean subNotSelected = comboSub.getSelectedItem() == null;
         if (txtName.getText().trim().isEmpty()
                 || subNotSelected
@@ -156,16 +156,17 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
             }
         } else {
             boolean isNewGroup = createNewBtn.isSelected();
+            Subscription subscription = comboSub.getValue();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
             final AzureString title = AzureOperationBundle.title("ai.create_ai.ai|rg", txtName.getText(), resourceGroup);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
                 try {
                     ApplicationInsight resource = AzureSDKManager.createInsightsResource(
-                            currentSub,
+                            subscription,
                             resourceGroup,
                             isNewGroup,
                             txtName.getText(),
-                            (String) comboReg.getSelectedItem());
+                            comboReg.getValue().getName());
                     resourceToAdd = new ApplicationInsightsResource(resource, currentSub, true);
                     if (onCreate != null) {
                         onCreate.run();

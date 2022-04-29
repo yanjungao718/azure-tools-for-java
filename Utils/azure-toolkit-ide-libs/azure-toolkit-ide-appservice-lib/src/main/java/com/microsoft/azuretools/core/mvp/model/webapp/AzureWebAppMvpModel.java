@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import lombok.extern.java.Log;
@@ -168,7 +169,9 @@ public class AzureWebAppMvpModel {
 
     // todo: Move duplicated codes to azure common library
     private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
-        return new CreateResourceGroupTask(subscriptionId, resourceGroup, Region.fromName(region)).execute();
+        final com.microsoft.azure.toolkit.lib.resource.ResourceGroup group =
+                Azure.az(AzureResources.class).groups(subscriptionId).getOrDraft(resourceGroup, resourceGroup);
+        return group.isDraftForCreating() ? new CreateResourceGroupTask(subscriptionId, resourceGroup, Region.fromName(region)).execute() : group.toPojo();
     }
 
     private AppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {

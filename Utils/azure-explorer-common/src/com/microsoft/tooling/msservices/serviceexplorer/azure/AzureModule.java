@@ -8,15 +8,16 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -28,7 +29,6 @@ import lombok.Setter;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
@@ -55,6 +55,8 @@ public class AzureModule extends AzureRefreshableNode {
     @NotNull
     private final ContainerRegistryModule containerRegistryModule;
 
+    private final AzureEventBus.EventListener accountListener;
+
     /**
      * Constructor.
      *
@@ -68,34 +70,25 @@ public class AzureModule extends AzureRefreshableNode {
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
-        try {
-            SignInOutListener signInOutListener = new SignInOutListener();
-            AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
-            AuthMethodManager.getInstance().addSignOutEventListener(signInOutListener);
-            signInOutListener.run();
-        } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
-        }
-        // in case we already signed in with service principal between restarts, sign in event was not fired
-        addSubscriptionSelectionListener();
+
+        this.accountListener = new AzureEventBus.EventListener(e -> handleSubscriptionChange());
+        AzureEventBus.on("account.subscription_changed.account", accountListener);
+        AzureEventBus.on("account.logout.account", accountListener);
+        handleSubscriptionChange();
     }
 
     private static String composeName() {
         try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            if (AuthMethodManager.getInstance().isRestoringSignIn()) {
-                return BASE_MODULE_NAME + " (Signing In...)";
+            if (Azure.az(AzureAccount.class).isSignedIn()) {
+                final List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
+                return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
+            } else {
+                if (AuthMethodManager.getInstance().isRestoringSignIn()) {
+                    return BASE_MODULE_NAME + " (Signing In...)";
+                } else {
+                    return BASE_MODULE_NAME + " (Not Signed In)";
+                }
             }
-            // not signed in
-            if (azureManager == null) {
-                return BASE_MODULE_NAME + " (Not Signed In)";
-            }
-            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
-            List<SubscriptionDetail> selectedSubscriptions = subscriptionDetails.stream()
-                    .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
-            return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
-
         } catch (AzureRuntimeException e) {
             DefaultLoader.getUIHelper().showInfoNotification(
                     ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorEnum.getDisplayMessageByCode(e.getCode()));
@@ -185,23 +178,6 @@ public class AzureModule extends AzureRefreshableNode {
         return project;
     }
 
-    private void addSubscriptionSelectionListener() {
-        try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null || !hasSubscription()) {
-                return;
-            }
-            azureManager.getSubscriptionManager().addListener(isRefresh -> {
-                if (!isRefresh) {
-                    handleSubscriptionChange();
-                }
-            });
-        } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
-        }
-    }
-
     private void handleSubscriptionChange() {
         setName(composeName());
         for (Node child : getChildNodes()) {
@@ -213,21 +189,13 @@ public class AzureModule extends AzureRefreshableNode {
     @Setter
     private Runnable clearResourcesListener;
 
-    private class SignInOutListener implements Runnable {
-        @Override
-        public void run() {
-            handleSubscriptionChange();
-            addSubscriptionSelectionListener();
-        }
-    }
-
-    private static String getAccountDescription(List<SubscriptionDetail> selectedSubscriptions) {
+    private static String getAccountDescription(List<Subscription> selectedSubscriptions) {
         final int subsCount = selectedSubscriptions.size();
         switch (subsCount) {
             case 0:
                 return MODULE_NAME_NO_SUBSCRIPTION;
             case 1:
-                return selectedSubscriptions.get(0).getSubscriptionName();
+                return selectedSubscriptions.get(0).getName();
             default:
                 return String.format("%d subscriptions", selectedSubscriptions.size());
         }

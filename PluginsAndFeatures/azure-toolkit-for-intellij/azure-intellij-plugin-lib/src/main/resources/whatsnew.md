@@ -1,5 +1,25 @@
-<!-- Version: 3.63.0 -->
+<!-- Version: 3.64.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.64.0
+### Added
+- Azure Explorer: add `Resource Groups` root node to enable "app-centric" resource management.   
+  <img src="https://user-images.githubusercontent.com/69189193/165674211-c21161e8-56a0-4dd9-95a5-677755112715.png" alt="resource groups" width="400"/>
+
+### Changed
+- `Resource Management` (ARM) in Azure Explorer is migrated to `Resource Groups`: Azure Resource Management deployments are 
+  reorganized from `Azure/Resource Management/{resource_group}/` to `Azure/Resource Groups/{resource_group}/Deployments/`.
+- Rename `Azure Spring Cloud` to `Azure Spring Apps`.
+- Improve stability/reliability of Authentication.
+
+### Fixed
+- All level of CVE issues until now.
+- Action `Access Test Endpoint` is missing from context menu of Azure Spring app.
+- `Test Endpoint` entry is missing properties view of Azure Spring app.
+- [#6590](https://github.com/microsoft/azure-tools-for-java/issues/6590): ClassCastException when get Azure Functions configuration
+- [#6585](https://github.com/microsoft/azure-tools-for-java/issues/6585): ClassCastException when create application insights in Azure setting panel
+- [#6569](https://github.com/microsoft/azure-tools-for-java/issues/6569): Uncaught Exception: Illegal char <:> at func path
+- [#6568](https://github.com/microsoft/azure-tools-for-java/issues/6568): Uncaught Exception com.intellij.serviceContainer.AlreadyDisposedException: Already disposed
 
 ## 3.63.0
 ### Added
@@ -20,7 +40,7 @@
 ### Fixed
 - [#6505](https://github.com/microsoft/azure-tools-for-java/issues/6505): IntelliJ Crash When logging in to Azure on Mac OS X.
 - [#6511](https://github.com/microsoft/azure-tools-for-java/issues/6511): Failed to open streaming log for Function App.
-- [Test] Some apps keep loading when expand a Spring cloud service node at first time.
+- Some apps keep loading when expand a Spring cloud service node at first time.
 
 ## 3.62.0
 ### Added
