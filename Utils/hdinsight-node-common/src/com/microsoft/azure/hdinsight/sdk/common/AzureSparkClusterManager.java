@@ -8,7 +8,6 @@ package com.microsoft.azure.hdinsight.sdk.common;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -67,7 +66,7 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
             throw new AuthException("Not signed in. Can't send out the request.");
         }
 
-        return azureManager.getAccessToken(tenantId, getResourceEndpoint(), PromptBehavior.Auto);
+        return azureManager.getAccessToken(tenantId, getResourceEndpoint());
     }
 
     public boolean isSignedIn() {

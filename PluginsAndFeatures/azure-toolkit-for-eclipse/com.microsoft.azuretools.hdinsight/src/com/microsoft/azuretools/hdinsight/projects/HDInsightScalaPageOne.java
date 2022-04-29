@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.hdinsight.projects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -28,7 +29,6 @@ import org.scalaide.ui.ScalaImages;
 import org.scalaide.ui.internal.wizards.NewScalaProjectWizardPageOne;
 
 import com.microsoft.azure.hdinsight.projects.SparkVersion;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
@@ -49,7 +49,7 @@ class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
     public boolean canFlipToNextPage() {
         if (!sparkLibraryOptionsPanel.getUsingMaven()) {
             final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
-            if(StringUtils.isNullOrEmpty(jarPathString)) {
+            if(StringUtils.isEmpty(jarPathString)) {
                 return false;
             }
         }
@@ -73,7 +73,7 @@ class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
             public void run() {
                 if (sparkLibraryOptionsPanel != null && !sparkLibraryOptionsPanel.getUsingMaven()) {
                     final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
-                    if (StringUtils.isNullOrEmpty(jarPathString)) {
+                    if (StringUtils.isEmpty(jarPathString)) {
                         DefaultLoader.getUIHelper().showError("Spark Library Path cannot be null",
                                 "Spark Project Settings");
                     } else {

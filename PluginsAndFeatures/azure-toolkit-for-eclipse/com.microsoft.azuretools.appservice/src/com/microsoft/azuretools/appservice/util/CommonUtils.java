@@ -5,11 +5,12 @@
 
 package com.microsoft.azuretools.appservice.util;
 
-import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.appservice.Activator;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.swt.widgets.Combo;
+
+import com.microsoft.azuretools.appservice.Activator;
 
 public class CommonUtils {
 
@@ -43,7 +44,7 @@ public class CommonUtils {
     }
 
     public static void selectComboIndex(Combo combo, String target) {
-        if (combo != null && !StringUtils.isNullOrWhiteSpace(target) && combo.getItemCount() > 0) {
+        if (combo != null && !StringUtils.isBlank(target) && combo.getItemCount() > 0) {
             for (int i = 0; i < combo.getItemCount(); i++) {
                 if (combo.getItem(i).equals(target)) {
                     combo.select(i);

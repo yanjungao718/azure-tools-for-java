@@ -5,6 +5,8 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,23 +14,21 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.microsoft.azuretools.adauth.StringUtils;
-
 /**
  * Created by shch on 10/5/2016.
  */
 public class FileStorage {
     private static final String DefaultDir = ".msauth4j";
-    private Path filePath;
-    private ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
+    private final Path filePath;
+    private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     public FileStorage(String filename, String baseDirPath) throws IOException {
 
-        if (StringUtils.isNullOrEmpty(filename)) {
+        if (StringUtils.isEmpty(filename)) {
             throw new IllegalArgumentException("filename is null or empty");
         }
 
-        Path baseDir = (!StringUtils.isNullOrEmpty(baseDirPath))
+        Path baseDir = (!StringUtils.isEmpty(baseDirPath))
                 ? Paths.get(baseDirPath)
                 : Paths.get(System.getProperty("user.home"), DefaultDir)
                 ;

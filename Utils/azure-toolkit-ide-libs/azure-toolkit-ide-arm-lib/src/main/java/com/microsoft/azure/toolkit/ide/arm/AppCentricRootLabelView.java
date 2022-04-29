@@ -28,18 +28,24 @@ public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResource
         this.logoutListener = new AzureEventBus.EventListener(this::onLogout);
         AzureEventBus.on("account.subscription_changed.account", subscriptionListener);
         AzureEventBus.on("account.logout.account", logoutListener);
+        this.onLogin(null);
     }
 
     private void onLogin(AzureEvent azureEvent) {
-        final Account account = Azure.az(AzureAccount.class).account();
-        final List<Subscription> subs = account.getSelectedSubscriptions();
-        final int size = subs.size();
-        if (size > 1) {
-            this.label = String.format("%s (%d subscriptions)", NAME, size);
-        } else if (size == 1) {
-            this.label = String.format("%s (%s)", NAME, subs.get(0).getName());
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        if (!az.isSignedIn()) {
+            this.label = NAME;
         } else {
-            this.label = NAME + " (No subscription)";
+            final Account account = az.account();
+            final List<Subscription> subs = account.getSelectedSubscriptions();
+            final int size = subs.size();
+            if (size > 1) {
+                this.label = String.format("%s (%d subscriptions)", NAME, size);
+            } else if (size == 1) {
+                this.label = String.format("%s (%s)", NAME, subs.get(0).getName());
+            } else {
+                this.label = NAME + " (No subscription)";
+            }
         }
         this.refreshView();
     }

@@ -35,6 +35,11 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
         this.setRemote(remote);
     }
 
+    @Override
+    public boolean exists() {
+        return this.remoteOptional().isPresent();
+    }
+
     public AbstractAzResource<?, ?, ?> getResource() {
         return this.getRemote();
     }

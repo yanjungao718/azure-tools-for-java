@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -46,6 +47,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private static final String AZURE_TOOLKIT_FUNCTION_CORE_TOOLS_HISTORY = "azure_toolkit.function.core.tools.history";
     private static final String OPEN_AZURE_SETTINGS = "Open Azure Settings";
@@ -112,7 +114,13 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     protected List<? extends String> loadItems() throws Exception {
         final List<String> result = new ArrayList<>();
         result.addAll(loadHistory());
-        result.addAll(FunctionCliResolver.resolve());
+        try {
+            result.addAll(FunctionCliResolver.resolve());
+        } catch (RuntimeException e) {
+            // swallow exception while resolve function path
+            // todo @hanli: handle the exception in lib
+            log.warn(e.getMessage(), e);
+        }
         result.add(getDefaultFuncPath());
         result.add(includeSettings ? OPEN_AZURE_SETTINGS : null);
         return result.stream().filter(Objects::nonNull).distinct().sorted().collect(Collectors.toList());

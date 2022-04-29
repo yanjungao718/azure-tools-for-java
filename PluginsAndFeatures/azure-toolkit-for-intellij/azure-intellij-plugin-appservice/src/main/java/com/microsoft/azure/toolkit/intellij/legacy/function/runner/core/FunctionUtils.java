@@ -207,8 +207,12 @@ public class FunctionUtils {
     }
 
     public static boolean isFunctionClassAnnotated(final PsiMethod method) {
-        return MetaAnnotationUtil.isMetaAnnotated(method,
-                                                  ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
+        try {
+            return MetaAnnotationUtil.isMetaAnnotated(method,
+                    ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     public static @Nullable Path createTempleHostJson() {
