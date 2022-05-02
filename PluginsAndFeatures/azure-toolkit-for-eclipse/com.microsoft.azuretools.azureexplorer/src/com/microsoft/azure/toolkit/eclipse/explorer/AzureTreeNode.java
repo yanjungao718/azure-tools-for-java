@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView.Label;
@@ -123,7 +124,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
         this.loaded = null;
     }
 
-    private void applyActionGroupToMenu(@Nonnull ActionGroup actionGroup, @Nonnull IMenuManager manager,
+    private void applyActionGroupToMenu(@Nonnull IActionGroup actionGroup, @Nonnull IMenuManager manager,
             @Nullable Object source) {
         final AzureActionManager actionManager = AzureActionManager.getInstance();
         for (Object raw : actionGroup.getActions()) {

@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.eclipse.appservice.component.AppServiceComboB
 import com.microsoft.azure.toolkit.eclipse.functionapp.creation.CreateFunctionAppDialog;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 
 public class AzureFunctionComboBox extends AppServiceComboBox<FunctionAppConfig> {
@@ -41,10 +41,10 @@ public class AzureFunctionComboBox extends AppServiceComboBox<FunctionAppConfig>
 
     @Override
     protected List<FunctionAppConfig> loadAppServiceModels() throws Exception {
-        final List<FunctionApp> functionApps = Azure.az(AzureAppService.class).functionApps();
+        final List<FunctionApp> functionApps = Azure.az(AzureFunctions.class).functionApps();
         return functionApps.stream().parallel()
                 .filter(AppServiceComboBox::isJavaAppService)
-                .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
                 .map(FunctionAppConfig::fromRemote)
                 .collect(Collectors.toList());
     }

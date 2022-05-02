@@ -5,8 +5,12 @@
 
 package com.microsoft.azure.toolkit.eclipse.explorer;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
@@ -15,18 +19,24 @@ import org.eclipse.core.runtime.Platform;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 
 public class AzureExplorer {
     private static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
 
     public static Node<?>[] getModules() {
-        return manager.getRootNodes().stream().toArray(Node<?>[]::new);
+        return manager.getRoots().stream()
+                .map(r -> manager.createNode(r, null, IExplorerNodeProvider.ViewType.TYPE_CENTRIC))
+                .sorted(Comparator.comparing(Node::order)).toArray(Node<?>[]::new);
     }
 
     private static class AzureExplorerNodeProviderManager implements IExplorerNodeProvider.Manager {
         private static final String EXTENSION_POINT_ID = "com.microsoft.azure.toolkit.eclipse.explorer";
 
-        public List<Node<?>> getRootNodes() {
+        public List<Object> getRoots() {
             IConfigurationElement[] configurationElements = Platform.getExtensionRegistry()
                     .getConfigurationElementsFor(EXTENSION_POINT_ID);
             return Arrays.stream(configurationElements).map(element -> {
@@ -35,13 +45,12 @@ public class AzureExplorer {
                 } catch (CoreException e) {
                     return null;
                 }
-            }).filter(object -> object instanceof IExplorerNodeProvider)
-                    .map(object -> ((IExplorerNodeProvider) object).getModuleNode(null, this))
-                    .collect(Collectors.toList());
+            }).filter(object -> object instanceof IExplorerNodeProvider).map(p -> (IExplorerNodeProvider) p)
+                    .map(IExplorerNodeProvider::getRoot).filter(Objects::nonNull).collect(Collectors.toList());
         }
 
         @Override
-        public Node<?> createNode(Object o, Node<?> parent) {
+        public Node<?> createNode(@Nonnull Object o, Node<?> parent, IExplorerNodeProvider.ViewType type) {
             IConfigurationElement[] configurationElements = Platform.getExtensionRegistry()
                     .getConfigurationElementsFor(EXTENSION_POINT_ID);
             return Arrays.stream(configurationElements).map(element -> {
@@ -51,7 +60,17 @@ public class AzureExplorer {
                     return null;
                 }
             }).filter(object -> object instanceof IExplorerNodeProvider).map(object -> (IExplorerNodeProvider) object)
-                    .filter(p -> p.accept(o, parent)).findAny().map(p -> p.createNode(o, parent, this)).orElse(null);
+                    .filter(p -> p.accept(o, parent, type)).findAny().map(p -> p.createNode(o, parent, this))
+                    .orElseGet(() -> Optional.of(o).filter(r -> r instanceof AbstractAzResource)
+                            .map(m -> ((Node) AzureExplorerNodeProviderManager.createGenericNode(m)))
+                            .orElseThrow(() -> new AzureToolkitRuntimeException(
+                                    String.format("failed to render %s", o.toString()))));
+        }
+
+        private static <U> U createGenericNode(Object o) {
+            final GenericResourceLabelView<? extends AbstractAzResource<?, ?, ?>> view = new GenericResourceLabelView<>(
+                    ((AbstractAzResource<?, ?, ?>) o));
+            return (U) new Node<>(o).view(view).actions(GenericResourceActionsContributor.GENERIC_RESOURCE_ACTIONS);
         }
     }
 }

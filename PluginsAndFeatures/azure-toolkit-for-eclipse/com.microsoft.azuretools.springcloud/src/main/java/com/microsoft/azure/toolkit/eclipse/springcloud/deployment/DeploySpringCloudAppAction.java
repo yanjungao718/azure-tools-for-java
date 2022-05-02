@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -92,7 +93,7 @@ public class DeploySpringCloudAppAction {
 
     @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig.getAppName()"}, type = AzureOperation.Type.ACTION)
     private static SpringCloudDeployment execute(SpringCloudAppConfig appConfig, IAzureMessager messager) {
-        AzureMessager.getContext().setMessager(messager);
+        OperationContext.current().setMessager(messager);
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();

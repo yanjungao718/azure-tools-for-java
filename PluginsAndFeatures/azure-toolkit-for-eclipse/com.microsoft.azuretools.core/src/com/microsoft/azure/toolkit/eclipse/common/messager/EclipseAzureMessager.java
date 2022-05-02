@@ -5,8 +5,7 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.messager;
 
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationContext;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -33,7 +32,7 @@ public class EclipseAzureMessager implements IAzureMessager {
                 return true;
             default:
         }
-        IAzureOperation<?> op = AzureOperationContext.current().currentOperation();
+        Operation<?> op = Operation.current();
         while (op != null && !(op instanceof AzureTask)) {
             op = op.getParent();
         }

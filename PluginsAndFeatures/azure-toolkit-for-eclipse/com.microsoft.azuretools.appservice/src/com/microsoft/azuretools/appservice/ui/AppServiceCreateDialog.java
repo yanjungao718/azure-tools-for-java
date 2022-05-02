@@ -85,6 +85,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -1190,7 +1191,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             setError(dec_textAppName, WEB_APP_NAME_INVALID_MSG);
             return false;
         } else {
-            for (WebApp wa : Azure.az(AzureAppService.class).webApps(model.getSubscriptionId()).list()) {
+            for (WebApp wa : Azure.az(AzureWebApp.class).webApps(model.getSubscriptionId()).list()) {
                 if (wa != null && wa.name().toLowerCase().equals(webappName.toLowerCase())) {
                     setError(dec_textAppName, NAME_ALREADY_TAKEN);
                     return false;

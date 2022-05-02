@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.eclipse.common.console.EclipseConsoleMessager
 import com.microsoft.azure.toolkit.eclipse.common.console.JobConsole;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -41,7 +42,7 @@ public class AzureLongDurationTaskRunnerWithConsole {
             try {
                 AzureTaskManager.getInstance().runImmediatelyAsObservable(() -> {
                     ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
-                    AzureMessager.getContext().setMessager(messager);
+                    OperationContext.current().setMessager(messager);
                     task.execute();
                     ConsolePlugin.getDefault().getConsoleManager().showConsoleView(myConsole);
                     messager.info("Done.");
