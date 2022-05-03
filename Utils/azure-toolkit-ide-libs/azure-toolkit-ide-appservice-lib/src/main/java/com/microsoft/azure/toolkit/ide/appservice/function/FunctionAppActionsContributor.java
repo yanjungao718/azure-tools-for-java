@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 public class FunctionAppActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;

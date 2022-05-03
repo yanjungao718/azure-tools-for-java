@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nullable;
@@ -39,18 +39,18 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 .getMessageBus().syncPublisher(ConnectionTopics.CONNECTIONS_REFRESHED)
                 .connectionsRefreshed();
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(t -> AzureOperationBundle.title("connector|explorer.refresh"));
+                .title(t -> OperationBundle.title("connector|explorer.refresh"));
         final Action<Object> refreshAction = new Action<>(REFRESH_CONNECTIONS, refreshHandler, refreshView);
 
         final Consumer<Module> addHandler = (m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject());
         final ActionView.Builder addView = new ActionView.Builder("Add", AzureIcons.Action.ADD.getIconPath())
-                .title(t -> AzureOperationBundle.title("connector.add_connection"))
+                .title(t -> OperationBundle.title("connector.add_connection"))
                 .enabled(m -> m instanceof Module);
         final Action<Module> addAction = new Action<>(ADD_CONNECTION, addHandler, addView);
 
         final BiConsumer<Connection<?, ?>, AnActionEvent> editHandler = (c, e) -> openDialog(c, e.getProject());
         final ActionView.Builder editView = new ActionView.Builder("Edit", AzureIcons.Action.EDIT.getIconPath())
-                .title(t -> AzureOperationBundle.title("connector.edit_connection"))
+                .title(t -> OperationBundle.title("connector.edit_connection"))
                 .enabled(m -> m instanceof Connection);
         final Action<Connection<?, ?>> editAction = new Action<>(EDIT_CONNECTION, editHandler, editView);
 
@@ -61,7 +61,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                     project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, c, ConnectionTopics.Action.REMOVE);
                 };
         final ActionView.Builder removeView = new ActionView.Builder("Remove", AzureIcons.Action.REMOVE.getIconPath())
-                .title(t -> AzureOperationBundle.title("connector.remove_connection"))
+                .title(t -> OperationBundle.title("connector.remove_connection"))
                 .enabled(m -> m instanceof Connection);
         final Action<Connection<?, ?>> removeAction = new Action<>(REMOVE_CONNECTION, removeHandler, removeView);
 

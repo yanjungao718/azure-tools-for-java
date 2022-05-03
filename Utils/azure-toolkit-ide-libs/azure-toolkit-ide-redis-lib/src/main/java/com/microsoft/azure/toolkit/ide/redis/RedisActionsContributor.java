@@ -19,7 +19,7 @@ import com.microsoft.azure.toolkit.redis.RedisCache;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 public class RedisActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;

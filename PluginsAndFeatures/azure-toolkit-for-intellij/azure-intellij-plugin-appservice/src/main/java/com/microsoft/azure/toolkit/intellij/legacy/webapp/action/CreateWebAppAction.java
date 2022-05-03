@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 public class CreateWebAppAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";

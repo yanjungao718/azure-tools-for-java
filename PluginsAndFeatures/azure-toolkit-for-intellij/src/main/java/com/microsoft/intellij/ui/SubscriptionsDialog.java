@@ -18,7 +18,7 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -164,7 +164,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
                 model.fireTableDataChanged();
                 table.getEmptyText().setText("Refreshing");
                 AppInsightsClient.createByType(AppInsightsClient.EventType.Subscription, "", "Refresh", null);
-                final AzureString title = AzureOperationBundle.title("account.refresh_subscriptions");
+                final AzureString title = OperationBundle.title("account.refresh_subscriptions");
                 final AzureTask task = new AzureTask(project, title, true, () -> {
                     try {
                         SubscriptionsDialog.this.refreshSubscriptions();

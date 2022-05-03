@@ -12,7 +12,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -124,7 +124,7 @@ public abstract class RefreshableNode extends Node {
         final RefreshableNode node = this;
         final SettableFuture<List<Node>> future = SettableFuture.create();
 
-        final AzureString title = AzureOperationBundle.title("common.load_node_children.node", node.getName());
+        final AzureString title = OperationBundle.title("common.load_node_children.node", node.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, new Runnable() {
             @Override
             public void run() {

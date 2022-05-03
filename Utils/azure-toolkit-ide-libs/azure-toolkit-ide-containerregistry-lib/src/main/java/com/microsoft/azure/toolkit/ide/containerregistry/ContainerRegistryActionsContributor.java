@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 public class ContainerRegistryActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;

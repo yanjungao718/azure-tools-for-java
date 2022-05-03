@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
@@ -33,7 +33,7 @@ public class StartStreamingLogsAction {
     }
 
     public void execute() {
-        final AzureString title = AzureOperationBundle.title("appservice.open_log_stream.app", appService.getName());
+        final AzureString title = OperationBundle.title("appservice.open_log_stream.app", appService.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             if (appService instanceof WebApp) {
                 AppServiceStreamingLogManager.INSTANCE.showWebAppStreamingLog(project, resourceId);

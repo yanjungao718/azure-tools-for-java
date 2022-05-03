@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 /**
  * SSH into Web App Action

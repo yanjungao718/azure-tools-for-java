@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 public class CreateFunctionAppAction {
     @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)

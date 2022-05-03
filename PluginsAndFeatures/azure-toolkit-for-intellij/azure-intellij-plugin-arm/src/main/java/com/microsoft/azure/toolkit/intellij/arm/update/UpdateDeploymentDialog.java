@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeploymentDraft;
@@ -93,7 +93,7 @@ public class UpdateDeploymentDialog extends AzureDialogWrapper {
     protected void doOKAction() {
         final StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
         final String deploymentName = this.deployment.getName();
-        final AzureString title = AzureOperationBundle.title("arm.update_deployment.deployment", deploymentName);
+        final AzureString title = OperationBundle.title("arm.update_deployment.deployment", deploymentName);
         AzureTaskManager.getInstance().runInBackground(title, false, this::updateDeployment);
         close(OK_EXIT_CODE, true);
     }

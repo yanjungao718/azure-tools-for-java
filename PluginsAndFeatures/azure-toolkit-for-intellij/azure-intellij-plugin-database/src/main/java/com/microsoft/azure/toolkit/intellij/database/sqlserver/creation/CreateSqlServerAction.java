@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
@@ -42,7 +42,7 @@ public class CreateSqlServerAction {
 
     @AzureOperation(name = "sqlserver.create_server.server", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final DatabaseServerConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("sqlserver.create_server.server", config.getName());
+        final AzureString title = OperationBundle.title("sqlserver.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {

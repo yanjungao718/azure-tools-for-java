@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
@@ -44,7 +44,7 @@ public class CreateRedisCacheAction {
 
     @AzureOperation(name = "redis.create_redis.redis", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final RedisConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("redis.create_redis.redis", config.getName());
+        final AzureString title = OperationBundle.title("redis.create_redis.redis", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {

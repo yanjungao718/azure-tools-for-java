@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -158,7 +158,7 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
             boolean isNewGroup = createNewBtn.isSelected();
             Subscription subscription = comboSub.getValue();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            final AzureString title = AzureOperationBundle.title("ai.create_ai.ai|rg", txtName.getText(), resourceGroup);
+            final AzureString title = OperationBundle.title("ai.create_ai.ai|rg", txtName.getText(), resourceGroup);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
                 try {
                     ApplicationInsight resource = AzureSDKManager.createInsightsResource(

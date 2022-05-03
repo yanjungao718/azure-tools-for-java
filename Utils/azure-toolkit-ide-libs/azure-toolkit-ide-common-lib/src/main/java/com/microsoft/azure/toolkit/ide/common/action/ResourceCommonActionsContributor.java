@@ -24,7 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.model.Startable;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
 
 public class ResourceCommonActionsContributor implements IActionsContributor {
 
@@ -147,7 +147,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(DEPLOY, deployAction);
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
-            .title((s) -> AzureOperationBundle.title("common.open_azure_settings"));
+            .title((s) -> OperationBundle.title("common.open_azure_settings"));
         am.registerAction(OPEN_AZURE_SETTINGS, new Action<>(OPEN_AZURE_SETTINGS, openSettingsView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", AzureIcons.Action.CREATE.getIconPath())
