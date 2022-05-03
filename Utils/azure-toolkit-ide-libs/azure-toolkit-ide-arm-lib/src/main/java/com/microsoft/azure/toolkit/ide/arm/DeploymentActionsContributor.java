@@ -26,11 +26,11 @@ public class DeploymentActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_ACTIONS = "actions.resourceDeployments.deployment";
     public static final String DEPLOYMENTS_ACTIONS = "actions.resourceDeployments.deployments";
 
-    public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("action.resourceDeployment.edit");
-    public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("action.resourceDeployment.update");
-    public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("action.resourceDeployment.export_template");
-    public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("action.resourceDeployment.export_parameter");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("action.arm.create_deployment.group");
+    public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("arm.edit_deployment");
+    public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("arm.update_deployment");
+    public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("arm.export_template");
+    public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("arm.export_parameter");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("arm.create_deployment.group");
 
     @Override
     public void registerActions(AzureActionManager am) {

@@ -37,9 +37,9 @@ public class WebAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployment_slot";
 
-    public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
-    public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_WEBAPP = Action.Id.of("action.webapp.create_app.group");
+    public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("webapp.refresh_deployment_slots");
+    public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("webapp.swap_deployment_slot");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_WEBAPP = Action.Id.of("webapp.create_app.group");
 
     @Override
     public void registerGroups(AzureActionManager am) {

@@ -40,19 +40,19 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
     public static final int INITIALIZE_ORDER = 0;
 
-    public static final Action.Id<AzResource<?, ?, ?>> START = Action.Id.of("action.resource.start");
-    public static final Action.Id<AzResource<?, ?, ?>> STOP = Action.Id.of("action.resource.stop");
-    public static final Action.Id<AzResource<?, ?, ?>> RESTART = Action.Id.of("action.resource.restart");
-    public static final Action.Id<Refreshable> REFRESH = Action.Id.of("action.resource.refresh");
-    public static final Action.Id<AzResource<?, ?, ?>> DELETE = Action.Id.of("action.resource.delete");
-    public static final Action.Id<AzResource<?, ?, ?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
-    public static final Action.Id<AzResourceBase> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
-    public static final Action.Id<AzResource<?, ?, ?>> DEPLOY = Action.Id.of("action.resource.deploy");
-    public static final Action.Id<AzResource<?, ?, ?>> CONNECT = Action.Id.of("action.resource.connect");
-    public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
-    public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("action.resource.pin");
-    public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
-    public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
+    public static final Action.Id<AzResource<?, ?, ?>> START = Action.Id.of("resource.start");
+    public static final Action.Id<AzResource<?, ?, ?>> STOP = Action.Id.of("resource.stop");
+    public static final Action.Id<AzResource<?, ?, ?>> RESTART = Action.Id.of("resource.restart");
+    public static final Action.Id<Refreshable> REFRESH = Action.Id.of("resource.refresh");
+    public static final Action.Id<AzResource<?, ?, ?>> DELETE = Action.Id.of("resource.delete");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_PORTAL_URL = Action.Id.of("resource.open_portal_url");
+    public static final Action.Id<AzResourceBase> SHOW_PROPERTIES = Action.Id.of("resource.show_properties");
+    public static final Action.Id<AzResource<?, ?, ?>> DEPLOY = Action.Id.of("resource.deploy");
+    public static final Action.Id<AzResource<?, ?, ?>> CONNECT = Action.Id.of("resource.connect");
+    public static final Action.Id<Object> CREATE = Action.Id.of("resource.create");
+    public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("resource.pin");
+    public static final Action.Id<String> OPEN_URL = Action.Id.of("common.open_url");
+    public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("common.open_azure_settings");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
@@ -173,8 +173,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder pinView = new ActionView.Builder(title).enabled(s -> s instanceof AbstractAzResource);
         pinView.iconPath(s -> Objects.nonNull(s) && favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId()) ?
             AzureIcons.Action.PIN.getIconPath() : AzureIcons.Action.UNPIN.getIconPath());
-        final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("favorite.pin_unpin");
-        final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>(PIN, (r) -> {
+        final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>(ResourceCommonActionsContributor.PIN, (r) -> {
             if (favorites.exists(r.getId())) {
                 favorites.unpin(r.getId());
             } else {

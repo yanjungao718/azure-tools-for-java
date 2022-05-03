@@ -26,9 +26,9 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     public static final String APP_SERVICE_FILE_ACTIONS = "actions.appservice.file";
     public static final String APP_SERVICE_DIRECTORY_ACTIONS = "actions.appservice.directory";
 
-    public static final Action.Id<AppServiceFile> APP_SERVICE_DIRECTORY_REFRESH = Action.Id.of("action.appservice.directory.refresh");
-    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_VIEW = Action.Id.of("action.appservice.file.view");
-    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_DOWNLOAD = Action.Id.of("action.appservice.file.download");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_DIRECTORY_REFRESH = Action.Id.of("appservice.refresh_directory");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_VIEW = Action.Id.of("appservice.view_file");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_DOWNLOAD = Action.Id.of("appservice.download_file");
 
     @Override
     public void registerGroups(AzureActionManager am) {

@@ -26,10 +26,10 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
 public class ResourceConnectionActionsContributor implements IActionsContributor {
-    public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("action.connector.connections.refresh");
-    public static final Action.Id<Module> ADD_CONNECTION = Action.Id.of("action.connector.connection.add");
-    public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("action.connector.connection.edit");
-    public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("action.connector.connection.remove");
+    public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("connector.connections.refresh");
+    public static final Action.Id<Module> ADD_CONNECTION = Action.Id.of("connector.connection.add");
+    public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("connector.connection.edit");
+    public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("connector.connection.remove");
     public static final String MODULE_ACTIONS = "actions.connector.module";
     public static final String CONNECTION_ACTIONS = "actions.connector.connection";
 
