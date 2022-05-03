@@ -34,12 +34,12 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
         final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", AzureIcons.Action.ADD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
             .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
-        am.registerAction(ADD_SSH_CONFIG, new Action<>(addSshConfigView));
+        am.registerAction(ADD_SSH_CONFIG, new Action<>(ADD_SSH_CONFIG, addSshConfigView));
 
         final ActionView.Builder createVmView = new ActionView.Builder("Virtual Machine")
             .title(s -> Optional.ofNullable(s).map(r -> title("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_VM, new Action<>(createVmView));
+        am.registerAction(GROUP_CREATE_VM, new Action<>(GROUP_CREATE_VM, createVmView));
     }
 
     @Override

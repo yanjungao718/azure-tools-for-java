@@ -37,14 +37,14 @@ public class MySqlActionsContributor implements IActionsContributor {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("mysql.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof MySqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
-        final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("MySQL server")
             .title(s -> Optional.ofNullable(s).map(r -> title("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_MYSQL, new Action<>(createServerView));
+        am.registerAction(GROUP_CREATE_MYSQL, new Action<>(GROUP_CREATE_MYSQL, createServerView));
     }
 
     public int getOrder() {

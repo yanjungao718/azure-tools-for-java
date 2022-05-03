@@ -40,7 +40,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", AzureIcons.Action.BROWSER.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).isPublicEndpointEnabled());
-        final Action<SpringCloudApp> openPublicUrlAction = new Action<>(openPublicUrl, openPublicUrlView);
+        final Action<SpringCloudApp> openPublicUrlAction = new Action<>(OPEN_PUBLIC_URL, openPublicUrl, openPublicUrlView);
         openPublicUrlAction.setShortcuts("control alt P");
         am.registerAction(OPEN_PUBLIC_URL, openPublicUrlAction);
 
@@ -48,19 +48,19 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", AzureIcons.Action.BROWSER.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected());
-        final Action<SpringCloudApp> openTestUrlAction = new Action<>(openTestUrl, openTestUrlView);
+        final Action<SpringCloudApp> openTestUrlAction = new Action<>(OPEN_TEST_URL, openTestUrl, openTestUrlView);
         openTestUrlAction.setShortcuts("control alt T");
         am.registerAction(OPEN_TEST_URL, openTestUrlAction);
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", AzureIcons.Action.LOG.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(STREAM_LOG, new Action<>(streamLogView));
+        am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogView));
 
         final ActionView.Builder createClusterView = new ActionView.Builder("Spring Cloud Service")
             .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_CLUSTER, new Action<>(createClusterView));
+        am.registerAction(GROUP_CREATE_CLUSTER, new Action<>(GROUP_CREATE_CLUSTER, createClusterView));
     }
 
     @Override

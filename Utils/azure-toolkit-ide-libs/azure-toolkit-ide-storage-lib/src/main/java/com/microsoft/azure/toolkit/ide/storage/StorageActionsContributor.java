@@ -41,7 +41,7 @@ public class StorageActionsContributor implements IActionsContributor {
         final ActionView.Builder openAzureStorageExplorerView = new ActionView.Builder("Open Azure Storage Explorer")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.open_azure_storage_explorer.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
-        final Action<StorageAccount> openAzureStorageExplorerAction = new Action<>(openAzureStorageExplorer, openAzureStorageExplorerView);
+        final Action<StorageAccount> openAzureStorageExplorerAction = new Action<>(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorer, openAzureStorageExplorerView);
         openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
         am.registerAction(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorerAction);
 
@@ -52,7 +52,7 @@ public class StorageActionsContributor implements IActionsContributor {
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
-        final Action<StorageAccount> copyConnectionStringAction = new Action<>(copyConnectionString, copyConnectionStringView);
+        final Action<StorageAccount> copyConnectionStringAction = new Action<>(COPY_CONNECTION_STRING, copyConnectionString, copyConnectionStringView);
         am.registerAction(COPY_CONNECTION_STRING, copyConnectionStringAction);
 
         final Consumer<StorageAccount> copyPrimaryKey = resource -> {
@@ -62,13 +62,13 @@ public class StorageActionsContributor implements IActionsContributor {
         final ActionView.Builder copyPrimaryView = new ActionView.Builder("Copy Primary Key")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
-        final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(copyPrimaryKey, copyPrimaryView);
+        final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(COPY_PRIMARY_KEY, copyPrimaryKey, copyPrimaryView);
         am.registerAction(COPY_PRIMARY_KEY, copyPrimaryKeyAction);
 
         final ActionView.Builder createAccountView = new ActionView.Builder("Storage Account")
             .title(s -> Optional.ofNullable(s).map(r -> title("storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_ACCOUNT, new Action<>(createAccountView));
+        am.registerAction(GROUP_CREATE_ACCOUNT, new Action<>(GROUP_CREATE_ACCOUNT, createAccountView));
     }
 
     @Override

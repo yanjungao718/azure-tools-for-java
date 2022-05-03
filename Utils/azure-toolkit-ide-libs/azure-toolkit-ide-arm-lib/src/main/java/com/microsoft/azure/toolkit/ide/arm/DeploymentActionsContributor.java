@@ -46,20 +46,20 @@ public class DeploymentActionsContributor implements IActionsContributor {
         final ActionView.Builder exportParameter = new ActionView.Builder("Export Parameter File",  AzureIcons.Action.EDIT.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("arm.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
-        final Action<ResourceDeployment> editAction = new Action<>(editDeployment);
-        final Action<ResourceDeployment> exportTemplateAction = new Action<>(exportTemplate);
-        final Action<ResourceDeployment> exportParameterAction = new Action<>(exportParameter);
+        final Action<ResourceDeployment> editAction = new Action<>(EDIT, editDeployment);
+        final Action<ResourceDeployment> exportTemplateAction = new Action<>(EXPORT_TEMPLATE, exportTemplate);
+        final Action<ResourceDeployment> exportParameterAction = new Action<>(EXPORT_PARAMETER, exportParameter);
         editAction.setShortcuts(am.getIDEDefaultShortcuts().view());
         exportTemplateAction.setShortcuts("control alt E");
         am.registerAction(EDIT, editAction);
-        am.registerAction(UPDATE, new Action<>(updateDeployment));
+        am.registerAction(UPDATE, new Action<>(UPDATE, updateDeployment));
         am.registerAction(EXPORT_TEMPLATE, exportTemplateAction);
         am.registerAction(EXPORT_PARAMETER, exportParameterAction);
 
         final ActionView.Builder createDeploymentView = new ActionView.Builder("Deployment")
             .title(s -> Optional.ofNullable(s).map(r -> title("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(createDeploymentView));
+        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(GROUP_CREATE_DEPLOYMENT, createDeploymentView));
     }
 
     @Override

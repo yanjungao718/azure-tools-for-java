@@ -30,7 +30,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
         final ActionView.Builder pushImageView = new ActionView.Builder("Push Image")
                 .title(s -> Optional.ofNullable(s).map(r -> title("acr.push_image.acr", ((ContainerRegistry) r).name())).orElse(null))
                 .enabled(s -> s instanceof ContainerRegistry && ((ContainerRegistry) s).getFormalStatus().isRunning());
-        am.registerAction(PUSH_IMAGE, new Action<>(pushImageView));
+        am.registerAction(PUSH_IMAGE, new Action<>(PUSH_IMAGE, pushImageView));
     }
 
     @Override

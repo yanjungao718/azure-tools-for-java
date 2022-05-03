@@ -102,7 +102,7 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.list_deployments.app", ((WebApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof WebApp);
-        final Action<WebApp> refreshAction = new Action<>(refresh, refreshView);
+        final Action<WebApp> refreshAction = new Action<>(REFRESH_DEPLOYMENT_SLOTS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
@@ -111,12 +111,12 @@ public class WebAppActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
                 ((WebAppDeploymentSlot) s).getName(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
             .enabled(s -> s instanceof WebAppDeploymentSlot && ((WebAppDeploymentSlot) s).getFormalStatus().isRunning());
-        am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
+        am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(SWAP_DEPLOYMENT_SLOT, swap, swapView));
 
         final ActionView.Builder createWebAppView = new ActionView.Builder("Web App")
             .title(s -> Optional.ofNullable(s).map(r -> title("webapp.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_WEBAPP, new Action<>(createWebAppView));
+        am.registerAction(GROUP_CREATE_WEBAPP, new Action<>(GROUP_CREATE_WEBAPP, createWebAppView));
     }
 
     @Override

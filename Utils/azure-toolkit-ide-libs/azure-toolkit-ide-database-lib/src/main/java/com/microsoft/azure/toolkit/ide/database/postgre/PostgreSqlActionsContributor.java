@@ -37,14 +37,14 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof PostgreSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
-        final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("PostgreSQL server")
             .title(s -> Optional.ofNullable(s).map(r -> title("postgre.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_POSTGRE, new Action<>(createServerView));
+        am.registerAction(GROUP_CREATE_POSTGRE, new Action<>(GROUP_CREATE_POSTGRE, createServerView));
     }
 
     public int getOrder() {

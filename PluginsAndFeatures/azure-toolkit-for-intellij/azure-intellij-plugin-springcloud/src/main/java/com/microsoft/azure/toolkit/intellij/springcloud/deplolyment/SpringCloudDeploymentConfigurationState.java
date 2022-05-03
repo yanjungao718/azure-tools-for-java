@@ -99,10 +99,11 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         OperationContext.current().setTelemetryProperties(getTelemetryProperties());
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         if (Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).filter(a -> a.getFile().exists()).isEmpty()) {
+            final Action.Id<Void> REOPEN = Action.Id.of("springcloud.reopen_deploy_dialog");
             throw new AzureToolkitRuntimeException(
                 message("springcloud.deploy_app.no_artifact").toString(),
                 message("springcloud.deploy_app.no_artifact.tips").toString(),
-                new Action<Void>((v) -> DeploySpringCloudAppAction.deploy(this.config, this.project), new ActionView.Builder("Add BeforeRunTask")));
+                new Action<>(REOPEN, (v) -> DeploySpringCloudAppAction.deploy(this.config, this.project), new ActionView.Builder("Add BeforeRunTask")));
         }
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();

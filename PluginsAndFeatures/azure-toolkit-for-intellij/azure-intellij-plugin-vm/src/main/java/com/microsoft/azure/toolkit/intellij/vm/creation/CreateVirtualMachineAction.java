@@ -61,7 +61,8 @@ public class CreateVirtualMachineAction {
                 new CreateVirtualMachineTask(draft).execute();
             } catch (final Exception e) {
                 final Consumer<Object> act = t -> tm.runLater("open dialog", () -> openDialog(project, draft));
-                final Action<?> action = new Action<>(act, new ActionView.Builder(REOPEN_CREATION_DIALOG));
+                final Action.Id<Object> REOPEN = Action.Id.of("vm.reopen_creation_dialog");
+                final Action<?> action = new Action<>(REOPEN, act, new ActionView.Builder(REOPEN_CREATION_DIALOG));
                 AzureMessager.getMessager().error(e, null, action);
             }
         });

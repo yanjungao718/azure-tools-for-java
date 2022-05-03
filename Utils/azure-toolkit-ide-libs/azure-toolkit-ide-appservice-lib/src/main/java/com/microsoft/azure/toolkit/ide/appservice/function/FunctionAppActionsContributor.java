@@ -88,43 +88,43 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.refresh_funcs")).orElse(null))
                 .enabled(s -> s instanceof FunctionApp);
-        final Action<FunctionApp> refreshAction = new Action<>(refresh, refreshView);
+        final Action<FunctionApp> refreshAction = new Action<>(REFRESH_FUNCTIONS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_FUNCTIONS, refreshAction);
 
         final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func.trigger", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity && !AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
-        am.registerAction(TRIGGER_FUNCTION, new Action<>(triggerView));
+        am.registerAction(TRIGGER_FUNCTION, new Action<>(TRIGGER_FUNCTION, triggerView));
 
         final Consumer<FunctionEntity> triggerInBrowserHandler = entity -> new TriggerFunctionInBrowserAction(entity).trigger();
         final ActionView.Builder triggerInBrowserView = new ActionView.Builder("Trigger Function In Browser")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func_in_browser.trigger", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
-        am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(triggerInBrowserHandler, triggerInBrowserView));
+        am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(TRIGGER_FUNCTION_IN_BROWSER, triggerInBrowserHandler, triggerInBrowserView));
 
         final ActionView.Builder triggerWIthHttpClientView = new ActionView.Builder("Trigger Function with Http Client")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_function_with_http_client.trigger",
                         ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity);
-        am.registerAction(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, new Action<>(triggerWIthHttpClientView));
+        am.registerAction(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, new Action<>(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, triggerWIthHttpClientView));
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
                 .title(s -> title("function.download_core_tools"));
-        final Action<Object> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
+        final Action<Object> downloadCliAction = new Action<>(DOWNLOAD_CORE_TOOLS, (v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
         downloadCliAction.setAuthRequired(false);
         am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
                 .title(s -> title("function.config_core_tools"));
-        final Action<Object> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
+        final Action<Object> configCliAction = new Action<>(CONFIG_CORE_TOOLS, (v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
         configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
 
         final ActionView.Builder createFunctionView = new ActionView.Builder("Function App")
             .title(s -> Optional.ofNullable(s).map(r -> title("function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(createFunctionView));
+        am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(GROUP_CREATE_FUNCTION, createFunctionView));
     }
 
     @Override

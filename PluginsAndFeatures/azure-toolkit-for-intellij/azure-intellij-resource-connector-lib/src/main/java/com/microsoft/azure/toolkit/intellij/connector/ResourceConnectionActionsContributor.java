@@ -40,19 +40,19 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 .connectionsRefreshed();
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
                 .title(t -> AzureOperationBundle.title("connector|explorer.refresh"));
-        final Action<Object> refreshAction = new Action<>(refreshHandler, refreshView);
+        final Action<Object> refreshAction = new Action<>(REFRESH_CONNECTIONS, refreshHandler, refreshView);
 
         final Consumer<Module> addHandler = (m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject());
         final ActionView.Builder addView = new ActionView.Builder("Add", AzureIcons.Action.ADD.getIconPath())
                 .title(t -> AzureOperationBundle.title("connector.add_connection"))
                 .enabled(m -> m instanceof Module);
-        final Action<Module> addAction = new Action<>(addHandler, addView);
+        final Action<Module> addAction = new Action<>(ADD_CONNECTION, addHandler, addView);
 
         final BiConsumer<Connection<?, ?>, AnActionEvent> editHandler = (c, e) -> openDialog(c, e.getProject());
         final ActionView.Builder editView = new ActionView.Builder("Edit", AzureIcons.Action.EDIT.getIconPath())
                 .title(t -> AzureOperationBundle.title("connector.edit_connection"))
                 .enabled(m -> m instanceof Connection);
-        final Action<Connection<?, ?>> editAction = new Action<>(editHandler, editView);
+        final Action<Connection<?, ?>> editAction = new Action<>(EDIT_CONNECTION, editHandler, editView);
 
         final BiConsumer<Connection<?, ?>, AnActionEvent> removeHandler =
                 (c, e) -> {
@@ -63,7 +63,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         final ActionView.Builder removeView = new ActionView.Builder("Remove", AzureIcons.Action.REMOVE.getIconPath())
                 .title(t -> AzureOperationBundle.title("connector.remove_connection"))
                 .enabled(m -> m instanceof Connection);
-        final Action<Connection<?, ?>> removeAction = new Action<>(removeHandler, removeView);
+        final Action<Connection<?, ?>> removeAction = new Action<>(REMOVE_CONNECTION, removeHandler, removeView);
 
         am.registerAction(REFRESH_CONNECTIONS, refreshAction);
         am.registerAction(ADD_CONNECTION, addAction);

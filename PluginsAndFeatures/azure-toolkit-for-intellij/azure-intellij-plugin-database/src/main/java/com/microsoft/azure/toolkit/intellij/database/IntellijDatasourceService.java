@@ -41,7 +41,8 @@ public class IntellijDatasourceService {
         if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
             final Consumer<Object> handler = (r) -> FUSEventSource.NOTIFICATION.openDownloadPageAndLog(project, IDE_DOWNLOAD_URL);
             final ActionView.Builder view = new ActionView.Builder(IdeBundle.message("plugins.advertiser.action.try.ultimate", "IntelliJ IDEA Ultimate"));
-            final Action<Object> tryUltimate = new Action<>(handler, view);
+            final Action.Id<Object> TRY_ULTIMATE = Action.Id.of("database.try_ultimate");
+            final Action<Object> tryUltimate = new Action<>(TRY_ULTIMATE, handler, view);
             throw new AzureToolkitRuntimeException(DATABASE_PLUGIN_NOT_INSTALLED, NOT_SUPPORT_ERROR_ACTION, tryUltimate);
         }
         try {

@@ -55,6 +55,9 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
+import static com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD;
+import static com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor.APP_SERVICE_FILE_VIEW;
+
 public class AppServiceIntelliJActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER =
         Math.max(AppServiceActionsContributor.INITIALIZE_ORDER, ContainerRegistryActionsContributor.INITIALIZE_ORDER) + 1;
@@ -69,9 +72,9 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 .map(r -> AzureString.format("appservice|file.download", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
-        final Action<AppServiceFile> openFileAction = new Action<>(openFileHandler, openFileView);
+        final Action<AppServiceFile> openFileAction = new Action<>(APP_SERVICE_FILE_VIEW, openFileHandler, openFileView);
         openFileAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
-        am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_VIEW, openFileAction);
+        am.registerAction(APP_SERVICE_FILE_VIEW, openFileAction);
 
         final BiConsumer<AppServiceFile, AnActionEvent> downloadFileHandler = (file, e) -> AzureTaskManager
             .getInstance().runLater(() -> new AppServiceFileAction().saveAppServiceFile(file, e.getProject(), null));
@@ -80,9 +83,9 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 .map(r -> AzureString.format("appservice|file.download", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
-        final Action<AppServiceFile> downloadFileAction = new Action<>(downloadFileHandler, downloadFileView);
+        final Action<AppServiceFile> downloadFileAction = new Action<>(APP_SERVICE_FILE_DOWNLOAD, downloadFileHandler, downloadFileView);
         downloadFileAction.setShortcuts("control alt D");
-        am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD, downloadFileAction);
+        am.registerAction(APP_SERVICE_FILE_DOWNLOAD, downloadFileAction);
     }
 
     @Override
