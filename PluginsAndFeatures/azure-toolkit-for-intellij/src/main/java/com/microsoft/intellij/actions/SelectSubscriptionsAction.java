@@ -83,7 +83,7 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
 
     @AzureOperation(name = "account.load_all_subscriptions", type = AzureOperation.Type.SERVICE)
     public static Observable<List<SubscriptionDetail>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
-        final AzureString title = OperationBundle.title("account.load_all_subscriptions");
+        final AzureString title = OperationBundle.description("account.load_all_subscriptions");
         return AzureTaskManager.getInstance().runInModalAsObservable(new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             return subscriptionManager.getSubscriptionDetails();

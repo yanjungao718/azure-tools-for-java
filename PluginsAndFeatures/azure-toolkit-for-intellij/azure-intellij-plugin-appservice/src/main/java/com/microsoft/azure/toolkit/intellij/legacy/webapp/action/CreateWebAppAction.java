@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateWebAppAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
@@ -68,7 +68,7 @@ public class CreateWebAppAction {
 
     @AzureOperation(name = "webapp.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static Single<WebApp> createWebApp(final WebAppConfig config) {
-        final AzureString title = title("webapp.create_app.app", config.getName());
+        final AzureString title = description("webapp.create_app.app", config.getName());
         final AzureTask<WebApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -79,7 +79,7 @@ public class CreateWebAppAction {
 
     @AzureOperation(name = "webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
     private static void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureString title = title("webapp.deploy_artifact.app", webapp.name());
+        final AzureString title = description("webapp.deploy_artifact.app", webapp.name());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();

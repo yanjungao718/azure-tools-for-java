@@ -22,7 +22,7 @@ import java.awt.datatransfer.StringSelection;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class StorageActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -39,7 +39,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<StorageAccount> openAzureStorageExplorer = resource -> new OpenAzureStorageExplorerAction().openResource(resource);
         final ActionView.Builder openAzureStorageExplorerView = new ActionView.Builder("Open Azure Storage Explorer")
-                .title(s -> Optional.ofNullable(s).map(r -> title("storage.open_azure_storage_explorer.account", ((StorageAccount) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("storage.open_azure_storage_explorer.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> openAzureStorageExplorerAction = new Action<>(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorer, openAzureStorageExplorerView);
         openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
@@ -50,7 +50,7 @@ public class StorageActionsContributor implements IActionsContributor {
             AzureMessager.getMessager().info("Connection string copied");
         };
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
-                .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyConnectionStringAction = new Action<>(COPY_CONNECTION_STRING, copyConnectionString, copyConnectionStringView);
         am.registerAction(COPY_CONNECTION_STRING, copyConnectionStringAction);
@@ -60,13 +60,13 @@ public class StorageActionsContributor implements IActionsContributor {
             AzureMessager.getMessager().info("Primary key copied");
         };
         final ActionView.Builder copyPrimaryView = new ActionView.Builder("Copy Primary Key")
-                .title(s -> Optional.ofNullable(s).map(r -> title("storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(COPY_PRIMARY_KEY, copyPrimaryKey, copyPrimaryView);
         am.registerAction(COPY_PRIMARY_KEY, copyPrimaryKeyAction);
 
         final ActionView.Builder createAccountView = new ActionView.Builder("Storage Account")
-            .title(s -> Optional.ofNullable(s).map(r -> title("storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
         am.registerAction(GROUP_CREATE_ACCOUNT, new Action<>(GROUP_CREATE_ACCOUNT, createAccountView));
     }

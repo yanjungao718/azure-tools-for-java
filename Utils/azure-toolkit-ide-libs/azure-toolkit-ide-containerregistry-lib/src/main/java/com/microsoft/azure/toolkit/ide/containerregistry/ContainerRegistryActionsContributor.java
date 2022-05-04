@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class ContainerRegistryActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -28,7 +28,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder pushImageView = new ActionView.Builder("Push Image")
-                .title(s -> Optional.ofNullable(s).map(r -> title("acr.push_image.acr", ((ContainerRegistry) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("acr.push_image.acr", ((ContainerRegistry) r).name())).orElse(null))
                 .enabled(s -> s instanceof ContainerRegistry && ((ContainerRegistry) s).getFormalStatus().isRunning());
         am.registerAction(PUSH_IMAGE, new Action<>(PUSH_IMAGE, pushImageView));
     }

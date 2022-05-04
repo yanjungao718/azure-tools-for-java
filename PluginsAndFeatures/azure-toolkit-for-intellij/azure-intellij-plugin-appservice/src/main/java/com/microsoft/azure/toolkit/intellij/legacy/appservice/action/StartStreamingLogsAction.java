@@ -33,7 +33,7 @@ public class StartStreamingLogsAction {
     }
 
     public void execute() {
-        final AzureString title = OperationBundle.title("appservice.open_log_stream.app", appService.getName());
+        final AzureString title = OperationBundle.description("appservice.open_log_stream.app", appService.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             if (appService instanceof WebApp) {
                 AppServiceStreamingLogManager.INSTANCE.showWebAppStreamingLog(project, resourceId);

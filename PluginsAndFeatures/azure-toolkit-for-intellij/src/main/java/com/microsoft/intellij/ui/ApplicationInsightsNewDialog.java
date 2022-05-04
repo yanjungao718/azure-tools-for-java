@@ -158,7 +158,7 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
             boolean isNewGroup = createNewBtn.isSelected();
             Subscription subscription = comboSub.getValue();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            final AzureString title = OperationBundle.title("ai.create_ai.ai|rg", txtName.getText(), resourceGroup);
+            final AzureString title = OperationBundle.description("ai.create_ai.ai|rg", txtName.getText(), resourceGroup);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
                 try {
                     ApplicationInsight resource = AzureSDKManager.createInsightsResource(

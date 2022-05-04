@@ -55,7 +55,7 @@ public class CreateVirtualMachineAction {
 
     private static void doCreateVirtualMachine(final Project project, final VirtualMachineDraft draft) {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        tm.runInBackground(OperationBundle.title("vm.create_vm.vm", draft.getName()), () -> {
+        tm.runInBackground(OperationBundle.description("vm.create_vm.vm", draft.getName()), () -> {
             OperationContext.action().setTelemetryProperty("subscriptionId", draft.getSubscriptionId());
             try {
                 new CreateVirtualMachineTask(draft).execute();

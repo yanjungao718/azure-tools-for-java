@@ -374,7 +374,7 @@ public class IDEHelperImpl implements IDEHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
-        final AzureString title = OperationBundle.title("appservice.open_file.file", virtualFile.getName());
+        final AzureString title = OperationBundle.description("appservice.open_file.file", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -454,7 +454,7 @@ public class IDEHelperImpl implements IDEHelper {
             type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
-        final AzureString title = OperationBundle.title("appservice.save_file.file", appServiceFile.getName());
+        final AzureString title = OperationBundle.description("appservice.save_file.file", appServiceFile.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             final AppServiceAppBase<?, ?, ?> appService = appServiceFile.getApp();
             final AppServiceFile target = appService.getFileByPath(appServiceFile.getPath());
@@ -485,7 +485,7 @@ public class IDEHelperImpl implements IDEHelper {
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final AzureString title = OperationBundle.title("appservice.download_file.file", file.getName());
+        final AzureString title = OperationBundle.description("appservice.download_file.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             file.getApp()

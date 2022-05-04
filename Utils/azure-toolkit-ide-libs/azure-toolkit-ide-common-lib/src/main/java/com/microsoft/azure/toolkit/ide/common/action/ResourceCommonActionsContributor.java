@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class ResourceCommonActionsContributor implements IActionsContributor {
 
@@ -60,7 +60,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final AzureActionManager.Shortcuts shortcuts = am.getIDEDefaultShortcuts();
         final ActionView.Builder startView = new ActionView.Builder("Start", AzureIcons.Action.START.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.start_resource.resource", ((AzResourceBase) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.start_resource.resource", ((AzResourceBase) r).getName())).orElse(null))
             .enabled(s -> s instanceof AzResource);
         final Action<AzResource<?, ?, ?>> startAction = new Action<>(START, startView);
         startAction.setShortcuts(shortcuts.start());
@@ -68,7 +68,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(START, startAction);
 
         final ActionView.Builder stopView = new ActionView.Builder("Stop", AzureIcons.Action.STOP.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.stop_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.stop_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResource);
         final Action<AzResource<?, ?, ?>> stopAction = new Action<>(STOP, stopView);
         stopAction.setShortcuts(shortcuts.stop());
@@ -76,7 +76,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(STOP, stopAction);
 
         final ActionView.Builder restartView = new ActionView.Builder("Restart", AzureIcons.Action.RESTART.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.restart_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.restart_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResource);
         final Action<AzResource<?, ?, ?>> restartAction = new Action<>(RESTART, restartView);
         restartAction.setShortcuts(shortcuts.restart());
@@ -89,7 +89,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             }
         };
         final ActionView.Builder deleteView = new ActionView.Builder("Delete", AzureIcons.Action.DELETE.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.delete_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.delete_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof Deletable && !((AzResourceBase) s).getFormalStatus().isDeleted() &&
                 s instanceof AbstractAzResource && !((AbstractAzResource<?, ?, ?>) s).isDraftForCreating());
         final Action<AzResource<?, ?, ?>> deleteAction = new Action<>(DELETE, delete, deleteView);
@@ -100,9 +100,9 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> {
                 if (r instanceof AzResource) {
-                    return title("resource.refresh.resource", ((AzResource<?, ?, ?>) r).name());
+                    return description("resource.refresh.resource", ((AzResource<?, ?, ?>) r).name());
                 } else if (r instanceof AbstractAzResourceModule) {
-                    return title("resource.refresh.resource", ((AbstractAzResourceModule<?, ?, ?>) r).getResourceTypeName());
+                    return description("resource.refresh.resource", ((AbstractAzResourceModule<?, ?, ?>) r).getResourceTypeName());
                 } else {
                     return AzureString.fromString("refresh");
                 }
@@ -114,7 +114,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final Consumer<AzResource<?, ?, ?>> openPortalUrl = s -> am.getAction(OPEN_URL).handle(s.getPortalUrl());
         final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open in Portal", AzureIcons.Action.PORTAL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.open_portal_url.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.open_portal_url.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResource);
         final Action<AzResource<?, ?, ?>> openPortalUrlAction = new Action<>(OPEN_PORTAL_URL, openPortalUrl, openPortalUrlView);
         openPortalUrlAction.setShortcuts("control alt O");
@@ -128,26 +128,26 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_URL, action);
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", AzureIcons.Connector.CONNECT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.connect_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(CONNECT, new Action<>(CONNECT, connectView));
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", AzureIcons.Action.PROPERTIES.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.show_properties.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.show_properties.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isConnected());
         final Action<AzResourceBase> showPropertiesAction = new Action<>(SHOW_PROPERTIES, showPropertiesView);
         showPropertiesAction.setShortcuts(shortcuts.edit());
         am.registerAction(SHOW_PROPERTIES, showPropertiesAction);
 
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", AzureIcons.Action.DEPLOY.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("resource.deploy_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("resource.deploy_resource.resource", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isWritable());
         final Action<AzResource<?, ?, ?>> deployAction = new Action<>(DEPLOY, deployView);
         deployAction.setShortcuts(shortcuts.deploy());
         am.registerAction(DEPLOY, deployAction);
 
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
-            .title((s) -> OperationBundle.title("common.open_azure_settings"));
+            .title((s) -> OperationBundle.description("common.open_azure_settings"));
         am.registerAction(OPEN_AZURE_SETTINGS, new Action<>(OPEN_AZURE_SETTINGS, openSettingsView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", AzureIcons.Action.CREATE.getIconPath())
@@ -160,7 +160,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 } else if (r instanceof AzResourceModule) {
                     name = ((AzResourceModule<?, ?, ?>) r).getResourceTypeName();
                 }
-                return title("resource.create_resource.type", name);
+                return description("resource.create_resource.type", name);
             }).orElse(null)).enabled(s -> s instanceof AzService || s instanceof AzResourceModule ||
                 (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)));
         final Action<Object> createAction = new Action<>(CREATE, createView);

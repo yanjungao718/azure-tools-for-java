@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class MySqlActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -35,14 +35,14 @@ public class MySqlActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("mysql.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("mysql.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof MySqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("MySQL server")
-            .title(s -> Optional.ofNullable(s).map(r -> title("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
         am.registerAction(GROUP_CREATE_MYSQL, new Action<>(GROUP_CREATE_MYSQL, createServerView));
     }

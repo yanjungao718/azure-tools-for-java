@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateFunctionAppAction {
     @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)
@@ -60,7 +60,7 @@ public class CreateFunctionAppAction {
 
     @AzureOperation(name = "function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureString title = title("function.create_app.app", config.getName());
+        final AzureString title = description("function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public boolean show(IAzureMessage raw) {

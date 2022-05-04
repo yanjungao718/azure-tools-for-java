@@ -93,7 +93,7 @@ public class UpdateDeploymentDialog extends AzureDialogWrapper {
     protected void doOKAction() {
         final StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
         final String deploymentName = this.deployment.getName();
-        final AzureString title = OperationBundle.title("arm.update_deployment.deployment", deploymentName);
+        final AzureString title = OperationBundle.description("arm.update_deployment.deployment", deploymentName);
         AzureTaskManager.getInstance().runInBackground(title, false, this::updateDeployment);
         close(OK_EXIT_CODE, true);
     }

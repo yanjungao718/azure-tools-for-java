@@ -35,7 +35,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
         am.<AzResource<?, ?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof StorageAccount,
-            (r, e) -> AzureTaskManager.getInstance().runLater(OperationBundle.title("storage.open_azure_storage_explorer.account", r.getName()), () -> {
+            (r, e) -> AzureTaskManager.getInstance().runLater(OperationBundle.description("storage.open_azure_storage_explorer.account", r.getName()), () -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 dialog.setResource(new AzureServiceResource<>(((StorageAccount) r), StorageAccountResourceDefinition.INSTANCE));
                 dialog.show();

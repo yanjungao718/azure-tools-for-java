@@ -54,7 +54,7 @@ public class ProfileFlightRecordAction {
     public void execute() {
         EventUtil.executeWithLog(TelemetryConstants.WEBAPP, "start-flight-recorder", op -> {
             op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
-            final AzureString title = OperationBundle.title("appservice.profile_flight_recorder");
+            final AzureString title = OperationBundle.description("appservice.profile_flight_recorder");
             final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
             AzureTaskManager.getInstance().runInBackground(task);
         });

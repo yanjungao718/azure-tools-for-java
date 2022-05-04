@@ -164,7 +164,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
                 model.fireTableDataChanged();
                 table.getEmptyText().setText("Refreshing");
                 AppInsightsClient.createByType(AppInsightsClient.EventType.Subscription, "", "Refresh", null);
-                final AzureString title = OperationBundle.title("account.refresh_subscriptions");
+                final AzureString title = OperationBundle.description("account.refresh_subscriptions");
                 final AzureTask task = new AzureTask(project, title, true, () -> {
                     try {
                         SubscriptionsDialog.this.refreshSubscriptions();

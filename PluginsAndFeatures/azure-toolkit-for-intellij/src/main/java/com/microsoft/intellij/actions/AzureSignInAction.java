@@ -278,7 +278,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
-        final AzureString title = OperationBundle.title("account.sign_in");
+        final AzureString title = OperationBundle.description("account.sign_in");
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -288,7 +288,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     private static Single<DeviceCodeAccount> loginDeviceCodeSingle() {
-        final AzureString title = OperationBundle.title("account.sign_in");
+        final AzureString title = OperationBundle.description("account.sign_in");
         final AzureTask<DeviceCodeAccount> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);

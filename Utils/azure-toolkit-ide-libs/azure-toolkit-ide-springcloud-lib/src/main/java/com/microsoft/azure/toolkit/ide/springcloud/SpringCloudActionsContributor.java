@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class SpringCloudActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -38,7 +38,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<SpringCloudApp> openPublicUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getApplicationUrl());
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).isPublicEndpointEnabled());
         final Action<SpringCloudApp> openPublicUrlAction = new Action<>(OPEN_PUBLIC_URL, openPublicUrl, openPublicUrlView);
         openPublicUrlAction.setShortcuts("control alt P");
@@ -46,19 +46,19 @@ public class SpringCloudActionsContributor implements IActionsContributor {
 
         final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getTestUrl());
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected());
         final Action<SpringCloudApp> openTestUrlAction = new Action<>(OPEN_TEST_URL, openTestUrl, openTestUrlView);
         openTestUrlAction.setShortcuts("control alt T");
         am.registerAction(OPEN_TEST_URL, openTestUrlAction);
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", AzureIcons.Action.LOG.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogView));
 
         final ActionView.Builder createClusterView = new ActionView.Builder("Spring Cloud Service")
-            .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
         am.registerAction(GROUP_CREATE_CLUSTER, new Action<>(GROUP_CREATE_CLUSTER, createClusterView));
     }
