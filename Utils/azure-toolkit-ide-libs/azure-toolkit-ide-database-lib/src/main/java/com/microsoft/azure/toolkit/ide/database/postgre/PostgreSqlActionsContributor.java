@@ -30,7 +30,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
 
     private static final String NAME_PREFIX = "PostgreSQL Server - %s";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("postgre.open_database_tool");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_POSTGRE = Action.Id.of("postgre.create_server.group");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_POSTGRE = Action.Id.of("group.create_postgre_server");
 
     @Override
     public void registerActions(AzureActionManager am) {

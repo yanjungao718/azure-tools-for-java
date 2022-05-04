@@ -30,7 +30,7 @@ public class SqlServerActionsContributor implements IActionsContributor {
 
     private static final String NAME_PREFIX = "SqlServer Server - %s";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("sqlserver.open_database_tool");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_SQLSERVER = Action.Id.of("sqlserver.create_server.group");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_SQLSERVER = Action.Id.of("group.create_sqlserver");
 
     @Override
     public void registerActions(AzureActionManager am) {

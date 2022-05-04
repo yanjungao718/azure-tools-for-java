@@ -30,7 +30,7 @@ public class MySqlActionsContributor implements IActionsContributor {
 
     private static final String NAME_PREFIX = "MySQL Server - %s";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("mysql.open_database_tool");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_MYSQL = Action.Id.of("mysql.create_server.group");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_MYSQL = Action.Id.of("group.create_mysql_server");
 
     @Override
     public void registerActions(AzureActionManager am) {

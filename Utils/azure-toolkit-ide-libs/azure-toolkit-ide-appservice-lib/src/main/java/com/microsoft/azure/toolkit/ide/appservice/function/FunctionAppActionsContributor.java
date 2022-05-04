@@ -38,12 +38,12 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("function.refresh_functions");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("function.trigger_function");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("function.trigger_in_browser");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client.trigger");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client");
     public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("function.download_core_tools");
     public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
 
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("function.create_app.group");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("group.create_function");
 
     @Override
     public void registerGroups(AzureActionManager am) {

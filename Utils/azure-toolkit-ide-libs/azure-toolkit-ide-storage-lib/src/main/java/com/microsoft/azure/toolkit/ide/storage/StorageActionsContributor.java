@@ -30,10 +30,10 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.storage.service";
     public static final String ACCOUNT_ACTIONS = "actions.storage.account";
 
-    public static final Action.Id<StorageAccount> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer.account");
-    public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string.account");
-    public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key.account");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("storage.create_account.group");
+    public static final Action.Id<StorageAccount> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer");
+    public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string");
+    public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("group.create_storage_account");
 
     @Override
     public void registerActions(AzureActionManager am) {

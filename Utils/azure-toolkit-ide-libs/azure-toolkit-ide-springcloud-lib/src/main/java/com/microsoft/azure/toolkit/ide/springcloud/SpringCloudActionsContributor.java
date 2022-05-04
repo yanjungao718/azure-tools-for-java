@@ -28,11 +28,11 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
     public static final String SERVICE_ACTIONS = "actions.springcloud.service";
-    public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.app.open_public_url");
-    public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.app.open_test_url");
-    public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.app.stream_log");
+    public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.open_public_url");
+    public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url");
+    public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.stream_log");
 
-    public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("springcloud.create_cluster.group");
+    public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
 
     @Override
     public void registerActions(AzureActionManager am) {

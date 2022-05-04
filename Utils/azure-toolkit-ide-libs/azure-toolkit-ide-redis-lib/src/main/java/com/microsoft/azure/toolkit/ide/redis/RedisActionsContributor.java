@@ -27,7 +27,7 @@ public class RedisActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
     public static final Action.Id<AzResource<?, ?, ?>> OPEN_EXPLORER = Action.Id.of("redis.open_explorer");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("redis.create_redis.group");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("group.create_redis");
 
     @Override
     public void registerActions(AzureActionManager am) {
