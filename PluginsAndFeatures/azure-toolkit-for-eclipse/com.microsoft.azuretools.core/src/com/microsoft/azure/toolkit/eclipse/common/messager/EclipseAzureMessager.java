@@ -32,7 +32,7 @@ public class EclipseAzureMessager implements IAzureMessager {
                 return true;
             default:
         }
-        Operation<?> op = Operation.current();
+        Operation op = Operation.current();
         while (op != null && !(op instanceof AzureTask)) {
             op = op.getParent();
         }

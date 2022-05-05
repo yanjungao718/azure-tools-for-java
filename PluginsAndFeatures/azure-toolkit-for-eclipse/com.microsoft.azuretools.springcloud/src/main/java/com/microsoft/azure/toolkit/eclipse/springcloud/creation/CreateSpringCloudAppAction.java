@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.eclipse.springcloud.creation;
 
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
@@ -36,7 +36,7 @@ public class CreateSpringCloudAppAction {
 
     @AzureOperation(name = "springcloud|app.create", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void createApp(SpringCloudAppConfig config) {
-        AzureTaskManager.getInstance().runInBackground(AzureOperationBundle.title("springcloud|app.create", config.getAppName()), () -> {
+        AzureTaskManager.getInstance().runInBackground(OperationBundle.description("springcloud|app.create", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
             if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {

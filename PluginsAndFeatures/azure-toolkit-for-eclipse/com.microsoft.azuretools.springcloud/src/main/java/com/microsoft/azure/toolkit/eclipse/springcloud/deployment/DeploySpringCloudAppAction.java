@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -81,7 +81,7 @@ public class DeploySpringCloudAppAction {
 
             job.setMessager(messager);
             job.setSupplier(() -> {
-                final AzureString title = AzureOperationBundle.title("springcloud|app.create_update", config.getAppName());
+                final AzureString title = OperationBundle.description("springcloud|app.create_update", config.getAppName());
                 final AzureTask<Void> task = new AzureTask<Void>(title, () -> execute(config, messager));
                 task.setType(AzureOperation.Type.ACTION.name());
                 AzureTaskManager.getInstance().runImmediatelyAsObservable(task).subscribe();
