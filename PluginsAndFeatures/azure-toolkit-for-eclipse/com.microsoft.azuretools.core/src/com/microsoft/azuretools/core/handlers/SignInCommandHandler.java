@@ -20,8 +20,8 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
@@ -191,8 +191,8 @@ public class SignInCommandHandler extends AzureAbstractHandler {
     }
 
     private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
-        Operation<?> op = Operation.current();
+        final AzureString title = OperationBundle.description("account.sign_in");
+        Operation op = Operation.current();
         while (op != null && !(op instanceof AzureTask)) {
             op = op.getParent();
         }
@@ -203,7 +203,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
     }
 
     private static Single<DeviceCodeAccount> loginDeviceCodeSingle() {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
+        final AzureString title = OperationBundle.description("account.sign_in");
         final AzureTask<DeviceCodeAccount> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
             final AzureAccount az = Azure.az(AzureAccount.class);
             return (DeviceCodeAccount) checkCanceled(null, az.loginAsync(AuthType.DEVICE_CODE, true), () -> {

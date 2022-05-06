@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
@@ -43,7 +43,7 @@ public class CreateMySqlAction {
 
     @AzureOperation(name = "mysql.create_server.server", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final DatabaseServerConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("mysql.create_server.server", config.getName());
+        final AzureString title = OperationBundle.description("mysql.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg instanceof Draft) {

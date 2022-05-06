@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class AppServiceFileActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -26,9 +26,9 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     public static final String APP_SERVICE_FILE_ACTIONS = "actions.appservice.file";
     public static final String APP_SERVICE_DIRECTORY_ACTIONS = "actions.appservice.directory";
 
-    public static final Action.Id<AppServiceFile> APP_SERVICE_DIRECTORY_REFRESH = Action.Id.of("action.appservice.directory.refresh");
-    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_VIEW = Action.Id.of("action.appservice.file.view");
-    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_DOWNLOAD = Action.Id.of("action.appservice.file.download");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_DIRECTORY_REFRESH = Action.Id.of("appservice.refresh_directory");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_VIEW = Action.Id.of("appservice.view_file");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_DOWNLOAD = Action.Id.of("appservice.download_file");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -48,9 +48,9 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceFile> refresh = file -> AzureEventBus.emit("resource.refresh.resource", file);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> title("resource.refresh.resource", ((AppServiceFile) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("resource.refresh.resource", ((AppServiceFile) r).getName())).orElse(null))
                 .enabled(s -> s instanceof AppServiceFile);
-        final Action<AppServiceFile> action = new Action<>(refresh, refreshView);
+        final Action<AppServiceFile> action = new Action<>(APP_SERVICE_DIRECTORY_REFRESH, refresh, refreshView);
         action.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(APP_SERVICE_DIRECTORY_REFRESH, action);
     }

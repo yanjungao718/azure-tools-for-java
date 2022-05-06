@@ -54,7 +54,7 @@ public class WhatsNewAction extends AnAction implements DumbAware {
     private static final Key<String> CONTENT_KEY = new Key<>("WHATS_NEW_IN_AZURE_TOOLKIT");
 
     @Override
-    @AzureOperation(name = "common.load_whatsnew", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "common.open_whats_new", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull final AnActionEvent event) {
         final boolean manually = !"AzurePluginStartupActivity".equals(event.getPlace());
         final String content = getWhatsNewContent();
@@ -84,7 +84,8 @@ public class WhatsNewAction extends AnAction implements DumbAware {
                     final String message = String.format("Azure Toolkit for Java is updated to <b><u>%s</u></b>", version.toString());
                     final String title = "Azure Toolkit for Java Updated";
                     final AzureActionManager am = AzureActionManager.getInstance();
-                    final Action<?> changelog = new Action<>((n) -> am.getAction(OPEN_URL).handle(WHATSNEW_URL), new ActionView.Builder("What's New"));
+                    final Action.Id<?> OPEN = Action.Id.of("common.open_whats_new_in_browser");
+                    final Action<?> changelog = new Action<>(OPEN, (n) -> am.getAction(OPEN_URL).handle(WHATSNEW_URL), new ActionView.Builder("What's New"));
                     AzureMessager.getMessager().info(message, title, changelog);
                 }
             }

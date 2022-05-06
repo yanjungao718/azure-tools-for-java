@@ -79,7 +79,8 @@ public class DownloadAppServiceFileAction {
         if (!(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN))) {
             return null;
         }
-        return new Action<Object>(ignore -> {
+        Action.Id<Object> id = Action.Id.<Object>of("appservice.open_in_explorer");
+        return new Action<Object>(id, ignore -> {
             AzureTaskManager.getInstance().runLater(() -> {
                 try {
                     Desktop.getDesktop().open(file.getParentFile());
@@ -92,7 +93,8 @@ public class DownloadAppServiceFileAction {
     }
 
     private static Action<?> getOpenFileAction(final File file) {
-        return new Action<Object>(ignore -> {
+        Action.Id<Object> id = Action.Id.<Object>of("appservice.view_file");
+        return new Action<Object>(id, ignore -> {
             if (file.exists() && file.isFile()) {
                 IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
                 final IWorkbenchWindow window = Optional

@@ -27,7 +27,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class WebAppActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;
@@ -37,9 +37,9 @@ public class WebAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployment_slot";
 
-    public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
-    public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_WEBAPP = Action.Id.of("action.webapp.create_app.group");
+    public static final Action.Id<WebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("webapp.refresh_deployment_slots");
+    public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("webapp.swap_deployment_slot");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_WEBAPP = Action.Id.of("group.create_webapp");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -100,23 +100,23 @@ public class WebAppActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<WebApp> refresh = webApp -> AzureEventBus.emit("appservice|webapp.slot.refresh", webApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.list_deployments.app", ((WebApp) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.list_deployments.app", ((WebApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof WebApp);
-        final Action<WebApp> refreshAction = new Action<>(refresh, refreshView);
+        final Action<WebApp> refreshAction = new Action<>(REFRESH_DEPLOYMENT_SLOTS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
         final Consumer<WebAppDeploymentSlot> swap = slot -> slot.getParent().swap(slot.getName());
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production")
-            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.swap_deployment.deployment|app",
+            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.swap_deployment.deployment|app",
                 ((WebAppDeploymentSlot) s).getName(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
             .enabled(s -> s instanceof WebAppDeploymentSlot && ((WebAppDeploymentSlot) s).getFormalStatus().isRunning());
-        am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
+        am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(SWAP_DEPLOYMENT_SLOT, swap, swapView));
 
         final ActionView.Builder createWebAppView = new ActionView.Builder("Web App")
-            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_WEBAPP, new Action<>(createWebAppView));
+        am.registerAction(GROUP_CREATE_WEBAPP, new Action<>(GROUP_CREATE_WEBAPP, createWebAppView));
     }
 
     @Override

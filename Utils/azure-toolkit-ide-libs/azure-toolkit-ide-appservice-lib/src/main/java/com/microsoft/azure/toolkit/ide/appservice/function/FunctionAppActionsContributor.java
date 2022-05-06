@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class FunctionAppActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;
@@ -35,15 +35,15 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final String FUNCTIONS_ACTIONS = "actions.function.functions";
     public static final String FUNCTION_ACTION = "actions.function.function";
 
-    public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("actions.function.function.trigger_in_browser");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client.trigger");
-    public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
-    public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
+    public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("function.refresh_functions");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("function.trigger_function");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("function.trigger_in_browser");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client");
+    public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("function.download_core_tools");
+    public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
 
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("action.function.create_app.group");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("group.create_function");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -86,45 +86,45 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> title("function.refresh_funcs")).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.refresh_funcs")).orElse(null))
                 .enabled(s -> s instanceof FunctionApp);
-        final Action<FunctionApp> refreshAction = new Action<>(refresh, refreshView);
+        final Action<FunctionApp> refreshAction = new Action<>(REFRESH_FUNCTIONS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_FUNCTIONS, refreshAction);
 
         final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")
-                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func.trigger", ((FunctionEntity) s).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.trigger_func.trigger", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity && !AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
-        am.registerAction(TRIGGER_FUNCTION, new Action<>(triggerView));
+        am.registerAction(TRIGGER_FUNCTION, new Action<>(TRIGGER_FUNCTION, triggerView));
 
         final Consumer<FunctionEntity> triggerInBrowserHandler = entity -> new TriggerFunctionInBrowserAction(entity).trigger();
         final ActionView.Builder triggerInBrowserView = new ActionView.Builder("Trigger Function In Browser")
-                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func_in_browser.trigger", ((FunctionEntity) s).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.trigger_func_in_browser.trigger", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
-        am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(triggerInBrowserHandler, triggerInBrowserView));
+        am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(TRIGGER_FUNCTION_IN_BROWSER, triggerInBrowserHandler, triggerInBrowserView));
 
         final ActionView.Builder triggerWIthHttpClientView = new ActionView.Builder("Trigger Function with Http Client")
-                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_function_with_http_client.trigger",
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.trigger_function_with_http_client.trigger",
                         ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity);
-        am.registerAction(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, new Action<>(triggerWIthHttpClientView));
+        am.registerAction(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, new Action<>(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, triggerWIthHttpClientView));
 
         final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
-                .title(s -> title("function.download_core_tools"));
-        final Action<Object> downloadCliAction = new Action<>((v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
+                .title(s -> description("function.download_core_tools"));
+        final Action<Object> downloadCliAction = new Action<>(DOWNLOAD_CORE_TOOLS, (v) -> am.getAction(OPEN_URL).handle(CORE_TOOLS_URL), downloadCliView);
         downloadCliAction.setAuthRequired(false);
         am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
-                .title(s -> title("function.config_core_tools"));
-        final Action<Object> configCliAction = new Action<>((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
+                .title(s -> description("function.config_core_tools"));
+        final Action<Object> configCliAction = new Action<>(CONFIG_CORE_TOOLS, (v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
         configCliAction.setAuthRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
 
         final ActionView.Builder createFunctionView = new ActionView.Builder("Function App")
-            .title(s -> Optional.ofNullable(s).map(r -> title("function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(createFunctionView));
+        am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(GROUP_CREATE_FUNCTION, createFunctionView));
     }
 
     @Override

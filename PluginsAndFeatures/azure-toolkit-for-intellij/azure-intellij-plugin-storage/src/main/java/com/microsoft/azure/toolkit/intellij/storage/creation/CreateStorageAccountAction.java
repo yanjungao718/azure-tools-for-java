@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
@@ -43,7 +43,7 @@ public class CreateStorageAccountAction {
 
     @AzureOperation(name = "storage.create_account.account", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     public static void create(final StorageAccountConfig config) {
-        final AzureString title = AzureOperationBundle.title("storage.create_account.account", config.getName());
+        final AzureString title = OperationBundle.description("storage.create_account.account", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> createStorageAccount(config));
     }
 

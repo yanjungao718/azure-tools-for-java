@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.intellij.database.component.PasswordDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
@@ -91,7 +91,7 @@ public class SqlDatabaseResource<T extends IDatabase> extends AzureServiceResour
 
     public String inputPassword(@Nonnull final Project project) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
-        final AzureString title = AzureOperationBundle.title("connector.update_database_password.database", this.database.getName());
+        final AzureString title = OperationBundle.description("connector.update_database_password.database", this.database.getName());
         AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(project, this.database);
             if (dialog.showAndGet()) {

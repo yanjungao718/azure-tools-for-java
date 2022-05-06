@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class VirtualMachineActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -26,20 +26,20 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.vm.service";
     public static final String VM_ACTIONS = "actions.vm.management";
 
-    public static final Action.Id<VirtualMachine> ADD_SSH_CONFIG = Action.Id.of("action.vm.add_ssh_configuration");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_VM = Action.Id.of("action.vm.create_server.group");
+    public static final Action.Id<VirtualMachine> ADD_SSH_CONFIG = Action.Id.of("vm.add_ssh_configuration");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_VM = Action.Id.of("group.create_vm");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", AzureIcons.Action.ADD.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
             .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
-        am.registerAction(ADD_SSH_CONFIG, new Action<>(addSshConfigView));
+        am.registerAction(ADD_SSH_CONFIG, new Action<>(ADD_SSH_CONFIG, addSshConfigView));
 
         final ActionView.Builder createVmView = new ActionView.Builder("Virtual Machine")
-            .title(s -> Optional.ofNullable(s).map(r -> title("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_VM, new Action<>(createVmView));
+        am.registerAction(GROUP_CREATE_VM, new Action<>(GROUP_CREATE_VM, createVmView));
     }
 
     @Override

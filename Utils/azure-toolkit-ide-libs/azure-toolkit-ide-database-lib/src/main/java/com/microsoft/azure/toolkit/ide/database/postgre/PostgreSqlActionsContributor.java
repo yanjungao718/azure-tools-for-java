@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class PostgreSqlActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -29,22 +29,22 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     public static final String SERVER_ACTIONS = "actions.postgre.server";
 
     private static final String NAME_PREFIX = "PostgreSQL Server - %s";
-    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.postgre.open_database_tool");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_POSTGRE = Action.Id.of("action.postgre.create_server.group");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("postgre.open_database_tool");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_POSTGRE = Action.Id.of("group.create_postgre_server");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("postgre.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof PostgreSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
-        final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("PostgreSQL server")
-            .title(s -> Optional.ofNullable(s).map(r -> title("postgre.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("postgre.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_POSTGRE, new Action<>(createServerView));
+        am.registerAction(GROUP_CREATE_POSTGRE, new Action<>(GROUP_CREATE_POSTGRE, createServerView));
     }
 
     public int getOrder() {

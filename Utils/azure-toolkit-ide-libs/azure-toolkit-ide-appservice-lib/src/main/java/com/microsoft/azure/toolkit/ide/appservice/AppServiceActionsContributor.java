@@ -20,45 +20,45 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class AppServiceActionsContributor implements IActionsContributor {
 
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_IN_BROWSER = Action.Id.of("actions.appservice.open_in_browser");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> START_STREAM_LOG = Action.Id.of("actions.appservice.stream_log.start");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> STOP_STREAM_LOG = Action.Id.of("actions.appservice.stream_log.stop");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> SSH_INTO_WEBAPP = Action.Id.of("actions.webapp.ssh");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> PROFILE_FLIGHT_RECORD = Action.Id.of("actions.webapp.flight_record");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_IN_BROWSER = Action.Id.of("appservice.open_in_browser");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> START_STREAM_LOG = Action.Id.of("appservice.start_stream_log");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> STOP_STREAM_LOG = Action.Id.of("appservice.stop_stream_log");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> SSH_INTO_WEBAPP = Action.Id.of("webapp.ssh");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> PROFILE_FLIGHT_RECORD = Action.Id.of("webapp.flight_record");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceAppBase<?, ?, ?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
             .handle("https://" + appService.getHostName());
         final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser",  AzureIcons.Action.PORTAL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.open_browser")).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.open_browser")).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase);
-        am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));
+        am.registerAction(OPEN_IN_BROWSER, new Action<>(OPEN_IN_BROWSER, openInBrowser, openInBrowserView));
 
         final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", AzureIcons.Action.LOG.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(START_STREAM_LOG, new Action<>(startStreamLogView));
+        am.registerAction(START_STREAM_LOG, new Action<>(START_STREAM_LOG, startStreamLogView));
 
         final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", AzureIcons.Action.LOG.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(STOP_STREAM_LOG, new Action<>(stopStreamLogView));
+        am.registerAction(STOP_STREAM_LOG, new Action<>(STOP_STREAM_LOG, stopStreamLogView));
 
         final ActionView.Builder profileFlightRecorderView = new ActionView.Builder("Profile Flight Recorder")
-            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.profile_flight_recorder.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.profile_flight_recorder.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(PROFILE_FLIGHT_RECORD, new Action<>(profileFlightRecorderView));
+        am.registerAction(PROFILE_FLIGHT_RECORD, new Action<>(PROFILE_FLIGHT_RECORD, profileFlightRecorderView));
 
         final ActionView.Builder sshView = new ActionView.Builder("SSH into Web App")
-            .title(s -> Optional.ofNullable(s).map(r -> title("webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(SSH_INTO_WEBAPP, new Action<>(sshView));
+        am.registerAction(SSH_INTO_WEBAPP, new Action<>(SSH_INTO_WEBAPP, sshView));
     }
 
     @Override

@@ -27,7 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeploymentDraft;
@@ -120,7 +120,7 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
     protected void doOKAction() {
         final String deploymentName = deploymentNameTextField.getText();
         final StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-        final AzureString title = AzureOperationBundle.title("arm.create_deployment.deployment", deploymentName);
+        final AzureString title = OperationBundle.description("arm.create_deployment.deployment", deploymentName);
         final Subscription subs = (Subscription) subscriptionCombobox.getSelectedItem();
         final String parametersPath = parametersTextField.getText();
         final String templatePath = templateTextField.getText();
