@@ -9,11 +9,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import com.microsoft.azuretools.authmanage.interact.INotification;
+public class Notification {
 
-public class Notification implements INotification {
-
-    @Override
     public void deliver(String subject, String message) {
         Shell shell = getShell();
         Display.getDefault().asyncExec(new Runnable() {
