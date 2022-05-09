@@ -170,6 +170,10 @@ public final class AzureIcons {
         public static final AzureIcon GENERIC_RESOURCE = AzureIcon.builder().iconPath("/icons/Microsoft.Resources/resourceGroups/genericResources/default.svg").build();
     }
 
+    public static final class ApplicationInsights {
+        public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.Insights/default.svg").build();
+    }
+
     public static final class Connector {
         public static final AzureIcon CONNECT = AzureIcon.builder().iconPath("/icons/connector/connect.svg").build();
     }
