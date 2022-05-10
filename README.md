@@ -1,4 +1,7 @@
-# Azure Toolkits for Java [![Travis CI](https://travis-ci.org/Microsoft/azure-tools-for-java.svg?branch=develop)](https://travis-ci.org/Microsoft/azure-tools-for-java)
+# Azure Toolkits for Java 
+[![Build Status](https://dev.azure.com/mseng/VSJava/_apis/build/status/Azure-Toolkits-For-Java/Azure-Toolkits-for-Java-CI-IntelliJ-Java11?branchName=develop)](https://dev.azure.com/mseng/VSJava/_build/latest?definitionId=10753&branchName=develop)
+[![Gitter](https://badges.gitter.im/Microsoft/azure-tools-for-java.svg)](https://gitter.im/Microsoft/azure-tools-for-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Azure Toolkits for Java is an open-source project that helps Java developers easily create, develop, configure, test, and deploy highly available and scalable Java web apps to Azure from [Eclipse](https://docs.microsoft.com/en-us/java/azure/eclipse/azure-toolkit-for-eclipse) and [IntelliJ IDEA](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij) on all supported platforms. 
 * [Azure Toolkit for IntelliJ IDEA](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij)
 * [Azure Toolkit for Eclipse](https://docs.microsoft.com/en-us/java/azure/eclipse/azure-toolkit-for-eclipse)
