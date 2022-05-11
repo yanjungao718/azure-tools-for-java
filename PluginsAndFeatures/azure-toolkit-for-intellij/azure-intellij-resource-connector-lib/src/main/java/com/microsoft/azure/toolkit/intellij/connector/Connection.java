@@ -12,6 +12,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IJavaAgentRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -95,6 +96,9 @@ public class Connection<R, C> {
                 settings.putAll(this.env);
                 webAppConfiguration.setApplicationSettings(settings);
             }
+            if (resource.getDefinition() instanceof IJavaAgentSupported && configuration instanceof IJavaAgentRunConfiguration) {
+                ((IJavaAgentRunConfiguration) configuration).setJavaAgent(((IJavaAgentSupported) resource.getDefinition()).getJavaAgent());
+            }
             return true;
         } catch (final Throwable e) {
             AzureMessager.getMessager().error(e);
@@ -110,6 +114,10 @@ public class Connection<R, C> {
             for (final Map.Entry<String, String> entry : this.env.entrySet()) {
                 parameters.addEnv(entry.getKey(), entry.getValue());
             }
+        }
+        if (this.resource.getDefinition() instanceof IJavaAgentSupported) {
+            parameters.getVMParametersList()
+                    .add(String.format("-javaagent:%s", ((IJavaAgentSupported) this.resource.getDefinition()).getJavaAgent().getAbsolutePath()));
         }
     }
 
