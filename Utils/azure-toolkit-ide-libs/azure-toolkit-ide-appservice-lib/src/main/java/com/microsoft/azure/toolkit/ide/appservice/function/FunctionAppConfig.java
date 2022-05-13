@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
@@ -21,8 +20,9 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -55,8 +55,8 @@ public class FunctionAppConfig extends AppServiceConfig {
         final String appName = StringUtils.isEmpty(name) ? String.format("app-%s", DATE_FORMAT.format(new Date())) :
                 String.format("app-%s-%s", name, DATE_FORMAT.format(new Date()));
         final Subscription subscription = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions().stream().findFirst().orElse(null);
-        final DraftResourceGroup group = new DraftResourceGroup(subscription, StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
-        group.setSubscription(subscription);
+        final String rgName = StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH);
+        final ResourceGroupDraft group = Azure.az(AzureResources.class).groups(subscription.getId()).create(rgName, rgName);
         final Region region = AppServiceConfig.getDefaultRegion();
         final String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
         final DraftServicePlan plan = new DraftServicePlan(subscription, planName, region, FunctionAppConfig.DEFAULT_RUNTIME.getOperatingSystem(),
@@ -112,7 +112,7 @@ public class FunctionAppConfig extends AppServiceConfig {
             .resourceId(functionApp.getId())
             .servicePlan(AppServicePlanEntity.builder().id(plan.getId()).name(plan.getName()).resourceGroup(plan.getResourceGroupName()).build())
             .subscription(Subscription.builder().id(functionApp.getSubscriptionId()).build())
-            .resourceGroup(ResourceGroup.builder().name(functionApp.getResourceGroupName()).build())
+            .resourceGroup(functionApp.getResourceGroup())
                 .runtime(functionApp.getRuntime())
                 .region(functionApp.getRegion())
                 .appSettings(functionApp.getAppSettings())

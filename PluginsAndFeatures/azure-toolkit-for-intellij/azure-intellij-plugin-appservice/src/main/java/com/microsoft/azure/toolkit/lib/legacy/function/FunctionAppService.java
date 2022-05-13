@@ -21,9 +21,9 @@ import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -75,10 +75,10 @@ public class FunctionAppService {
 
     public FunctionAppConfig getFunctionAppConfigFromExistingFunction(@Nonnull final FunctionApp functionApp) {
         return FunctionAppConfig.builder()
-                .resourceId(functionApp.id())
-                .name(functionApp.name())
+                .resourceId(functionApp.getId())
+                .name(functionApp.getName())
                 .region(functionApp.getRegion())
-                .resourceGroup(ResourceGroup.builder().name(functionApp.getResourceGroupName()).build())
+                .resourceGroup(functionApp.getResourceGroup())
                 .subscription(functionApp.getSubscription())
                 .servicePlan(AppServicePlanEntity.builder().id(functionApp.getAppServicePlan().getId()).build()).build();
     }

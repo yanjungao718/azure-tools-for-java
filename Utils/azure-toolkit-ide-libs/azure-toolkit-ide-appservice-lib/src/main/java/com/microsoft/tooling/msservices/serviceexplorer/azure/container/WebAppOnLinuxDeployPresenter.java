@@ -92,7 +92,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param sid Subscription Id.
      */
     public void onLoadResourceGroup(String sid) {
-        Observable.fromCallable(() -> az(AzureResources.class).groups(sid).list().stream().map(ResourceGroup::toPojo).collect(Collectors.toList()))
+        Observable.fromCallable(() -> az(AzureResources.class).groups(sid).list())
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(resourceGroupList -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {

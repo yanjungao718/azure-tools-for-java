@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.database.mysql.creation;
 
 import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -15,6 +14,8 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -97,11 +98,13 @@ public class MySqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
         final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
         final Subscription subscription = selectedSubscriptions.get(0);
-        final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
         final Region region = Region.US_EAST;
+        final String rgName = "rs-" + defaultNameSuffix;
+        final ResourceGroupDraft rg = az(AzureResources.class).groups(subscription.getId()).create(rgName, rgName);
+        rg.setRegion(region);
         final DatabaseServerConfig config = new DatabaseServerConfig("mysql-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
-        config.setResourceGroup(resourceGroup);
+        config.setResourceGroup(rg);
         config.setAdminName(StringUtils.EMPTY);
         config.setAdminPassword(StringUtils.EMPTY);
         config.setVersion("5.7"); // default to 11

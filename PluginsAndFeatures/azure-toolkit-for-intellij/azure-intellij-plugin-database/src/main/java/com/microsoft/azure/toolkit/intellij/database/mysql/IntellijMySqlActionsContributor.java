@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.intellij.database.mysql.creation.CreateMySqlA
 import com.microsoft.azure.toolkit.intellij.database.mysql.creation.MySqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
@@ -29,7 +28,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -59,12 +57,7 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
             final DatabaseServerConfig config = MySqlCreationDialog.getDefaultConfig();
             config.setSubscription(r.getSubscription());
             config.setRegion(r.getRegion());
-            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .subscriptionId(r.getSubscriptionId())
-                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                .build());
+            config.setResourceGroup(r);
             CreateMySqlAction.create(e.getProject(), config);
         };
         am.registerHandler(MySqlActionsContributor.GROUP_CREATE_MYSQL, (r, e) -> true, groupCreateMySqlHandler);

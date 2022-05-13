@@ -9,7 +9,6 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
-import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
@@ -43,7 +42,6 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
@@ -167,12 +165,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 FunctionAppConfig.getFunctionAppDefaultConfig().toBuilder()
                     .subscription(r.getSubscription())
                     .region(r.getRegion())
-                    .resourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                        .id(r.getId())
-                        .name(r.getName())
-                        .subscriptionId(r.getSubscriptionId())
-                        .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                        .build()).build());
+                    .resourceGroup(r).build());
         am.registerHandler(FunctionAppActionsContributor.GROUP_CREATE_FUNCTION, (r, e) -> true, groupCreateFunctionHandler);
 
         final BiConsumer<ResourceGroup, AnActionEvent> groupCreateWebAppHandler =
@@ -180,12 +173,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 WebAppConfig.getWebAppDefaultConfig().toBuilder()
                     .subscription(r.getSubscription())
                     .region(r.getRegion())
-                    .resourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                        .id(r.getId())
-                        .name(r.getName())
-                        .subscriptionId(r.getSubscriptionId())
-                        .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                        .build()).build());
+                    .resourceGroup(r).build());
         am.registerHandler(WebAppActionsContributor.GROUP_CREATE_WEBAPP, (r, e) -> true, groupCreateWebAppHandler);
     }
 

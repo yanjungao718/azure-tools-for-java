@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountRes
 import com.microsoft.azure.toolkit.intellij.storage.creation.CreateStorageAccountAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -23,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -45,12 +43,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
             final StorageAccountConfig config = StorageAccountConfig.builder().build();
             config.setSubscription(r.getSubscription());
             config.setRegion(r.getRegion());
-            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .subscriptionId(r.getSubscriptionId())
-                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                .build());
+            config.setResourceGroup(r);
             CreateStorageAccountAction.create(e.getProject(), config);
         };
         am.registerHandler(StorageActionsContributor.GROUP_CREATE_ACCOUNT, (r, e) -> true, groupCreateAccountHandler);

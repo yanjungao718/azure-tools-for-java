@@ -25,10 +25,9 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
-import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
@@ -169,9 +168,7 @@ public class AzureWebAppMvpModel {
 
     // todo: Move duplicated codes to azure common library
     private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
-        final com.microsoft.azure.toolkit.lib.resource.ResourceGroup group =
-                Azure.az(AzureResources.class).groups(subscriptionId).getOrDraft(resourceGroup, resourceGroup);
-        return group.isDraftForCreating() ? new CreateResourceGroupTask(subscriptionId, resourceGroup, Region.fromName(region)).execute() : group.toPojo();
+        return Azure.az(AzureResources.class).groups(subscriptionId).createResourceGroupIfNotExist(resourceGroup, Region.fromName(region));
     }
 
     private AppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
