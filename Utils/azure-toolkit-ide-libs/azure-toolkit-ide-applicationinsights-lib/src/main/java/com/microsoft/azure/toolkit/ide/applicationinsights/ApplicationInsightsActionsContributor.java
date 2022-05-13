@@ -103,11 +103,12 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 ApplicationInsightsActionsContributor.CONNECTION_STRING,
                 ApplicationInsightsActionsContributor.INSTRUMENTATION_KEY,
                 "---",
+                ResourceCommonActionsContributor.CONNECT,
+                ResourceCommonActionsContributor.DELETE,
+                "---",
                 ApplicationInsightsActionsContributor.APPLICATION_MAP,
                 ApplicationInsightsActionsContributor.LIVE_METRICS,
-                ApplicationInsightsActionsContributor.TRANSACTION_SEARCH,
-                "---",
-                ResourceCommonActionsContributor.DELETE
+                ApplicationInsightsActionsContributor.TRANSACTION_SEARCH
         );
         am.registerGroup(INSIGHT_ACTIONS, accountActionGroup);
 
