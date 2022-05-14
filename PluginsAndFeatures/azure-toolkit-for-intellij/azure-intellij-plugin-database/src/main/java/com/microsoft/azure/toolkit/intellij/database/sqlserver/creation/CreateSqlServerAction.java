@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.database.sqlserver.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -45,7 +44,7 @@ public class CreateSqlServerAction {
         final AzureString title = OperationBundle.description("sqlserver.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
-            if (rg instanceof Draft) {
+            if (Objects.nonNull(rg) && rg.isDraftForCreating()) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
             final MicrosoftSqlServerDraft draft = Azure.az(AzureSqlServer.class).servers(config.getSubscription().getId())

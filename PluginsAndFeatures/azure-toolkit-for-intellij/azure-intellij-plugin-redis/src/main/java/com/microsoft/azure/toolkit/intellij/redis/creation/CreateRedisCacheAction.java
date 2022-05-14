@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.redis.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -47,7 +46,7 @@ public class CreateRedisCacheAction {
         final AzureString title = OperationBundle.description("redis.create_redis.redis", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
-            if (rg instanceof Draft) {
+            if (rg.isDraftForCreating()) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
             final RedisCacheModule caches = Azure.az(AzureRedis.class).caches(config.getSubscription().getId());

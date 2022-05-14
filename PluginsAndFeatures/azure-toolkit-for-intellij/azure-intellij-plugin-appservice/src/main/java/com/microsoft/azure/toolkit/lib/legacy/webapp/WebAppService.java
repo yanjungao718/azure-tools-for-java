@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.lib.legacy.webapp;
 
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
@@ -62,13 +61,13 @@ public class WebAppService {
         final WebAppSettingModel settings = new WebAppSettingModel();
         settings.setSubscriptionId(config.getSubscription().getId());
         // creating if id is empty
-        settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().getId()));
+        settings.setCreatingResGrp(config.getResourceGroup().isDraftForCreating() || StringUtils.isEmpty(config.getResourceGroup().getId()));
         settings.setResourceGroup(config.getResourceGroup().getName());
         settings.setWebAppName(config.getName());
         settings.setRegion(config.getRegion().getName());
         settings.saveRuntime(config.getRuntime());
         // creating if id is empty
-        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().getId()));
+        settings.setCreatingAppServicePlan(config.getServicePlan().isDraftForCreating() || StringUtils.isEmpty(config.getServicePlan().getId()));
         if (settings.isCreatingAppServicePlan()) {
             settings.setAppServicePlanName(config.getServicePlan().getName());
         } else {

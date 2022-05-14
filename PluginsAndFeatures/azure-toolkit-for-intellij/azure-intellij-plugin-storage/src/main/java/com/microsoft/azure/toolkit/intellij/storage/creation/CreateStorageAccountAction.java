@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.storage.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -50,7 +49,7 @@ public class CreateStorageAccountAction {
     public static StorageAccount createStorageAccount(StorageAccountConfig config) {
         final String subscriptionId = config.getSubscription().getId();
         OperationContext.action().setTelemetryProperty("subscriptionId", subscriptionId);
-        if (config.getResourceGroup() instanceof Draft) { // create resource group if necessary.
+        if (config.getResourceGroup().isDraftForCreating()) { // create resource group if necessary.
             final ResourceGroup newResourceGroup = Azure.az(AzureResources.class)
                 .groups(subscriptionId).createResourceGroupIfNotExist(config.getResourceGroup().getName(), config.getRegion());
             config.setResourceGroup(newResourceGroup);

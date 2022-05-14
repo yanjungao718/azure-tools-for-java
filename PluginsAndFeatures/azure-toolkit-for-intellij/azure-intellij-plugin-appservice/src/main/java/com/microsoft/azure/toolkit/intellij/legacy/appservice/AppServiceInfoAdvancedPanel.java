@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.platform.RuntimeComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan.ServicePlanComboBox;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -83,7 +83,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         final String name = this.textName.getValue();
         final Runtime runtime = this.selectorRuntime.getValue();
         final Region region = this.selectorRegion.getValue();
-        final AppServicePlanEntity servicePlan = this.selectorServicePlan.getValue();
+        final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final T config = supplier.get();
@@ -212,7 +212,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            final AppServicePlanEntity plan = (AppServicePlanEntity) e.getItem();
+            final AppServicePlan plan = (AppServicePlan) e.getItem();
             if (plan == null || plan.getPricingTier() == null) {
                 return;
             }
