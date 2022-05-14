@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
@@ -37,7 +36,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
         }
 
         final ResourceGroup entity = (ResourceGroup) item;
-        if (item instanceof Draft) {
+        if (entity.isDraftForCreating()) {
             return "(New) " + entity.getName();
         }
         return entity.getName();
