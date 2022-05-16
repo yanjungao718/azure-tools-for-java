@@ -41,7 +41,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
                 .title(s -> Optional.ofNullable(s).map(r -> description("applicationinsights.instrumentation_key.applicationinsights",
                         ((ApplicationInsight) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ApplicationInsight);
+                .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
         am.registerAction(CONNECTION_STRING, new Action<>(CONNECTION_STRING, copyConnectionStringConsumer, copyConnectionStringView));
 
         final Consumer<ApplicationInsight> copyInstrumentationKeyConsumer = insight -> {
@@ -51,7 +51,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         final ActionView.Builder copyInstrumentationKeyView = new ActionView.Builder("Copy Instrumentation Key")
                 .title(s -> Optional.ofNullable(s).map(r -> description("applicationinsights.instrumentation_key.applicationinsights",
                         ((ApplicationInsight) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ApplicationInsight);
+                .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
         am.registerAction(INSTRUMENTATION_KEY, new Action<>(INSTRUMENTATION_KEY, copyInstrumentationKeyConsumer, copyInstrumentationKeyView));
 
         final Consumer<ApplicationInsight> applicationMapConsumer = insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
@@ -59,7 +59,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         final ActionView.Builder applicationMapView = new ActionView.Builder("Open Application Map")
                 .title(s -> Optional.ofNullable(s).map(r -> description("applicationinsights.application_map.applicationinsights",
                         ((ApplicationInsight) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ApplicationInsight);
+                .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
         am.registerAction(APPLICATION_MAP, new Action<>(APPLICATION_MAP, applicationMapConsumer, applicationMapView));
 
         final Consumer<ApplicationInsight> liveMetricsConsumer = insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
@@ -67,7 +67,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         final ActionView.Builder liveMetricsView = new ActionView.Builder("Open Live Metrics")
                 .title(s -> Optional.ofNullable(s).map(r -> description("applicationinsights.live_metrics.applicationinsights",
                         ((ApplicationInsight) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ApplicationInsight);
+                .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
         am.registerAction(LIVE_METRICS, new Action<>(LIVE_METRICS, liveMetricsConsumer, liveMetricsView));
 
         final Consumer<ApplicationInsight> transactionSearchConsumer = insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
@@ -75,7 +75,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         final ActionView.Builder transactionSearchView = new ActionView.Builder("Open Transaction Search")
                 .title(s -> Optional.ofNullable(s).map(r -> description("applicationinsights.transaction_search.applicationinsights",
                         ((ApplicationInsight) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ApplicationInsight);
+                .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
         am.registerAction(TRANSACTION_SEARCH, new Action<>(TRANSACTION_SEARCH, transactionSearchConsumer, transactionSearchView));
 
         final ActionView.Builder createInsightView = new ActionView.Builder("Application Insight")
