@@ -23,9 +23,11 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resource<ApplicationInsight>> {
     private JPanel pnlRoot;
@@ -81,7 +83,8 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
                 .ofNullable(this.subscriptionComboBox)
                 .map(AzureComboBox::getValue)
                 .map(Subscription::getId)
-                .map(id -> Azure.az(AzureApplicationInsights.class).applicationInsights(id).list())
+                .map(id -> Azure.az(AzureApplicationInsights.class).applicationInsights(id).list()
+                        .stream().sorted((first, second) -> StringUtils.compare(first.getName(), second.getName())).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         this.insightComboBox = new AzureComboBoxSimple<>(loader) {
             @Override
