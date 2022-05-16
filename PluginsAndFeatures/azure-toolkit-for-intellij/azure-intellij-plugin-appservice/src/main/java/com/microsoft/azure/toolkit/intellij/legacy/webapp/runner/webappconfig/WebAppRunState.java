@@ -124,7 +124,8 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
 
     private void updateAppServiceVMOptions(AppServiceAppBase<?, ?, ?> deployTarget, String targetPath) {
         final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
-        final String javaOptsParameter = deployTarget.getRuntime().getWebContainer() == WebContainer.JAVA_SE ? JAVA_OPTS : CATALINA_OPTS;
+        final WebContainer webContainer = deployTarget.getRuntime().getWebContainer();
+        final String javaOptsParameter = (webContainer == WebContainer.JAVA_SE || webContainer == WebContainer.JBOSS_7) ? JAVA_OPTS : CATALINA_OPTS;
         final String javaOpts = applicationSettings.get(javaOptsParameter);
         final String javaAgentValue = String.format("-javaagent:%s", targetPath);
         if (StringUtils.contains(javaOpts, javaAgentValue)) {

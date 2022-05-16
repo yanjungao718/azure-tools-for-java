@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationInsightDraft> implements AzureForm<ApplicationInsightDraft> {
     private static final String DIALOG_TITLE = "Create Application Insight";
@@ -41,7 +42,16 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
     public ApplicationInsightsCreationDialog(Project project) {
         super(project);
         init();
-        initListeners();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.subscriptionComboBox.setRequired(true);
+        this.resourceGroupComboBox.setRequired(true);
+        this.txtName.setRequired(true);
+        this.regionComboBox.setRequired(true);
+        this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
     }
 
     @Override
@@ -65,8 +75,9 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         final ResourceGroup resourceGroup = resourceGroupComboBox.getValue();
         final String name = txtName.getValue();
         final Region region = regionComboBox.getValue();
+        final String resourceGroupName = Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(null);
         final ApplicationInsightDraft result =
-                Azure.az(AzureApplicationInsights.class).forSubscription(subscription.getId()).applicationInsights().create(name, resourceGroup.getName());
+                Azure.az(AzureApplicationInsights.class).forSubscription(subscription.getId()).applicationInsights().create(name, resourceGroupName);
         result.setRegion(region);
         return result;
     }
@@ -86,10 +97,6 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         return Arrays.asList(subscriptionComboBox, resourceGroupComboBox, txtName, regionComboBox);
     }
 
-    protected void initListeners() {
-        this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
-    }
-
     private void onSubscriptionChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             final Subscription subscription = (Subscription) e.getItem();
@@ -104,7 +111,6 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
 
     private void createUIComponents() {
         this.txtName = new InsightNameTextField();
-        // todo: @hanli get support region from library
         this.regionComboBox = new RegionComboBox() {
             protected List<? extends Region> loadItems() {
                 if (Objects.nonNull(this.subscription)) {
