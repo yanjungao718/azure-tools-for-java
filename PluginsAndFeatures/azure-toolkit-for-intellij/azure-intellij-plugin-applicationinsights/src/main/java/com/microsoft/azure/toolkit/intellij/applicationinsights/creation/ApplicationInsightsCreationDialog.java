@@ -17,8 +17,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +75,7 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         this.txtName.setValue(resourceName);
         this.subscriptionComboBox.setValue(data.getSubscription());
         // todo: @hanli support draft resource group
-        this.resourceGroupComboBox.setValue(data.getResourceGroup().toPojo());
+        this.resourceGroupComboBox.setValue(data.getResourceGroup());
         this.regionComboBox.setValue(data.getRegion());
     }
 
