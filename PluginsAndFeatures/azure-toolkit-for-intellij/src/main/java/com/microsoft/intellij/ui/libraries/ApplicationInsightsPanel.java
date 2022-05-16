@@ -7,7 +7,6 @@ package com.microsoft.intellij.ui.libraries;
 
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
@@ -19,24 +18,26 @@ import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContaine
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.ui.AppInsightsMngmtPanel;
 import com.microsoft.intellij.ui.AzureAbstractPanel;
-import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -44,10 +45,9 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     private static final String DISPLAY_NAME = "Choose Application Insights Telemetry key";
     private JPanel rootPanel;
     private JCheckBox aiCheck;
-    private JXHyperlink lnkInstrumentationKey;
     private JXHyperlink lnkAIPrivacy;
     private JLabel lblInstrumentationKey;
-    private JComboBox comboInstrumentation;
+    private AzureComboBox<ApplicationInsight> comboInstrumentation;
 
     private AILibraryHandler handler;
     private Module module;
@@ -61,7 +61,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     }
 
     private void init() {
-        lnkInstrumentationKey.setAction(createApplicationInsightsAction());
+        comboInstrumentation.refreshItems();
         initLink(lnkAIPrivacy, message("lnkAIPrivacy"), message("AIPrivacy"));
         try {
             String webXmlFilePath = String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, webxmlPath);
@@ -75,7 +75,6 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
         } catch (Exception ex) {
             AzurePlugin.log(message("aiParseError"));
         }
-        setData();
         if (isEdit()) {
             populateData();
         } else {
@@ -88,57 +87,11 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
         aiCheck.addActionListener(createAiCheckListener());
     }
 
-    private Action createApplicationInsightsAction() {
-        return new ApplicationInsightsAction();
-    }
-
-    private class ApplicationInsightsAction extends AbstractAction {
-        private ApplicationInsightsAction() {
-            super("Application Insights...");
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String oldName = (String) comboInstrumentation.getSelectedItem();
-            Project project = module.getProject();
-            AppInsightsMngmtPanel appInsightsMngmtPanel = new AppInsightsMngmtPanel(project);
-            appInsightsMngmtPanel.init();
-            final DefaultDialogWrapper dialog = new DefaultDialogWrapper(project, appInsightsMngmtPanel);
-            dialog.show();
-            setData();
-            List<String> list = Arrays.asList(ApplicationInsightsResourceRegistry.getResourcesNamesToDisplay());
-            // check user has not removed all entries from registry.
-            if (list.size() > 0) {
-                if (dialog.isOK()) {
-                    String newKey = dialog.getSelectedValue();
-                    if (newKey != null && ApplicationInsightsResourceRegistry.getResourceIndexAsPerKey(newKey) >= 0) {
-                        comboInstrumentation.setSelectedItem(list.get(ApplicationInsightsResourceRegistry.getResourceIndexAsPerKey(newKey)));
-                    } else if (list.contains(oldName)) {
-                        comboInstrumentation.setSelectedItem(oldName);
-                    }
-                } else if (list.contains(oldName)) {
-                    // if oldName is not present then its already set to first entry via setData method
-                    comboInstrumentation.setSelectedItem(oldName);
-                }
-            }
-        }
-    }
-
-    private void setData() {
-        AppInsightsMngmtPanel.refreshDataForDialog();
-        comboInstrumentation.removeAllItems();
-        String[] array = ApplicationInsightsResourceRegistry.getResourcesNamesToDisplay();
-        if (array.length > 0) {
-            comboInstrumentation.setModel(new DefaultComboBoxModel(array));
-            comboInstrumentation.setSelectedItem(array[0]);
-        }
-    }
-
     private ActionListener createAiCheckListener() {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (aiCheck.isSelected()) {
-                    setData();
                     populateData();
                 } else {
                     if (comboInstrumentation.getItemCount() > 0) {
@@ -168,7 +121,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     @Override
     public boolean doOKAction() {
         // validate
-        if (aiCheck.isSelected() && (comboInstrumentation.getSelectedItem() == null || ((String) comboInstrumentation.getSelectedItem()).isEmpty())) {
+        if (aiCheck.isSelected() && (comboInstrumentation.getSelectedItem() == null)) {
             PluginUtil.displayErrorDialog(message("aiErrTitle"), message("aiInstrumentationKeyNull"));
             return false;
         } else if (!aiCheck.isSelected()) {
@@ -198,21 +151,8 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     private void populateData() {
         aiCheck.setSelected(true);
         String keyFromFile = handler.getAIInstrumentationKey();
-        int index = -1;
-        if (keyFromFile != null && !keyFromFile.isEmpty()) {
-            index = ApplicationInsightsResourceRegistry.getResourceIndexAsPerKey(keyFromFile);
-        }
-        if (index >= 0) {
-            String[] array = ApplicationInsightsResourceRegistry.getResourcesNamesToDisplay();
-            comboInstrumentation.setSelectedItem(array[index]);
-        } else {
-            /*
-             * User has specifically removed single entry or all entries from the registry,
-             * which we added during eclipse start up
-             * hence it does not make sense to put an entry again. Just leave as it is.
-             * If registry is non empty, then value will be set to 1st entry.
-             * If registry is empty, then combo box will be empty.
-             */
+        if (StringUtils.isNotEmpty(keyFromFile)) {
+            comboInstrumentation.setValue(new AzureComboBox.ItemReference<>(item -> StringUtils.equals(item.getInstrumentationKey(), keyFromFile)));
         }
         comboInstrumentation.setEnabled(true);
     }
@@ -262,13 +202,8 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
             String path = createFileIfNotExists(message("aiConfFileName"), message("aiConfRelDirLoc"), message("aiConfResFileLoc"));
             handler.parseAIConfXmlPath(path);
         }
-        String key = (String) comboInstrumentation.getSelectedItem();
-        if (key != null && key.length() > 0) {
-            int index = comboInstrumentation.getSelectedIndex();
-            if (index >= 0) {
-                handler.setAIInstrumentationKey(ApplicationInsightsResourceRegistry.getKeyAsPerIndex(index));
-            }
-        }
+        String key = comboInstrumentation.getValue().getInstrumentationKey();
+        handler.setAIInstrumentationKey(key);
     }
 
     private void configureAzureSDK() {
@@ -332,5 +267,23 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     @Override
     public String getHelpTopic() {
         return null;
+    }
+
+    private void createUIComponents() {
+        this.comboInstrumentation = new AzureComboBox<>() {
+            @Nonnull
+            @Override
+            protected List<? extends ApplicationInsight> loadItems() throws Exception {
+                return Azure.az(AzureApplicationInsights.class).list().stream()
+                        .flatMap((m) -> m.getApplicationInsightsModule().list().stream())
+                        .sorted((first, second) -> StringUtils.compare(first.getName(), second.getName()))
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            protected String getItemText(Object item) {
+                return item instanceof ApplicationInsight ? ((ApplicationInsight) item).getName() : super.getItemText(item);
+            }
+        };
     }
 }
