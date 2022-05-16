@@ -25,8 +25,8 @@ import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionAndResou
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -107,7 +107,7 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
         result.setRuntime(Runtime.getRuntime(runtime.os(), runtime.webContainer(), runtime.javaVersion()));
         result.setServicePlan(appServicePlanPanel.getServicePlan());
         result.setPricingTier(Optional.ofNullable(appServicePlanPanel.getServicePlan())
-                .map(AppServicePlanEntity::getPricingTier).orElse(null));
+                .map(AppServicePlan::getPricingTier).orElse(null));
         result.setAppSettings(new HashMap<>());
         return result;
     }

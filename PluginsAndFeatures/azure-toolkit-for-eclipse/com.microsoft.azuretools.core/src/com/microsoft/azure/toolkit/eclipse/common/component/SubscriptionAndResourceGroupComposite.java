@@ -15,8 +15,8 @@ import org.eclipse.swt.widgets.Label;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 public class SubscriptionAndResourceGroupComposite extends Composite {
     public static final int MINIMUM_LABEL_WIDTH = 95;
