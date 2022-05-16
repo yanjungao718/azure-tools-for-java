@@ -12,27 +12,30 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.azure.toolkit.ide.appservice.model.AzureArtifactConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.DeploymentSlotConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppDeployRunConfigurationModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
-import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.IntelliJWebAppSettingModel;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanModule;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -95,37 +98,39 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             return;
         }
         final Subscription subscription = Subscription.builder().id(configuration.getSubscriptionId()).build();
-        final ResourceGroup resourceGroup = configuration.isCreatingResGrp() ?
-                new DraftResourceGroup(subscription, configuration.getResourceGroup()) :
-                ResourceGroup.builder().name(configuration.getResourceGroup()).build();
+        final Region region = StringUtils.isEmpty(configuration.getRegion()) ? null : Region.fromName(configuration.getRegion());
+        final String rgName = configuration.getResourceGroup();
+        final ResourceGroupModule rgModule = Azure.az(AzureResources.class).groups(subscription.getId());
+        final ResourceGroup resourceGroup = configuration.isCreatingResGrp() ? rgModule.create(rgName, rgName) : rgModule.get(rgName, rgName);
         final PricingTier pricingTier = StringUtils.isEmpty(configuration.getPricing()) ? null : PricingTier.fromString(configuration.getPricing());
         final Runtime runtime = Optional.ofNullable(configuration.getModel()).map(IntelliJWebAppSettingModel::getRuntime).orElse(null);
         final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
-        final Region region = StringUtils.isEmpty(configuration.getRegion()) ? null : Region.fromName(configuration.getRegion());
-        final AppServicePlanEntity servicePlanEntity = configuration.isCreatingAppServicePlan() ?
-                new DraftServicePlan(subscription, configuration.getAppServicePlanName(), region, operatingSystem, pricingTier) :
-                AppServicePlanEntity.builder().id(configuration.getAppServicePlanId()).build();
+        final AppServicePlanModule planModule = Azure.az(AzureAppService.class).plans(subscription.getId());
+        final AppServicePlan plan = configuration.isCreatingAppServicePlan() ?
+            ((AppServicePlanDraft) planModule.create(configuration.getAppServicePlanName(), rgName))
+                .setRegion(region).setOperatingSystem(operatingSystem).setPricingTier(pricingTier) :
+            planModule.get(configuration.getAppServicePlanId());
         final DeploymentSlotConfig slotConfig = !configuration.isDeployToSlot() ? null :
-                StringUtils.equals(configuration.getSlotName(), Constants.CREATE_NEW_SLOT) ?
-                        DeploymentSlotConfig.builder().newCreate(true).name(configuration.getNewSlotName())
-                                .configurationSource(configuration.getNewSlotConfigurationSource()).build() :
-                        DeploymentSlotConfig.builder().newCreate(false).name(configuration.getSlotName()).build();
+            StringUtils.equals(configuration.getSlotName(), Constants.CREATE_NEW_SLOT) ?
+                DeploymentSlotConfig.builder().newCreate(true).name(configuration.getNewSlotName())
+                    .configurationSource(configuration.getNewSlotConfigurationSource()).build() :
+                DeploymentSlotConfig.builder().newCreate(false).name(configuration.getSlotName()).build();
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
-                .enableApplicationLog(configuration.getModel().isEnableApplicationLog())
-                .applicationLogLevel(LogLevel.fromString(configuration.getModel().getApplicationLogLevel()))
-                .enableDetailedErrorMessage(configuration.getModel().isEnableDetailedErrorMessage())
-                .enableFailedRequestTracing(configuration.getModel().isEnableFailedRequestTracing())
-                .enableWebServerLogging(configuration.getModel().isEnableWebServerLogging())
-                .webServerRetentionPeriod(configuration.getModel().getWebServerRetentionPeriod())
-                .webServerLogQuota(configuration.getModel().getWebServerLogQuota()).build();
+            .enableApplicationLog(configuration.getModel().isEnableApplicationLog())
+            .applicationLogLevel(LogLevel.fromString(configuration.getModel().getApplicationLogLevel()))
+            .enableDetailedErrorMessage(configuration.getModel().isEnableDetailedErrorMessage())
+            .enableFailedRequestTracing(configuration.getModel().isEnableFailedRequestTracing())
+            .enableWebServerLogging(configuration.getModel().isEnableWebServerLogging())
+            .webServerRetentionPeriod(configuration.getModel().getWebServerRetentionPeriod())
+            .webServerLogQuota(configuration.getModel().getWebServerLogQuota()).build();
         final MonitorConfig monitorConfig = MonitorConfig.builder().diagnosticConfig(diagnosticConfig).build();
         final WebAppConfig.WebAppConfigBuilder<?, ?> configBuilder = WebAppConfig.builder().name(configuration.getWebAppName())
-                .resourceId(configuration.getWebAppId())
-                .subscription(subscription)
-                .resourceGroup(resourceGroup)
-                .runtime(runtime)
-                .servicePlan(servicePlanEntity)
-                .deploymentSlot(slotConfig);
+            .resourceId(configuration.getWebAppId())
+            .subscription(subscription)
+            .resourceGroup(resourceGroup)
+            .runtime(runtime)
+            .servicePlan(plan)
+            .deploymentSlot(slotConfig);
         final WebAppConfig webAppConfig = !configuration.isCreatingNew() ? configBuilder.build() :
                 configBuilder.region(region).pricingTier(pricingTier).monitorConfig(monitorConfig).build();
         final AzureArtifactConfig artifactConfig = AzureArtifactConfig.builder()
@@ -152,10 +157,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             configuration.setCreatingNew(StringUtils.isEmpty(webAppConfig.getResourceId()));
             if (configuration.isCreatingNew()) {
                 configuration.setRegion(webAppConfig.getRegion().getName());
-                configuration.setCreatingResGrp(webAppConfig.getResourceGroup() instanceof Draft);
-                configuration.setCreatingAppServicePlan(webAppConfig.getServicePlan() instanceof Draft);
+                configuration.setCreatingResGrp(webAppConfig.getResourceGroup().isDraftForCreating());
+                configuration.setCreatingAppServicePlan(webAppConfig.getServicePlan().isDraftForCreating());
                 configuration.setPricing(Optional.ofNullable(webAppConfig.getServicePlan())
-                        .map(AppServicePlanEntity::getPricingTier).map(PricingTier::getSize).orElse(null));
+                    .map(AppServicePlan::getPricingTier).map(PricingTier::getSize).orElse(null));
                 configuration.setAppServicePlanName(webAppConfig.getServicePlan().getName());
                 configuration.setAppServicePlanId(webAppConfig.getServicePlan().getId());
                 Optional.ofNullable(webAppConfig.getMonitorConfig()).map(MonitorConfig::getDiagnosticConfig).ifPresent(diagnosticConfig -> {
@@ -170,7 +175,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             } else {
                 configuration.setCreatingResGrp(false);
                 configuration.setCreatingAppServicePlan(false);
-                configuration.setAppServicePlanId(Optional.ofNullable(webAppConfig.getServicePlan()).map(AppServicePlanEntity::getId).orElse(null));
+                configuration.setAppServicePlanId(Optional.ofNullable(webAppConfig.getServicePlan()).map(AppServicePlan::getId).orElse(null));
             }
             configuration.setDeployToSlot(webAppConfig.getDeploymentSlot() != null);
             Optional.ofNullable(webAppConfig.getDeploymentSlot()).ifPresent(slot -> {

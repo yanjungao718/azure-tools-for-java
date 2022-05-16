@@ -6,17 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.database.postgre.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServerDraft;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 
 import javax.annotation.Nonnull;
@@ -45,7 +44,7 @@ public class CreatePostgreSqlAction {
         final AzureString title = OperationBundle.description("postgre.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
-            if (rg instanceof Draft) {
+            if (Objects.nonNull(rg) && rg.isDraftForCreating()) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
             final PostgreSqlServerDraft draft = Azure.az(AzurePostgreSql.class).servers(config.getSubscription().getId())

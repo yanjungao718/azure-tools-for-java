@@ -6,12 +6,14 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan;
 
 import com.intellij.ui.components.JBLabel;
+import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
+import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -27,8 +29,8 @@ import java.util.List;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
-        implements AzureForm<DraftServicePlan> {
+public class ServicePlanCreationDialog extends AzureDialog<AppServicePlanDraft>
+    implements AzureForm<AppServicePlanDraft> {
     private Subscription subscription;
     private OperatingSystem os;
     private Region region;
@@ -46,7 +48,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         this.os = os;
         this.region = region;
         this.init();
-        this.textName.setValidator(this::validateName);
+        this.textName.addValidator(this::validateName);
         this.comboBoxPricingTier.setPricingTierList(pricingTierList);
         this.comboBoxPricingTier.setDefaultPricingTier(defaultPricingTier);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, message("appService.servicePlan.description"));
@@ -64,7 +66,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
-    public AzureForm<DraftServicePlan> getForm() {
+    public AzureForm<AppServicePlanDraft> getForm() {
         return this;
     }
 
@@ -80,19 +82,18 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
-    public DraftServicePlan getValue() {
-        return new DraftServicePlan(this.subscription,
-               this.textName.getValue(),
-               this.region,
-               this.os,
-               this.comboBoxPricingTier.getValue());
+    public AppServicePlanDraft getValue() {
+        final AppServicePlanDraft draft = Azure.az(AzureAppService.class).plans(this.subscription.getId())
+            .create(this.textName.getValue(), "");
+        draft.setRegion(this.region).setOperatingSystem(this.os).setPricingTier(this.comboBoxPricingTier.getValue());
+        return draft;
     }
 
     @Override
-    public void setValue(final DraftServicePlan data) {
+    public void setValue(final AppServicePlanDraft data) {
         this.subscription = data.getSubscription();
         this.os = data.getOperatingSystem();
-        this.region = Region.fromName(data.getRegion());
+        this.region = data.getRegion();
         this.textName.setValue(data.getName());
     }
 

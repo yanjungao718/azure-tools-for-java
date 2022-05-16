@@ -8,7 +8,7 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
@@ -25,10 +25,9 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
-import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
@@ -76,15 +75,15 @@ public class AzureWebAppMvpModel {
     )
     public WebApp createAzureWebAppWithPrivateRegistryImage(@Nonnull WebAppOnLinuxDeployModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
-        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+        final AppServicePlanConfig servicePlanConfig = new AppServicePlanConfig()
             .id(model.getAppServicePlanId())
             .subscriptionId(model.getSubscriptionId())
-            .name(model.getAppServicePlanName())
-            .resourceGroup(model.getResourceGroupName())
-            .region(model.getLocationName())
-            .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
-            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
-        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+            .servicePlanName(model.getAppServicePlanName())
+            .servicePlanResourceGroup(model.getResourceGroupName())
+            .region(Region.fromName(model.getLocationName()))
+            .os(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
+            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize()));
+        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanConfig);
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         // todo: support start up file in docker configuration
         final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
@@ -143,15 +142,15 @@ public class AzureWebAppMvpModel {
     )
     public WebApp createWebAppFromSettingModel(@Nonnull WebAppSettingModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
-        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+        final AppServicePlanConfig servicePlanConfig = new AppServicePlanConfig()
             .id(model.getAppServicePlanId())
             .subscriptionId(model.getSubscriptionId())
-            .name(model.getAppServicePlanName())
-            .resourceGroup(model.getResourceGroup())
-            .region(model.getRegion())
-            .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
-            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing())).build();
-        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+            .servicePlanName(model.getAppServicePlanName())
+            .servicePlanResourceGroup(model.getResourceGroup())
+            .region(Region.fromName(model.getRegion()))
+            .os(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
+            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing()));
+        final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanConfig);
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
             .enableApplicationLog(model.isEnableApplicationLog())
             .applicationLogLevel(com.microsoft.azure.toolkit.lib.appservice.model.LogLevel.fromString(model.getApplicationLogLevel()))
@@ -169,25 +168,23 @@ public class AzureWebAppMvpModel {
 
     // todo: Move duplicated codes to azure common library
     private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
-        final com.microsoft.azure.toolkit.lib.resource.ResourceGroup group =
-                Azure.az(AzureResources.class).groups(subscriptionId).getOrDraft(resourceGroup, resourceGroup);
-        return group.isDraftForCreating() ? new CreateResourceGroupTask(subscriptionId, resourceGroup, Region.fromName(region)).execute() : group.toPojo();
+        return Azure.az(AzureResources.class).groups(subscriptionId).createResourceGroupIfNotExist(resourceGroup, Region.fromName(region));
     }
 
-    private AppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
-        final String rg = Optional.ofNullable(servicePlanEntity.getResourceGroup()).filter(StringUtils::isNotBlank)
-            .orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).resourceGroupName());
-        final String name = Optional.ofNullable(servicePlanEntity.getName()).filter(StringUtils::isNotBlank)
-            .orElseGet(() -> ResourceId.fromString(servicePlanEntity.getId()).name());
+    private AppServicePlan getOrCreateAppServicePlan(AppServicePlanConfig servicePlanConfig) {
+        final String rg = Optional.ofNullable(servicePlanConfig.servicePlanResourceGroup()).filter(StringUtils::isNotBlank)
+            .orElseGet(() -> ResourceId.fromString(servicePlanConfig.id()).resourceGroupName());
+        final String name = Optional.ofNullable(servicePlanConfig.servicePlanName()).filter(StringUtils::isNotBlank)
+            .orElseGet(() -> ResourceId.fromString(servicePlanConfig.id()).name());
         final AzureAppService az = Azure.az(AzureAppService.class);
-        final AppServicePlan appServicePlan = az.plans(servicePlanEntity.getSubscriptionId()).getOrDraft(name, rg);
+        final AppServicePlan appServicePlan = az.plans(servicePlanConfig.subscriptionId()).getOrDraft(name, rg);
         if (appServicePlan.exists()) {
             return appServicePlan;
         }
         final AppServicePlanDraft draft = (AppServicePlanDraft) appServicePlan;
-        draft.setRegion(Region.fromName(servicePlanEntity.getRegion()));
-        draft.setPricingTier(servicePlanEntity.getPricingTier());
-        draft.setOperatingSystem(servicePlanEntity.getOperatingSystem());
+        draft.setRegion(servicePlanConfig.region());
+        draft.setPricingTier(servicePlanConfig.pricingTier());
+        draft.setOperatingSystem(servicePlanConfig.os());
         return draft.createIfNotExist();
     }
 
