@@ -25,7 +25,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationInsightDraft> implements AzureForm<ApplicationInsightDraft> {
     private static final String DIALOG_TITLE = "Create Application Insight";
@@ -103,5 +105,13 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
     private void createUIComponents() {
         this.txtName = new InsightNameTextField();
         // todo: @hanli get support region from library
+        this.regionComboBox = new RegionComboBox() {
+            protected List<? extends Region> loadItems() {
+                if (Objects.nonNull(this.subscription)) {
+                    return Azure.az(AzureApplicationInsights.class).forSubscription(subscription.getId()).listSupportedRegions();
+                }
+                return Collections.emptyList();
+            }
+        };
     }
 }
