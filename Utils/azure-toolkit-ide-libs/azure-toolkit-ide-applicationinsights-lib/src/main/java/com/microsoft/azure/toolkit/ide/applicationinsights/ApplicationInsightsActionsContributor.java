@@ -78,7 +78,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
         am.registerAction(TRANSACTION_SEARCH, new Action<>(TRANSACTION_SEARCH, transactionSearchConsumer, transactionSearchView));
 
-        final ActionView.Builder createInsightView = new ActionView.Builder("Application Insight")
+        final ActionView.Builder createInsightView = new ActionView.Builder("Application Insights")
                 .title(s -> Optional.ofNullable(s).map(r ->
                         description("group.create_applicationinsights.group", ((ResourceGroup) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ResourceGroup);
