@@ -42,7 +42,7 @@ public class ApplicationInsightsNodeProvider implements IExplorerNodeProvider {
             final AzureApplicationInsights service = (AzureApplicationInsights) data;
             return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                     .actions(ApplicationInsightsActionsContributor.SERVICE_ACTIONS)
-                    .addChildren(this::listVirtualMachines, (insight, insightModule) -> this.createNode(insight, insightModule, manager));
+                    .addChildren(this::listApplicationInsights, (insight, insightModule) -> this.createNode(insight, insightModule, manager));
         } else if (data instanceof ApplicationInsight) {
             final ApplicationInsight insight = (ApplicationInsight) data;
             return new Node<>(insight).view(new AzureResourceLabelView<>(insight))
@@ -52,7 +52,7 @@ public class ApplicationInsightsNodeProvider implements IExplorerNodeProvider {
         return null;
     }
 
-    private List<ApplicationInsight> listVirtualMachines(final AzureApplicationInsights azureApplicationInsights) {
+    private List<ApplicationInsight> listApplicationInsights(final AzureApplicationInsights azureApplicationInsights) {
         return azureApplicationInsights.list().stream().flatMap(m -> m.getApplicationInsightsModule().list().stream()).collect(Collectors.toList());
     }
 }
