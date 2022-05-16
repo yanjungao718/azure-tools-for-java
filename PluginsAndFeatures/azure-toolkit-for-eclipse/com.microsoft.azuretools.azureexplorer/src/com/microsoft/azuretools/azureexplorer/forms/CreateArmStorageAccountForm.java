@@ -3,16 +3,16 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-
 package com.microsoft.azuretools.azureexplorer.forms;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupModule;
 import com.microsoft.azure.toolkit.lib.storage.model.AccessTier;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.forms.common.DraftResourceGroup;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -317,9 +316,9 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
                 getData(subscriptionComboBox.getText());
         }
         final boolean isNewResourceGroup = createNewRadioButton.getSelection();
-        final ResourceGroup resourceGroup = isNewResourceGroup ? new DraftResourceGroup(subscription, resourceGrpField.getText()) : Azure.az(AzureResources.class)
-            .groups(subscription.getId())
-            .get(resourceGrpCombo.getText(), resourceGrpCombo.getText()).toPojo();
+        final ResourceGroupModule rgModule = Azure.az(AzureResources.class).groups(subscription.getId());
+        final ResourceGroup resourceGroup = isNewResourceGroup ? rgModule.create(resourceGrpField.getText(), resourceGrpField.getText()) :
+            rgModule.get(resourceGrpCombo.getText(), resourceGrpCombo.getText());
         Region region = ((Region) regionComboBox.getData(regionComboBox.getText()));
         Kind kind = (Kind) kindCombo.getData(kindCombo.getText());
         String name = nameTextField.getText();
@@ -518,8 +517,8 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
 
     public void fillGroups() {
         final Subscription subs = (Subscription) subscriptionComboBox.getData(subscriptionComboBox.getText());
-        List<com.microsoft.azure.toolkit.lib.resource.ResourceGroup> resourceGroups = Azure.az(AzureResources.class).groups(subs.getId()).list();
-        List<String> sortedGroups = resourceGroups.stream().map(com.microsoft.azure.toolkit.lib.resource.ResourceGroup::getName).sorted().collect(Collectors.toList());
+        List<ResourceGroup> resourceGroups = Azure.az(AzureResources.class).groups(subs.getId()).list();
+        List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
         AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {

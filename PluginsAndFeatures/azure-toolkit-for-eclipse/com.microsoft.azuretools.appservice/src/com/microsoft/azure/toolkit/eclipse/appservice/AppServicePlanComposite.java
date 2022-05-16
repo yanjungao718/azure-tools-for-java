@@ -16,8 +16,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.microsoft.azure.toolkit.eclipse.appservice.serviceplan.ServicePlanCombobox;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 public class AppServicePlanComposite extends Composite {
@@ -70,7 +70,7 @@ public class AppServicePlanComposite extends Composite {
 
     }
 
-    public AppServicePlanEntity getServicePlan() {
+    public AppServicePlan getServicePlan() {
         return cbServicePlan.getValue();
     }
 

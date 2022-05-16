@@ -28,8 +28,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -173,7 +173,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
                 items.stream().filter(i -> ((AzureComboBox.ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
             } else if (items.contains(this.value)) {
                 this.viewer.setSelectedItem(this.value);
-            } else if (this.value instanceof Draft) {
+            } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
                 // todo: unify model for custom created resource
                 this.viewer.add((T) this.value);
                 this.viewer.setSelectedItem(this.value);
