@@ -71,10 +71,10 @@
                icon="icons/PublishWebApp_16.png"></image>
     </extension>
     <extension point="com.microsoft.azure.toolkit.eclipse.explorer">
-        <explorerContributor
-                implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor"></explorerContributor>
-        <explorerContributor
-                implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppExplorerContributor"></explorerContributor>
+        <explorerNodeProvider
+                implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider"></explorerNodeProvider>
+        <explorerNodeProvider
+                implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppNodeProvider"></explorerNodeProvider>
     </extension>
     <extension point="com.microsoft.azure.toolkit.eclipse.actions">
         <actionContributor
