@@ -27,6 +27,8 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.AzureFunction
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.helper.GradleFunctionsModuleBuilderHelper;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.helper.MavenFunctionsModuleBuilderHelper;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -78,6 +80,8 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
     @Nullable
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.create_function_module", type = AzureOperation.Type.ACTION)
     public ModuleWizardStep modifySettingsStep(@NotNull final SettingsStep settingsStep) {
         if (settingsStep instanceof ProjectSettingsStep) {
             final ProjectSettingsStep projectSettingsStep = (ProjectSettingsStep) settingsStep;
@@ -104,6 +108,8 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.setup_function_module", type = AzureOperation.Type.ACTION)
     public void setupRootModel(@NotNull final ModifiableRootModel rootModel) throws ConfigurationException {
         final VirtualFile root = createAndGetContentEntry();
         rootModel.addContentEntry(root);
@@ -125,6 +131,8 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.setup_function_module", type = AzureOperation.Type.ACTION)
     protected void setupModule(Module module) throws ConfigurationException {
         super.setupModule(module);
         final Project project = module.getProject();

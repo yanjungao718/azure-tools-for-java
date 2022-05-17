@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
@@ -102,6 +103,7 @@ public class ResourceConnectionExplorer extends Tree {
         public static final String ID = "Azure Resource Connector";
 
         @Override
+        @ExceptionNotification
         @AzureOperation(name = "connector.initialize_explorer", type = AzureOperation.Type.SERVICE)
         public void createToolWindowContent(final Project project, final com.intellij.openapi.wm.ToolWindow toolWindow) {
             final ToolWindow myToolWindow = new ToolWindow(project);
@@ -113,6 +115,8 @@ public class ResourceConnectionExplorer extends Tree {
 
     public static class ToolWindowOpener implements ConnectionTopics.ConnectionChanged {
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.open_explorer", type = AzureOperation.Type.ACTION)
         public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
             final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowFactory.ID);
             assert toolWindow != null;

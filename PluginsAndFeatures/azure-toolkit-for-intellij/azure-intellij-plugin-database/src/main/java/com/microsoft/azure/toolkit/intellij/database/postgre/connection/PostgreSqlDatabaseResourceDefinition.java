@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourcePanel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlDatabase;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
@@ -47,6 +48,7 @@ public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDef
 
     public static class RegisterActivity extends PreloadingActivity {
         @Override
+        @ExceptionNotification
         public void preload(@Nonnull ProgressIndicator progressIndicator) {
             ResourceManager.registerDefinition(PostgreSqlDatabaseResourceDefinition.INSTANCE);
         }

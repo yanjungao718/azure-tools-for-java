@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -52,6 +53,7 @@ public class RegisterApplicationAction extends AnAction {
     }
 
     @Override
+    @ExceptionNotification
     @AzureOperation(name = "aad.register_application", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();

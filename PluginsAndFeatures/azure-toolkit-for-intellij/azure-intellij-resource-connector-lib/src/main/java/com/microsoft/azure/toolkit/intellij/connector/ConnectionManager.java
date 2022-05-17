@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.EqualsAndHashCode;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
@@ -108,6 +110,8 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         }
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.persist_resource_connections", type = AzureOperation.Type.ACTION)
         public Element getState() {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
             for (final Connection<?, ?> connection : this.connections) {
@@ -120,6 +124,8 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         }
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.load_resource_connections", type = AzureOperation.Type.ACTION)
         public void loadState(@NotNull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
                 final String name = connectionEle.getAttributeValue(FIELD_TYPE);
