@@ -228,5 +228,6 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         webAppSettingModel.setWebAppName("");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
+        webAppSettingModel.setAppServicePlanResourceGroupName("");
     }
 }

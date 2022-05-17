@@ -46,6 +46,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -165,7 +166,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 FunctionAppConfig.getFunctionAppDefaultConfig().toBuilder()
                     .subscription(r.getSubscription())
                     .region(r.getRegion())
-                    .resourceGroup(r).build());
+                    .resourceGroup(ResourceGroupConfig.fromResource(r)).build());
         am.registerHandler(FunctionAppActionsContributor.GROUP_CREATE_FUNCTION, (r, e) -> true, groupCreateFunctionHandler);
 
         final BiConsumer<ResourceGroup, AnActionEvent> groupCreateWebAppHandler =
@@ -173,7 +174,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 WebAppConfig.getWebAppDefaultConfig().toBuilder()
                     .subscription(r.getSubscription())
                     .region(r.getRegion())
-                    .resourceGroup(r).build());
+                    .resourceGroup(ResourceGroupConfig.fromResource(r)).build());
         am.registerHandler(WebAppActionsContributor.GROUP_CREATE_WEBAPP, (r, e) -> true, groupCreateWebAppHandler);
     }
 
