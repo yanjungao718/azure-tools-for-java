@@ -10,19 +10,15 @@ import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfi
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -53,26 +49,29 @@ public class FunctionAppConfig extends AppServiceConfig {
 
     public static FunctionAppConfig getFunctionAppDefaultConfig(final String name) {
         final String appName = StringUtils.isEmpty(name) ? String.format("app-%s", DATE_FORMAT.format(new Date())) :
-                String.format("app-%s-%s", name, DATE_FORMAT.format(new Date()));
+            String.format("app-%s-%s", name, DATE_FORMAT.format(new Date()));
         final Subscription subscription = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions().stream().findFirst().orElse(null);
         final String rgName = StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH);
-        final ResourceGroupDraft group = Azure.az(AzureResources.class).groups(subscription.getId()).create(rgName, rgName);
         final Region region = AppServiceConfig.getDefaultRegion();
+        final ResourceGroupConfig group = ResourceGroupConfig.builder().subscriptionId(subscription.getId()).name(rgName).region(region).build();
         final String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
-        final AppServicePlanDraft plan = Azure.az(AzureAppService.class).plans(subscription.getId()).create(planName, rgName);
-        plan.setRegion(region);
-        plan.setOperatingSystem(FunctionAppConfig.DEFAULT_RUNTIME.getOperatingSystem());
-        plan.setPricingTier(PricingTier.CONSUMPTION);
+        final AppServicePlanConfig plan = AppServicePlanConfig.builder()
+            .subscriptionId(subscription.getId())
+            .resourceGroupName(rgName)
+            .name(planName)
+            .region(region)
+            .os(FunctionAppConfig.DEFAULT_RUNTIME.getOperatingSystem())
+            .pricingTier(PricingTier.CONSUMPTION).build();
         final ApplicationInsightsConfig insightsConfig = ApplicationInsightsConfig.builder().name(appName).newCreate(true).build();
         final MonitorConfig monitorConfig = MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build();
         return FunctionAppConfig.builder()
-                .subscription(subscription)
-                .resourceGroup(group)
-                .name(appName)
-                .servicePlan(plan)
-                .runtime(FunctionAppConfig.DEFAULT_RUNTIME)
-                .pricingTier(PricingTier.CONSUMPTION)
-                .monitorConfig(monitorConfig)
+            .subscription(subscription)
+            .resourceGroup(group)
+            .name(appName)
+            .servicePlan(plan)
+            .runtime(FunctionAppConfig.DEFAULT_RUNTIME)
+            .pricingTier(PricingTier.CONSUMPTION)
+            .monitorConfig(monitorConfig)
                 .region(region).build();
     }
 
@@ -82,13 +81,13 @@ public class FunctionAppConfig extends AppServiceConfig {
         result.appName(config.getName());
         result.resourceGroup(config.getResourceGroupName());
         result.subscriptionId(config.getSubscriptionId());
-        result.pricingTier(Optional.ofNullable(config.getServicePlan()).map(AppServicePlan::getPricingTier).orElseGet(config::getPricingTier));
+        result.pricingTier(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getPricingTier).orElseGet(config::getPricingTier));
         result.region(config.getRegion());
-        result.servicePlanName(Optional.ofNullable(config.getServicePlan()).map(AppServicePlan::getName).orElse(null));
+        result.servicePlanName(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getName).orElse(null));
         result.servicePlanResourceGroup(Optional.ofNullable(config.getServicePlan())
-                .map(AppServicePlan::getResourceGroupName).orElseGet(config::getResourceGroupName));
+            .map(AppServicePlanConfig::getResourceGroupName).orElseGet(config::getResourceGroupName));
         Optional.ofNullable(config.getRuntime()).ifPresent(runtime -> result.runtime(
-                new RuntimeConfig().os(runtime.getOperatingSystem()).javaVersion(runtime.getJavaVersion()).webContainer(runtime.getWebContainer())));
+            new RuntimeConfig().os(runtime.getOperatingSystem()).javaVersion(runtime.getJavaVersion()).webContainer(runtime.getWebContainer())));
         final ApplicationInsightsConfig insightsConfig = Optional.ofNullable(config.getMonitorConfig()).map(MonitorConfig::getApplicationInsightsConfig).orElse(null);
         result.disableAppInsights(insightsConfig == null);
         if (insightsConfig != null) {
@@ -105,19 +104,5 @@ public class FunctionAppConfig extends AppServiceConfig {
         result.put("runtime", Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).map(OperatingSystem::getValue).orElse(StringUtils.EMPTY));
         result.put("functionJavaVersion", Optional.ofNullable(runtime).map(Runtime::getJavaVersion).map(JavaVersion::getValue).orElse(StringUtils.EMPTY));
         return result;
-    }
-
-    public static FunctionAppConfig fromRemote(FunctionApp functionApp) {
-        final AppServicePlan plan = functionApp.getAppServicePlan();
-        return FunctionAppConfig.builder()
-            .name(functionApp.getName())
-            .resourceId(functionApp.getId())
-            .servicePlan(plan)
-            .subscription(Subscription.builder().id(functionApp.getSubscriptionId()).build())
-            .resourceGroup(functionApp.getResourceGroup())
-                .runtime(functionApp.getRuntime())
-                .region(functionApp.getRegion())
-                .appSettings(functionApp.getAppSettings())
-                .build();
     }
 }

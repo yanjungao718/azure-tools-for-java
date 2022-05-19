@@ -6,6 +6,7 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.azure.resourcemanager.appservice.models.LogLevel;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -42,7 +43,7 @@ public class WebAppSettingModel {
     private String resourceGroup = "";
     private boolean creatingAppServicePlan = false;
     private String appServicePlanName = "";
-    private String appServicePlanId = "";
+    private String appServicePlanResourceGroupName = "";
     private String region = "";
     private String pricing = "";
 
@@ -104,5 +105,4 @@ public class WebAppSettingModel {
         }
         return result;
     }
-
 }

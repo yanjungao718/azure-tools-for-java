@@ -18,14 +18,16 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.platform.RuntimeComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan.ServicePlanComboBox;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
@@ -88,11 +91,11 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
         final T config = supplier.get();
         config.setSubscription(subscription);
-        config.setResourceGroup(resourceGroup);
+        config.setResourceGroup(ResourceGroupConfig.fromResource(resourceGroup));
         config.setName(name);
         config.setRuntime(runtime);
         config.setRegion(region);
-        config.setServicePlan(servicePlan);
+        config.setServicePlan(AppServicePlanConfig.fromResource(servicePlan));
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
             final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
@@ -104,11 +107,11 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     @Override
     public void setValue(final T config) {
         this.selectorSubscription.setValue(config.getSubscription());
-        this.selectorGroup.setValue(config.getResourceGroup());
+        this.selectorGroup.setValue(Optional.ofNullable(config.getResourceGroup()).map(ResourceGroupConfig::toResource).orElse(null));
         this.textName.setValue(config.getName());
         this.selectorRuntime.setValue(config.getRuntime());
         this.selectorRegion.setValue(config.getRegion());
-        this.selectorServicePlan.setValue(config.getServicePlan());
+        this.selectorServicePlan.setValue(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::toResource).orElse(null));
     }
 
     @Override
