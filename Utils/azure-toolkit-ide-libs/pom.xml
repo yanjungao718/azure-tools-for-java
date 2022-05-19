@@ -44,6 +44,7 @@
         <module>azure-toolkit-ide-appservice-lib</module>
         <module>azure-toolkit-ide-database-lib</module>
         <module>azure-toolkit-ide-arm-lib</module>
+        <module>azure-toolkit-ide-applicationinsights-lib</module>
     </modules>
 
     <properties>
@@ -102,7 +103,17 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-applicationinsights-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-ide-containerregistry-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-applicationinsights-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
