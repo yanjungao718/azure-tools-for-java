@@ -52,6 +52,7 @@ public class SqlServerNodeProvider implements IExplorerNodeProvider {
             return new Node<>(server)
                 .view(new AzureResourceLabelView<>(server))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
+                .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(SqlServerActionsContributor.SERVER_ACTIONS);
         }
         return null;

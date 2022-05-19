@@ -53,6 +53,7 @@ public class RedisNodeProvider implements IExplorerNodeProvider {
             return new Node<>(redis)
                 .view(new AzureResourceLabelView<>(redis))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
+                .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(RedisActionsContributor.REDIS_ACTIONS);
         }
         return null;

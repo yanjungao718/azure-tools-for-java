@@ -53,6 +53,7 @@ public class DeploymentNodeProvider implements IExplorerNodeProvider {
             return new Node<>(deployment)
                 .view(new AzureResourceLabelView<>(deployment))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
+                .doubleClickAction(DeploymentActionsContributor.EDIT)
                 .actions(DeploymentActionsContributor.DEPLOYMENT_ACTIONS);
         }
         return null;

@@ -63,6 +63,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
             return new Node<>(app)
                 .view(new AzureResourceLabelView<>(app))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
+                .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(SpringCloudActionsContributor.APP_ACTIONS);
         }
         return null;
