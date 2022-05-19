@@ -52,6 +52,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
             return new Node<>(account)
                 .view(new AzureResourceLabelView<>(account))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
+                .doubleClickAction(StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER)
                 .actions(StorageActionsContributor.ACCOUNT_ACTIONS);
         }
         return null;

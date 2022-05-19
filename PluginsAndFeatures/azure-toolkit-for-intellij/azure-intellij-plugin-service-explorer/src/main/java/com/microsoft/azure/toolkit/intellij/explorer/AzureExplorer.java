@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
@@ -119,8 +120,9 @@ public class AzureExplorer extends Tree {
         }
 
         private static <U> U createGenericNode(Object o) {
-            final var view = new GenericResourceLabelView<>(((AbstractAzResource<?, ?, ?>) o));
-            return (U) new Node<>(o).view(view)
+            final var view = new GenericResourceLabelView<>((AbstractAzResource<?, ?, ?>) o);
+            return (U) new Node<>((AbstractAzResource<?, ?, ?>) o).view(view)
+                .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                 .actions(GenericResourceActionsContributor.GENERIC_RESOURCE_ACTIONS);
         }
     }
