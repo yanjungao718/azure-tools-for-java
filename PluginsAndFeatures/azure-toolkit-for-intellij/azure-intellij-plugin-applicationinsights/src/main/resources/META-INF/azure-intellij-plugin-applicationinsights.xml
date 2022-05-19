@@ -4,4 +4,7 @@
         <actions implementation="com.microsoft.azure.toolkit.ide.applicationinsights.ApplicationInsightsActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.applicationinsights.IntelliJApplicationInsightsActionsContributor"/>
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.applicationinsights.connection.ApplicationInsightsResourceDefinition$RegisterActivity"/>
+    </extensions>
 </idea-plugin>

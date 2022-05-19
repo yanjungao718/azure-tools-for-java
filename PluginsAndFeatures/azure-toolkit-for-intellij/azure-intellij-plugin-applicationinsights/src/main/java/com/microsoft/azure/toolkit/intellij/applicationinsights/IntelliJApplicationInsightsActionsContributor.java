@@ -9,12 +9,18 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.applicationinsights.ApplicationInsightsActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.intellij.applicationinsights.connection.ApplicationInsightsResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.creation.CreateApplicationInsightsAction;
+import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightDraft;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.function.BiConsumer;
@@ -34,6 +40,15 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
             CreateApplicationInsightsAction.create(e.getProject(), draft);
         };
         am.registerHandler(ApplicationInsightsActionsContributor.GROUP_CREATE_APPLICATIONINSIGHT, (r, e) -> true, groupCreateAccountHandler);
+
+        final BiPredicate<AzResource<?, ?, ?>, AnActionEvent> connectCondition = (r, e) -> r instanceof ApplicationInsight;
+        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> connectHandler = (r, e) -> AzureTaskManager.getInstance().runLater(
+                OperationBundle.description("resource.connect_resource.resource", r.getName()), () -> {
+                    final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
+                    dialog.setResource(new AzureServiceResource<>(((ApplicationInsight) r), ApplicationInsightsResourceDefinition.INSTANCE));
+                    dialog.show();
+                });
+        am.registerHandler(ResourceCommonActionsContributor.CONNECT, connectCondition, connectHandler);
     }
 
     @Override

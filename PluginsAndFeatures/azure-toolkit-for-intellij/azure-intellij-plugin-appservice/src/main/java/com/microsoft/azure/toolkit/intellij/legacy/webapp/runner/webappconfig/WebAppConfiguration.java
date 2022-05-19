@@ -19,6 +19,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IJavaAgentRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
@@ -33,6 +34,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +42,7 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel>
-        implements IWebAppRunConfiguration {
+        implements IWebAppRunConfiguration, IJavaAgentRunConfiguration {
 
     // const string
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
@@ -52,6 +54,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Getter
     @Setter
     private Map<String, String> applicationSettings;
+
+    private File javaAgent;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -350,5 +354,15 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void saveRuntime(final Runtime runtime) {
         webAppSettingModel.saveRuntime(runtime);
+    }
+
+    @Nullable
+    public File getJavaAgent() {
+        return javaAgent;
+    }
+
+    @Override
+    public void setJavaAgent(@Nullable File javaAgent) {
+        this.javaAgent = javaAgent;
     }
 }
