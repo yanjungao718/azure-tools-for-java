@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -47,6 +48,7 @@ public class LibraryConfigurationAction extends AzureAnAction {
         return TelemetryConstants.LIB_CONFIGURATION;
     }
 
+    @ExceptionNotification
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         boolean isMavenOrNull = (module == null || MavenUtils.isMavenProject(module.getProject()));

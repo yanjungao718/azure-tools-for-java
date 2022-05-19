@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourcePanel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlDatabase;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
@@ -47,6 +48,7 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
 
     public static class RegisterActivity extends PreloadingActivity {
         @Override
+        @ExceptionNotification
         public void preload(@Nonnull ProgressIndicator progressIndicator) {
             ResourceManager.registerDefinition(MySqlDatabaseResourceDefinition.INSTANCE);
         }

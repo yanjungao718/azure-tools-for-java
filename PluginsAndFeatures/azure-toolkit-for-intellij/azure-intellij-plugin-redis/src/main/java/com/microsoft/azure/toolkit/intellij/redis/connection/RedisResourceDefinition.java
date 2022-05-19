@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import lombok.Getter;
@@ -74,6 +75,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
 
     public static class RegisterActivity extends PreloadingActivity {
         @Override
+        @ExceptionNotification
         public void preload(@NotNull ProgressIndicator progressIndicator) {
             ResourceManager.registerDefinition(INSTANCE);
         }

@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
@@ -41,6 +42,7 @@ public class ShowApplicationTemplatesAction extends AnAction {
     }
 
     @Override
+    @ExceptionNotification
     @AzureOperation(name = "aad.show_application_templates", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();

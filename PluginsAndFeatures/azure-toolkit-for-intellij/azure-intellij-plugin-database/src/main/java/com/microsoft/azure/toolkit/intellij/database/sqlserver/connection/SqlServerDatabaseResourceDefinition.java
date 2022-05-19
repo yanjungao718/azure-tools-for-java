@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourcePanel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlDatabase;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
@@ -47,6 +48,7 @@ public class SqlServerDatabaseResourceDefinition extends SqlDatabaseResourceDefi
 
     public static class RegisterActivity extends PreloadingActivity {
         @Override
+        @ExceptionNotification
         public void preload(@Nonnull ProgressIndicator progressIndicator) {
             ResourceManager.registerDefinition(SqlServerDatabaseResourceDefinition.INSTANCE);
         }

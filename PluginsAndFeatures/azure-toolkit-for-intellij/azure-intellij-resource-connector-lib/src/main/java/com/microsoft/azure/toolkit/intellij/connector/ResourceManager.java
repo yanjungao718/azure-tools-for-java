@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -74,6 +76,8 @@ public interface ResourceManager {
         }
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.persist_connection_resources", type = AzureOperation.Type.ACTION)
         public Element getState() {
             final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
             this.resources.forEach(resource -> {
@@ -91,6 +95,8 @@ public interface ResourceManager {
         }
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.load_connection_resources", type = AzureOperation.Type.ACTION)
         public void loadState(@Nonnull Element resourcesEle) {
             for (final Element resourceEle : resourcesEle.getChildren()) {
                 final String resDef = resourceEle.getAttributeValue(ATTR_DEFINITION);
