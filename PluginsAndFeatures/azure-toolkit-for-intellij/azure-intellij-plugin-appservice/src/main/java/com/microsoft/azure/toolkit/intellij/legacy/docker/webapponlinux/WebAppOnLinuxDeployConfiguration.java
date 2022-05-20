@@ -14,9 +14,9 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -148,17 +148,9 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
             if (StringUtils.isEmpty(deployModel.getResourceGroupName())) {
                 throw new ConfigurationException(MISSING_RESOURCE_GROUP);
             }
-
-            if (deployModel.isCreatingNewAppServicePlan()) {
-                if (StringUtils.isEmpty(deployModel.getAppServicePlanName())) {
-                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
-                }
-            } else {
-                if (StringUtils.isEmpty(deployModel.getAppServicePlanId())) {
-                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
-                }
+            if (StringUtils.isEmpty(deployModel.getAppServicePlanName())) {
+                throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
             }
-
         } else {
             if (StringUtils.isEmpty(deployModel.getWebAppId())) {
                 throw new ConfigurationException(MISSING_WEB_APP);
@@ -263,20 +255,20 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         deployModel.setCreatingNewAppServicePlan(creatingNewAppServicePlan);
     }
 
-    public String getAppServicePlanId() {
-        return deployModel.getAppServicePlanId();
-    }
-
-    public void setAppServicePlanId(String appServicePlanId) {
-        deployModel.setAppServicePlanId(appServicePlanId);
-    }
-
     public String getAppServicePlanName() {
         return deployModel.getAppServicePlanName();
     }
 
     public void setAppServicePlanName(String appServicePlanName) {
         deployModel.setAppServicePlanName(appServicePlanName);
+    }
+
+    public void setAppServicePlanResourceGroupName(String rgName) {
+        deployModel.setAppServicePlanResourceGroupName(rgName);
+    }
+
+    public String getAppServicePlanResourceGroupName() {
+        return deployModel.getAppServicePlanResourceGroupName();
     }
 
     @Override

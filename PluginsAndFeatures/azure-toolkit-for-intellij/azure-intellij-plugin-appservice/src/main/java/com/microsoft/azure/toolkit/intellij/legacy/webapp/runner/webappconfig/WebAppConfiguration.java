@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -113,19 +115,15 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                 if (StringUtils.isEmpty(webAppSettingModel.getPricing())) {
                     throw new ConfigurationException(message("webapp.deploy.validate.noPricingTier"));
                 }
-                if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanName())) {
-                    throw new ConfigurationException(message("webapp.deploy.validate.noAppServicePlan"));
-                }
-            } else {
-                if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanId())) {
-                    throw new ConfigurationException(message("webapp.deploy.validate.noAppServicePlan"));
-                }
+            }
+            if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanName())) {
+                throw new ConfigurationException(message("webapp.deploy.validate.noAppServicePlan"));
             }
         } else {
             if (StringUtils.isEmpty(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(message("webapp.deploy.validate.noWebApp"));
             }
-            if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanId())) {
+            if (StringUtils.isEmpty(webAppSettingModel.getAppServicePlanName())) {
                 // Service plan could be null as lazy loading, throw exception in this case
                 throw new ConfigurationException(message("webapp.validate_deploy_configuration.loading"));
             }
@@ -267,16 +265,16 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         return webAppSettingModel.getAppServicePlanName();
     }
 
+    public String getAppServicePlanResourceGroupName() {
+        return webAppSettingModel.getAppServicePlanResourceGroupName();
+    }
+
     public void setAppServicePlanName(String name) {
         webAppSettingModel.setAppServicePlanName(name);
     }
 
-    public String getAppServicePlanId() {
-        return webAppSettingModel.getAppServicePlanId();
-    }
-
-    public void setAppServicePlanId(String id) {
-        webAppSettingModel.setAppServicePlanId(id);
+    public void setAppServicePlanResourceGroupName(String name) {
+        webAppSettingModel.setAppServicePlanName(name);
     }
 
     public String getRegion() {
@@ -364,5 +362,18 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Override
     public void setJavaAgent(@Nullable File javaAgent) {
         this.javaAgent = javaAgent;
+    }
+
+    public void setWebApp(@Nonnull WebApp webApp) {
+        this.setWebAppId(webApp.getId());
+        this.setWebAppName(webApp.getName());
+        this.setSubscriptionId(webApp.getSubscriptionId());
+        this.setResourceGroup(webApp.getResourceGroupName());
+        Optional.ofNullable(webApp.getAppServicePlan()).ifPresent(plan -> {
+            this.setAppServicePlanName(plan.getName());
+            this.setAppServicePlanResourceGroupName(plan.getResourceGroupName());
+        });
+        Optional.ofNullable(webApp.getRegion()).ifPresent(r -> this.setRegion(r.getName()));
+        this.setApplicationSettings(webApp.getAppSettings());
     }
 }

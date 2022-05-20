@@ -22,6 +22,8 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -36,6 +38,8 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     @Nullable
+    @ExceptionNotification
+    @AzureOperation(name = "connector.detect_connections", type = AzureOperation.Type.ACTION)
     public LineMarkerInfo<PsiElement> getLineMarkerInfo(@Nonnull PsiElement element) {
         if (!(element instanceof PropertyImpl)) {
             return null;
@@ -68,6 +72,8 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
         private final Resource<?> resource;
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.navigate_from_line_marker", type = AzureOperation.Type.ACTION)
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
             final DataContext context = DataManager.getInstance().getDataContext(mouseEvent.getComponent());
             final AnActionEvent event = AnActionEvent.createFromInputEvent(mouseEvent, ActionPlaces.EDITOR_GUTTER, null, context);

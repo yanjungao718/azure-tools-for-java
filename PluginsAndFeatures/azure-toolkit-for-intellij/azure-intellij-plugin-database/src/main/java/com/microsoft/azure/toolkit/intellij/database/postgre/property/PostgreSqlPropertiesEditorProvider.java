@@ -12,6 +12,8 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
 import javax.annotation.Nonnull;
@@ -27,6 +29,8 @@ public class PostgreSqlPropertiesEditorProvider implements FileEditorProvider, D
 
     @Nonnull
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "postgre.create_server_properties_editor", type = AzureOperation.Type.ACTION)
     public FileEditor createEditor(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         final PostgreSqlServer postgreSql = (PostgreSqlServer) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert postgreSql != null;

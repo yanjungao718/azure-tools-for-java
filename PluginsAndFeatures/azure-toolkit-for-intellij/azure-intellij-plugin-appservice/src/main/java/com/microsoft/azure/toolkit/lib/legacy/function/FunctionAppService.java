@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.task.GetOrCreateApplicationInsightsTask;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -16,7 +17,6 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -78,9 +79,9 @@ public class FunctionAppService {
                 .resourceId(functionApp.getId())
                 .name(functionApp.getName())
                 .region(functionApp.getRegion())
-                .resourceGroup(functionApp.getResourceGroup())
+                .resourceGroup(ResourceGroupConfig.fromResource(functionApp.getResourceGroup()))
                 .subscription(functionApp.getSubscription())
-                .servicePlan(functionApp.getAppServicePlan()).build();
+                .servicePlan(AppServicePlanConfig.fromResource(functionApp.getAppServicePlan())).build();
     }
 
     public FunctionApp createFunctionApp(final FunctionAppConfig config) {

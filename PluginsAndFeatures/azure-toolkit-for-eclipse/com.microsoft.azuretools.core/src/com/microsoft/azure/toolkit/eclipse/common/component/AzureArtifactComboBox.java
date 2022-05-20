@@ -28,7 +28,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Nonnull
     @Override
     @AzureOperation(
-            name = "common|artifact.list",
+            name = "common.list_artifacts",
             type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AzureArtifact> loadItems() {

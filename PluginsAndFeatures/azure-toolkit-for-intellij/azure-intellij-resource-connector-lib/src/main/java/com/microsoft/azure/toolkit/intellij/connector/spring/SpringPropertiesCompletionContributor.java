@@ -29,6 +29,8 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
@@ -71,6 +73,8 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
         private final ResourceDefinition<?> definition;
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.insert_spring_properties", type = AzureOperation.Type.ACTION)
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);

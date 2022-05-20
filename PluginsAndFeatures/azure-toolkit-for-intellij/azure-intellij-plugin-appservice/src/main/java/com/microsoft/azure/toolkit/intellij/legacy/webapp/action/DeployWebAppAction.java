@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigura
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +29,10 @@ public class DeployWebAppAction {
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
     private final Project project;
+    @Nonnull
     private final WebApp webApp;
 
-    public DeployWebAppAction(final WebApp webApp, final Project project) {
+    public DeployWebAppAction(@Nonnull final WebApp webApp, final Project project) {
         super();
         this.project = project;
         this.webApp = webApp;
@@ -57,9 +59,7 @@ public class DeployWebAppAction {
         }
         final RunConfiguration runConfiguration = settings.getConfiguration();
         if (runConfiguration instanceof WebAppConfiguration) {
-            ((WebAppConfiguration) runConfiguration).setWebAppId(webApp.getId());
-            ((WebAppConfiguration) runConfiguration).setWebAppName(webApp.getName());
-            ((WebAppConfiguration) runConfiguration).setSubscriptionId(webApp.getSubscriptionId());
+            ((WebAppConfiguration) runConfiguration).setWebApp(webApp);
         }
         return settings;
     }

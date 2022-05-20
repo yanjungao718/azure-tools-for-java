@@ -12,6 +12,8 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,6 +31,8 @@ public class RedisCacheExplorerProvider implements FileEditorProvider, DumbAware
 
     @NotNull
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "redis.create_explorer_editor", type = AzureOperation.Type.ACTION)
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final RedisCache redis = (RedisCache) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         return new RedisCacheExplorer(redis, virtualFile, project);

@@ -7,13 +7,19 @@ package com.microsoft.azure.toolkit.eclipse.appservice.serviceplan;
 
 import com.microsoft.azure.toolkit.eclipse.appservice.PricingTierCombobox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -24,12 +30,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> implements AzureForm<DraftServicePlan> {
+public class ServicePlanCreationDialog extends AzureDialog<AppServicePlanDraft>
+        implements AzureForm<AppServicePlanDraft> {
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
     private AzureTextInput text;
     private PricingTierCombobox pricingTierCombobox;
-    private DraftServicePlan data;
+    private AppServicePlanDraft data;
     private List<PricingTier> pricingTiers = null;
+    private Subscription subscription;
+    private OperatingSystem os;
+    private Region region;
 
     public ServicePlanCreationDialog(Shell parentShell) {
         super(parentShell);
@@ -80,16 +90,30 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
         if (pricingTierCombobox != null && pricingTierCombobox.isEnabled()) {
             pricingTierCombobox.refreshItems();
         }
-
     }
-
-    public DraftServicePlan getData() {
+    
+    public void setOs(OperatingSystem os) {
+        this.os = os;
+    }
+    
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+    
+    public void setSubscription(Subscription subs) {
+        this.subscription = subs;
+    }
+    
+    public AppServicePlanDraft getData() {
         return data;
     }
 
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.OK_ID) {
-            this.data = new DraftServicePlan(null, text.getText(), null, null, pricingTierCombobox.getValue());
+            final AppServicePlanDraft draft = Azure.az(AzureAppService.class).plans(this.subscription.getId())
+                    .create(text.getText(), "");
+            draft.setRegion(this.region).setOperatingSystem(this.os).setPricingTier(pricingTierCombobox.getValue());
+            this.data = draft;
         }
         super.buttonPressed(buttonId);
     }
@@ -100,17 +124,17 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
     }
 
     @Override
-    public AzureForm<DraftServicePlan> getForm() {
+    public AzureForm<AppServicePlanDraft> getForm() {
         return this;
     }
 
     @Override
-    public DraftServicePlan getValue() {
+    public AppServicePlanDraft getValue() {
         return data;
     }
 
     @Override
-    public void setValue(DraftServicePlan draft) {
+    public void setValue(AppServicePlanDraft draft) {
         Optional.ofNullable(draft).ifPresent(value -> {
             text.setValue(value.getName());
             pricingTierCombobox.setValue(value.getPricingTier());

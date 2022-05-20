@@ -50,7 +50,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
     @Nonnull
     @Override
     @AzureOperation(
-        name = "common|region.list.subscription", //TODO: add properties
+        name = "common.list_regions.subscription", //TODO: add properties
         params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )

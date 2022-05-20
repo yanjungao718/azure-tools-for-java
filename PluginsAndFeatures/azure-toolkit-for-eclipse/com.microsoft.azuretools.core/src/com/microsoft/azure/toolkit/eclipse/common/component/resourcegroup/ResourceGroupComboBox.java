@@ -22,13 +22,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private Subscription subscription;
@@ -45,7 +43,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
         }
 
         final ResourceGroup entity = (ResourceGroup) item;
-        if (item instanceof Draft) {
+        if (entity.isDraftForCreating()) {
             return "(New) " + entity.getName();
         }
         return entity.getName();
@@ -66,7 +64,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     @Nonnull
     @Override
     @AzureOperation(
-            name = "arm|rg.list.subscription", //TODO: message bundle
+            name = "arm.list_resource_groups.subscription",
             params = {"this.subscription.getId()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -77,7 +75,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
         }
         if (Objects.nonNull(this.subscription)) {
             final String sid = subscription.getId();
-            final List<ResourceGroup> remoteGroups = Azure.az(AzureResources.class).groups(sid).list().stream().map(r -> r.toPojo())
+            final List<ResourceGroup> remoteGroups = Azure.az(AzureResources.class).groups(sid).list().stream()
                     .sorted(Comparator.comparing(ResourceGroup::getName)).collect(Collectors.toList());
             groups.addAll(remoteGroups);
         }
@@ -94,7 +92,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
                 super.widgetSelected(e);
                 ResourceGroupCreationDialog dialog = new ResourceGroupCreationDialog(ResourceGroupComboBox.this.getShell(), subscription);
                 if (dialog.open() == Window.OK) {
-                    DraftResourceGroup resourceGroupDraft = dialog.getData();
+                    ResourceGroup resourceGroupDraft = dialog.getData();
                     draftItems.add(0, resourceGroupDraft);
                     setValue(resourceGroupDraft);
                     refreshItems();

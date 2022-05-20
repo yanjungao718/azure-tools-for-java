@@ -10,6 +10,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import java.io.*;
 import java.util.*;
@@ -37,6 +39,8 @@ public class AzureSettings implements PersistentStateComponent<AzureSettings.Sta
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "common.load_plugin_settings", type = AzureOperation.Type.ACTION)
     public void loadState(State state) {
         XmlSerializerUtil.copyBean(state, myState);
     }

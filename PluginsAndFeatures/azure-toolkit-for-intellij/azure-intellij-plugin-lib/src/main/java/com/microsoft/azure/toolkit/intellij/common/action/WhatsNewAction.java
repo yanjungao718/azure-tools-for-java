@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,7 @@ public class WhatsNewAction extends AnAction implements DumbAware {
     private static final Key<String> CONTENT_KEY = new Key<>("WHATS_NEW_IN_AZURE_TOOLKIT");
 
     @Override
+    @ExceptionNotification
     @AzureOperation(name = "common.open_whats_new", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull final AnActionEvent event) {
         final boolean manually = !"AzurePluginStartupActivity".equals(event.getPlace());

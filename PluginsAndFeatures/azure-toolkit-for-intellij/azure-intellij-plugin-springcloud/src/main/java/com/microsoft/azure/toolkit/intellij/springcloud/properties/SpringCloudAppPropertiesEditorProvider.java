@@ -12,6 +12,8 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +28,8 @@ public class SpringCloudAppPropertiesEditorProvider implements FileEditorProvide
 
     @NotNull
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "springcloud.create_app_properties_editor", type = AzureOperation.Type.ACTION)
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final SpringCloudApp app = (SpringCloudApp) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert app != null;

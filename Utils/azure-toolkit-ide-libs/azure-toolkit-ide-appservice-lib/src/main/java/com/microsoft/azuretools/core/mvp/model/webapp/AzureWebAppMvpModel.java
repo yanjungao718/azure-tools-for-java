@@ -75,14 +75,14 @@ public class AzureWebAppMvpModel {
     )
     public WebApp createAzureWebAppWithPrivateRegistryImage(@Nonnull WebAppOnLinuxDeployModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
-        final AppServicePlanConfig servicePlanConfig = new AppServicePlanConfig()
-            .id(model.getAppServicePlanId())
+        final AppServicePlanConfig servicePlanConfig = AppServicePlanConfig.builder()
             .subscriptionId(model.getSubscriptionId())
-            .servicePlanName(model.getAppServicePlanName())
-            .servicePlanResourceGroup(model.getResourceGroupName())
+            .name(model.getAppServicePlanName())
+            .resourceGroupName(model.getResourceGroupName())
             .region(Region.fromName(model.getLocationName()))
             .os(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
-            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize()));
+            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize()))
+            .build();
         final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanConfig);
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         // todo: support start up file in docker configuration
@@ -142,14 +142,14 @@ public class AzureWebAppMvpModel {
     )
     public WebApp createWebAppFromSettingModel(@Nonnull WebAppSettingModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
-        final AppServicePlanConfig servicePlanConfig = new AppServicePlanConfig()
-            .id(model.getAppServicePlanId())
+        final AppServicePlanConfig servicePlanConfig = AppServicePlanConfig.builder()
             .subscriptionId(model.getSubscriptionId())
-            .servicePlanName(model.getAppServicePlanName())
-            .servicePlanResourceGroup(model.getResourceGroup())
+            .name(model.getAppServicePlanName())
+            .resourceGroupName(model.getResourceGroup())
             .region(Region.fromName(model.getRegion()))
             .os(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
-            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing()));
+            .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing()))
+            .build();
         final AppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanConfig);
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
             .enableApplicationLog(model.isEnableApplicationLog())
@@ -172,19 +172,17 @@ public class AzureWebAppMvpModel {
     }
 
     private AppServicePlan getOrCreateAppServicePlan(AppServicePlanConfig servicePlanConfig) {
-        final String rg = Optional.ofNullable(servicePlanConfig.servicePlanResourceGroup()).filter(StringUtils::isNotBlank)
-            .orElseGet(() -> ResourceId.fromString(servicePlanConfig.id()).resourceGroupName());
-        final String name = Optional.ofNullable(servicePlanConfig.servicePlanName()).filter(StringUtils::isNotBlank)
-            .orElseGet(() -> ResourceId.fromString(servicePlanConfig.id()).name());
+        final String rg = servicePlanConfig.getResourceGroupName();
+        final String name = servicePlanConfig.getName();
         final AzureAppService az = Azure.az(AzureAppService.class);
-        final AppServicePlan appServicePlan = az.plans(servicePlanConfig.subscriptionId()).getOrDraft(name, rg);
+        final AppServicePlan appServicePlan = az.plans(servicePlanConfig.getSubscriptionId()).getOrDraft(name, rg);
         if (appServicePlan.exists()) {
             return appServicePlan;
         }
         final AppServicePlanDraft draft = (AppServicePlanDraft) appServicePlan;
-        draft.setRegion(servicePlanConfig.region());
-        draft.setPricingTier(servicePlanConfig.pricingTier());
-        draft.setOperatingSystem(servicePlanConfig.os());
+        draft.setRegion(servicePlanConfig.getRegion());
+        draft.setPricingTier(servicePlanConfig.getPricingTier());
+        draft.setOperatingSystem(servicePlanConfig.getOs());
         return draft.createIfNotExist();
     }
 

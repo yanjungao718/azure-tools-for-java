@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Shell;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -30,8 +29,9 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 
-public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup> implements AzureForm<DraftResourceGroup> {
+public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupDraft> implements AzureForm<ResourceGroupDraft> {
     private static final Pattern PATTERN = Pattern.compile("^[-\\w._()]+$");
     public static final String CONFLICT_NAME = "A resource group with the same name already exists in the selected subscription %s";
 
@@ -81,18 +81,19 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         return container;
     }
 
-    public DraftResourceGroup getData() {
+    public ResourceGroupDraft getData() {
         return data;
     }
 
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.OK_ID) {
-            this.data = new DraftResourceGroup(subscription, this.textName.getText());
+            final String rgName = this.textName.getValue();
+            this.data = Azure.az(AzureResources.class).groups(this.subscription.getId()).create(rgName, rgName);
         }
         super.buttonPressed(buttonId);
     }
 
-    private DraftResourceGroup data;
+    private ResourceGroupDraft data;
 
     @Override
     protected String getDialogTitle() {
@@ -100,17 +101,17 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     }
 
     @Override
-    public AzureForm<DraftResourceGroup> getForm() {
+    public AzureForm<ResourceGroupDraft> getForm() {
         return this;
     }
 
     @Override
-    public DraftResourceGroup getValue() {
+    public ResourceGroupDraft getValue() {
         return data;
     }
 
     @Override
-    public void setValue(DraftResourceGroup draft) {
+    public void setValue(ResourceGroupDraft draft) {
         Optional.ofNullable(draft).ifPresent(draftGroup -> textName.setValue(draft.getName()));
     }
 

@@ -12,12 +12,13 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
@@ -63,12 +64,12 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         config.setName(appService.getName());
         config.setRuntime(null);
         config.setSubscription(com.microsoft.azure.toolkit.lib.common.model.Subscription.builder().id(appService.getSubscriptionId()).build());
-        config.setResourceGroup(appService.getResourceGroup());
+        config.setResourceGroup(ResourceGroupConfig.fromResource(appService.getResourceGroup()));
         AzureTaskManager.getInstance()
             .runOnPooledThreadAsObservable(new AzureTask<>(() -> {
                 config.setRuntime(appService.getRuntime());
                 config.setRegion(appService.getRegion());
-                config.setServicePlan(appService.getAppServicePlan());
+                config.setServicePlan(AppServicePlanConfig.fromResource(appService.getAppServicePlan()));
             })).subscribe();
         return config;
     }
@@ -124,8 +125,8 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
             final String appServiceName = isDraftResource(appServiceModel) ?
                     String.format("(New) %s", appServiceModel.getName()) : appServiceModel.getName();
             final String runtime = appServiceModel.getRuntime() == null ?
-                    "Loading:" : WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
-            final String resourceGroup = Optional.ofNullable(appServiceModel.getResourceGroup()).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
+                "Loading:" : WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
+            final String resourceGroup = Optional.ofNullable(appServiceModel.getResourceGroupName()).orElse(StringUtils.EMPTY);
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
                     appServiceName, runtime, resourceGroup);
         }

@@ -3,9 +3,9 @@
 <plugin>
    <extension
          point="com.microsoft.azure.toolkit.eclipse.explorer">
-      <explorerContributor
-            implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudExplorerContributor">
-      </explorerContributor>
+      <explorerNodeProvider
+            implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudNodeProvider">
+      </explorerNodeProvider>
    </extension>
    <extension
          point="com.microsoft.azure.toolkit.eclipse.actions">

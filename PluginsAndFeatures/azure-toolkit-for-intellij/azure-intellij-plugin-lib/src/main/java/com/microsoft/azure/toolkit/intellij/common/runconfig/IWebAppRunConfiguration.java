@@ -18,7 +18,7 @@ public interface IWebAppRunConfiguration {
     Topic<ModuleChangedListener> MODULE_CHANGED = Topic.create("runconfiguration.module.changed", ModuleChangedListener.class);
 
     interface ModuleChangedListener {
-        void moduleMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor);
+        void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor);
     }
 
     void setApplicationSettings(Map<String, String> env);

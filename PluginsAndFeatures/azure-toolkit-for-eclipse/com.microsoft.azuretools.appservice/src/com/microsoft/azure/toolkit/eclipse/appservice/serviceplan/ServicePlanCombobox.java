@@ -6,14 +6,12 @@
 package com.microsoft.azure.toolkit.eclipse.appservice.serviceplan;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.DraftServicePlan;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -37,12 +35,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ServicePlanCombobox extends AzureComboBox<AppServicePlanEntity> {
+public class ServicePlanCombobox extends AzureComboBox<AppServicePlan> {
     private Subscription subscription;
-    private final List<DraftServicePlan> localItems = new ArrayList<>();
+    private final List<AppServicePlanDraft> localItems = new ArrayList<>();
     private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.WEB_APP_PRICING);
     private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
-    private Predicate<AppServicePlanEntity> servicePlanFilter;
+    private Predicate<AppServicePlan> servicePlanFilter;
 
     public void setOs(OperatingSystem os) {
         if (os == this.os) {
@@ -93,38 +91,31 @@ public class ServicePlanCombobox extends AzureComboBox<AppServicePlanEntity> {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
         }
-        if (item instanceof Draft) {
-            return "(New) " + ((AppServicePlanEntity) item).getName();
+        final AppServicePlan plan = (AppServicePlan) item;
+        if (plan.isDraftForCreating()) {
+            return "(New) " + plan.getName();
         }
-        return ((AppServicePlanEntity) item).getName();
+        return plan.getName();
     }
 
     @Nonnull
     @Override
     @AzureOperation(
-            name = "appservice|plan.list.subscription|region|os",
+            name = "appservice.list_plans.subscription|region|os",
             params = {"this.subscription.getId()", "this.region.getName()", "this.os.name()"},
             type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends AppServicePlanEntity> loadItems() throws Exception {
-        final List<AppServicePlanEntity> plans = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(this.localItems)) {
-            plans.addAll(this.localItems);
-        }
+    protected List<? extends AppServicePlan> loadItems() throws Exception {
+        final List<AppServicePlan> plans = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
-            final List<AppServicePlanEntity> remotePlans = Azure.az(AzureAppService.class)
-                    .plans(subscription.getId()).list().stream().map(p -> AppServicePlanEntity.builder()
-                            .subscriptionId(p.getSubscriptionId())
-                            .id(p.getId())
-                            .name(p.getName())
-                            .region(p.getRegion().getName())
-                            .resourceGroup(p.getResourceGroupName())
-                            .pricingTier(p.getPricingTier())
-                            .operatingSystem(p.getOperatingSystem())
-                            .build())
-                    .collect(Collectors.toList());
-
-            Stream<AppServicePlanEntity> stream = remotePlans.stream();
+            if (CollectionUtils.isNotEmpty(this.localItems)) {
+                plans.addAll(this.localItems.stream()
+                    .filter(p -> this.subscription.equals(p.getSubscription()))
+                    .collect(Collectors.toList()));
+            }
+            final List<AppServicePlan> remotePlans = Azure.az(AzureAppService.class).plans(subscription.getId()).list();
+            plans.addAll(remotePlans);
+            Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
                 stream = stream.filter(p -> Objects.equals(p.getRegion(), this.region.getLabel()));
             }
@@ -150,9 +141,12 @@ public class ServicePlanCombobox extends AzureComboBox<AppServicePlanEntity> {
             public void widgetSelected(SelectionEvent e) {
                 super.widgetSelected(e);
                 ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(ServicePlanCombobox.this.getShell());
+                dialog.setOs(ServicePlanCombobox.this.os);
+                dialog.setRegion(ServicePlanCombobox.this.region);
+                dialog.setSubscription(ServicePlanCombobox.this.subscription);
                 dialog.setPricingTier(new ArrayList<>(PricingTier.WEB_APP_PRICING));
                 if (dialog.open() == Window.OK) {
-                    DraftServicePlan plan = dialog.getData();
+                    AppServicePlanDraft plan = dialog.getData();
                     localItems.add(0, plan);
                     refreshItems();
                     setValue(plan);

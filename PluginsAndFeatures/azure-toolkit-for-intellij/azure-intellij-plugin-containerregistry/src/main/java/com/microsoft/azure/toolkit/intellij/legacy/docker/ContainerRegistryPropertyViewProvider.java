@@ -12,6 +12,8 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.jetbrains.annotations.NotNull;
 
 public class ContainerRegistryPropertyViewProvider implements FileEditorProvider, DumbAware {
@@ -25,6 +27,8 @@ public class ContainerRegistryPropertyViewProvider implements FileEditorProvider
 
     @NotNull
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "container.create_registry_properties_editor", type = AzureOperation.Type.ACTION)
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         return new ContainerRegistryPropertyView(project, virtualFile);
     }

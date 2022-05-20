@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -85,6 +86,7 @@ public final class ModuleResource implements Resource<String> {
     public static class RegisterActivity extends PreloadingActivity {
 
         @Override
+        @ExceptionNotification
         public void preload(@Nonnull ProgressIndicator progressIndicator) {
             ResourceManager.registerDefinition(Definition.IJ_MODULE);
         }
