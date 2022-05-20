@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 
 import com.microsoft.azure.toolkit.eclipse.common.EclipseAzureIcons;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
@@ -152,7 +153,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
             } else if (raw instanceof ActionGroup) {
                 applyActionGroupToMenu((ActionGroup) raw, manager, source);
             }
-            if (action != null) {
+            if (action != null && !ResourceCommonActionsContributor.PIN.getId().equals(action.getId())) {
                 manager.add(action);
             }
         }
@@ -170,6 +171,11 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
             @Override
             public void run() {
                 action.handle(source);
+            }
+
+            @Override
+            public String getId() {
+                return action.getId();
             }
         };
         eclipseAction.setEnabled(view.isEnabled() && action.getHandler(source, null) != null);
