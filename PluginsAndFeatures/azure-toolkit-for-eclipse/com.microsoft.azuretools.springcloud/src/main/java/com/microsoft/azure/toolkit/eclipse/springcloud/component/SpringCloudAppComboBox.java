@@ -79,7 +79,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     protected Control getExtension() {
         final Button button = new Button(this, SWT.PUSH);
         button.setText("Create");
-        button.setToolTipText("Create Azure Spring Cloud app");
+        button.setToolTipText("Create an Azure Spring App.");
         button.addListener(SWT.Selection, event -> this.showAppCreationPopup());
         return button;
     }

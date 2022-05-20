@@ -25,7 +25,7 @@ public class CreateSpringCloudAppAction {
     private static final int GET_STATUS_TIMEOUT = 180;
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
         "you can check the app status from Azure Portal.";
-    private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
+    private static final String NOTIFICATION_TITLE = "Create Azure Spring App";
 
     public static void createApp(@Nonnull SpringCloudCluster cluster) {
         AzureTaskManager.getInstance().runLater(() -> {
@@ -40,7 +40,7 @@ public class CreateSpringCloudAppAction {
 
     @AzureOperation(name = "springcloud.create_app.app", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void createApp(SpringCloudAppConfig config) {
-        AzureTaskManager.getInstance().runInBackground(OperationBundle.description("springcloud|app.create", config.getAppName()), () -> {
+        AzureTaskManager.getInstance().runInBackground(OperationBundle.description("springcloud.create_app.app", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
             final boolean hasArtifact = Optional.ofNullable(config.getDeployment())

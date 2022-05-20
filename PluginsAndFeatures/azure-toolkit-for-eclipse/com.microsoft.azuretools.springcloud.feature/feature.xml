@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="com.microsoft.azuretools.springcloud.feature"
-      label="Spring Cloud Plugin for Eclipse"
+      label="Azure Spring Apps Plugin for Eclipse"
       version="3.31.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>
-      Enables you to deploy your applications as Azure Spring Cloud Services.
+      Enables you to deploy your applications as Azure Spring Apps.
    </description>
 
    <copyright>
