@@ -45,8 +45,8 @@ public class SpringCloudDeploymentComboBox extends AzureComboBox<DeploymentInsta
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof SpringCloudDeploymentInstanceEntity
-                ? ((SpringCloudDeploymentInstanceEntity) item).getName()
+        return item instanceof DeploymentInstance
+                ? ((DeploymentInstance) item).name()
                 : super.getItemText(item);
     }
 
