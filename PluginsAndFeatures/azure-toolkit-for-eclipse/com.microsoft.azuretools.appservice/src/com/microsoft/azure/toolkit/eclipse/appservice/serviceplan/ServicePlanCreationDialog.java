@@ -79,6 +79,7 @@ public class ServicePlanCreationDialog extends AzureDialog<AppServicePlanDraft>
         lblPricingTier.setText("Pricing tier:");
 
         pricingTierCombobox = new PricingTierCombobox(container, this.pricingTiers);
+        pricingTierCombobox.setValue(PricingTier.BASIC_B1);
         pricingTierCombobox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         pricingTierCombobox.setLabeledBy(lblPricingTier);
 

@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -107,10 +108,14 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
         result.setName(instanceDetailPanel.getAppName());
         result.setRegion(instanceDetailPanel.getResourceRegion());
         result.setRuntime(Runtime.getRuntime(runtime.os(), runtime.webContainer(), runtime.javaVersion()));
-        result.setServicePlan(AppServicePlanConfig.fromResource(appServicePlanPanel.getServicePlan()));
         result.setPricingTier(Optional.ofNullable(appServicePlanPanel.getServicePlan())
                 .map(AppServicePlan::getPricingTier).orElse(null));
         result.setAppSettings(new HashMap<>());
+        final AppServicePlanConfig planConfig = AppServicePlanConfig.fromResource(appServicePlanPanel.getServicePlan());
+        planConfig.setResourceGroupName(
+                StringUtils.firstNonBlank(planConfig.getResourceGroupName(), result.getResourceGroupName()));
+        planConfig.setRegion(ObjectUtils.firstNonNull(planConfig.getRegion(), result.getRegion()));
+        result.setServicePlan(planConfig);
         return result;
     }
 
