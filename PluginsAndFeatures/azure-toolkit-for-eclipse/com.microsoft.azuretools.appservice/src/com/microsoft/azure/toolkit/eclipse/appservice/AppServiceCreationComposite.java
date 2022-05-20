@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemRe
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionAndResourceGroupComposite;
 import com.microsoft.azure.toolkit.eclipse.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
@@ -31,6 +32,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 
 public class AppServiceCreationComposite<T extends AppServiceConfig> extends Composite implements AzureForm<T> {
     private Supplier<T> supplier;
@@ -101,11 +103,11 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
         final T result = supplier.get();
         final RuntimeConfig runtime = instanceDetailPanel.getRuntime();
         result.setSubscription(subsAndResourceGroupPanel.getSubscription());
-        result.setResourceGroup(subsAndResourceGroupPanel.getResourceGroup());
+        result.setResourceGroup(ResourceGroupConfig.fromResource(subsAndResourceGroupPanel.getResourceGroup()));
         result.setName(instanceDetailPanel.getAppName());
         result.setRegion(instanceDetailPanel.getResourceRegion());
         result.setRuntime(Runtime.getRuntime(runtime.os(), runtime.webContainer(), runtime.javaVersion()));
-        result.setServicePlan(appServicePlanPanel.getServicePlan());
+        result.setServicePlan(AppServicePlanConfig.fromResource(appServicePlanPanel.getServicePlan()));
         result.setPricingTier(Optional.ofNullable(appServicePlanPanel.getServicePlan())
                 .map(AppServicePlan::getPricingTier).orElse(null));
         result.setAppSettings(new HashMap<>());
@@ -118,7 +120,7 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
                 subscription -> subsAndResourceGroupPanel.getSubscriptionComboBox().setValue(new ItemReference<>(
                         value -> StringUtils.equalsIgnoreCase(value.getId(), subscription.getId()))));
         Optional.ofNullable(config.getResourceGroup()).ifPresent(
-                resourceGroup -> subsAndResourceGroupPanel.getResourceGroupComboBox().setValue(resourceGroup));
+                resourceGroup -> subsAndResourceGroupPanel.getResourceGroupComboBox().setValue(resourceGroup.toResource()));
         Optional.ofNullable(config.getName())
                 .ifPresent(name -> instanceDetailPanel.getWebAppNameInput().setValue(name));
         Optional.ofNullable(config.getRegion())
@@ -126,7 +128,7 @@ public class AppServiceCreationComposite<T extends AppServiceConfig> extends Com
         Optional.ofNullable(config.getRuntime())
                 .ifPresent(runtime -> instanceDetailPanel.getRuntimeComboBox().setValue(runtime));
         Optional.ofNullable(config.getServicePlan())
-                .ifPresent(servicePlan -> appServicePlanPanel.getServicePlanCombobox().setValue(servicePlan));
+                .ifPresent(servicePlan -> appServicePlanPanel.getServicePlanCombobox().setValue(servicePlan.toResource()));
     }
 
     @Override

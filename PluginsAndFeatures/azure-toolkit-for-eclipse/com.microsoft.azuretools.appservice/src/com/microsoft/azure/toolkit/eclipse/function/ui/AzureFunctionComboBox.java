@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azuretools.appservice.util.CommonUtils;
 
 public class AzureFunctionComboBox extends AppServiceComboBox<FunctionAppConfig> {
 
@@ -45,7 +46,7 @@ public class AzureFunctionComboBox extends AppServiceComboBox<FunctionAppConfig>
         return functionApps.stream().parallel()
                 .filter(AppServiceComboBox::isJavaAppService)
                 .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
-                .map(FunctionAppConfig::fromRemote)
+                .map(t -> CommonUtils.toConfig(t))
                 .collect(Collectors.toList());
     }
 

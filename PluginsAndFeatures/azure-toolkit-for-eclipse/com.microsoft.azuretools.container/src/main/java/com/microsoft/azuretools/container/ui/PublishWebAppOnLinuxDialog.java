@@ -336,9 +336,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 model.setCreatingNewAppServicePlan(false);
                 AppServicePlan selectedAsp = getSelectedAppServicePlan();
                 if (selectedAsp != null) {
-                    model.setAppServicePlanId(selectedAsp.id());
+                    model.setAppServicePlanName(selectedAsp.getName());
+                    model.setAppServicePlanResourceGroupName(selectedAsp.getResourceGroupName());
                 } else {
-                    model.setAppServicePlanId(null);
+                    model.setAppServicePlanName(null);
+                    model.setAppServicePlanResourceGroupName(null);
                 }
             }
         }
@@ -414,14 +416,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 throw new InvalidFormDataException(MISSING_RESOURCE_GROUP);
             }
 
-            if (model.isCreatingNewAppServicePlan()) {
-                if (Utils.isEmptyString(model.getAppServicePlanName())) {
-                    throw new InvalidFormDataException(MISSING_APP_SERVICE_PLAN);
-                }
-            } else {
-                if (Utils.isEmptyString(model.getAppServicePlanId())) {
-                    throw new InvalidFormDataException(MISSING_APP_SERVICE_PLAN);
-                }
+            if (Utils.isEmptyString(model.getAppServicePlanName())) {
+                throw new InvalidFormDataException(MISSING_APP_SERVICE_PLAN);
             }
 
         } else {

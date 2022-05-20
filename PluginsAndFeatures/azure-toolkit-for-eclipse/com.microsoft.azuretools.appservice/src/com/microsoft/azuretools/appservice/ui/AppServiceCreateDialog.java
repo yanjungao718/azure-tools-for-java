@@ -1228,7 +1228,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 return false;
             }
         } else {
-            if (model.getAppServicePlanId() == null || model.getAppServicePlanId().isEmpty()) {
+            if (StringUtils.isBlank(model.getAppServicePlanName())) {
                 setError(dec_comboAppServicePlan, SELECT_APP_SERVICE_PLAN);
                 return false;
             }
@@ -1289,7 +1289,14 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     .orElse(APPSETTINGS_TOOLTIP));
         } else {
             index = comboAppServicePlan.getSelectionIndex();
-            model.setAppServicePlanId(index < 0 ? null : binderAppServicePlan.get(index).id());
+            if(index >= 0) {
+                final AppServicePlan plan = binderAppServicePlan.get(index);
+                model.setAppServicePlanName(plan.getName());
+                model.setAppServicePlanResourceGroupName(plan.getResourceGroupName());
+            } else {
+                model.setAppServicePlanName(null);
+                model.setAppServicePlanResourceGroupName(null);
+            }
         }
 
         // Runtime
