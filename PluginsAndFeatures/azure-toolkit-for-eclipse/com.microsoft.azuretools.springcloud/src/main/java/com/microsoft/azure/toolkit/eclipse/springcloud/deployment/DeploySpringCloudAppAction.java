@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.Utils;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Status;
@@ -32,6 +33,7 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 
 public class DeploySpringCloudAppAction {
     private static final int GET_URL_TIMEOUT = 60;
@@ -97,7 +99,9 @@ public class DeploySpringCloudAppAction {
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
-        if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+        final boolean hasArtifact = Optional.ofNullable(appConfig.getDeployment())
+                .map(SpringCloudDeploymentConfig::getArtifact).map(IArtifact::getFile).isPresent();
+        if (hasArtifact && !deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
             messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
         printPublicUrl(app);

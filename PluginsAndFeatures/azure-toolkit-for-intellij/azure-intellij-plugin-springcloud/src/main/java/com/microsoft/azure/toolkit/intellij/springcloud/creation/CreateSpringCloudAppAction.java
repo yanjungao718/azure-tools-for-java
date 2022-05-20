@@ -9,16 +9,19 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class CreateSpringCloudAppAction {
     private static final int GET_STATUS_TIMEOUT = 180;
@@ -43,7 +46,10 @@ public class CreateSpringCloudAppAction {
         AzureTaskManager.getInstance().runInBackground(OperationBundle.description("springcloud.create_app.app", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
-            if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+            final boolean hasArtifact = Optional.ofNullable(config.getDeployment())
+                .map(SpringCloudDeploymentConfig::getArtifact)
+                .map(IArtifact::getFile).isPresent();
+            if (hasArtifact && !deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
                 AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
             }
         });
