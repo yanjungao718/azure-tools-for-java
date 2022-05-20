@@ -10,6 +10,11 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.swt.widgets.Combo;
 
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import com.microsoft.azuretools.appservice.Activator;
 
 public class CommonUtils {
@@ -60,5 +65,19 @@ public class CommonUtils {
             return "";
         }
         return combo.getItem(index);
+    }
+
+    public static FunctionAppConfig toConfig(FunctionApp functionApp) {
+        final AppServicePlanConfig plan = AppServicePlanConfig.fromResource(functionApp.getAppServicePlan());
+        return FunctionAppConfig.builder()
+            .name(functionApp.getName())
+            .resourceId(functionApp.getId())
+            .servicePlan(plan)
+            .subscription(Subscription.builder().id(functionApp.getSubscriptionId()).build())
+            .resourceGroup(ResourceGroupConfig.fromResource(functionApp.getResourceGroup()))
+            .runtime(functionApp.getRuntime())
+            .region(functionApp.getRegion())
+            .appSettings(functionApp.getAppSettings())
+            .build();
     }
 }
