@@ -24,26 +24,26 @@ public class EclipseAzureIcons {
     private static final Map<String, ImageDescriptor> icons = new ConcurrentHashMap<>();
     private static final Map<AzureIcon, ImageDescriptor> azureIcons = new ConcurrentHashMap<AzureIcon, ImageDescriptor>() {
         {
-            put(AzureIcons.Common.REFRESH_ICON, Activator.getImageDescriptor("/icons/refresh.png"));
+            put(AzureIcons.Common.REFRESH_ICON, Activator.getImageDescriptor("/icons/refresh_action.png"));
             put(AzureIcons.Action.START, Activator.getImageDescriptor("/icons/start.png"));
             put(AzureIcons.Action.STOP, Activator.getImageDescriptor("/icons/stop.png"));
-            // put(AzureIcons.Action.RESTART, Activator.getImageDescriptor("/icons/restart.png"));
-            put(AzureIcons.Action.REFRESH, Activator.getImageDescriptor("/icons/refresh.png"));
-            put(AzureIcons.Action.DEPLOY, Activator.getImageDescriptor("/icons/deploy.png"));
-            put(AzureIcons.Action.CREATE, Activator.getImageDescriptor("/icons/add.png"));
-            put(AzureIcons.Action.DELETE, Activator.getImageDescriptor("/icons/delete.png"));
+            put(AzureIcons.Action.RESTART, Activator.getImageDescriptor("/icons/restart.png"));
+            put(AzureIcons.Action.REFRESH, Activator.getImageDescriptor("/icons/refresh_action.png"));
+            put(AzureIcons.Action.DEPLOY, Activator.getImageDescriptor("/icons/upload.png"));
+            put(AzureIcons.Action.CREATE, Activator.getImageDescriptor("/icons/create.png"));
+            put(AzureIcons.Action.DELETE, Activator.getImageDescriptor("/icons/remove.png"));
             put(AzureIcons.Action.PORTAL, Activator.getImageDescriptor("/icons/action/portal.png"));
             put(AzureIcons.Action.BROWSER, Activator.getImageDescriptor("/icons/action/portal.png"));
-            put(AzureIcons.Action.ADD, Activator.getImageDescriptor("/icons/add.png"));
-            put(AzureIcons.Action.REMOVE, Activator.getImageDescriptor("/icons/delete.png"));
-            // put(AzureIcons.Action.EDIT, Activator.getImageDescriptor("/icons/edit.png")); //
-            // put(AzureIcons.Action.PROPERTIES, Activator.getImageDescriptor("/icons/properties.png"));
-            // put(AzureIcons.Action.SELECT_SUBSCRIPTION, Activator.getImageDescriptor("/icons/filter.png"));
-            // put(AzureIcons.Common.SELECT_SUBSCRIPTIONS, Activator.getImageDescriptor("/icons/filter.png"));
-            put(AzureIcons.Common.DELETE, Activator.getImageDescriptor("/icons/delete.png"));
-            // put(AzureIcons.Common.RESTART, Activator.getImageDescriptor("/icons/restart.png"));
-            // put(AzureIcons.Common.SHOW_PROPERTIES, Activator.getImageDescriptor("/icons/properties.png"));
-            // put(AzureIcons.Common.UNKNOWN_ICON, Activator.getImageDescriptor("/icons/unknown.png"));
+            put(AzureIcons.Action.ADD, Activator.getImageDescriptor("/icons/create.png"));
+            put(AzureIcons.Action.REMOVE, Activator.getImageDescriptor("/icons/remove.png"));
+            put(AzureIcons.Action.EDIT, Activator.getImageDescriptor("/icons/edit.png")); //
+            put(AzureIcons.Action.PROPERTIES, Activator.getImageDescriptor("/icons/properties.png"));
+            put(AzureIcons.Action.SELECT_SUBSCRIPTION, Activator.getImageDescriptor("/icons/filter.png"));
+            put(AzureIcons.Common.SELECT_SUBSCRIPTIONS, Activator.getImageDescriptor("/icons/filter.png"));
+            put(AzureIcons.Common.DELETE, Activator.getImageDescriptor("/icons/remove.png"));
+            put(AzureIcons.Common.RESTART, Activator.getImageDescriptor("/icons/restart.png"));
+            put(AzureIcons.Common.SHOW_PROPERTIES, Activator.getImageDescriptor("/icons/properties.png"));
+            put(AzureIcons.Common.UNKNOWN_ICON, Activator.getImageDescriptor("/icons/unknown.png"));
         }
     };
 
