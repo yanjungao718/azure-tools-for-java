@@ -21,7 +21,8 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.TreeViewer;
 
-import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
+import com.microsoft.azure.toolkit.eclipse.common.EclipseAzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
@@ -107,9 +108,9 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
         final String label = node.view().getLabel();
         return BooleanUtils.isFalse(loaded) ? label + " (Refreshing...)" : label;
     }
-
-    public String getIconPath() {
-        return node.view().getIconPath();
+    
+    public AzureIcon getAzureIcon() {
+    	return node.view().getIcon();
     }
 
     public void installActionsMenu(@Nonnull IMenuManager manager) {
@@ -164,7 +165,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
             return null;
         }
         final ImageDescriptor imageDescriptor = StringUtils.isEmpty(view.getIconPath()) ? null
-                : AzureIcons.getIcon(view.getIconPath());
+                : EclipseAzureIcons.getIcon(view.getIconPath());
         final Action eclipseAction = new Action(view.getLabel(), imageDescriptor) {
             @Override
             public void run() {
