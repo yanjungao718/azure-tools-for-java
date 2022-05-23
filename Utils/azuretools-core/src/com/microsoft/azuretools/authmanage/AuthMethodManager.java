@@ -9,6 +9,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -271,8 +272,9 @@ public class AuthMethodManager {
                 this.authMethodDetails = new AuthMethodDetails();
                 this.authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 notifySignOutEventListener();
+            } finally {
+                AzureEventBus.emit("account.restore_sign_in");
             }
-
             return this;
         });
     }
