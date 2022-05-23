@@ -25,8 +25,8 @@ public class EclipseAzureIcons {
     private static final Map<AzureIcon, ImageDescriptor> azureIcons = new ConcurrentHashMap<AzureIcon, ImageDescriptor>() {
         {
             put(AzureIcons.Common.REFRESH_ICON, Activator.getImageDescriptor("/icons/refresh_action.png"));
-            put(AzureIcons.Action.START, Activator.getImageDescriptor("/icons/start.png"));
-            put(AzureIcons.Action.STOP, Activator.getImageDescriptor("/icons/stop.png"));
+            put(AzureIcons.Action.START, Activator.getImageDescriptor("/icons/run.png"));
+            put(AzureIcons.Action.STOP, Activator.getImageDescriptor("/icons/stop_action.png"));
             put(AzureIcons.Action.RESTART, Activator.getImageDescriptor("/icons/restart.png"));
             put(AzureIcons.Action.REFRESH, Activator.getImageDescriptor("/icons/refresh_action.png"));
             put(AzureIcons.Action.DEPLOY, Activator.getImageDescriptor("/icons/upload.png"));
