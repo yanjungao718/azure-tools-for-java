@@ -5,11 +5,11 @@
 
 package com.microsoft.azuretools.appservice.ui;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 import static com.microsoft.azuretools.appservice.util.CommonUtils.ASP_CREATE_LOCATION;
 import static com.microsoft.azuretools.appservice.util.CommonUtils.ASP_CREATE_PRICING;
 import static com.microsoft.azuretools.appservice.util.CommonUtils.getSelectedItem;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -89,10 +90,13 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azuretools.appservice.Activator;
+import com.microsoft.azuretools.appservice.util.CommonUtils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -105,8 +109,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.appservice.Activator;
-import com.microsoft.azuretools.appservice.util.CommonUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import reactor.core.publisher.Mono;
@@ -1176,7 +1178,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }, (ex) -> {
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                             "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
-                    Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                    final String message = ExceptionUtils.getRootCause(ex).getMessage();
+                    Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), message, errTitle));
                 });
             });
         } catch (Exception ex) {
