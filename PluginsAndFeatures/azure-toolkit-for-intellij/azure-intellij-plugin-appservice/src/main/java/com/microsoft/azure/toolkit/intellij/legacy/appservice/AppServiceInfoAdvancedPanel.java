@@ -30,7 +30,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -97,8 +96,11 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         config.setRuntime(runtime);
         config.setRegion(region);
         final AppServicePlanConfig planConfig = AppServicePlanConfig.fromResource(servicePlan);
-        planConfig.setResourceGroupName(StringUtils.firstNonBlank(planConfig.getResourceGroupName(), config.getResourceGroupName()));
-        planConfig.setRegion(ObjectUtils.firstNonNull(planConfig.getRegion(), config.getRegion()));
+        if (Objects.nonNull(planConfig) && servicePlan.isDraftForCreating()) {
+            planConfig.setResourceGroupName(config.getResourceGroupName());
+            planConfig.setRegion(region);
+            planConfig.setOs(Objects.requireNonNull(runtime).getOperatingSystem());
+        }
         config.setServicePlan(planConfig);
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
