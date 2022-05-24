@@ -35,10 +35,13 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.DisposeEvent;
 
 public class SpringCloudAppConfigPanel extends Composite implements AzureFormPanel<SpringCloudAppConfig> {
 	private Button useJava8;
 	private Button useJava11;
+	private Button useJava17;
 	private AzureTextInput txtJvmOptions;
 	private AzureTextInput envTable;
 	private Spinner numCpu;
@@ -50,6 +53,8 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 	private SpringCloudAppConfig originalConfig;
 	private Button toggleEndpoint;
 	private Button toggleStorage;
+    private Label lblRuntime;
+    private Label lblDisk;
 
 	public SpringCloudAppConfigPanel(Composite parent) {
 		super(parent, SWT.NONE);
@@ -70,6 +75,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 
 		this.useJava8.addListener(SWT.Selection, (e) -> debouncer.debounce());
 		this.useJava11.addListener(SWT.Selection, (e) -> debouncer.debounce());
+		this.useJava17.addListener(SWT.Selection, (e) -> debouncer.debounce());
 		this.txtJvmOptions.addModifyListener(e -> debouncer.debounce());
 		this.envTable.addModifyListener(e -> debouncer.debounce());
 		this.numCpu.addModifyListener(e -> debouncer.debounce());
@@ -95,6 +101,13 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 
 	public synchronized void updateForm(@Nonnull SpringCloudApp app) {
 		final String sku = app.getParent().getSku();
+        final boolean enterprise = sku.toLowerCase().startsWith("e");
+        this.useJava8.setVisible(!enterprise);
+        this.useJava11.setVisible(!enterprise);
+        this.useJava17.setVisible(!enterprise);
+        this.lblRuntime.setVisible(!enterprise);
+        this.lblDisk.setVisible(!enterprise);
+        this.toggleStorage.setVisible(!enterprise);
 		final boolean basic = sku.toLowerCase().startsWith("b");
 		final int cpu = this.numCpu.getSelection();
 		final int mem = this.numMemory.getSelection();
@@ -115,11 +128,17 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 
 	public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
 		final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-		final String javaVersion = this.useJava11.getSelection() ? RuntimeVersion.JAVA_11.toString()
-				: RuntimeVersion.JAVA_8.toString();
+        final boolean isEnterpriseTier = this.useJava17.isVisible();
+        if (isEnterpriseTier) {
+            final String javaVersion = this.useJava17.getSelection() ? RuntimeVersion.JAVA_17.toString() :
+                this.useJava11.getSelection() ? RuntimeVersion.JAVA_11.toString() : RuntimeVersion.JAVA_8.toString();
+            deploymentConfig.setRuntimeVersion(javaVersion);
+            deploymentConfig.setEnablePersistentStorage(this.toggleStorage.getSelection());
+        } else {
+            deploymentConfig.setRuntimeVersion(null);
+            deploymentConfig.setEnablePersistentStorage(false);
+        }
 		appConfig.setIsPublic(this.toggleEndpoint.getSelection());
-		deploymentConfig.setRuntimeVersion(javaVersion);
-		deploymentConfig.setEnablePersistentStorage(this.toggleStorage.getSelection());
         deploymentConfig.setCpu(numCpu.getSelection() * 1.0);
         deploymentConfig.setMemoryInGB(numMemory.getSelection() * 1.0);
 		deploymentConfig.setInstanceCount(numInstance.getValue());
@@ -140,10 +159,9 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		final SpringCloudDeploymentConfig deployment = config.getDeployment();
 		this.toggle(this.toggleEndpoint, config.getIsPublic());
 		this.toggle(this.toggleStorage, deployment.getEnablePersistentStorage());
-		final boolean java11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(),
-		        RuntimeVersion.JAVA_11.toString());
-		this.useJava11.setSelection(java11);
-		this.useJava8.setSelection(!java11);
+        this.useJava17.setSelection(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_17.toString()));
+        this.useJava11.setSelection(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString()));
+        this.useJava8.setSelection(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_8.toString()));
 
 		this.txtJvmOptions.setText(deployment.getJvmOptions());
 		final Map<String, String> env = deployment.getEnvironment();
@@ -168,6 +186,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 	public void setEnabled(boolean enable) {
 		this.useJava8.setEnabled(enable);
 		this.useJava11.setEnabled(enable);
+		this.useJava17.setEnabled(enable);
 		this.toggleEndpoint.setEnabled(enable);
 		this.toggleStorage.setEnabled(enable);
 		numCpu.setEnabled(enable);
@@ -188,7 +207,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		Group grpConfiguration = new Group(this, SWT.NONE);
 		grpConfiguration.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		grpConfiguration.setText("Configuration");
-		grpConfiguration.setLayout(new GridLayout(3, false));
+		grpConfiguration.setLayout(new GridLayout(4, false));
 
 		Label lblNewLabel = new Label(grpConfiguration, SWT.NONE);
 		lblNewLabel.setText("Public endpoint:");
@@ -196,19 +215,21 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		this.toggleEndpoint = new Button(grpConfiguration, SWT.CHECK);
 		toggleEndpoint.setText("Disabled");
 		new Label(grpConfiguration, SWT.NONE);
+		new Label(grpConfiguration, SWT.NONE);
 
-		Label lblPersistentStorage = new Label(grpConfiguration, SWT.NONE);
-		GridData gd_lblPersistentStorage = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_lblPersistentStorage.widthHint = 100;
-		lblPersistentStorage.setLayoutData(gd_lblPersistentStorage);
-		lblPersistentStorage.setText("Persistent storage:");
+		this.lblDisk = new Label(grpConfiguration, SWT.NONE);
+		GridData gd_lblDisk = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_lblDisk.widthHint = 100;
+        this.lblDisk.setLayoutData(gd_lblDisk);
+        this.lblDisk.setText("Storage:");
 
 		this.toggleStorage = new Button(grpConfiguration, SWT.CHECK);
 		this.toggleStorage.setText("Disabled");
 		new Label(grpConfiguration, SWT.NONE);
+		new Label(grpConfiguration, SWT.NONE);
 
-		Label lblRuntime = new Label(grpConfiguration, SWT.NONE);
-		lblRuntime.setText("Runtime:");
+		this.lblRuntime = new Label(grpConfiguration, SWT.NONE);
+		this.lblRuntime.setText("Runtime:");
 
 		this.useJava8 = new Button(grpConfiguration, SWT.RADIO);
 		this.useJava8.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -218,20 +239,24 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		this.useJava11 = new Button(grpConfiguration, SWT.RADIO);
 		this.useJava11.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		this.useJava11.setText("Java 11");
-
-		Label lblJvmOptions = new Label(grpConfiguration, SWT.NONE);
-		lblJvmOptions.setText("JVM options:");
-
-		this.txtJvmOptions = new AzureTextInput(grpConfiguration, SWT.BORDER);
-		this.txtJvmOptions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		this.txtJvmOptions.setLabeledBy(lblJvmOptions);
-
-		Label lblEnvVariable = new Label(grpConfiguration, SWT.NONE);
-		lblEnvVariable.setText("Env variables:");
-
-		this.envTable = new AzureTextInput(grpConfiguration, SWT.BORDER);
-		this.envTable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		this.envTable.setLabeledBy(lblEnvVariable);
+		
+		this.useJava17 = new Button(grpConfiguration, SWT.RADIO);
+		this.useJava17.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		this.useJava17.setText("Java 17");
+		
+				Label lblJvmOptions = new Label(grpConfiguration, SWT.NONE);
+				lblJvmOptions.setText("JVM options:");
+				this.txtJvmOptions.setLabeledBy(lblJvmOptions);
+				
+						this.txtJvmOptions = new AzureTextInput(grpConfiguration, SWT.BORDER);
+						this.txtJvmOptions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
+		
+				Label lblEnvVariable = new Label(grpConfiguration, SWT.NONE);
+				lblEnvVariable.setText("Env variables:");
+				this.envTable.setLabeledBy(lblEnvVariable);
+				
+						this.envTable = new AzureTextInput(grpConfiguration, SWT.BORDER);
+						this.envTable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
 
 		Group grpScalingUpout = new Group(this, SWT.NONE);
 		grpScalingUpout.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
