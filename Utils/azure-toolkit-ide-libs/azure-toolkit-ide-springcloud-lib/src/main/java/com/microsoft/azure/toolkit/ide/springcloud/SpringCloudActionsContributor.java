@@ -39,7 +39,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final Consumer<SpringCloudApp> openPublicUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getApplicationUrl());
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", AzureIcons.Action.BROWSER.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).isPublicEndpointEnabled());
+                .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected() && ((SpringCloudApp) s).isPublicEndpointEnabled());
         final Action<SpringCloudApp> openPublicUrlAction = new Action<>(OPEN_PUBLIC_URL, openPublicUrl, openPublicUrlView);
         openPublicUrlAction.setShortcuts("control alt P");
         am.registerAction(OPEN_PUBLIC_URL, openPublicUrlAction);
