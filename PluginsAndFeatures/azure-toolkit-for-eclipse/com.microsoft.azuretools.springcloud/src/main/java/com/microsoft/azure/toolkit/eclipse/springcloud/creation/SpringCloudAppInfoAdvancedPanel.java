@@ -68,7 +68,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
         this.selectorSubscription.setLabeledBy(lblSubscription);
 
         Label lblService = new Label(grpTests, SWT.NONE);
-        lblService.setText("Service:");
+        lblService.setText("Spring Apps:");
         this.selectorCluster = new SpringCloudClusterComboBox(grpTests);
         this.selectorCluster.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         this.selectorCluster.setLabeledBy(lblService);

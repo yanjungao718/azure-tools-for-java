@@ -162,7 +162,7 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
         selectorSubscription.setLabeledBy(lblSubscription);
 
         Label lblService = new Label(this, SWT.NONE);
-        lblService.setText("Service:");
+        lblService.setText("Spring Apps:");
         selectorCluster = new SpringCloudClusterComboBox(this);
         selectorCluster.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         selectorCluster.setLabeledBy(lblService);
