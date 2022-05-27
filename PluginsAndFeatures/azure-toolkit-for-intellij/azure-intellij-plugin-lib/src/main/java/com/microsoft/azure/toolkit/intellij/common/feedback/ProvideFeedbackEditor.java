@@ -30,11 +30,12 @@ import javax.swing.*;
 
 public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
     private final JBCefJSQuery myJSQueryOpenInBrowser;
+    private final JBCefBrowser jbCefBrowser;
     private JPanel pnlRoot;
 
     public ProvideFeedbackEditor(final Project project, VirtualFile virtualFile) {
         super(virtualFile);
-        final JBCefBrowser jbCefBrowser = new JBCefBrowser("https://www.surveymonkey.com/r/PNB5NBL?mode=simple");
+        this.jbCefBrowser = new JBCefBrowser("https://www.surveymonkey.com/r/PNB5NBL?mode=simple");
         final CefBrowser browser = jbCefBrowser.getCefBrowser();
         final JBCefClient client = jbCefBrowser.getJBCefClient();
         pnlRoot.add(jbCefBrowser.getComponent(), new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 3, 3, null, null, null, 0));
@@ -98,13 +99,15 @@ public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
     }
 
     @Override
-    public @Nls(capitalization = Nls.Capitalization.Title)
-    @Nonnull String getName() {
+    @Nonnull
+    @Nls(capitalization = Nls.Capitalization.Title)
+    public String getName() {
         return "Provide Feedback";
     }
 
     @Override
     public void dispose() {
         Disposer.dispose(myJSQueryOpenInBrowser);
+        Disposer.dispose(jbCefBrowser);
     }
 }
