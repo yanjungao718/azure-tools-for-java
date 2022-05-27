@@ -174,7 +174,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         }
         final FavoriteDraft draft = this.create(resource.getId(), null);
         draft.setResource(resource);
-        draft.commit();
+        draft.createIfNotExist();
     }
 
     public void unpin(@Nonnull String resourceId) {
