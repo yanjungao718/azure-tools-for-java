@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Package for Microsoft Azure Libraries for Java UI
 Bundle-SymbolicName: com.microsoft.azuretools.wasdkjava.ui;singleton:=true
-Bundle-Version: 3.31.0.qualifier
+Bundle-Version: 3.32.0.qualifier
 Bundle-Vendor: Microsoft Corp.
 Bundle-Activator: com.microsoft.azuretools.wasdkjava.ui.Activator
 Require-Bundle: org.eclipse.ui,

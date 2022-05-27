@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Container
 Bundle-SymbolicName: com.microsoft.azuretools.container;singleton:=true
-Bundle-Version: 3.31.0.qualifier
+Bundle-Version: 3.32.0.qualifier
 Bundle-Activator: com.microsoft.azuretools.container.Activator
 Bundle-Vendor: MICROSOFT
 Require-Bundle: org.eclipse.ui,
