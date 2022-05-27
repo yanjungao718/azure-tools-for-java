@@ -47,7 +47,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends Composite implemen
     public AbstractSpringCloudAppInfoPanel(Composite parent, @Nullable final SpringCloudCluster cluster) {
         super(parent, SWT.NONE);
         this.cluster = cluster;
-        this.defaultAppName = String.format("springcloud-app-%s", DATE_FORMAT.format(new Date()));
+        this.defaultAppName = String.format("spring-app-%s", DATE_FORMAT.format(new Date()));
     }
 
     protected void init() {

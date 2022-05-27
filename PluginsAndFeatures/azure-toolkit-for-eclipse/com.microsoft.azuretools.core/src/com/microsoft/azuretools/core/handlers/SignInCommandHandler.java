@@ -198,7 +198,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
         }
         final AzureTask<?> currentTask = (AzureTask<?>) op;
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true,
-                () -> doLogin(Optional.ofNullable(currentTask).map(t -> t.getMonitor()).orElse(null), auth));
+                () -> doLogin(null, auth));
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
     }
 

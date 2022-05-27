@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Spring Cloud for Eclipse
+Bundle-Name: Azure Spring Apps for Eclipse
 Bundle-SymbolicName: com.microsoft.azuretools.springcloud;singleton:=true
 Bundle-Version: 3.31.0.qualifier
 Bundle-Activator: com.microsoft.azure.toolkit.eclipse.springcloud.Activator

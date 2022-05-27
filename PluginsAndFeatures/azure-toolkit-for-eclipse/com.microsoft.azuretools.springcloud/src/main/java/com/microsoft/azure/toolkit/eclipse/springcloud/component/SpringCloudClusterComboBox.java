@@ -51,7 +51,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
     @NotNull
     @Override
     @AzureOperation(
-        name = "springcloud|cluster.list.subscription",
+        name = "springcloud.list_clusters.subscription",
         params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )
