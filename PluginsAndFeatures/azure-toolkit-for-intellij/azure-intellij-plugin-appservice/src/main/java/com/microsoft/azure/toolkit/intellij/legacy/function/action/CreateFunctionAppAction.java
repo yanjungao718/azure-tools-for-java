@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateFunctionAppAction {
     @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)
@@ -49,7 +49,8 @@ public class CreateFunctionAppAction {
                     }, (error) -> {
                         final String title = String.format("Reopen dialog \"%s\"", dialog.getTitle());
                         final Consumer<Object> act = t -> openDialog(project, config);
-                        final Action<?> action = new Action<>(act, new ActionView.Builder(title));
+                        final Action.Id<Object> REOPEN = Action.Id.of("function.reopen_creation_dialog");
+                        final Action<?> action = new Action<>(REOPEN, act, new ActionView.Builder(title));
                         AzureMessager.getMessager().error(error, null, action);
                     });
             });
@@ -59,7 +60,7 @@ public class CreateFunctionAppAction {
 
     @AzureOperation(name = "function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureString title = title("function.create_app.app", config.getName());
+        final AzureString title = description("function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public boolean show(IAzureMessage raw) {

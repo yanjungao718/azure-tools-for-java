@@ -76,12 +76,11 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.eclipse.common.component.EclipseProjectComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
@@ -589,7 +588,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             TableItem refreshingItem = new TableItem(table, SWT.NULL);
             refreshingItem.setText(REFRESHING);
             Mono.fromCallable(() -> {
-                return Azure.az(AzureAppService.class).webApps().stream().parallel()
+                return Azure.az(AzureWebApp.class).webApps().stream().parallel()
                         .filter(webApp -> !webApp.getRuntime().isDocker()
                                 && !Objects.equals(webApp.getRuntime().getJavaVersion(), JavaVersion.OFF))
                         .sorted((o1, o2) -> o1.name().compareTo(o2.name())).collect(Collectors.toList());

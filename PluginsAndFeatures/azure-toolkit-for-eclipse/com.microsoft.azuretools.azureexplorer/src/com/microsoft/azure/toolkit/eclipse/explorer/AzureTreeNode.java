@@ -21,9 +21,12 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.TreeViewer;
 
-import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
+import com.microsoft.azure.toolkit.eclipse.common.EclipseAzureIcons;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView.Label;
@@ -106,9 +109,9 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
         final String label = node.view().getLabel();
         return BooleanUtils.isFalse(loaded) ? label + " (Refreshing...)" : label;
     }
-
-    public String getIconPath() {
-        return node.view().getIconPath();
+    
+    public AzureIcon getAzureIcon() {
+    	return node.view().getIcon();
     }
 
     public void installActionsMenu(@Nonnull IMenuManager manager) {
@@ -123,7 +126,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
         this.loaded = null;
     }
 
-    private void applyActionGroupToMenu(@Nonnull ActionGroup actionGroup, @Nonnull IMenuManager manager,
+    private void applyActionGroupToMenu(@Nonnull IActionGroup actionGroup, @Nonnull IMenuManager manager,
             @Nullable Object source) {
         final AzureActionManager actionManager = AzureActionManager.getInstance();
         for (Object raw : actionGroup.getActions()) {
@@ -150,7 +153,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
             } else if (raw instanceof ActionGroup) {
                 applyActionGroupToMenu((ActionGroup) raw, manager, source);
             }
-            if (action != null) {
+            if (action != null && !ResourceCommonActionsContributor.PIN.getId().equals(action.getId())) {
                 manager.add(action);
             }
         }
@@ -163,11 +166,16 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
             return null;
         }
         final ImageDescriptor imageDescriptor = StringUtils.isEmpty(view.getIconPath()) ? null
-                : AzureIcons.getIcon(view.getIconPath());
+                : EclipseAzureIcons.getIcon(view.getIconPath());
         final Action eclipseAction = new Action(view.getLabel(), imageDescriptor) {
             @Override
             public void run() {
                 action.handle(source);
+            }
+
+            @Override
+            public String getId() {
+                return action.getId();
             }
         };
         eclipseAction.setEnabled(view.isEnabled() && action.getHandler(source, null) != null);

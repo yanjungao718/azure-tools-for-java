@@ -10,7 +10,6 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.storage.creation.VMStorageAccountCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
@@ -86,7 +85,7 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
         final List<StorageAccountConfig> resources = Optional.ofNullable(subscription)
                 .map(subscription -> Azure.az(AzureStorageAccount.class).accounts(subscription.getId()).list().stream()
                     .map(account -> StorageAccountConfig.builder().id(account.getId()).name(account.getName())
-                        .resourceGroup(ResourceGroup.builder().name(account.getResourceGroupName()).build())
+                        .resourceGroup(account.getResourceGroup())
                         .subscription(account.getSubscription()).build()).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         if (draft != null) {

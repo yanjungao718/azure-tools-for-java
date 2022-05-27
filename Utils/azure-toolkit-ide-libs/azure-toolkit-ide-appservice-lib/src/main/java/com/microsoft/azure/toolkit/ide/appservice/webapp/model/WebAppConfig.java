@@ -6,17 +6,15 @@
 package com.microsoft.azure.toolkit.ide.appservice.webapp.model;
 
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -47,22 +45,27 @@ public class WebAppConfig extends AppServiceConfig {
 
     public static WebAppConfig getWebAppDefaultConfig(final String name) {
         final String appName = StringUtils.isEmpty(name) ? String.format("app-%s", DATE_FORMAT.format(new Date())) :
-                String.format("app-%s-%s", name, DATE_FORMAT.format(new Date()));
+            String.format("app-%s-%s", name, DATE_FORMAT.format(new Date()));
         final Subscription subscription = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions().stream().findFirst().orElse(null);
-        final DraftResourceGroup group = new DraftResourceGroup(subscription, StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
-        group.setSubscription(subscription);
+        final String rgName = StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH);
         final Region region = AppServiceConfig.getDefaultRegion();
+        final ResourceGroupConfig group = ResourceGroupConfig.builder().subscriptionId(subscription.getId()).name(rgName).region(region).build();
         final String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
-        final DraftServicePlan plan = new DraftServicePlan(subscription, planName, region, WebAppConfig.DEFAULT_RUNTIME.getOperatingSystem(),
-                WebAppConfig.DEFAULT_PRICING_TIER);
+        final AppServicePlanConfig plan = AppServicePlanConfig.builder()
+            .subscriptionId(subscription.getId())
+            .resourceGroupName(rgName)
+            .name(planName)
+            .region(region)
+            .os(WebAppConfig.DEFAULT_RUNTIME.getOperatingSystem())
+            .pricingTier(WebAppConfig.DEFAULT_PRICING_TIER).build();
         return WebAppConfig.builder()
-                .subscription(subscription)
-                .resourceGroup(group)
-                .name(appName)
-                .servicePlan(plan)
-                .runtime(WebAppConfig.DEFAULT_RUNTIME)
-                .pricingTier(WebAppConfig.DEFAULT_PRICING_TIER)
-                .region(region).build();
+            .subscription(subscription)
+            .resourceGroup(group)
+            .name(appName)
+            .servicePlan(plan)
+            .runtime(WebAppConfig.DEFAULT_RUNTIME)
+            .pricingTier(WebAppConfig.DEFAULT_PRICING_TIER)
+            .region(region).build();
     }
 
     public static com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig convertToTaskConfig(WebAppConfig config) {
@@ -71,25 +74,13 @@ public class WebAppConfig extends AppServiceConfig {
         result.appName(config.getName());
         result.resourceGroup(config.getResourceGroupName());
         result.subscriptionId(config.getSubscriptionId());
-        result.pricingTier(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanEntity::getPricingTier).orElseGet(config::getPricingTier));
+        result.pricingTier(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getPricingTier).orElseGet(config::getPricingTier));
         result.region(config.getRegion());
-        result.servicePlanName(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanEntity::getName).orElse(null));
+        result.servicePlanName(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getName).orElse(null));
         result.servicePlanResourceGroup(Optional.ofNullable(config.getServicePlan())
-                .map(AppServicePlanEntity::getResourceGroup).orElseGet(config::getResourceGroupName));
+            .map(AppServicePlanConfig::getResourceGroupName).orElseGet(config::getResourceGroupName));
         Optional.ofNullable(config.getRuntime()).ifPresent(runtime -> result.runtime(
-                new RuntimeConfig().os(runtime.getOperatingSystem()).javaVersion(runtime.getJavaVersion()).webContainer(runtime.getWebContainer())));
+            new RuntimeConfig().os(runtime.getOperatingSystem()).javaVersion(runtime.getJavaVersion()).webContainer(runtime.getWebContainer())));
         return result;
-    }
-
-    public static WebAppConfig fromRemote(WebApp webApp) {
-        return WebAppConfig.builder()
-            .name(webApp.getName())
-            .resourceId(webApp.getId())
-            .servicePlan(AppServicePlanEntity.builder().id(webApp.getAppServicePlan().getId()).build())
-            .subscription(Subscription.builder().id(webApp.getSubscriptionId()).build())
-            .resourceGroup(ResourceGroup.builder().name(webApp.getResourceGroupName()).build())
-                .runtime(webApp.getRuntime())
-                .region(webApp.getRegion())
-                .build();
     }
 }

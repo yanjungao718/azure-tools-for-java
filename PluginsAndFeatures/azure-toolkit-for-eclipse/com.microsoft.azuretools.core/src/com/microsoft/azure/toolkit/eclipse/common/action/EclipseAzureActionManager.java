@@ -70,7 +70,7 @@ public class EclipseAzureActionManager extends AzureActionManager {
             return null;
         }
         return Optional.ofNullable((Action<D>) actions.get(actionId)).orElseGet(() -> {
-            return new Action<>((D d, ExecutionEvent event) -> {
+            return new Action<>(id, (D d, ExecutionEvent event) -> {
                 try {
                     handlerService.executeCommand(actionId, null);
                 } catch (org.eclipse.core.commands.ExecutionException | NotDefinedException | NotEnabledException | NotHandledException error) {

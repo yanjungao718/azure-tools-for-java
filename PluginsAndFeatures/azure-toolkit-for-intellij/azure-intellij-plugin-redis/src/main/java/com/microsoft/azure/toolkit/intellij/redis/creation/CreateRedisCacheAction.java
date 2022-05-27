@@ -6,14 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.redis.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCacheDraft;
@@ -44,10 +43,10 @@ public class CreateRedisCacheAction {
 
     @AzureOperation(name = "redis.create_redis.redis", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final RedisConfig config, final Project project) {
-        final AzureString title = AzureOperationBundle.title("redis.create_redis.redis", config.getName());
+        final AzureString title = OperationBundle.description("redis.create_redis.redis", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
-            if (rg instanceof Draft) {
+            if (rg.isDraftForCreating()) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
             final RedisCacheModule caches = Azure.az(AzureRedis.class).caches(config.getSubscription().getId());

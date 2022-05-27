@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.intellij.database.postgre.creation.CreatePost
 import com.microsoft.azure.toolkit.intellij.database.postgre.creation.PostgreSqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
@@ -29,7 +28,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -59,12 +57,7 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
             final DatabaseServerConfig config = PostgreSqlCreationDialog.getDefaultConfig();
             config.setSubscription(r.getSubscription());
             config.setRegion(r.getRegion());
-            config.setResourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .subscriptionId(r.getSubscriptionId())
-                .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                .build());
+            config.setResourceGroup(r);
             CreatePostgreSqlAction.create(e.getProject(), config);
         };
         am.registerHandler(PostgreSqlActionsContributor.GROUP_CREATE_POSTGRE, (r, e) -> true, groupCreateServerHandler);

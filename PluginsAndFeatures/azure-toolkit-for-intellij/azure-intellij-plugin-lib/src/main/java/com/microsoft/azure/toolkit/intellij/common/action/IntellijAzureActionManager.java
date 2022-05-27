@@ -72,7 +72,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             return (Action<D>) ((AnActionWrapper<?>) origin).getAction();
         } else {
             final ActionView.Builder view = new ActionView.Builder(origin.getTemplateText());
-            return new Action<>((D d, AnActionEvent e) -> origin.actionPerformed(e), view).setAuthRequired(false);
+            return new Action<>(id, (D d, AnActionEvent e) -> origin.actionPerformed(e), view).setAuthRequired(false);
         }
     }
 

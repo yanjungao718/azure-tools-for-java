@@ -5,7 +5,7 @@ intellij {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.1', {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv', {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml', {

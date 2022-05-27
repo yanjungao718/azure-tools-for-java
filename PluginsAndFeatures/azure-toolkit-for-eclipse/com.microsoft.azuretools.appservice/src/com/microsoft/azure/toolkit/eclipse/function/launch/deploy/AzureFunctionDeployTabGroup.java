@@ -12,6 +12,6 @@ import com.microsoft.azure.toolkit.eclipse.function.launch.model.FunctionDeployC
 
 public class AzureFunctionDeployTabGroup extends AzureLaunchConfigurationTabGroup {
     public AzureFunctionDeployTabGroup() {
-        super("Run Azure Function", (parent) -> new AzureFunctionDeployComposite(parent, SWT.NONE), FunctionDeployConfiguration.class);
+        super("Deploy Azure Function", (parent) -> new AzureFunctionDeployComposite(parent, SWT.NONE), FunctionDeployConfiguration.class);
     }
 }

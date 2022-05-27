@@ -20,9 +20,8 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationContext;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.Operation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
@@ -38,7 +37,6 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
@@ -193,19 +191,19 @@ public class SignInCommandHandler extends AzureAbstractHandler {
     }
 
     private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
-        IAzureOperation<?> op = AzureOperationContext.current().currentOperation();
+        final AzureString title = OperationBundle.description("account.sign_in");
+        Operation op = Operation.current();
         while (op != null && !(op instanceof AzureTask)) {
             op = op.getParent();
         }
         final AzureTask<?> currentTask = (AzureTask<?>) op;
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true,
-                () -> doLogin(Optional.ofNullable(currentTask).map(t -> t.getMonitor()).orElse(null), auth));
+                () -> doLogin(null, auth));
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
     }
 
     private static Single<DeviceCodeAccount> loginDeviceCodeSingle() {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
+        final AzureString title = OperationBundle.description("account.sign_in");
         final AzureTask<DeviceCodeAccount> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
             final AzureAccount az = Azure.az(AzureAccount.class);
             return (DeviceCodeAccount) checkCanceled(null, az.loginAsync(AuthType.DEVICE_CODE, true), () -> {
@@ -248,7 +246,7 @@ public class SignInCommandHandler extends AzureAbstractHandler {
     }
 
     private static <T> T call(Callable<T> loginCallable, String authMethod) {
-        final Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
+        final com.microsoft.azuretools.telemetrywrapper.Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         final Map<String, String> properties = new HashMap<>();
         properties.put(SIGNIN_METHOD, authMethod);
         try {

@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
@@ -77,6 +78,7 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
 
     public static class RegisterActivity extends PreloadingActivity {
         @Override
+        @ExceptionNotification
         public void preload(@NotNull ProgressIndicator progressIndicator) {
             ResourceManager.registerDefinition(INSTANCE);
         }

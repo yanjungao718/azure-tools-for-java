@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.eclipse.common.launch.LaunchConfigurationUtil
 import com.microsoft.azure.toolkit.eclipse.function.launch.model.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azuretools.appservice.util.CommonUtils;
 
 public class DeployAzureFunctionAction {
     private static final String RUN = "run";
@@ -36,7 +37,7 @@ public class DeployAzureFunctionAction {
         final ILaunchConfigurationType deployType = getLaunchManager()
                 .getLaunchConfigurationType(DEPLOY_CONFIGURATION_TYPE_ID);
         final ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(deployType);
-        final FunctionAppConfig targetConfig = FunctionAppConfig.fromRemote(target);
+        final FunctionAppConfig targetConfig = CommonUtils.toConfig(target);
         final ILaunchConfiguration configuration = Arrays.stream(configs).filter(config -> {
             try {
                 final FunctionDeployConfiguration deployConfiguration = LaunchConfigurationUtils

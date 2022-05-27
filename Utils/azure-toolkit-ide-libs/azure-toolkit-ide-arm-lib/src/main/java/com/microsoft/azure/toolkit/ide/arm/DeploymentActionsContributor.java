@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class DeploymentActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -26,40 +26,40 @@ public class DeploymentActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_ACTIONS = "actions.resourceDeployments.deployment";
     public static final String DEPLOYMENTS_ACTIONS = "actions.resourceDeployments.deployments";
 
-    public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("action.resourceDeployment.edit");
-    public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("action.resourceDeployment.update");
-    public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("action.resourceDeployment.export_template");
-    public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("action.resourceDeployment.export_parameter");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("action.arm.create_deployment.group");
+    public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("arm.edit_deployment");
+    public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("arm.update_deployment");
+    public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("arm.export_template");
+    public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("arm.export_parameter");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("group.create_arm_deployment");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder editDeployment = new ActionView.Builder("Edit Deployment", AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("arm.edit_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("arm.edit_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable());
         final ActionView.Builder updateDeployment = new ActionView.Builder("Update Deployment",  AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("arm.update_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("arm.update_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable());
         final ActionView.Builder exportTemplate = new ActionView.Builder("Export Template File",   AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("arm.export_template.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("arm.export_template.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
         final ActionView.Builder exportParameter = new ActionView.Builder("Export Parameter File",  AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("arm.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("arm.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
-        final Action<ResourceDeployment> editAction = new Action<>(editDeployment);
-        final Action<ResourceDeployment> exportTemplateAction = new Action<>(exportTemplate);
-        final Action<ResourceDeployment> exportParameterAction = new Action<>(exportParameter);
+        final Action<ResourceDeployment> editAction = new Action<>(EDIT, editDeployment);
+        final Action<ResourceDeployment> exportTemplateAction = new Action<>(EXPORT_TEMPLATE, exportTemplate);
+        final Action<ResourceDeployment> exportParameterAction = new Action<>(EXPORT_PARAMETER, exportParameter);
         editAction.setShortcuts(am.getIDEDefaultShortcuts().view());
         exportTemplateAction.setShortcuts("control alt E");
         am.registerAction(EDIT, editAction);
-        am.registerAction(UPDATE, new Action<>(updateDeployment));
+        am.registerAction(UPDATE, new Action<>(UPDATE, updateDeployment));
         am.registerAction(EXPORT_TEMPLATE, exportTemplateAction);
         am.registerAction(EXPORT_PARAMETER, exportParameterAction);
 
         final ActionView.Builder createDeploymentView = new ActionView.Builder("Deployment")
-            .title(s -> Optional.ofNullable(s).map(r -> title("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(createDeploymentView));
+        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(GROUP_CREATE_DEPLOYMENT, createDeploymentView));
     }
 
     @Override

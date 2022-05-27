@@ -25,8 +25,8 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
@@ -90,7 +90,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private String defaultPricingTier;
     private String defaultResourceGroup;
     private String defaultSubscriptionId;
-    private String defaultAppServicePlanId;
+    private String defaultAppServicePlanName;
+    private String defaultAppServicePlanResourceGroupName;
     private JTextField textSelectedAppName; // invisible, used to trigger validation on tableRowSelection
     private JComboBox<Artifact> cbArtifact;
     private JLabel lblArtifact;
@@ -394,6 +395,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             if (rdoCreateAppServicePlan.isSelected()) {
                 webAppOnLinuxDeployConfiguration.setCreatingNewAppServicePlan(true);
                 webAppOnLinuxDeployConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
+                webAppOnLinuxDeployConfiguration.setAppServicePlanResourceGroupName(webAppOnLinuxDeployConfiguration.getResourceGroupName());
                 final Region selectedLocation = (Region) cbLocation.getSelectedItem();
                 if (selectedLocation != null) {
                     webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.getName());
@@ -413,9 +415,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 webAppOnLinuxDeployConfiguration.setCreatingNewAppServicePlan(false);
                 final AppServicePlan selectedAsp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
                 if (selectedAsp != null) {
-                    webAppOnLinuxDeployConfiguration.setAppServicePlanId(selectedAsp.id());
-                } else {
-                    webAppOnLinuxDeployConfiguration.setAppServicePlanId(null);
+                    webAppOnLinuxDeployConfiguration.setAppServicePlanName(selectedAsp.getName());
+                    webAppOnLinuxDeployConfiguration.setAppServicePlanResourceGroupName(selectedAsp.getResourceGroupName());
                 }
             }
         }
@@ -453,7 +454,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 WEBAPP_CONTAINER_DEFAULT_PRICING_TIER :
                 new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
         defaultResourceGroup = conf.getResourceGroupName();
-        defaultAppServicePlanId = conf.getAppServicePlanId();
+        defaultAppServicePlanName = conf.getAppServicePlanName();
+        defaultAppServicePlanResourceGroupName = conf.getAppServicePlanResourceGroupName();
 
         // pnlUseExisting
         loadWebAppList();
@@ -633,7 +635,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (appServicePlans != null && appServicePlans.size() > 0) {
             appServicePlans.forEach((item) -> {
                 cbExistAppServicePlan.addItem(item);
-                if (StringUtils.equals(item.id(), defaultAppServicePlanId)) {
+                if (StringUtils.equals(item.getName(), defaultAppServicePlanName) &&
+                    StringUtils.equals(item.getResourceGroupName(), defaultAppServicePlanResourceGroupName)) {
                     cbExistAppServicePlan.setSelectedItem(item);
                     // defaultAppServicePlanId = null;
                 }

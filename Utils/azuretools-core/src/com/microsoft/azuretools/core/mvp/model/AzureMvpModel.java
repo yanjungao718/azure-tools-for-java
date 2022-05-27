@@ -7,13 +7,15 @@ package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Deployment;
+import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.ArrayUtils;
@@ -102,13 +104,10 @@ public class AzureMvpModel {
         name = "arm.list_resource_groups",
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<ResourceGroup>> getResourceGroups(String sid) {
-        List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
-        resourceGroups.addAll(az(AzureResources.class).groups(sid).list().stream()
-            .map(r -> new ResourceEx<>(r.toPojo(), sid)).collect(Collectors.toList()));
-        Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
-                resourceGroupResourceEx.getResource().getName()));
-        return resourceGroups;
+    public List<ResourceGroup> getResourceGroups(String sid) {
+        return az(AzureResources.class).groups(sid).list().stream()
+            .sorted(getComparator(AbstractAzResource::getName))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -119,13 +118,11 @@ public class AzureMvpModel {
             name = "arm.list_resource_groups",
             type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<ResourceGroup>> getResourceGroups() {
-        List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
-        resourceGroups.addAll(az(AzureResources.class).list().stream().flatMap(r -> r.resourceGroups().list().stream())
-            .map(r -> new ResourceEx<>(r.toPojo(), r.getSubscriptionId())).collect(Collectors.toList()));
-        Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
-                resourceGroupResourceEx.getResource().getName()));
-        return resourceGroups;
+    public List<ResourceGroup> getResourceGroups() {
+        return az(AzureResources.class).list().stream()
+            .flatMap(r -> r.resourceGroups().list().stream())
+            .sorted(getComparator(AbstractAzResource::getName))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -155,7 +152,7 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceGroup> getResourceGroupsBySubscriptionId(String sid) {
-        return az(AzureResources.class).groups(sid).list().stream().map(r -> r.toPojo())
+        return az(AzureResources.class).groups(sid).list().stream()
             .sorted(getComparator(ResourceGroup::getName)).collect(Collectors.toList());
     }
 
@@ -169,7 +166,6 @@ public class AzureMvpModel {
     )
     public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
         return Optional.ofNullable(az(AzureResources.class).groups(sid).get(name, name))
-            .map(com.microsoft.azure.toolkit.lib.resource.ResourceGroup::toPojo)
             .orElseThrow(() -> new Exception(CANNOT_GET_RESOURCE_GROUP));
     }
 
@@ -214,13 +210,10 @@ public class AzureMvpModel {
         params = {"rgName", "sid"},
         type = AzureOperation.Type.SERVICE
     )
-    public List<ResourceEx<Deployment>> getDeploymentByRgName(String sid, String rgName) {
-        List<ResourceEx<Deployment>> res = new ArrayList<>();
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        res.addAll(azure.deployments().listByResourceGroup(rgName).stream().
-            map(deployment -> new ResourceEx<>(deployment, sid)).collect(Collectors.toList()));
-        Collections.sort(res,
-                getComparator((ResourceEx<Deployment> deploymentResourceEx) -> deploymentResourceEx.getResource().name()));
+    public List<Deployment> getDeploymentByRgName(String sid, String rgName) {
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        final List<Deployment> res = azure.deployments().listByResourceGroup(rgName);
+        res.sort(getComparator(HasName::name));
         return res;
     }
 

@@ -19,29 +19,29 @@ import com.microsoft.azure.toolkit.redis.RedisCache;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class RedisActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
-    public static final Action.Id<AzResource<?, ?, ?>> OPEN_EXPLORER = Action.Id.of("action.redis.open_explorer");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("action.redis.create_redis.group");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_EXPLORER = Action.Id.of("redis.open_explorer");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("group.create_redis");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
-            .title(s -> Optional.ofNullable(s).map(r -> title("redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
             .enabled(s -> s instanceof RedisCache && ((RedisCache) s).getFormalStatus().isRunning());
-        final Action<AzResource<?, ?, ?>> action = new Action<>(showExplorerView);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_EXPLORER, showExplorerView);
         action.setShortcuts(am.getIDEDefaultShortcuts().view());
         am.registerAction(OPEN_EXPLORER, action);
 
         final ActionView.Builder createRedisView = new ActionView.Builder("Redis Cache")
-            .title(s -> Optional.ofNullable(s).map(r -> title("redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_REDIS, new Action<>(createRedisView));
+        am.registerAction(GROUP_CREATE_REDIS, new Action<>(GROUP_CREATE_REDIS, createRedisView));
     }
 
     @Override

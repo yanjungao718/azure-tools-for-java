@@ -34,7 +34,7 @@ public class SpringCloudAppCreationDialog extends AzureDialog<SpringCloudAppConf
 
     @Override
     protected String getDialogTitle() {
-        return "Create Azure Spring Cloud app";
+        return "Create Azure Spring App";
     }
 
     @Override

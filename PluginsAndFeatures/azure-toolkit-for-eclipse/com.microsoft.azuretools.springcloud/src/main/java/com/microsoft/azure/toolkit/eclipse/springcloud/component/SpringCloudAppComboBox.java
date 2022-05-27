@@ -59,9 +59,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @NotNull
     @Override
     @AzureOperation(
-        name = "springcloud|app.list.cluster",
-        params = {"this.cluster.name()"},
-        type = AzureOperation.Type.SERVICE
+            name = "springcloud.list_apps.cluster",
+            params = {"this.cluster.name()"},
+            type = AzureOperation.Type.SERVICE
     )
     protected List<? extends SpringCloudApp> loadItems() throws Exception {
         final List<SpringCloudApp> apps = new ArrayList<>();
@@ -79,7 +79,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     protected Control getExtension() {
         final Button button = new Button(this, SWT.PUSH);
         button.setText("Create");
-        button.setToolTipText("Create Azure Spring Cloud app");
+        button.setToolTipText("Create an Azure Spring App.");
         button.addListener(SWT.Selection, event -> this.showAppCreationPopup());
         return button;
     }

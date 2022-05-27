@@ -9,23 +9,25 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.platform.RuntimeComboBox;
-import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan.ServicePlanComboBox;
-import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.platform.RuntimeComboBox;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan.ServicePlanComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
@@ -83,16 +86,22 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         final String name = this.textName.getValue();
         final Runtime runtime = this.selectorRuntime.getValue();
         final Region region = this.selectorRegion.getValue();
-        final AppServicePlanEntity servicePlan = this.selectorServicePlan.getValue();
+        final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final T config = supplier.get();
         config.setSubscription(subscription);
-        config.setResourceGroup(resourceGroup);
+        config.setResourceGroup(ResourceGroupConfig.fromResource(resourceGroup));
         config.setName(name);
         config.setRuntime(runtime);
         config.setRegion(region);
-        config.setServicePlan(servicePlan);
+        final AppServicePlanConfig planConfig = AppServicePlanConfig.fromResource(servicePlan);
+        if (Objects.nonNull(planConfig) && servicePlan.isDraftForCreating()) {
+            planConfig.setResourceGroupName(config.getResourceGroupName());
+            planConfig.setRegion(region);
+            planConfig.setOs(Objects.requireNonNull(runtime).getOperatingSystem());
+        }
+        config.setServicePlan(planConfig);
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
             final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
@@ -104,11 +113,11 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     @Override
     public void setValue(final T config) {
         this.selectorSubscription.setValue(config.getSubscription());
-        this.selectorGroup.setValue(config.getResourceGroup());
+        this.selectorGroup.setValue(Optional.ofNullable(config.getResourceGroup()).map(ResourceGroupConfig::toResource).orElse(null));
         this.textName.setValue(config.getName());
         this.selectorRuntime.setValue(config.getRuntime());
         this.selectorRegion.setValue(config.getRegion());
-        this.selectorServicePlan.setValue(config.getServicePlan());
+        this.selectorServicePlan.setValue(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::toResource).orElse(null));
     }
 
     @Override
@@ -212,7 +221,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            final AppServicePlanEntity plan = (AppServicePlanEntity) e.getItem();
+            final AppServicePlan plan = (AppServicePlan) e.getItem();
             if (plan == null || plan.getPricingTier() == null) {
                 return;
             }

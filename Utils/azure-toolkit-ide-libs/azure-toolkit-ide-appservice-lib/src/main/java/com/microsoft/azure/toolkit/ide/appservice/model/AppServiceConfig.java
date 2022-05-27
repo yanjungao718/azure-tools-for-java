@@ -7,13 +7,13 @@ package com.microsoft.azure.toolkit.ide.appservice.model;
 
 import com.azure.core.management.AzureEnvironment;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -46,8 +46,8 @@ public abstract class AppServiceConfig {
     private String resourceId;
     private Path application;
     private Subscription subscription;
-    private ResourceGroup resourceGroup;
-    private AppServicePlanEntity servicePlan;
+    private ResourceGroupConfig resourceGroup;
+    private AppServicePlanConfig servicePlan;
     private Region region;
     private PricingTier pricingTier;
     @Builder.Default
@@ -58,7 +58,7 @@ public abstract class AppServiceConfig {
         final Map<String, String> result = new HashMap<>();
         result.put("subscriptionId", Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY));
         result.put("region", Optional.ofNullable(region).map(Region::getName).orElse(StringUtils.EMPTY));
-        final PricingTier pricingTier = Optional.ofNullable(getServicePlan()).map(AppServicePlanEntity::getPricingTier).orElse(getPricingTier());
+        final PricingTier pricingTier = Optional.ofNullable(getServicePlan()).map(AppServicePlanConfig::getPricingTier).orElse(getPricingTier());
         result.put("pricingTier", Optional.ofNullable(pricingTier).map(PricingTier::getSize).orElse(StringUtils.EMPTY));
         return result;
     }
@@ -75,7 +75,7 @@ public abstract class AppServiceConfig {
     }
 
     public String getResourceGroupName() {
-        return Optional.ofNullable(resourceGroup).map(ResourceGroup::getName).orElse(StringUtils.EMPTY);
+        return Optional.ofNullable(resourceGroup).map(ResourceGroupConfig::getName).orElse(StringUtils.EMPTY);
     }
 
     public String getSubscriptionId() {

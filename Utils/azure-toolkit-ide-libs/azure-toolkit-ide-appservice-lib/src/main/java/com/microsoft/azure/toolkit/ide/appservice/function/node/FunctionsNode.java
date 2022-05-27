@@ -34,10 +34,11 @@ public class FunctionsNode extends Node<FunctionApp> {
         this.view(new FunctionsNodeView(functionApp));
         this.actions(FunctionAppActionsContributor.FUNCTIONS_ACTIONS);
         this.addChildren(ignore -> functionApp.listFunctions().stream()
-                        .sorted(Comparator.comparing(FunctionEntity::getName)).collect(Collectors.toList()),
-                (function, functionsNode) -> new Node<>(function)
-                        .view(new NodeView.Static(function.getName(), "/icons/function-trigger.png", getFunctionTriggerType(function)))
-                        .actions(FunctionAppActionsContributor.FUNCTION_ACTION));
+                .sorted(Comparator.comparing(FunctionEntity::getName)).collect(Collectors.toList()),
+            (function, functionsNode) -> new Node<>(function)
+                .view(new NodeView.Static(function.getName(), "/icons/function-trigger.png", getFunctionTriggerType(function)))
+                .doubleClickAction(FunctionAppActionsContributor.TRIGGER_FUNCTION)
+                .actions(FunctionAppActionsContributor.FUNCTION_ACTION));
     }
 
     private static String getFunctionTriggerType(@Nonnull FunctionEntity functionEntity) {

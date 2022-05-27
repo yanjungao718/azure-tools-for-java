@@ -18,6 +18,8 @@ import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfigurationFactory;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
@@ -30,6 +32,8 @@ import java.util.Iterator;
 public class FunctionRunConfigurationProducer extends LazyRunConfigurationProducer<AzureRunConfigurationBase> {
     @NotNull
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.setup_run_configuration", type = AzureOperation.Type.ACTION)
     public ConfigurationFactory getConfigurationFactory() {
         return Arrays.stream(AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories())
                     .filter(configurationFactory -> configurationFactory instanceof FunctionRunConfigurationFactory)
@@ -38,6 +42,8 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.setup_run_configuration", type = AzureOperation.Type.ACTION)
     protected boolean setupConfigurationFromContext(AzureRunConfigurationBase runConfigurationBase, ConfigurationContext context, Ref ref) {
         if (!(runConfigurationBase instanceof FunctionRunConfiguration || runConfigurationBase instanceof FunctionDeployConfiguration)) {
             return false;
@@ -79,6 +85,8 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.setup_run_configuration", type = AzureOperation.Type.ACTION)
     public boolean isConfigurationFromContext(AzureRunConfigurationBase appConfiguration, ConfigurationContext context) {
         if (!(appConfiguration instanceof FunctionRunConfiguration)) {
             return false;

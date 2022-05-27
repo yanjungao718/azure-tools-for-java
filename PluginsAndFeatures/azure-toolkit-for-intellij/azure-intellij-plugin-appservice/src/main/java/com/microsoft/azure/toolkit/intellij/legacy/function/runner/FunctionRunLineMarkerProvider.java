@@ -15,12 +15,16 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
 import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FunctionRunLineMarkerProvider extends RunLineMarkerContributor {
     @Nullable
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.detect_function_method", type = AzureOperation.Type.ACTION)
     public Info getInfo(@NotNull PsiElement e) {
         if (isIdentifier(e)) {
             final PsiElement parentElement = e.getParent();

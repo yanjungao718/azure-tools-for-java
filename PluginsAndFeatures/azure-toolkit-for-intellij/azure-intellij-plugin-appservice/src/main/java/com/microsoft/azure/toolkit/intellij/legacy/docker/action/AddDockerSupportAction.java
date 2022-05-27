@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -121,6 +122,7 @@ public class AddDockerSupportAction extends AzureAnAction {
     }
 
     @Override
+    @ExceptionNotification
     public void update(AnActionEvent event) {
         module = DataKeys.MODULE.getData(event.getDataContext());
         boolean dockerFileExists = false;

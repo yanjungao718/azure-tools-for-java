@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.util.PathUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
@@ -16,13 +17,18 @@ import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
+import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppModule;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -38,12 +44,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 
+import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +60,9 @@ import java.util.Objects;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
+    private static final String LIBS_ROOT = "/home/site/libs/";
+    private static final String JAVA_OPTS = "JAVA_OPTS";
+    private static final String CATALINA_OPTS = "CATALINA_OPTS";
     private File artifact;
     private WebAppConfiguration webAppConfiguration;
     private final IntelliJWebAppSettingModel webAppSettingModel;
@@ -76,9 +87,52 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", artifact.getAbsolutePath()));
         }
         final WebAppBase<?, ?, ?> deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
-        updateApplicationSettings(deployTarget, processHandler);
+        applyResourceConnection(deployTarget, processHandler);
         AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, artifact, webAppSettingModel.isDeployToRoot(), processHandler);
         return deployTarget;
+    }
+
+    private void applyResourceConnection(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
+        uploadJavaAgent(deployTarget);
+        updateApplicationSettings(deployTarget, processHandler);
+    }
+
+    private void uploadJavaAgent(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget) {
+        final File javaAgent = webAppConfiguration.getJavaAgent();
+        if (javaAgent == null || !javaAgent.exists()) {
+            return;
+        }
+        final String targetPath = PathUtil.toSystemIndependentName(Paths.get(LIBS_ROOT, javaAgent.getName()).toString());
+        deployJavaAgentToAppService(deployTarget, javaAgent, targetPath);
+        updateAppServiceVMOptions(deployTarget, targetPath);
+    }
+
+    private void deployJavaAgentToAppService(AppServiceAppBase<?, ?, ?> deployTarget, File javaAgent, String targetPath) {
+        AppServiceFile file;
+        try {
+            file = deployTarget.getFileByPath(targetPath);
+        } catch (RuntimeException e) {
+            file = null;
+        }
+        if (file == null) {
+            AzureMessager.getMessager().info(AzureString.format("Uploading java agent to web app %s", deployTarget.getName()));
+            deployTarget.deploy(DeployType.JAR_LIB, javaAgent, targetPath);
+        } else {
+            AzureMessager.getMessager().info(AzureString.format("Skip upload java agent as file with same name already exists"));
+        }
+    }
+
+    private void updateAppServiceVMOptions(AppServiceAppBase<?, ?, ?> deployTarget, String targetPath) {
+        final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
+        final WebContainer webContainer = deployTarget.getRuntime().getWebContainer();
+        final String javaOptsParameter = (webContainer == WebContainer.JAVA_SE || webContainer == WebContainer.JBOSS_7) ? JAVA_OPTS : CATALINA_OPTS;
+        final String javaOpts = applicationSettings.get(javaOptsParameter);
+        final String javaAgentValue = String.format("-javaagent:%s", targetPath);
+        if (StringUtils.contains(javaOpts, javaAgentValue)) {
+            return;
+        }
+        final String value = StringUtils.isEmpty(javaOpts) ? javaAgentValue : javaOpts + " " + javaAgentValue;
+        applicationSettings.put(javaOptsParameter, value);
     }
 
     private void updateApplicationSettings(AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
@@ -228,5 +282,6 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         webAppSettingModel.setWebAppName("");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
+        webAppSettingModel.setAppServicePlanResourceGroupName("");
     }
 }

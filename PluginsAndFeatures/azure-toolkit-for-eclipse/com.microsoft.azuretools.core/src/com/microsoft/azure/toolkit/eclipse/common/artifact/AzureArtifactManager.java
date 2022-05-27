@@ -161,7 +161,7 @@ public class AzureArtifactManager {
     }
 
     @AzureOperation(
-        name = "common|artifact.get_file",
+        name = "common.get_artifact_file.artifact",
         params = {"artifact.getName()"},
         type = AzureOperation.Type.TASK
     )

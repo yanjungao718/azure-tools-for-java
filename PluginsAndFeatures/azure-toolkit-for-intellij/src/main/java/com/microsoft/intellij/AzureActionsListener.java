@@ -27,6 +27,8 @@ import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
@@ -118,6 +120,8 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "common.init_plugin", type = AzureOperation.Type.ACTION)
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());

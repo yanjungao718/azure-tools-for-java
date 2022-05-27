@@ -8,8 +8,8 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.20.0"
-    azureToolkitUtilsVersion = "3.64.0"
+    azureToolkitVersion = "0.21.0"
+    azureToolkitUtilsVersion = "3.65.0"
 }
 
 compileKotlin {
@@ -82,8 +82,8 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.20.0"
-        azureToolkitUtilsVersion = "3.64.0"
+        azureToolkitVersion = "0.21.0"
+        azureToolkitUtilsVersion = "3.65.0"
     }
 
     sourceCompatibility = javaVersion
@@ -181,6 +181,7 @@ dependencies {
     compile project(':azure-intellij-plugin-appservice')
     compile project(':azure-intellij-plugin-arm')
     compile project(':azure-intellij-plugin-containerregistry')
+    compile project(':azure-intellij-plugin-applicationinsights')
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
@@ -200,13 +201,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.64.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.65.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.64.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.65.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.64.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.65.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 

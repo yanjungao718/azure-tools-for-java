@@ -7,21 +7,22 @@ package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.ide.common.model.DraftResourceGroup;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
-
-public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
-        implements AzureForm<DraftResourceGroup> {
+public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupDraft>
+    implements AzureForm<ResourceGroupDraft> {
     private Subscription subscription;
     private JBLabel labelDescription;
     private JPanel contentPanel;
@@ -37,7 +38,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     }
 
     @Override
-    public AzureForm<DraftResourceGroup> getForm() {
+    public AzureForm<ResourceGroupDraft> getForm() {
         return this;
     }
 
@@ -53,12 +54,13 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     }
 
     @Override
-    public DraftResourceGroup getValue() {
-        return new DraftResourceGroup(this.subscription, this.textName.getValue());
+    public ResourceGroupDraft getValue() {
+        final String rgName = this.textName.getValue();
+        return Azure.az(AzureResources.class).groups(this.subscription.getId()).create(rgName, rgName);
     }
 
     @Override
-    public void setValue(final DraftResourceGroup data) {
+    public void setValue(final ResourceGroupDraft data) {
         this.subscription = data.getSubscription();
         this.textName.setValue(data.getName());
     }

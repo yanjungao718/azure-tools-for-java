@@ -26,7 +26,7 @@ import com.microsoft.azure.toolkit.intellij.arm.action.DeploymentActions;
 import com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateLanguage;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
@@ -135,7 +135,7 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
             this.draft.commit();
             this.updateDeploymentButton.setEnabled(this.isModified());
         };
-        final AzureString title = AzureOperationBundle.title("arm.update_deployment.deployment", this.draft.getName());
+        final AzureString title = OperationBundle.description("arm.update_deployment.deployment", this.draft.getName());
         AzureTaskManager.getInstance().runInBackground(title, false, runnable);
     }
 

@@ -52,7 +52,7 @@ public class SpringCloudDeploymentDialog extends AzureDialog<SpringCloudAppConfi
 
     @Override
     protected String getDialogTitle() {
-        return "Deploy to Azure Spring Cloud";
+        return "Deploy to Azure Spring Apps";
     }
 
     public boolean getBuildArtifact() {

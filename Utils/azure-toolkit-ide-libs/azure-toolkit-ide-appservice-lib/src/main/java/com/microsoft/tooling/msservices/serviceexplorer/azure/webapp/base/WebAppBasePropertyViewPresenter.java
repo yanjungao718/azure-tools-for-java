@@ -7,7 +7,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServiceBaseEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -55,7 +54,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     public static final String KEY_APP_SETTING = "appSetting";
     public static final String KEY_JAVA_CONTAINER_VERSION = "javaContainerVersion";
 
-    public <T extends AppServiceBaseEntity> void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId, @Nullable final String slotName) {
+    public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId, @Nullable final String slotName) {
         final String appName = ResourceId.fromString(appId).name();
         final AzureString title = AzureString.format("load properties of App Service '{0}'", appName);
         AzureTaskManager.getInstance().runInBackground(title, () -> {
@@ -66,7 +65,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         });
     }
 
-    protected <T extends AppServiceBaseEntity> WebAppProperty generateProperty(@Nonnull final AppServiceAppBase<?, ?, ?> appService, @Nonnull final AppServicePlan plan) {
+    protected WebAppProperty generateProperty(@Nonnull final AppServiceAppBase<?, ?, ?> appService, @Nonnull final AppServicePlan plan) {
         final Map<String, String> appSettingsMap = appService.getAppSettings();
         final Map<String, Object> propertyMap = new HashMap<>();
         propertyMap.put(KEY_NAME, appService.getName());

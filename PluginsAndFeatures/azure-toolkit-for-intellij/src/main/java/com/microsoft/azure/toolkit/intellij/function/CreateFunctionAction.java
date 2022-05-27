@@ -38,6 +38,8 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -67,6 +69,8 @@ public class CreateFunctionAction extends CreateElementActionBase {
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "function.create_function_class", type = AzureOperation.Type.ACTION)
     protected PsiElement[] invokeDialog(Project project, PsiDirectory psiDirectory) {
         final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_TRIGGER);
         try {

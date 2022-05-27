@@ -23,6 +23,8 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -61,6 +63,8 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "connector.get_task_description", type = AzureOperation.Type.ACTION)
     public String getDescription(MyBeforeRunTask task) {
         final List<Connection<?, ?>> connections = task.getConnections();
         if (CollectionUtils.isEmpty(connections)) {
@@ -80,6 +84,8 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     }
 
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "connector.setup_connection_for_configuration", type = AzureOperation.Type.ACTION)
     public boolean executeTask(
         @Nonnull DataContext dataContext,
         @Nonnull RunConfiguration configuration,
@@ -107,6 +113,8 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     public static class MyRunConfigurationExtension extends RunConfigurationExtension {
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.setup_connection_for_configuration", type = AzureOperation.Type.ACTION)
         public <T extends RunConfigurationBase<?>> void updateJavaParameters(@Nonnull T config, @Nonnull JavaParameters params, RunnerSettings s) {
             config.getBeforeRunTasks().stream().filter(t -> t instanceof MyBeforeRunTask).map(t -> (MyBeforeRunTask) t)
                 .flatMap(t -> t.getConnections().stream())
@@ -120,6 +128,9 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     }
 
     public static class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged, IWebAppRunConfiguration.ModuleChangedListener {
+        @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.update_connection_task", type = AzureOperation.Type.ACTION)
         public void runConfigurationAdded(@Nonnull RunnerAndConfigurationSettings settings) {
             final RunConfiguration config = settings.getConfiguration();
             final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
@@ -131,10 +142,12 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
 
         @Override
         public void runConfigurationChanged(@NotNull RunnerAndConfigurationSettings settings) {
-            this.moduleMayChanged(settings.getConfiguration(), null);
+            this.artifactMayChanged(settings.getConfiguration(), null);
         }
 
         @Override
+        @ExceptionNotification
+        @AzureOperation(name = "connector.update_connection_task", type = AzureOperation.Type.ACTION)
         public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
             final RunManagerEx rm = RunManagerEx.getInstanceEx(project);
             final List<RunConfiguration> configurations = rm.getAllConfigurationsList();
@@ -154,7 +167,9 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         }
 
         @Override
-        public void moduleMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
+        @ExceptionNotification
+        @AzureOperation(name = "connector.update_connection_task", type = AzureOperation.Type.ACTION)
+        public void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
             final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
             final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
             Optional.ofNullable(editor).ifPresent(e -> BuildArtifactBeforeRunTaskUtils.removeTasks(e, (t) -> t instanceof MyBeforeRunTask));

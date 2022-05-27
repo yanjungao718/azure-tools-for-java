@@ -65,7 +65,8 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
                         .map(r -> AzureString.format("appservice|file.download", ((AppServiceFile) r).getName()))
                         .orElse(null))
                 .enabled(s -> s instanceof AppServiceFile);
-        am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD, new Action<>(downloadHandler, downloadView));
+        am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD, 
+                new Action<>(AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD, downloadHandler, downloadView));
     }
 
     @Override

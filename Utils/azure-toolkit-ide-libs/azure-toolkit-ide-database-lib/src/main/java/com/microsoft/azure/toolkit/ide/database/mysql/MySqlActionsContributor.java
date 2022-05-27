@@ -20,7 +20,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
+import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class MySqlActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -29,22 +29,22 @@ public class MySqlActionsContributor implements IActionsContributor {
     public static final String SERVER_ACTIONS = "actions.mysql.server";
 
     private static final String NAME_PREFIX = "MySQL Server - %s";
-    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("action.mysql.open_database_tool");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_MYSQL = Action.Id.of("action.mysql.create_server.group");
+    public static final Action.Id<AzResource<?, ?, ?>> OPEN_DATABASE_TOOL = Action.Id.of("mysql.open_database_tool");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_MYSQL = Action.Id.of("group.create_mysql_server");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> title("mysql.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("mysql.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof MySqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
-        final Action<AzResource<?, ?, ?>> action = new Action<>(openDatabaseTool);
+        final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(OPEN_DATABASE_TOOL, action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("MySQL server")
-            .title(s -> Optional.ofNullable(s).map(r -> title("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_MYSQL, new Action<>(createServerView));
+        am.registerAction(GROUP_CREATE_MYSQL, new Action<>(GROUP_CREATE_MYSQL, createServerView));
     }
 
     public int getOrder() {

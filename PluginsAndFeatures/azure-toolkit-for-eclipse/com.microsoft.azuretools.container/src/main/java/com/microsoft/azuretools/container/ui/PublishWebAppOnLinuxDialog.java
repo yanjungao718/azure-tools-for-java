@@ -39,8 +39,8 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -336,9 +336,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 model.setCreatingNewAppServicePlan(false);
                 AppServicePlan selectedAsp = getSelectedAppServicePlan();
                 if (selectedAsp != null) {
-                    model.setAppServicePlanId(selectedAsp.id());
+                    model.setAppServicePlanName(selectedAsp.getName());
+                    model.setAppServicePlanResourceGroupName(selectedAsp.getResourceGroupName());
                 } else {
-                    model.setAppServicePlanId(null);
+                    model.setAppServicePlanName(null);
+                    model.setAppServicePlanResourceGroupName(null);
                 }
             }
         }
@@ -414,14 +416,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 throw new InvalidFormDataException(MISSING_RESOURCE_GROUP);
             }
 
-            if (model.isCreatingNewAppServicePlan()) {
-                if (Utils.isEmptyString(model.getAppServicePlanName())) {
-                    throw new InvalidFormDataException(MISSING_APP_SERVICE_PLAN);
-                }
-            } else {
-                if (Utils.isEmptyString(model.getAppServicePlanId())) {
-                    throw new InvalidFormDataException(MISSING_APP_SERVICE_PLAN);
-                }
+            if (Utils.isEmptyString(model.getAppServicePlanName())) {
+                throw new InvalidFormDataException(MISSING_APP_SERVICE_PLAN);
             }
 
         } else {

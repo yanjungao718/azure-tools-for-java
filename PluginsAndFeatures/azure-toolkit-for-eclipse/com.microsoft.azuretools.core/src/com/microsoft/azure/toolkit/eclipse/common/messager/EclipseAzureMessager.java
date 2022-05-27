@@ -5,8 +5,7 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.messager;
 
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationContext;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -28,12 +27,15 @@ public class EclipseAzureMessager implements IAzureMessager {
         switch (raw.getType()) {
             case ALERT:
             case CONFIRM:
+                final boolean[] result = new boolean[]{true};
                 final String title = Optional.ofNullable(raw.getTitle()).orElse(DEFAULT_TITLE);
-                MessageDialog.openConfirm(null, title, raw.getContent());
-                return true;
+                AzureTaskManager.getInstance().runLaterAsObservable(()->{
+                    result[0] = MessageDialog.openConfirm(null, title, raw.getContent());
+                }).toBlocking().subscribe();
+                return result[0];
             default:
         }
-        IAzureOperation<?> op = AzureOperationContext.current().currentOperation();
+        Operation op = Operation.current();
         while (op != null && !(op instanceof AzureTask)) {
             op = op.getParent();
         }

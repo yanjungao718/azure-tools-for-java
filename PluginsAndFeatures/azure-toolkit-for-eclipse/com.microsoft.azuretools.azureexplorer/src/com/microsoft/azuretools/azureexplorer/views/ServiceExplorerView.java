@@ -47,9 +47,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
-import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
+import com.microsoft.azure.toolkit.eclipse.common.EclipseAzureIcons;
 import com.microsoft.azure.toolkit.eclipse.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.eclipse.explorer.AzureTreeNode;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -325,18 +326,16 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
 
         @Override
         public Image getImage(Object obj) {
-            String iconPath = null;
+            AzureIcon icon = null;
             if (obj instanceof TreeNode) {
                 final Node node = ((TreeNode) obj).node;
-                iconPath = Optional.ofNullable(node.getIconPath()).map(path -> "icons/" + path)
+                final String iconPath = Optional.ofNullable(node.getIconPath()).map(path -> "icons/" + path)
                         .orElseGet(() -> Optional.ofNullable(node.getIconSymbol().getIconPath()).orElse(null));
+                icon = StringUtils.isEmpty(iconPath) ? null : AzureIcon.builder().iconPath(iconPath).build();
             } else if (obj instanceof AzureTreeNode) {
-                iconPath = ((AzureTreeNode) obj).getIconPath();
+            	icon = ((AzureTreeNode) obj).getAzureIcon();
             }
-            if (StringUtils.isNotEmpty(iconPath)) {
-                return Optional.ofNullable(AzureIcons.getIcon(iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
-            }
-            return super.getImage(obj);
+            return icon == null ? super.getImage(obj) : EclipseAzureIcons.getIcon(icon).createImage();
         }
     }
 

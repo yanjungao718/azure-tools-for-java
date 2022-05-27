@@ -14,13 +14,15 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.Utils;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Status;
@@ -31,6 +33,7 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 
 public class DeploySpringCloudAppAction {
     private static final int GET_URL_TIMEOUT = 60;
@@ -38,7 +41,7 @@ public class DeploySpringCloudAppAction {
     private static final String UPDATE_APP_WARNING = "It may take some moments for the configuration to be applied at server side!";
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
         "you can check the app status from Azure Portal.";
-    private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
+    private static final String NOTIFICATION_TITLE = "Deploy Spring App";
 
     public static void deployToApp(@Nullable SpringCloudApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
@@ -70,8 +73,8 @@ public class DeploySpringCloudAppAction {
     @AzureOperation(name = "springcloud.deploy", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void deployToApp(@Nonnull SpringCloudAppConfig config) {
         AzureTaskManager.getInstance().runLater(() -> {
-            final AzureAsyncConsoleJob job = new AzureAsyncConsoleJob("Deploy to Azure Spring Cloud");
-            JobConsole myConsole = new JobConsole("Deploy to Azure Spring Cloud", job);
+            final AzureAsyncConsoleJob job = new AzureAsyncConsoleJob("Deploy to Azure Spring Apps");
+            JobConsole myConsole = new JobConsole("Deploy to Azure Spring Apps", job);
             EclipseConsoleMessager messager = new EclipseConsoleMessager(myConsole);
 
             myConsole.activate();
@@ -80,7 +83,7 @@ public class DeploySpringCloudAppAction {
 
             job.setMessager(messager);
             job.setSupplier(() -> {
-                final AzureString title = AzureOperationBundle.title("springcloud|app.create_update", config.getAppName());
+                final AzureString title = OperationBundle.description("springcloud.create_update_app", config.getAppName());
                 final AzureTask<Void> task = new AzureTask<Void>(title, () -> execute(config, messager));
                 task.setType(AzureOperation.Type.ACTION.name());
                 AzureTaskManager.getInstance().runImmediatelyAsObservable(task).subscribe();
@@ -90,13 +93,15 @@ public class DeploySpringCloudAppAction {
         });
     }
 
-    @AzureOperation(name = "springcloud|app.create_update", params = {"appConfig.getAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud.create_update_app.app", params = {"appConfig.getAppName()"}, type = AzureOperation.Type.ACTION)
     private static SpringCloudDeployment execute(SpringCloudAppConfig appConfig, IAzureMessager messager) {
-        AzureMessager.getContext().setMessager(messager);
+        OperationContext.current().setMessager(messager);
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
-        if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+        final boolean hasArtifact = Optional.ofNullable(appConfig.getDeployment())
+                .map(SpringCloudDeploymentConfig::getArtifact).map(IArtifact::getFile).isPresent();
+        if (hasArtifact && !deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
             messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
         printPublicUrl(app);

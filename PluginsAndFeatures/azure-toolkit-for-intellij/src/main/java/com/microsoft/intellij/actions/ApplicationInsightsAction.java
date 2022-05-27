@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
@@ -27,6 +28,7 @@ public class ApplicationInsightsAction extends AzureAnAction {
     }
 
     @Override
+    @ExceptionNotification
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         boolean isMavenOrNull = (module == null || MavenUtils.isMavenProject(module.getProject()));

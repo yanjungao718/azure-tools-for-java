@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.wizard.WizardPage;
@@ -62,7 +62,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 
 import com.microsoft.azuretools.azureexplorer.forms.CreateArmStorageAccountForm;
 import com.microsoft.azuretools.core.Activator;
@@ -270,7 +269,7 @@ public class SettingsStep extends WizardPage {
                     public void run() {
                         // Resource groups already initialized in cache when loading locations on SelectImageStep
                         List<ResourceGroup> resourceGroups = (List<ResourceGroup>) AzureMvpModel.getInstance().getResourceGroups(wizard.getSubscription().getId()).stream()
-                            .map(ResourceEx::getResource).collect(Collectors.toList());
+                            .collect(Collectors.toList());
                         List<String> sortedGroups = resourceGroups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
                         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                             @Override

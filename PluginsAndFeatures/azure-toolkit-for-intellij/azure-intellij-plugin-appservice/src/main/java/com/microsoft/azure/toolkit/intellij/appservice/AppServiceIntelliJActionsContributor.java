@@ -9,7 +9,6 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
-import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
@@ -43,17 +42,20 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+
+import static com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD;
+import static com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor.APP_SERVICE_FILE_VIEW;
 
 public class AppServiceIntelliJActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER =
@@ -69,9 +71,9 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 .map(r -> AzureString.format("appservice|file.download", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
-        final Action<AppServiceFile> openFileAction = new Action<>(openFileHandler, openFileView);
+        final Action<AppServiceFile> openFileAction = new Action<>(APP_SERVICE_FILE_VIEW, openFileHandler, openFileView);
         openFileAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
-        am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_VIEW, openFileAction);
+        am.registerAction(APP_SERVICE_FILE_VIEW, openFileAction);
 
         final BiConsumer<AppServiceFile, AnActionEvent> downloadFileHandler = (file, e) -> AzureTaskManager
             .getInstance().runLater(() -> new AppServiceFileAction().saveAppServiceFile(file, e.getProject(), null));
@@ -80,9 +82,9 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 .map(r -> AzureString.format("appservice|file.download", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
-        final Action<AppServiceFile> downloadFileAction = new Action<>(downloadFileHandler, downloadFileView);
+        final Action<AppServiceFile> downloadFileAction = new Action<>(APP_SERVICE_FILE_DOWNLOAD, downloadFileHandler, downloadFileView);
         downloadFileAction.setShortcuts("control alt D");
-        am.registerAction(AppServiceFileActionsContributor.APP_SERVICE_FILE_DOWNLOAD, downloadFileAction);
+        am.registerAction(APP_SERVICE_FILE_DOWNLOAD, downloadFileAction);
     }
 
     @Override
@@ -164,12 +166,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 FunctionAppConfig.getFunctionAppDefaultConfig().toBuilder()
                     .subscription(r.getSubscription())
                     .region(r.getRegion())
-                    .resourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                        .id(r.getId())
-                        .name(r.getName())
-                        .subscriptionId(r.getSubscriptionId())
-                        .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                        .build()).build());
+                    .resourceGroup(ResourceGroupConfig.fromResource(r)).build());
         am.registerHandler(FunctionAppActionsContributor.GROUP_CREATE_FUNCTION, (r, e) -> true, groupCreateFunctionHandler);
 
         final BiConsumer<ResourceGroup, AnActionEvent> groupCreateWebAppHandler =
@@ -177,12 +174,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 WebAppConfig.getWebAppDefaultConfig().toBuilder()
                     .subscription(r.getSubscription())
                     .region(r.getRegion())
-                    .resourceGroup(com.microsoft.azure.toolkit.lib.common.model.ResourceGroup.builder()
-                        .id(r.getId())
-                        .name(r.getName())
-                        .subscriptionId(r.getSubscriptionId())
-                        .region(Optional.ofNullable(r.getRegion()).map(Region::getName).orElse(null))
-                        .build()).build());
+                    .resourceGroup(ResourceGroupConfig.fromResource(r)).build());
         am.registerHandler(WebAppActionsContributor.GROUP_CREATE_WEBAPP, (r, e) -> true, groupCreateWebAppHandler);
     }
 

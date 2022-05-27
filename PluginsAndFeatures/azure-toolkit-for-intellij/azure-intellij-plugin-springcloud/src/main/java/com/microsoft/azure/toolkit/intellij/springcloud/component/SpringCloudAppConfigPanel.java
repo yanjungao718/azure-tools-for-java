@@ -5,9 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
+import com.azure.resourcemanager.appplatform.models.RuntimeVersion;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
@@ -20,14 +22,13 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudPersistentDisk;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudSku;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -38,7 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
     @Getter
@@ -50,14 +50,18 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     private JButton toggleStorage;
     private JRadioButton useJava8;
     private JRadioButton useJava11;
+    private JRadioButton useJava17;
     private JTextField txtJvmOptions;
     private EnvironmentVariablesTextFieldWithBrowseButton envTable;
-    private ComboBox<Integer> numCpu;
-    private ComboBox<Integer> numMemory;
+    private ComboBox<Double> numCpu;
+    private ComboBox<Double> numMemory;
     private AzureSlider numInstance;
     private JBLabel statusEndpoint;
     private JBLabel statusStorage;
     private JLabel lblTestEndpoint;
+    private JLabel lblRuntime;
+    private JLabel lblDisk;
+    private JPanel pnlDisk;
 
     private Consumer<? super SpringCloudAppConfig> listener = (config) -> {
     };
@@ -82,6 +86,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.txtStorage.setBorder(JBUI.Borders.empty(0, 2));
         this.useJava8.addActionListener((e) -> debouncer.debounce());
         this.useJava11.addActionListener((e) -> debouncer.debounce());
+        this.useJava17.addActionListener((e) -> debouncer.debounce());
         this.txtJvmOptions.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(DocumentEvent documentEvent) {
@@ -96,10 +101,22 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.txtTestEndpoint.setVisible(false);
         this.lblTestEndpoint.setVisible(false);
         this.txtTestEndpoint.setHyperlinkTarget(null);
-        final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(new Integer[]{1});
-        final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(new Integer[]{1, 2});
-        numCpuModel.setSelectedItem(1);
-        numMemoryModel.setSelectedItem(1);
+        final DefaultComboBoxModel<Double> numCpuModel = new DefaultComboBoxModel<>(new Double[]{0.5, 1.0});
+        final DefaultComboBoxModel<Double> numMemoryModel = new DefaultComboBoxModel<>(new Double[]{0.5, 1.0, 2.0});
+        numCpuModel.setSelectedItem(1.0);
+        numMemoryModel.setSelectedItem(1.0);
+        this.numCpu.setRenderer(new SimpleListCellRenderer<>() {
+            @Override
+            public void customize(@NotNull JList<? extends Double> list, Double value, int index, boolean selected, boolean hasFocus) {
+                setText(value < 1 ? value + "" : value.intValue() + "");
+            }
+        });
+        this.numMemory.setRenderer(new SimpleListCellRenderer<>() {
+            @Override
+            public void customize(@NotNull JList<? extends Double> list, Double value, int index, boolean selected, boolean hasFocus) {
+                setText(value < 1 ? Double.valueOf(value * 1024).intValue() + "Mi" : value.intValue() + "Gi");
+            }
+        });
         this.numCpu.setModel(numCpuModel);
         this.numMemory.setModel(numMemoryModel);
 
@@ -147,16 +164,23 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
                 }
             }, AzureTask.Modality.ANY);
         });
-        final SpringCloudSku sku = app.getParent().getSku();
-        final boolean basic = sku.getTier().toLowerCase().startsWith("b");
-        final Integer cpu = this.numCpu.getItem();
-        final Integer mem = this.numMemory.getItem();
-        final int maxCpu = basic ? 1 : 4;
-        final int maxMem = basic ? 2 : 8;
-        final DefaultComboBoxModel<Integer> numCpuModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxCpu).boxed().toArray(Integer[]::new));
-        final DefaultComboBoxModel<Integer> numMemoryModel = new DefaultComboBoxModel<>(IntStream.range(1, 1 + maxMem).boxed().toArray(Integer[]::new));
-        numCpuModel.setSelectedItem(Objects.isNull(cpu) ? 1 : (cpu > maxCpu) ? null : cpu);
-        numMemoryModel.setSelectedItem(Objects.isNull(mem) ? 1 : mem > maxMem ? null : mem);
+        final String sku = app.getParent().getSku();
+        final boolean enterprise = sku.toLowerCase().startsWith("e");
+        this.useJava8.setVisible(!enterprise);
+        this.useJava11.setVisible(!enterprise);
+        this.useJava17.setVisible(!enterprise);
+        this.lblRuntime.setVisible(!enterprise);
+        this.lblDisk.setVisible(!enterprise);
+        this.pnlDisk.setVisible(!enterprise);
+        final boolean basic = sku.toLowerCase().startsWith("b");
+        final Double cpu = this.numCpu.getItem();
+        final Double mem = this.numMemory.getItem();
+        final Double[] cpus = basic ? new Double[]{0.5, 1.0} : new Double[]{0.5, 1.0, 2.0, 3.0, 4.0};
+        final Double[] mems = basic ? new Double[]{0.5, 1.0, 2.0} : new Double[]{0.5, 1.0, 2.0, 3.0, 4.0, 5., 6.0, 7.0, 8.0};
+        final DefaultComboBoxModel<Double> numCpuModel = new DefaultComboBoxModel<>(cpus);
+        final DefaultComboBoxModel<Double> numMemoryModel = new DefaultComboBoxModel<>(mems);
+        numCpuModel.setSelectedItem(Objects.isNull(cpu) ? 1.0 : (cpu > (basic ? 1 : 4)) ? null : cpu);
+        numMemoryModel.setSelectedItem(Objects.isNull(mem) ? 1.0 : mem > (basic ? 2 : 8) ? null : mem);
         this.numCpu.setModel(numCpuModel);
         this.numMemory.setModel(numMemoryModel);
         this.numInstance.setMaximum(basic ? 25 : 500);
@@ -170,10 +194,17 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = Optional.ofNullable(appConfig.getDeployment())
             .orElse(SpringCloudDeploymentConfig.builder().build());
-        final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
+        final boolean isEnterpriseTier = this.useJava17.isVisible();
+        if (isEnterpriseTier) {
+            final String javaVersion = this.useJava17.isSelected() ? RuntimeVersion.JAVA_17.toString() :
+                this.useJava11.isSelected() ? RuntimeVersion.JAVA_11.toString() : RuntimeVersion.JAVA_8.toString();
+            deploymentConfig.setRuntimeVersion(javaVersion);
+            deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
+        } else {
+            deploymentConfig.setRuntimeVersion(null);
+            deploymentConfig.setEnablePersistentStorage(false);
+        }
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
-        deploymentConfig.setRuntimeVersion(javaVersion);
-        deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
         deploymentConfig.setCpu(numCpu.getItem());
         deploymentConfig.setMemoryInGB(numMemory.getItem());
         deploymentConfig.setInstanceCount(numInstance.getValue());
@@ -189,9 +220,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final SpringCloudDeploymentConfig deployment = config.getDeployment();
         this.toggleStorage(deployment.getEnablePersistentStorage());
         this.toggleEndpoint(config.getIsPublic());
-        final boolean java11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
-        this.useJava11.setSelected(java11);
-        this.useJava8.setSelected(!java11);
+        this.useJava17.setSelected(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_17.toString()));
+        this.useJava11.setSelected(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString()));
+        this.useJava8.setSelected(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_8.toString()));
 
         this.txtJvmOptions.setText(deployment.getJvmOptions());
         final Map<String, String> env = deployment.getEnvironment();
@@ -215,6 +246,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     public void setEnabled(boolean enable) {
         this.useJava8.setEnabled(enable);
         this.useJava11.setEnabled(enable);
+        this.useJava17.setEnabled(enable);
         this.toggleEndpoint.setEnabled(enable);
         this.toggleStorage.setEnabled(enable);
         numCpu.setEnabled(enable);

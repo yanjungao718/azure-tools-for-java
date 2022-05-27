@@ -6,14 +6,18 @@
 package com.microsoft.azure.toolkit.eclipse.springcloud.creation;
 
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import org.eclipse.swt.widgets.Display;
+
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -21,7 +25,7 @@ public class CreateSpringCloudAppAction {
     private static final int GET_STATUS_TIMEOUT = 180;
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
         "you can check the app status from Azure Portal.";
-    private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
+    private static final String NOTIFICATION_TITLE = "Create Azure Spring App";
 
     public static void createApp(@Nonnull SpringCloudCluster cluster) {
         AzureTaskManager.getInstance().runLater(() -> {
@@ -34,12 +38,14 @@ public class CreateSpringCloudAppAction {
         });
     }
 
-    @AzureOperation(name = "springcloud|app.create", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud.create_app.app", params = "config.getAppName()", type = AzureOperation.Type.ACTION)
     private static void createApp(SpringCloudAppConfig config) {
-        AzureTaskManager.getInstance().runInBackground(AzureOperationBundle.title("springcloud|app.create", config.getAppName()), () -> {
+        AzureTaskManager.getInstance().runInBackground(OperationBundle.description("springcloud.create_app.app", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
-            if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+            final boolean hasArtifact = Optional.ofNullable(config.getDeployment())
+                    .map(SpringCloudDeploymentConfig::getArtifact).map(IArtifact::getFile).isPresent();
+            if (hasArtifact && !deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
                 AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
             }
         });

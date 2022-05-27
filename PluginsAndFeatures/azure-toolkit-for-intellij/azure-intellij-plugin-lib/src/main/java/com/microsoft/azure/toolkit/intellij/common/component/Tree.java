@@ -126,8 +126,20 @@ public class Tree extends SimpleTree implements DataProvider {
 
         @Override
         public void refreshView() {
-            if (this.getParent() != null) {
-                ((DefaultTreeModel) this.tree.getModel()).nodeChanged(this);
+            synchronized (this.tree) {
+                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
+                    model.nodeChanged(this);
+                }
+            }
+        }
+
+        private void refreshChildrenView() {
+            synchronized (this.tree) {
+                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
+                    model.nodeStructureChanged(this);
+                }
             }
         }
 
@@ -135,14 +147,12 @@ public class Tree extends SimpleTree implements DataProvider {
         public synchronized void refreshChildren(boolean... incremental) {
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                if (incremental.length > 0 && incremental[0]) {
+                if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
                     model.insertNodeInto(new LoadingNode(), this, 0);
                 } else {
                     this.removeAllChildren();
                     this.add(new LoadingNode());
-                    if (Objects.nonNull(this.getParent())) {
-                        ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
-                    }
+                    this.refreshChildrenView();
                 }
                 this.loaded = null;
                 this.loadChildren(incremental);
@@ -169,9 +179,7 @@ public class Tree extends SimpleTree implements DataProvider {
             this.removeAllChildren();
             children.stream().map(c -> new TreeNode<>(c, this.tree)).forEach(this::add);
             this.loaded = true;
-            if (Objects.nonNull(this.getParent())) {
-                ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
-            }
+            this.refreshChildrenView();
         }
 
         private synchronized void updateChildren(List<Node<?>> children) {
@@ -195,22 +203,20 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
             }
             this.remove(0);
-            if (Objects.nonNull(this.getParent())) {
-                ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
-            }
+            this.refreshChildrenView();
             Optional.ofNullable(toSelect).ifPresent(p -> TreeUtil.selectPath(this.tree, p, false));
             this.loaded = true;
         }
 
-        public synchronized void clearChildren() {
-            this.removeAllChildren();
-            this.loaded = null;
-            if (this.getAllowsChildren()) {
-                this.add(new LoadingNode());
-                this.tree.collapsePath(new TreePath(this.getPath()));
-            }
-            if (Objects.nonNull(this.getParent())) {
-                ((DefaultTreeModel) this.tree.getModel()).nodeStructureChanged(this);
+        public void clearChildren() {
+            synchronized (this.tree) {
+                this.removeAllChildren();
+                this.loaded = null;
+                if (this.getAllowsChildren()) {
+                    this.add(new LoadingNode());
+                    this.tree.collapsePath(new TreePath(this.getPath()));
+                }
+                this.refreshChildrenView();
             }
         }
 

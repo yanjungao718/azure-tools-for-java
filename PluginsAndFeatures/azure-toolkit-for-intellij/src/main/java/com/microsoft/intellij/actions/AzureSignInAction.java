@@ -28,7 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
@@ -278,7 +278,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     private static Single<AuthMethodDetails> loginNonDeviceCodeSingle(AuthConfiguration auth) {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
+        final AzureString title = OperationBundle.description("account.sign_in");
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -288,7 +288,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     private static Single<DeviceCodeAccount> loginDeviceCodeSingle() {
-        final AzureString title = AzureOperationBundle.title("account.sign_in");
+        final AzureString title = OperationBundle.description("account.sign_in");
         final AzureTask<DeviceCodeAccount> deviceCodeTask = new AzureTask<>(null, title, true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);

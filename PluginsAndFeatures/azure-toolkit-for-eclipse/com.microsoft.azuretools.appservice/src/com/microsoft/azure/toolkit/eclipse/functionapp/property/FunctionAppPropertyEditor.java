@@ -11,6 +11,7 @@ import java.util.Set;
 import com.microsoft.azure.toolkit.eclipse.appservice.property.AppServiceBasePropertyEditor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
@@ -26,7 +27,7 @@ public class FunctionAppPropertyEditor extends AppServiceBasePropertyEditor {
 
         @Override
         protected FunctionApp getWebAppBase(String subscriptionId, String functionAppId, String name) {
-            return Azure.az(AzureAppService.class).functionApp(functionAppId);
+            return Azure.az(AzureFunctions.class).functionApp(functionAppId);
         }
 
         @Override

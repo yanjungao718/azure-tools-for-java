@@ -65,7 +65,7 @@ public class BuildArtifactBeforeRunTaskUtils {
     private static void updateConnectorBeforeRunTask(@Nonnull RunConfiguration config, @Nonnull ConfigurationSettingsEditorWrapper editor) {
         config.getProject().getMessageBus()
             .syncPublisher(IWebAppRunConfiguration.MODULE_CHANGED)
-            .moduleMayChanged(config, editor);
+            .artifactMayChanged(config, editor);
     }
 
     public static List<? extends BeforeRunTask<?>> getBuildTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {

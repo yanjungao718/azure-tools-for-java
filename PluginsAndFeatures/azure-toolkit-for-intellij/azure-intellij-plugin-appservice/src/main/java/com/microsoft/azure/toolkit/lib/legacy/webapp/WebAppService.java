@@ -7,14 +7,15 @@ package com.microsoft.azure.toolkit.lib.legacy.webapp;
 
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
-import com.microsoft.azure.toolkit.ide.common.model.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -62,19 +63,18 @@ public class WebAppService {
         final WebAppSettingModel settings = new WebAppSettingModel();
         settings.setSubscriptionId(config.getSubscription().getId());
         // creating if id is empty
-        settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().getId()));
-        settings.setResourceGroup(config.getResourceGroup().getName());
+        final ResourceGroup rg = config.getResourceGroup().toResource();
+        settings.setCreatingResGrp(rg.isDraftForCreating() || StringUtils.isEmpty(rg.getId()));
+        settings.setResourceGroup(rg.getName());
         settings.setWebAppName(config.getName());
         settings.setRegion(config.getRegion().getName());
         settings.saveRuntime(config.getRuntime());
         // creating if id is empty
-        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().getId()));
-        if (settings.isCreatingAppServicePlan()) {
-            settings.setAppServicePlanName(config.getServicePlan().getName());
-        } else {
-            settings.setAppServicePlanId(config.getServicePlan().getId());
-        }
-        settings.setPricing(config.getServicePlan().getPricingTier().getSize());
+        final AppServicePlan plan = config.getServicePlan().toResource();
+        settings.setCreatingAppServicePlan(plan.isDraftForCreating() || StringUtils.isEmpty(plan.getId()));
+        settings.setAppServicePlanName(plan.getName());
+        settings.setAppServicePlanResourceGroupName(plan.getResourceGroupName());
+        settings.setPricing(plan.getPricingTier().getSize());
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
             final DiagnosticConfig diagnosticConfig = monitorConfig.getDiagnosticConfig();

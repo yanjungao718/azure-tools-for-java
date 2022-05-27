@@ -10,7 +10,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +91,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             }
             setStatus(ConsoleViewStatus.STOPPING);
         }
-        final AzureString title = AzureOperationBundle.title("springcloud.close_log_stream.instance", resourceName);
+        final AzureString title = OperationBundle.description("springcloud.close_log_stream.instance", resourceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, () -> {
             try {
                 if (logInputStream != null) {

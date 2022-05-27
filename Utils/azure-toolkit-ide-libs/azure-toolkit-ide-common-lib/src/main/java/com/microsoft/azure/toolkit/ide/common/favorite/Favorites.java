@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -173,7 +174,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         }
         final FavoriteDraft draft = this.create(resource.getId(), null);
         draft.setResource(resource);
-        draft.commit();
+        draft.createIfNotExist();
     }
 
     public void unpin(@Nonnull String resourceId) {
@@ -195,23 +196,19 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
     public static Node<Favorites> buildFavoriteRoot(IExplorerNodeProvider.Manager manager) {
-        final AzureActionManager.Shortcuts shortcuts = AzureActionManager.getInstance().getIDEDefaultShortcuts();
+        final AzureActionManager am = AzureActionManager.getInstance();
+        final AzureActionManager.Shortcuts shortcuts = am.getIDEDefaultShortcuts();
 
         final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", AzureIcons.Action.UNPIN.getIconPath())
             .enabled(s -> s instanceof Favorites);
         final Consumer<Favorites> unpinAllHandler = Favorites::unpinAll;
-        final Action<Favorites> unpinAllAction = new Action<>(unpinAllHandler, unpinAllView);
+        final Action.Id<Favorites> UNPIN_ALL = Action.Id.of("resource.unpin_all");
+        final Action<Favorites> unpinAllAction = new Action<>(UNPIN_ALL, unpinAllHandler, unpinAllView);
         unpinAllAction.setShortcuts("control F11");
-
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-            .enabled(s -> s instanceof Favorites);
-        final Consumer<Favorites> refreshHandler = Favorites::refresh;
-        final Action<Favorites> refreshAction = new Action<>(refreshHandler, refreshView);
-        refreshAction.setShortcuts(shortcuts.refresh());
 
         final AzureModuleLabelView<Favorites> rootView = new AzureModuleLabelView<>(Favorites.getInstance(), "Favorites", FAVORITE_ICON);
         return new Node<>(Favorites.getInstance(), rootView).lazy(false)
-            .actions(new ActionGroup(unpinAllAction, "---", refreshAction))
+            .actions(new ActionGroup(unpinAllAction, "---", ResourceCommonActionsContributor.REFRESH))
             .addChildren(Favorites::list, (o, parent) -> {
                 final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
                 if (node.view() instanceof AzureResourceLabelView) {
