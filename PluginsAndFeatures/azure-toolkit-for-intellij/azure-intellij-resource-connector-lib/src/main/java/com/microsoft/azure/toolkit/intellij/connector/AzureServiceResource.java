@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -54,6 +55,10 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
 
     @Override
     public Map<String, String> initEnv(Project project) {
+        final T resource = this.getData();
+        if (!resource.exists()) {
+            throw new AzureToolkitRuntimeException(String.format("'%s' doesn't exist.", resource));
+        }
         return this.definition.initEnv(this, project);
     }
 

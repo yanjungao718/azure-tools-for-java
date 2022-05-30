@@ -240,7 +240,6 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		this.useJava8.setSelection(true);
 
 		this.useJava11 = new Button(grpConfiguration, SWT.RADIO);
-		this.useJava11.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		this.useJava11.setText("Java 11");
 
 		this.useJava17 = new Button(grpConfiguration, SWT.RADIO);
