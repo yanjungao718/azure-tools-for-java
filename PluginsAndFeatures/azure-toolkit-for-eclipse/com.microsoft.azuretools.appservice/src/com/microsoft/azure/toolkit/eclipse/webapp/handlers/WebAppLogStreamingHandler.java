@@ -15,6 +15,9 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+
+import java.util.Optional;
+
 import com.microsoft.azure.toolkit.eclipse.common.logstream.EclipseAzureLogStreamingManager;
 
 import reactor.core.publisher.Flux;
@@ -30,10 +33,8 @@ public class WebAppLogStreamingHandler {
 
     public static void startLogStreaming(final WebAppBase<?, ?, ?> webApp) {
         if (!isLogStreamingEnabled(webApp)) {
-            final boolean enableLogging = AzureTaskManager.getInstance()
-                    .runAndWaitAsObservable(new AzureTask<>(() -> AzureMessager.getMessager()
-                            .confirm(AzureString.format(ENABLE_FILE_LOGGING, webApp.name()), ENABLE_LOGGING)))
-                    .toBlocking().single();
+            final boolean enableLogging = AzureMessager.getMessager()
+                    .confirm(AzureString.format(ENABLE_FILE_LOGGING, webApp.name()), ENABLE_LOGGING);
             if (enableLogging) {
                 enableLogStreaming(webApp);
             } else {
@@ -49,7 +50,7 @@ public class WebAppLogStreamingHandler {
     }
 
     private static boolean isLogStreamingEnabled(WebAppBase<?, ?, ?> webApp) {
-        return webApp.getDiagnosticConfig().isEnableWebServerLogging();
+        return Optional.ofNullable(webApp.getDiagnosticConfig()).map(DiagnosticConfig::isEnableWebServerLogging).orElse(false);
     }
 
     private static void enableLogStreaming(WebAppBase<?, ?, ?> webApp) {
