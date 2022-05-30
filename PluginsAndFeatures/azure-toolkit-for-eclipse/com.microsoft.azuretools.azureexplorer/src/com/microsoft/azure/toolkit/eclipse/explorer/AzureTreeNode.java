@@ -162,7 +162,7 @@ public class AzureTreeNode implements com.microsoft.azure.toolkit.ide.common.com
     private <T> Action toEclipseAction(com.microsoft.azure.toolkit.lib.common.action.Action<T> action,
             @Nullable T source) {
         final Label view = Optional.ofNullable(action).map(act -> act.getView(source)).orElse(null);
-        if (view == null) {
+        if (view == null || StringUtils.isBlank(view.getLabel())) {
             return null;
         }
         final ImageDescriptor imageDescriptor = StringUtils.isEmpty(view.getIconPath()) ? null
