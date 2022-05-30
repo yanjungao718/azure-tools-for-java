@@ -13,9 +13,11 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
 import icons.MavenIcons;
+import org.apache.groovy.parser.antlr4.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -31,7 +33,11 @@ public class AzureArtifact {
         this.referencedObject = obj;
     }
 
-    public static AzureArtifact createFromFile(@NotNull String path) {
+    @Nullable
+    public static AzureArtifact createFromFile(@Nullable String path) {
+        if (StringUtils.isEmpty(path)) {
+            return null;
+        }
         final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
         return createFromFile(virtualFile);
     }
