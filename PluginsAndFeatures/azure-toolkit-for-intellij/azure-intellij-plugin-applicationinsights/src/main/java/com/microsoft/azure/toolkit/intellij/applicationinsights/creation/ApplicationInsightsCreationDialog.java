@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationInsightDraft> implements AzureForm<ApplicationInsightDraft> {
-    private static final String DIALOG_TITLE = "Create Application Insight";
+    private static final String DIALOG_TITLE = "Create Application Insights";
 
     private JPanel pnlRoot;
     private SubscriptionComboBox subscriptionComboBox;
