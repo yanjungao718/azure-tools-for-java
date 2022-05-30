@@ -13,7 +13,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
 import icons.MavenIcons;
-import org.apache.groovy.parser.antlr4.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
