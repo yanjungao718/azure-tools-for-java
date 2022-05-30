@@ -15,11 +15,16 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 
 public class LaunchConfigurationUtils {
-    private static final Gson gson = new Gson();
+    private static final ObjectMapper mapper = new ObjectMapper();
+    static{
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     public static <T> T getFromConfiguration(ILaunchConfiguration config, @Nonnull Class<T> classOfT) {
         try {
@@ -35,7 +40,7 @@ public class LaunchConfigurationUtils {
                     value = config.getAttribute(field.getName(), 0);
                 } else {
                     final String json = config.getAttribute(field.getName(), StringUtils.EMPTY);
-                    value = StringUtils.isEmpty(json) ? null : gson.fromJson(json, field.getType());
+                    value = StringUtils.isEmpty(json) ? null : mapper.readValue(json, field.getType());
                 }
                 if (value != null) {
                     FieldUtils.writeField(field, obj, value, true);
@@ -43,7 +48,7 @@ public class LaunchConfigurationUtils {
             }
             return obj;
         } catch (NoSuchMethodException | SecurityException | InvocationTargetException | InstantiationException
-                | IllegalAccessException | CoreException ex) {
+                | IllegalAccessException | CoreException | JsonProcessingException ex) {
             throw new AzureToolkitRuntimeException("Cannot use reflections on class:" + classOfT.getSimpleName(), ex);
         }
     }
@@ -57,12 +62,11 @@ public class LaunchConfigurationUtils {
                 } else if (value instanceof String || value instanceof Boolean || value instanceof Integer) {
                     config.setAttribute(field.getName(), value);
                 } else {
-                    config.setAttribute(field.getName(), gson.toJson(value));
+                    config.setAttribute(field.getName(), mapper.writeValueAsString(value));
                 }
             }
-        } catch (SecurityException | IllegalAccessException ex) {
-            throw new AzureToolkitRuntimeException("Cannot use reflections on class:" + obj.getClass().getSimpleName(),
-                    ex);
+        } catch (SecurityException | IllegalAccessException | JsonProcessingException ex) {
+            throw new AzureToolkitRuntimeException("Cannot use reflections on class:" + obj.getClass().getSimpleName(), ex);
         }
     }
 }
