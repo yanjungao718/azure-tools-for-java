@@ -89,15 +89,15 @@ public class AzureArtifactManager {
         }
     }
 
+    @Nullable
     public AzureArtifact getAzureArtifactById(String artifactId) {
         return getAllSupportedAzureArtifacts().stream().filter(artifact -> StringUtils.equals(getArtifactIdentifier(
                 artifact), artifactId)).findFirst().orElse(null);
     }
 
+    @Nullable
     public AzureArtifact getAzureArtifactById(AzureArtifactType azureArtifactType, String artifactId) {
-        return azureArtifactType == File ? AzureArtifact.createFromFile(artifactId) :
-               getAllSupportedAzureArtifacts().stream().filter(artifact -> StringUtils.equals(getArtifactIdentifier(
-                artifact), artifactId)).findFirst().orElse(null);
+        return azureArtifactType == File ? AzureArtifact.createFromFile(artifactId) : getAzureArtifactById(artifactId);
     }
 
     public String getPackaging(AzureArtifact artifact) {
