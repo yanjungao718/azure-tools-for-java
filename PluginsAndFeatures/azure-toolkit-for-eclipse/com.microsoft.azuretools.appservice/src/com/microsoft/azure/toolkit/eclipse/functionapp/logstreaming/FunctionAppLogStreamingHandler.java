@@ -46,10 +46,8 @@ public class FunctionAppLogStreamingHandler {
 
     public static void startLogStreaming(final FunctionAppBase<?, ?, ?> functionApp) {
         if (!isLogStreamingEnabled(functionApp)) {
-            final boolean enableLogging = AzureTaskManager.getInstance()
-                    .runAndWaitAsObservable(new AzureTask<>(() -> AzureMessager.getMessager()
-                            .confirm(AzureString.format(ENABLE_FILE_LOGGING, functionApp.name()), ENABLE_LOGGING)))
-                    .toBlocking().single();
+            final boolean enableLogging = AzureMessager.getMessager()
+                            .confirm(AzureString.format(ENABLE_FILE_LOGGING, functionApp.getName()), ENABLE_LOGGING);
             if (enableLogging) {
                 enableLogStreaming(functionApp);
             } else {
