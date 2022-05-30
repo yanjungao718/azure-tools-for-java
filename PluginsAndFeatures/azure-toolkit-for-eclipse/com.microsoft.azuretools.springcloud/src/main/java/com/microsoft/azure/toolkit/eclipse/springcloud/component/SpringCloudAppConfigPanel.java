@@ -225,7 +225,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		toggleEndpoint.setText("Disabled");
 
 		this.lblDisk = new Label(grpConfiguration, SWT.NONE);
-		this.lblDisk.setText("Storage:");
+		this.lblDisk.setText("Persistent Storage:");
 
 		this.toggleStorage = new Button(grpConfiguration, SWT.CHECK);
 		toggleStorage.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
