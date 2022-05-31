@@ -165,8 +165,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             } else {
                 configuration.setCreatingResGrp(false);
                 configuration.setCreatingAppServicePlan(false);
-                configuration.setAppServicePlanName(webAppConfig.getServicePlan().getName());
-                configuration.setAppServicePlanResourceGroupName(webAppConfig.getServicePlan().getResourceGroupName());
+                configuration.setAppServicePlanName(Optional.ofNullable(webAppConfig.getServicePlan())
+                        .map(AppServicePlanConfig::getName).orElse(null));
+                configuration.setAppServicePlanResourceGroupName(Optional.ofNullable(webAppConfig.getServicePlan())
+                        .map(AppServicePlanConfig::getResourceGroupName).orElse(null));
             }
             configuration.setDeployToSlot(webAppConfig.getDeploymentSlot() != null);
             Optional.ofNullable(webAppConfig.getDeploymentSlot()).ifPresent(slot -> {
