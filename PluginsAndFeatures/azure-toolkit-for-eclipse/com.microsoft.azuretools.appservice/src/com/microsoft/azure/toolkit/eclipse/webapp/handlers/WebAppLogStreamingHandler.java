@@ -54,7 +54,7 @@ public class WebAppLogStreamingHandler {
     }
 
     private static void enableLogStreaming(WebAppBase<?, ?, ?> webApp) {
-        final DiagnosticConfig diagnosticConfig = webApp.getDiagnosticConfig();
+        final DiagnosticConfig diagnosticConfig = Optional.ofNullable(webApp.getDiagnosticConfig()).orElseGet(DiagnosticConfig::new);
         diagnosticConfig.setEnableWebServerLogging(true);
         diagnosticConfig.setWebServerLogQuota(35);
         diagnosticConfig.setWebServerRetentionPeriod(0);

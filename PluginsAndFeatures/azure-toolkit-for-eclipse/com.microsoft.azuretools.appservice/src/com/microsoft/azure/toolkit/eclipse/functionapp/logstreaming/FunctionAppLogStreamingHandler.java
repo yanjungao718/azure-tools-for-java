@@ -98,17 +98,18 @@ public class FunctionAppLogStreamingHandler {
     }
 
     private static boolean isLogStreamingEnabled(FunctionAppBase<?, ?, ?> functionApp) {
-        return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX || 
-                Optional.ofNullable(functionApp.getDiagnosticConfig()).map(DiagnosticConfig::isEnableWebServerLogging).orElse(false);
+        final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime())
+                .map(r -> r.getOperatingSystem()).orElse(null);
+        final boolean isEnableApplicationLog = Optional.ofNullable(functionApp.getDiagnosticConfig())
+                .map(DiagnosticConfig::isEnableApplicationLog).orElse(false);
+        return operatingSystem == OperatingSystem.LINUX || isEnableApplicationLog;
     }
 
     private static void enableLogStreaming(FunctionAppBase<?, ?, ?> functionApp) {
-        final DiagnosticConfig diagnosticConfig = functionApp.getDiagnosticConfig();
+        final DiagnosticConfig diagnosticConfig = Optional.ofNullable(functionApp.getDiagnosticConfig()).orElseGet(DiagnosticConfig::new);
         diagnosticConfig.setEnableApplicationLog(true);
-        if (functionApp instanceof FunctionApp) {
-            final FunctionAppDraft draft = (FunctionAppDraft) ((FunctionApp) functionApp).update();
-            draft.setDiagnosticConfig(diagnosticConfig);
-            draft.updateIfExist();
-        }
+        final FunctionAppDraft draft = (FunctionAppDraft) functionApp.update();
+        draft.setDiagnosticConfig(diagnosticConfig);
+        draft.commit();
     }
 }
