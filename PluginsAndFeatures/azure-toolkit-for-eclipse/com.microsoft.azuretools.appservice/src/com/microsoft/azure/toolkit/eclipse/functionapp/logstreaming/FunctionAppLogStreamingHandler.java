@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.eclipse.functionapp.logstreaming;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -97,7 +98,8 @@ public class FunctionAppLogStreamingHandler {
     }
 
     private static boolean isLogStreamingEnabled(FunctionAppBase<?, ?, ?> functionApp) {
-        return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX || functionApp.getDiagnosticConfig().isEnableApplicationLog();
+        return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX || 
+                Optional.ofNullable(functionApp.getDiagnosticConfig()).map(DiagnosticConfig::isEnableWebServerLogging).orElse(false);
     }
 
     private static void enableLogStreaming(FunctionAppBase<?, ?, ?> functionApp) {
