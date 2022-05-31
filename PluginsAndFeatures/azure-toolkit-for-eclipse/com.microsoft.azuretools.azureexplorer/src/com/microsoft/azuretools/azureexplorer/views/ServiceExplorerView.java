@@ -335,7 +335,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             } else if (obj instanceof AzureTreeNode) {
             	icon = ((AzureTreeNode) obj).getAzureIcon();
             }
-            return icon == null ? super.getImage(obj) : EclipseAzureIcons.getIcon(icon).createImage();
+            return Optional.ofNullable(icon).map(EclipseAzureIcons::getIcon).map(ImageDescriptor::createImage).orElseGet(()->super.getImage(obj));
         }
     }
 
