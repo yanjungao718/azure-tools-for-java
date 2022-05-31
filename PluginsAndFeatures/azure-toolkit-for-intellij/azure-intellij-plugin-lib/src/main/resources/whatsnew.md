@@ -1,5 +1,24 @@
-<!-- Version: 3.64.0 -->
+<!-- Version: 3.65.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.65.0
+### Added
+- New "Provide feedback" experience.    
+  <img src="whatsnew.assets/202205.providefeedback.png" alt="screenshot of 'provide feedback'" width="500"/>    
+- New Azure service support: Azure Application Insights
+  - direct resource management in Azure Explorer.
+  - resource connection from both local projects and Azure computing services.
+- Enhanced Azure Spring Apps support:
+  - 0.5Gi memory and 0.5vCPU for all pricing tiers.
+  - Enterprise tier.
+- Double clicking on leaf resource nodes in Azure Explorer will open the resource's properties editor or its portal page if it has no properties editor.
+
+### Changed
+- The default titles (i.e. "Azure") of error notifications are removed to make notification more compact.
+
+### Fixed
+- Log/notification contains message related to deployment even if user is only creating a spring app.
+- Display of Azure Explorer get messed up sometimes after restarting IDE.
+- [#6634](https://github.com/microsoft/azure-tools-for-java/issues/6634): ArrayIndexOutOfBoundsException when initializing Azure Explorer.
 
 ## 3.64.0
 ### Added

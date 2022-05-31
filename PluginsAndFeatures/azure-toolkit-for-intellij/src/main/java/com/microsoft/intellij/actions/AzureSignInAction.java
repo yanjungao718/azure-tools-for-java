@@ -305,6 +305,8 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
         authMethodDetails.setAuthType(entity.getType());
         authMethodDetails.setClientId(entity.getClientId());
+        authMethodDetails.setTenantIds(entity.getTenantIds());
+        authMethodDetails.setSubscriptions(entity.getSubscriptions());
         authMethodDetails.setTenantId(CollectionUtils.isEmpty(entity.getTenantIds()) ? "" : entity.getTenantIds().get(0));
         authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudName(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());
