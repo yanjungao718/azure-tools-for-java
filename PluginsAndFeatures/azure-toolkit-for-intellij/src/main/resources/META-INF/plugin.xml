@@ -42,7 +42,6 @@
             </ul>
           </li>
           <li>Double clicking on leaf resource nodes in Azure Explorer will open the resource's properties editor or its portal page if it has no properties editor.</li>
-          <li>Azure Explorer: add `Resource Groups` root node to enable "app-centric" resource management.</li>
         </ul>
         <h4>Changed</h4>
         <ul>
@@ -53,6 +52,7 @@
           <li>Log/notification contains message related to deployment even if user is only creating a spring app.</li>
           <li>Display of Azure Explorer get messed up sometimes after restarting IDE.</li>
           <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6634">#6634</a>: ArrayIndexOutOfBoundsException when initializing Azure Explorer.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6550">#6550</a>: Uncaught Exception com.intellij.diagnostic.PluginException: User data is not supported.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

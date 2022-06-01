@@ -19,6 +19,7 @@
 - Log/notification contains message related to deployment even if user is only creating a spring app.
 - Display of Azure Explorer get messed up sometimes after restarting IDE.
 - [#6634](https://github.com/microsoft/azure-tools-for-java/issues/6634): ArrayIndexOutOfBoundsException when initializing Azure Explorer.
+- [#6550](https://github.com/microsoft/azure-tools-for-java/issues/6550): Uncaught Exception com.intellij.diagnostic.PluginException: User data is not supported.
 
 ## 3.64.0
 ### Added
