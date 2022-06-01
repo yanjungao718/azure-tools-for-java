@@ -3,7 +3,7 @@
 ## 3.65.0
 ### Added
 - New "Provide feedback" experience.    
-  <img src="whatsnew.assets/202205.providefeedback.png" alt="screenshot of 'provide feedback'" width="500"/>    
+  <img src="https://user-images.githubusercontent.com/69189193/171312904-f52d6991-af50-4b81-a4d9-b4186a510e14.png" alt="screenshot of 'provide feedback'" width="500"/>    
 - New Azure service support: Azure Application Insights
   - direct resource management in Azure Explorer.
   - resource connection from both local projects and Azure computing services.
