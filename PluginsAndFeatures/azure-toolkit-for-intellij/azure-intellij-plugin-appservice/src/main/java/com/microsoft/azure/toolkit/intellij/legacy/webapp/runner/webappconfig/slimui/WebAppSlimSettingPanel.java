@@ -99,7 +99,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         final Runtime runtime = Optional.ofNullable(configuration.getModel()).map(IntelliJWebAppSettingModel::getRuntime).orElse(null);
         final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
         final AppServicePlanConfig plan = AppServicePlanConfig.builder().subscriptionId(subscription.getId())
-            .resourceGroupName(rgName).region(region).os(operatingSystem).pricingTier(pricingTier).build();
+            .name(configuration.getAppServicePlanName()).resourceGroupName(rgName).region(region).os(operatingSystem).pricingTier(pricingTier).build();
         final DeploymentSlotConfig slotConfig = !configuration.isDeployToSlot() ? null :
             StringUtils.equals(configuration.getSlotName(), Constants.CREATE_NEW_SLOT) ?
                 DeploymentSlotConfig.builder().newCreate(true).name(configuration.getNewSlotName())
