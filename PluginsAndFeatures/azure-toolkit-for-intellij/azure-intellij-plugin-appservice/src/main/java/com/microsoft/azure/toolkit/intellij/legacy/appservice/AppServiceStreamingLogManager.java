@@ -161,7 +161,7 @@ public enum AppServiceStreamingLogManager {
             final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
             final boolean isEnableApplicationLog = Optional.ofNullable(functionApp.getDiagnosticConfig())
                     .map(DiagnosticConfig::isEnableApplicationLog).orElse(false);
-            return operatingSystem == OperatingSystem.LINUX || functionApp.getDiagnosticConfig().isEnableApplicationLog();
+            return operatingSystem == OperatingSystem.LINUX || isEnableApplicationLog;
         }
 
         @Override

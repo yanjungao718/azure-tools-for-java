@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.eclipse.functionapp.logstreaming;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,10 +47,8 @@ public class FunctionAppLogStreamingHandler {
 
     public static void startLogStreaming(final FunctionAppBase<?, ?, ?> functionApp) {
         if (!isLogStreamingEnabled(functionApp)) {
-            final boolean enableLogging = AzureTaskManager.getInstance()
-                    .runAndWaitAsObservable(new AzureTask<>(() -> AzureMessager.getMessager()
-                            .confirm(AzureString.format(ENABLE_FILE_LOGGING, functionApp.name()), ENABLE_LOGGING)))
-                    .toBlocking().single();
+            final boolean enableLogging = AzureMessager.getMessager()
+                            .confirm(AzureString.format(ENABLE_FILE_LOGGING, functionApp.getName()), ENABLE_LOGGING);
             if (enableLogging) {
                 enableLogStreaming(functionApp);
             } else {
@@ -99,16 +98,18 @@ public class FunctionAppLogStreamingHandler {
     }
 
     private static boolean isLogStreamingEnabled(FunctionAppBase<?, ?, ?> functionApp) {
-        return functionApp.getRuntime().getOperatingSystem() == OperatingSystem.LINUX || functionApp.getDiagnosticConfig().isEnableApplicationLog();
+        final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime())
+                .map(r -> r.getOperatingSystem()).orElse(null);
+        final boolean isEnableApplicationLog = Optional.ofNullable(functionApp.getDiagnosticConfig())
+                .map(DiagnosticConfig::isEnableApplicationLog).orElse(false);
+        return operatingSystem == OperatingSystem.LINUX || isEnableApplicationLog;
     }
 
     private static void enableLogStreaming(FunctionAppBase<?, ?, ?> functionApp) {
-        final DiagnosticConfig diagnosticConfig = functionApp.getDiagnosticConfig();
+        final DiagnosticConfig diagnosticConfig = Optional.ofNullable(functionApp.getDiagnosticConfig()).orElseGet(DiagnosticConfig::new);
         diagnosticConfig.setEnableApplicationLog(true);
-        if (functionApp instanceof FunctionApp) {
-            final FunctionAppDraft draft = (FunctionAppDraft) ((FunctionApp) functionApp).update();
-            draft.setDiagnosticConfig(diagnosticConfig);
-            draft.updateIfExist();
-        }
+        final FunctionAppDraft draft = (FunctionAppDraft) functionApp.update();
+        draft.setDiagnosticConfig(diagnosticConfig);
+        draft.commit();
     }
 }

@@ -15,13 +15,12 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightDra
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
@@ -31,7 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationInsightDraft> implements AzureForm<ApplicationInsightDraft> {
-    private static final String DIALOG_TITLE = "Create Application Insight";
+    private static final String DIALOG_TITLE = "Create Application Insights";
 
     private JPanel pnlRoot;
     private SubscriptionComboBox subscriptionComboBox;
@@ -83,18 +82,17 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
     }
 
     @Override
-    public void setValue(ApplicationInsightDraft data) {
-        final String resourceName = StringUtils.equals(data.getName(), AzResource.NONE.getName()) ? StringUtils.EMPTY : data.getName();
-        this.txtName.setValue(resourceName);
+    public void setValue(@Nonnull ApplicationInsightDraft data) {
+        this.txtName.setValue(data.getName());
         this.subscriptionComboBox.setValue(data.getSubscription());
-        // todo: @hanli support draft resource group
-        this.resourceGroupComboBox.setValue(data.getResourceGroup());
-        this.regionComboBox.setValue(data.getRegion());
+        // todo: @hanli refactor ai library to support get draft resource group
+        Optional.ofNullable(data.getResourceGroup()).ifPresent(resourceGroupComboBox::setValue);
+        Optional.ofNullable(data.getRegion()).ifPresent(regionComboBox::setValue);
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(subscriptionComboBox, resourceGroupComboBox, txtName, regionComboBox);
+        return Arrays.asList(txtName, subscriptionComboBox, resourceGroupComboBox, regionComboBox);
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {

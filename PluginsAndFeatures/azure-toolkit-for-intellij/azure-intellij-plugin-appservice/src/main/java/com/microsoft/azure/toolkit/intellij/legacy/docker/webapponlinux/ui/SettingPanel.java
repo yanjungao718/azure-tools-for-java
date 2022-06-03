@@ -415,6 +415,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 webAppOnLinuxDeployConfiguration.setCreatingNewAppServicePlan(false);
                 final AppServicePlan selectedAsp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
                 if (selectedAsp != null) {
+                    webAppOnLinuxDeployConfiguration.setLocationName(selectedAsp.getRegion().getName());
                     webAppOnLinuxDeployConfiguration.setAppServicePlanName(selectedAsp.getName());
                     webAppOnLinuxDeployConfiguration.setAppServicePlanResourceGroupName(selectedAsp.getResourceGroupName());
                 }

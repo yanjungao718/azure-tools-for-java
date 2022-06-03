@@ -218,6 +218,8 @@ public class SignInCommandHandler extends AzureAbstractHandler {
         authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
         authMethodDetails.setAuthType(entity.getType());
         authMethodDetails.setClientId(entity.getClientId());
+        authMethodDetails.setTenantIds(entity.getTenantIds());
+        authMethodDetails.setSubscriptions(entity.getSubscriptions());
         authMethodDetails.setTenantId(CollectionUtils.isEmpty(entity.getTenantIds()) ? "" : entity.getTenantIds().get(0));
         authMethodDetails.setAzureEnv(AzureEnvironmentUtils.getCloudName(entity.getEnvironment()));
         authMethodDetails.setAccountEmail(entity.getEmail());

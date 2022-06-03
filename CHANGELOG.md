@@ -3,7 +3,8 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
-  - [3.64.0](#3630)
+  - [3.65.0](#3650)
+  - [3.64.0](#3640)
   - [3.63.0](#3630)
   - [3.62.0](#3620)
   - [3.61.1](#3611)
@@ -82,6 +83,26 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.65.0
+### Added
+- New "Provide feedback" experience. 
+- New Azure service support: Azure Application Insights
+  - direct resource management in Azure Explorer.
+  - resource connection from both local projects and Azure computing services.
+- Enhanced Azure Spring Apps support:
+  - 0.5Gi memory and 0.5vCPU for all pricing tiers.
+  - Enterprise tier.
+- Double clicking on leaf resource nodes in Azure Explorer will open the resource's properties editor or its portal page if it has no properties editor.
+
+### Changed
+- The default titles (i.e. "Azure") of error notifications are removed to make notification more compact. 
+
+### Fixed
+- Log/notification contains message related to deployment even if user is only creating a spring app.
+- Display of Azure Explorer get messed up sometimes after restarting IDE.
+- [#6634](https://github.com/microsoft/azure-tools-for-java/issues/6634): ArrayIndexOutOfBoundsException when initializing Azure Explorer.
+- [#6550](https://github.com/microsoft/azure-tools-for-java/issues/6550): Uncaught Exception com.intellij.diagnostic.PluginException: User data is not supported.
 
 ## 3.64.0
 ### Added

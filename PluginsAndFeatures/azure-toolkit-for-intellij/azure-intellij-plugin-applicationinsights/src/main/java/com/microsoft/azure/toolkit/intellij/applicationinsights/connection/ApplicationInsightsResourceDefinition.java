@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
+import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.intellij.CommonConst;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
@@ -74,6 +75,7 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
         private static final File applicationInsightsLibrary =
                 new File(PluginManagerCore.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID)).getPluginPath().toString(), "applicationinsights-agent.jar");
 
+        @Preload
         public static synchronized File getApplicationInsightsLibrary() {
             if (!applicationInsightsLibrary.exists()) {
                 try {

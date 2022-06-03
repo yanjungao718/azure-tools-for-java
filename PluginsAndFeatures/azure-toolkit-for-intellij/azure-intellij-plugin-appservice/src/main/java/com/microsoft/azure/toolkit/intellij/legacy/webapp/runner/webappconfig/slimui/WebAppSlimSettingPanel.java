@@ -21,20 +21,15 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.IntelliJWebAppSettingModel;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanModule;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroupModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -99,14 +94,12 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         final Subscription subscription = Subscription.builder().id(configuration.getSubscriptionId()).build();
         final Region region = StringUtils.isEmpty(configuration.getRegion()) ? null : Region.fromName(configuration.getRegion());
         final String rgName = configuration.getResourceGroup();
-        final ResourceGroupModule rgModule = Azure.az(AzureResources.class).groups(subscription.getId());
         final ResourceGroupConfig resourceGroup = ResourceGroupConfig.builder().subscriptionId(subscription.getId()).name(rgName).region(region).build();
         final PricingTier pricingTier = StringUtils.isEmpty(configuration.getPricing()) ? null : PricingTier.fromString(configuration.getPricing());
         final Runtime runtime = Optional.ofNullable(configuration.getModel()).map(IntelliJWebAppSettingModel::getRuntime).orElse(null);
         final OperatingSystem operatingSystem = Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null);
-        final AppServicePlanModule planModule = Azure.az(AzureAppService.class).plans(subscription.getId());
         final AppServicePlanConfig plan = AppServicePlanConfig.builder().subscriptionId(subscription.getId())
-            .resourceGroupName(rgName).region(region).os(operatingSystem).pricingTier(pricingTier).build();
+            .name(configuration.getAppServicePlanName()).resourceGroupName(rgName).region(region).os(operatingSystem).pricingTier(pricingTier).build();
         final DeploymentSlotConfig slotConfig = !configuration.isDeployToSlot() ? null :
             StringUtils.equals(configuration.getSlotName(), Constants.CREATE_NEW_SLOT) ?
                 DeploymentSlotConfig.builder().newCreate(true).name(configuration.getNewSlotName())
@@ -172,8 +165,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             } else {
                 configuration.setCreatingResGrp(false);
                 configuration.setCreatingAppServicePlan(false);
-                configuration.setAppServicePlanName(webAppConfig.getServicePlan().getName());
-                configuration.setAppServicePlanResourceGroupName(webAppConfig.getServicePlan().getResourceGroupName());
+                configuration.setAppServicePlanName(Optional.ofNullable(webAppConfig.getServicePlan())
+                        .map(AppServicePlanConfig::getName).orElse(null));
+                configuration.setAppServicePlanResourceGroupName(Optional.ofNullable(webAppConfig.getServicePlan())
+                        .map(AppServicePlanConfig::getResourceGroupName).orElse(null));
             }
             configuration.setDeployToSlot(webAppConfig.getDeploymentSlot() != null);
             Optional.ofNullable(webAppConfig.getDeploymentSlot()).ifPresent(slot -> {

@@ -274,7 +274,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     }
 
     public void setAppServicePlanResourceGroupName(String name) {
-        webAppSettingModel.setAppServicePlanName(name);
+        webAppSettingModel.setAppServicePlanResourceGroupName(name);
     }
 
     public String getRegion() {
