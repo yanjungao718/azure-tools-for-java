@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.applicationinsights;
 
+import com.azure.resourcemanager.applicationinsights.models.ApplicationInsightsComponent;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.applicationinsights.ApplicationInsightsActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -17,12 +18,21 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightDraft;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -30,15 +40,12 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzureApplicationInsights;
-        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateApplicationInsightsAction.create(e.getProject(), null);
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) ->
+                CreateApplicationInsightsAction.create(e.getProject(), getDraftApplicationInsight(null));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateAccountHandler = (r, e) -> {
-            final ApplicationInsightDraft draft = Azure.az(AzureApplicationInsights.class)
-                    .applicationInsights(r.getSubscriptionId()).create(AzResource.NONE.getName(), r.getName());
-            draft.setRegion(r.getRegion());
-            CreateApplicationInsightsAction.create(e.getProject(), draft);
-        };
+        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateAccountHandler = (r, e) ->
+                CreateApplicationInsightsAction.create(e.getProject(), getDraftApplicationInsight(r));
         am.registerHandler(ApplicationInsightsActionsContributor.GROUP_CREATE_APPLICATIONINSIGHT, (r, e) -> true, groupCreateAccountHandler);
 
         final BiPredicate<AzResource<?, ?, ?>, AnActionEvent> connectCondition = (r, e) -> r instanceof ApplicationInsight;
@@ -49,6 +56,21 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
                     dialog.show();
                 });
         am.registerHandler(ResourceCommonActionsContributor.CONNECT, connectCondition, connectHandler);
+    }
+
+    private static ApplicationInsightDraft getDraftApplicationInsight(@Nullable final ResourceGroup resourceGroup) {
+        final List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
+        if (selectedSubscriptions.size() == 0) {
+            return null;
+        }
+        final String timestamp = Utils.getTimestamp();
+        final Subscription subscription = selectedSubscriptions.get(0);
+        final Region region = Optional.ofNullable(resourceGroup).map(ResourceGroup::getRegion).orElse(null);
+        final String resourceGroupName = resourceGroup == null ? String.format("rg-%s", timestamp) : resourceGroup.getResourceGroupName();
+        final ApplicationInsightDraft applicationInsightDraft = Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId())
+                .create(String.format("ai-%s", timestamp), resourceGroupName);
+        applicationInsightDraft.setRegion(region);
+        return applicationInsightDraft;
     }
 
     @Override

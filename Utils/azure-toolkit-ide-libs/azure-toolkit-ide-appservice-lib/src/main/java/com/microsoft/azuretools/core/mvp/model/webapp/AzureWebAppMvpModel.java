@@ -78,7 +78,7 @@ public class AzureWebAppMvpModel {
         final AppServicePlanConfig servicePlanConfig = AppServicePlanConfig.builder()
             .subscriptionId(model.getSubscriptionId())
             .name(model.getAppServicePlanName())
-            .resourceGroupName(model.getResourceGroupName())
+            .resourceGroupName(StringUtils.firstNonBlank(model.getAppServicePlanResourceGroupName(), model.getResourceGroupName()))
             .region(Region.fromName(model.getLocationName()))
             .os(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
             .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize()))
