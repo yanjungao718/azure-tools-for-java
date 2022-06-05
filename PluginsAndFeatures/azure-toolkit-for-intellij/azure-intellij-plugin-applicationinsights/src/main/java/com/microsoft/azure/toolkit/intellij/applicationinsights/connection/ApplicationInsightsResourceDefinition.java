@@ -6,16 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.applicationinsights.connection;
 
 import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.extensions.PluginId;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
@@ -23,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.intellij.CommonConst;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -34,11 +30,10 @@ import java.util.Map;
 
 @Getter
 public class ApplicationInsightsResourceDefinition extends AzureServiceResource.Definition<ApplicationInsight> implements IJavaAgentSupported {
-    public static final ApplicationInsightsResourceDefinition INSTANCE =
-            new ApplicationInsightsResourceDefinition("Azure.Insights", "Azure Application Insights", AzureIcons.ApplicationInsights.MODULE.getIconPath());
+    public static final ApplicationInsightsResourceDefinition INSTANCE = new ApplicationInsightsResourceDefinition();
 
-    private ApplicationInsightsResourceDefinition(String name, String title, String icon) {
-        super(name, title, icon);
+    public ApplicationInsightsResourceDefinition() {
+        super("Azure.Insights", "Azure Application Insights", AzureIcons.ApplicationInsights.MODULE.getIconPath());
     }
 
     @Override
@@ -85,13 +80,6 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
                 }
             }
             return applicationInsightsLibrary;
-        }
-    }
-
-    public static class RegisterActivity extends PreloadingActivity {
-        @Override
-        public void preload(@NotNull ProgressIndicator progressIndicator) {
-            ResourceManager.registerDefinition(INSTANCE);
         }
     }
 }

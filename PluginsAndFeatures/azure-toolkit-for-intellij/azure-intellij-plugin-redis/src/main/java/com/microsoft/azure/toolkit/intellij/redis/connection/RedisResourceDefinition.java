@@ -6,24 +6,19 @@
 package com.microsoft.azure.toolkit.intellij.redis.connection;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.intellij.openapi.application.PreloadingActivity;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +30,7 @@ import java.util.Objects;
 public class RedisResourceDefinition extends AzureServiceResource.Definition<RedisCache> implements SpringSupported<RedisCache> {
     public static final RedisResourceDefinition INSTANCE = new RedisResourceDefinition();
 
-    private RedisResourceDefinition() {
+    public RedisResourceDefinition() {
         super("Azure.Redis", "Azure Redis Cache", AzureIcons.RedisCache.MODULE.getIconPath());
     }
 
@@ -71,13 +66,5 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     @Override
     public AzureFormJPanel<Resource<RedisCache>> getResourcePanel(Project project) {
         return new RedisResourcePanel();
-    }
-
-    public static class RegisterActivity extends PreloadingActivity {
-        @Override
-        @ExceptionNotification
-        public void preload(@NotNull ProgressIndicator progressIndicator) {
-            ResourceManager.registerDefinition(INSTANCE);
-        }
     }
 }

@@ -8,10 +8,12 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.EqualsAndHashCode;
 import lombok.extern.java.Log;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +33,12 @@ import java.util.stream.Collectors;
 public interface ConnectionManager extends PersistentStateComponent<Element> {
     @Nonnull
     static ArrayList<ConnectionDefinition<?, ?>> getDefinitions() {
-        return new ArrayList<>(Impl.definitions.values());
+        return new ArrayList<>(Impl.getDefinitions().values());
     }
 
     @Nullable
     static ConnectionDefinition<?, ?> getDefinitionOrDefault(@Nonnull String name) {
-        return Impl.definitions.computeIfAbsent(name, def -> {
+        return Impl.getDefinitions().computeIfAbsent(name, def -> {
             final String[] split = def.split(":");
             final ResourceDefinition<?> rd = ResourceManager.getDefinition(split[0]);
             final ResourceDefinition<?> cd = ResourceManager.getDefinition(split[1]);
@@ -48,11 +49,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
     @Nonnull
     static ConnectionDefinition<?, ?> getDefinitionOrDefault(@Nonnull ResourceDefinition<?> rd, @Nonnull ResourceDefinition<?> cd) {
         final String name = getName(rd, cd);
-        return Impl.definitions.computeIfAbsent(name, def -> new ConnectionDefinition<>(rd, cd));
-    }
-
-    static <R, C> void registerDefinition(ConnectionDefinition<R, C> definition) {
-        Impl.definitions.put(getName(definition), definition);
+        return Impl.getDefinitions().computeIfAbsent(name, def -> new ConnectionDefinition<>(rd, cd));
     }
 
     void addConnection(Connection<?, ?> connection);
@@ -77,11 +74,20 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
     @Log
     @State(name = Impl.ELEMENT_NAME_CONNECTIONS, storages = {@Storage("azure/resource-connections.xml")})
     final class Impl implements ConnectionManager, PersistentStateComponent<Element> {
+        private static final ExtensionPointName<ConnectionDefinition<?, ?>> exPoints =
+            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.connectorConnectionType");
         private static final String ELEMENT_NAME_CONNECTIONS = "connections";
         private static final String ELEMENT_NAME_CONNECTION = "connection";
         private static final String FIELD_TYPE = "type";
         private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
-        private static final Map<String, ConnectionDefinition<?, ?>> definitions = new LinkedHashMap<>();
+        private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
+
+        public synchronized static Map<String, ConnectionDefinition<?, ?>> getDefinitions() {
+            if (MapUtils.isEmpty(definitions)) {
+                definitions = exPoints.extensions().collect(Collectors.toMap(ConnectionDefinition::getName, r -> r));
+            }
+            return definitions;
+        }
 
         @Override
         public synchronized void addConnection(Connection<?, ?> connection) {

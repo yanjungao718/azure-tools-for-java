@@ -1,5 +1,8 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.database.mysql.connection.MySqlDatabaseResourceDefinition"/>
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResourceDefinition"/>
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.connection.SqlServerDatabaseResourceDefinition"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributor"/>
@@ -12,10 +15,7 @@
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.postgre.property.PostgreSqlPropertiesEditorProvider"/>
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResourceDefinition$RegisterActivity"/>
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.mysql.property.MySqlPropertiesEditorProvider"/>
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.mysql.connection.MySqlDatabaseResourceDefinition$RegisterActivity"/>
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.property.SqlServerPropertiesEditorProvider"/>
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.connection.SqlServerDatabaseResourceDefinition$RegisterActivity"/>
     </extensions>
 </idea-plugin>

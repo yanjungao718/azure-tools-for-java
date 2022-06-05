@@ -36,6 +36,10 @@ public class ConnectionDefinition<R, C> {
         this.consumerDefinition = cd;
     }
 
+    public String getName() {
+        return String.format("%s:%s", resourceDefinition.getName(), consumerDefinition.getName());
+    }
+
     /**
      * create {@link Connection} from given {@code resource} and {@code consumer}
      */
