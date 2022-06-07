@@ -8,16 +8,17 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.extern.java.Log;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,21 +30,17 @@ import java.util.stream.Collectors;
 public interface ResourceManager {
 
     static ResourceDefinition<?> getDefinition(String type) {
-        return Impl.definitions.get(type);
+        return Impl.getDefinitions().get(type);
     }
 
     static List<ResourceDefinition<?>> getDefinitions() {
-        return new ArrayList<>(Impl.definitions.values());
+        return new ArrayList<>(Impl.getDefinitions().values());
     }
 
     static List<ResourceDefinition<?>> getDefinitions(int role) {
-        return Impl.definitions.values().stream()
-                .filter(d -> (d.getRole() & role) == role)
-                .collect(Collectors.toList());
-    }
-
-    static void registerDefinition(ResourceDefinition<?> definition) {
-        Impl.definitions.put(definition.getName(), definition);
+        return Impl.getDefinitions().values().stream()
+            .filter(d -> (d.getRole() & role) == role)
+            .collect(Collectors.toList());
     }
 
     void addResource(Resource<?> resource);
@@ -54,11 +51,20 @@ public interface ResourceManager {
     @Log
     @State(name = Impl.ELEMENT_NAME_RESOURCES, storages = {@Storage("azure/connection-resources.xml")})
     final class Impl implements ResourceManager, PersistentStateComponent<Element> {
+        private static final ExtensionPointName<ResourceDefinition<?>> exPoints =
+            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.connectorResourceType");
         private static final String ATTR_DEFINITION = "type";
         protected static final String ELEMENT_NAME_RESOURCES = "resources";
         protected static final String ELEMENT_NAME_RESOURCE = "resource";
         protected final Set<Resource<?>> resources = new LinkedHashSet<>();
-        private static final Map<String, ResourceDefinition<?>> definitions = new LinkedHashMap<>();
+        private static Map<String, ResourceDefinition<?>> definitions;
+
+        public synchronized static Map<String, ResourceDefinition<?>> getDefinitions() {
+            if (MapUtils.isEmpty(definitions)) {
+                definitions = exPoints.extensions().collect(Collectors.toMap(ResourceDefinition::getName, r -> r));
+            }
+            return definitions;
+        }
 
         @Override
         public synchronized void addResource(Resource<?> resource) {

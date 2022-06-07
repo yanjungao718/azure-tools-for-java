@@ -5,12 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.intellij.openapi.application.PreloadingActivity;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -49,12 +46,19 @@ public final class ModuleResource implements Resource<String> {
 
     @Getter
     @RequiredArgsConstructor
-    public enum Definition implements ResourceDefinition<String> {
-        IJ_MODULE("Jetbrains.IJModule", "Intellij Module", "/icons/module");
+    @EqualsAndHashCode
+    public static class Definition implements ResourceDefinition<String> {
+        public static final Definition IJ_MODULE = new Definition();
         private final String name;
         private final String title;
         private final String icon;
         private final int role = CONSUMER;
+
+        public Definition() {
+            this.name = "Jetbrains.IJModule";
+            this.title = "Intellij Module";
+            this.icon = "/icons/module";
+        }
 
         @Override
         public Resource<String> define(String resource) {
@@ -80,15 +84,6 @@ public final class ModuleResource implements Resource<String> {
         @Override
         public String toString() {
             return this.getTitle();
-        }
-    }
-
-    public static class RegisterActivity extends PreloadingActivity {
-
-        @Override
-        @ExceptionNotification
-        public void preload(@Nonnull ProgressIndicator progressIndicator) {
-            ResourceManager.registerDefinition(Definition.IJ_MODULE);
         }
     }
 }

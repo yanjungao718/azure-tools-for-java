@@ -1,11 +1,15 @@
 <idea-plugin>
+    <extensionPoints>
+        <extensionPoint name="connectorResourceType" interface="com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition"/>
+        <extensionPoint name="connectorConnectionType" interface="com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition"/>
+    </extensionPoints>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.connector.ModuleResource$Definition"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Azure Resource Connector" anchor="right" icon="/icons/Common/AzureResourceConnector.svg"
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ModuleResource$RegisterActivity"/>
         <projectService
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
             serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager$Impl" />

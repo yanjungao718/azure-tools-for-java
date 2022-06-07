@@ -6,24 +6,19 @@
 package com.microsoft.azure.toolkit.intellij.storage.connection;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.intellij.openapi.application.PreloadingActivity;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +29,7 @@ import java.util.Map;
 public class StorageAccountResourceDefinition extends AzureServiceResource.Definition<StorageAccount> implements SpringSupported<StorageAccount> {
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
 
-    private StorageAccountResourceDefinition() {
+    public StorageAccountResourceDefinition() {
         super("Azure.Storage", "Azure Storage Account", AzureIcons.StorageAccount.MODULE.getIconPath());
     }
 
@@ -74,13 +69,5 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     @Override
     public AzureFormJPanel<Resource<StorageAccount>> getResourcePanel(Project project) {
         return new StorageAccountResourcePanel();
-    }
-
-    public static class RegisterActivity extends PreloadingActivity {
-        @Override
-        @ExceptionNotification
-        public void preload(@NotNull ProgressIndicator progressIndicator) {
-            ResourceManager.registerDefinition(INSTANCE);
-        }
     }
 }
