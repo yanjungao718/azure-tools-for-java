@@ -6,22 +6,17 @@
 package com.microsoft.azure.toolkit.intellij.database.postgre.connection;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.intellij.openapi.application.PreloadingActivity;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourcePanel;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlDatabase;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDefinition<PostgreSqlDatabase> {
@@ -44,14 +39,6 @@ public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDef
     @Override
     public AzureFormJPanel<Resource<PostgreSqlDatabase>> getResourcePanel(Project project) {
         return new SqlDatabaseResourcePanel<>(this, s -> Azure.az(AzurePostgreSql.class).servers(s).list());
-    }
-
-    public static class RegisterActivity extends PreloadingActivity {
-        @Override
-        @ExceptionNotification
-        public void preload(@Nonnull ProgressIndicator progressIndicator) {
-            ResourceManager.registerDefinition(PostgreSqlDatabaseResourceDefinition.INSTANCE);
-        }
     }
 }
 

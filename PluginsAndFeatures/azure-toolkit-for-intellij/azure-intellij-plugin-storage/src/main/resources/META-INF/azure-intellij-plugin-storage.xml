@@ -1,10 +1,8 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.storage.StorageNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor"/>
-    </extensions>
-    <extensions defaultExtensionNs="com.intellij">
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition$RegisterActivity"/>
     </extensions>
 </idea-plugin>
