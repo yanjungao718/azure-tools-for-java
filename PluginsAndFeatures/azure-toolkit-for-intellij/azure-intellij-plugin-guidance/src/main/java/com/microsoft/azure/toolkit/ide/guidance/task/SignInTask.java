@@ -17,7 +17,7 @@ import java.util.Arrays;
 public class SignInTask implements Task {
 
     public static final String SUBSCRIPTION_ID = "subscriptionId";
-    private Project project;
+    private final Project project;
 
     public SignInTask(Project project) {
         this.project = project;

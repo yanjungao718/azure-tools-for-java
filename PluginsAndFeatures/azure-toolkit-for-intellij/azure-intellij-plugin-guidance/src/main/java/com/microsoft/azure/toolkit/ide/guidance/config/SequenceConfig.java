@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class ProcessConfig {
+public class SequenceConfig {
     private String uri;
     private String name;
     private String title;

@@ -15,24 +15,24 @@ import java.util.stream.Collectors;
 
 public class PhaseManager {
     private static final ExtensionPointName<GuidancePhaseProvider> exPoints =
-            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.guidancePhaseProvider");
+        ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.guidancePhaseProvider");
 
     private static List<GuidancePhaseProvider> providers;
 
-    public static Phase createPhase(@Nonnull final PhaseConfig type, @Nonnull final Guidance guidance){
+    public static Phase createPhase(@Nonnull final PhaseConfig type, @Nonnull final Guidance guidance) {
         return getTaskProviders().stream()
-                .map(provider -> provider.createPhase(type, guidance))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported phase type"));
+            .map(provider -> provider.createPhase(type, guidance))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported phase type"));
     }
 
-    public static JPanel createPhasePanel(@Nonnull Phase phase){
+    public static JPanel createPhasePanel(@Nonnull Phase phase) {
         return getTaskProviders().stream()
-                .map(provider -> provider.createPhasePanel(phase))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported phase type"));
+            .map(provider -> provider.createPhasePanel(phase))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported phase type"));
     }
 
     public synchronized static List<GuidancePhaseProvider> getTaskProviders() {

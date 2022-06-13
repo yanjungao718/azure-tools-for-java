@@ -18,7 +18,7 @@ public class CloneTaskInputPanel implements InputComponent {
     private JPanel pnlRoot;
     private AzureFileInput fileInput;
 
-    private Guidance guidance;
+    private final Guidance guidance;
 
     public CloneTaskInputPanel(Guidance guidance) {
         this.guidance = guidance;
@@ -29,7 +29,7 @@ public class CloneTaskInputPanel implements InputComponent {
     private void init() {
         fileInput.setValue(new File(System.getProperty("user.home"), guidance.getName()).getAbsolutePath());
         fileInput.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(SELECT_PATH_TO_SAVE_THE_PROJECT, PATH_TO_SAVE_THE_DEMO_PROJECT, fileInput,
-                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+            null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
     }
 
     @Override

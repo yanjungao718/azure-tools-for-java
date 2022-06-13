@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.microsoft.azure.toolkit.ide.guidance.config.ProcessConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.GuidanceView;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -25,14 +25,14 @@ public class GuidanceViewManager {
         return instance;
     }
 
-    public void showGuidance(@Nonnull final Project project, @Nonnull final ProcessConfig processConfig) {
+    public void showGuidance(@Nonnull final Project project, @Nonnull final SequenceConfig sequenceConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             toolWindow.show();
             final GuidanceView guidanceView = (GuidanceView) Arrays.stream(toolWindow.getComponent().getComponents())
-                    .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
+                .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
             if (guidanceView != null) {
-                guidanceView.showProcess(GuidanceViewManager.createProcess(processConfig, project));
+                guidanceView.showProcess(GuidanceViewManager.createProcess(sequenceConfig, project));
             }
         });
     }
@@ -42,7 +42,7 @@ public class GuidanceViewManager {
         AzureTaskManager.getInstance().runLater(() -> {
             toolWindow.show();
             final GuidanceView guidanceView = (GuidanceView) Arrays.stream(toolWindow.getComponent().getComponents())
-                    .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
+                .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
             if (guidanceView != null) {
                 guidanceView.showWelcomePage();
             }
@@ -59,7 +59,7 @@ public class GuidanceViewManager {
         }
     }
 
-    public static Guidance createProcess(@Nonnull final ProcessConfig config, @Nonnull Project project) {
+    public static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
         final Guidance guidance = new Guidance(config, project);
         AzureTaskManager.getInstance().runOnPooledThread(() -> guidance.init());
         return guidance;

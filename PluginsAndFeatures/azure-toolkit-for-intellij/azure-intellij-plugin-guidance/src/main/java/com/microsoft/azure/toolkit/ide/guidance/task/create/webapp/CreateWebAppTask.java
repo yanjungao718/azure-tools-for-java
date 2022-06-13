@@ -28,9 +28,9 @@ public class CreateWebAppTask implements Task {
     public void execute(Context context) {
         final String name = (String) context.getProperty(WEBAPP_NAME);
         final Subscription subscription = Optional.ofNullable((String) context.getProperty(SignInTask.SUBSCRIPTION_ID))
-                .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
-                .orElseGet(() -> Azure.az(AzureAccount.class).getSubscriptions().get(0));
-        WebAppConfig webAppConfig = WebAppConfig.getWebAppDefaultConfig(name);
+            .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
+            .orElseGet(() -> Azure.az(AzureAccount.class).getSubscriptions().get(0));
+        final WebAppConfig webAppConfig = WebAppConfig.getWebAppDefaultConfig(name);
         webAppConfig.setName(name);
         webAppConfig.setSubscription(subscription);
         webAppConfig.setRuntime(Runtime.LINUX_JAVA11);

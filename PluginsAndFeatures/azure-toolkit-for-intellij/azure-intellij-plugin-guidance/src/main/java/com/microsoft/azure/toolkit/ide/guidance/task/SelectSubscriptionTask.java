@@ -7,7 +7,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Task;
 
 public class SelectSubscriptionTask implements Task {
 
-    private Project project;
+    private final Project project;
 
     public SelectSubscriptionTask(Project project) {
         this.project = project;

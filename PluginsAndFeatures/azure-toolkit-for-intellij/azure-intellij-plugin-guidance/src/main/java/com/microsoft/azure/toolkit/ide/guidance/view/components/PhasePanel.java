@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ public class PhasePanel extends JPanel {
     private JPanel pnlOutput;
     private JPanel pnlRootContentHolder;
 
-    private Phase phase;
+    private final Phase phase;
     private HideableDecorator phaseDecorator;
     private HideableDecorator stepDecorator;
     private List<InputComponent> inputComponents;
@@ -67,7 +68,7 @@ public class PhasePanel extends JPanel {
         prepareOutput();
         update(phase.getStatus());
         runButton.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Action.START));
-        phase.addStatusListener(phaseStatus -> update(phaseStatus));
+        phase.addStatusListener(this::update);
 
         runButton.addActionListener(e -> {
             txtOutput.setVisible(true);
@@ -76,10 +77,8 @@ public class PhasePanel extends JPanel {
         });
     }
 
-    private IAzureMessager messager;
-
     private void prepareOutput() {
-        this.messager = new ConsoleTextMessager();
+        final IAzureMessager messager = new ConsoleTextMessager();
         phase.setOutput(messager);
         txtOutput.setBackground(new Color(40, 40, 40));
     }
@@ -121,6 +120,7 @@ public class PhasePanel extends JPanel {
         Arrays.stream(panel.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(child -> child.setBackground(color));
     }
 
+    @Nullable
     private Icon getStatusIcons(final Status status) {
         if (status == Status.RUNNING) {
             return IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON);

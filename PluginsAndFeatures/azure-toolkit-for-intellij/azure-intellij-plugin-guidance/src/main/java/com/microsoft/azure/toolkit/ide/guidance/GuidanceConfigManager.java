@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.guidance.config.ProcessConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -34,40 +34,40 @@ public class GuidanceConfigManager {
     }
 
     @Nullable
-    public ProcessConfig getProcessConfigFromWorkspace(@Nonnull Project project) {
+    public SequenceConfig getProcessConfigFromWorkspace(@Nonnull Project project) {
         final File file = new File(project.getBasePath(), GETTING_START_CONFIGURATION_NAME);
         if (!file.exists()) {
             return null;
         }
         try (final InputStream inputStream = new FileInputStream(file)) {
-            return mapper.readValue(inputStream, ProcessConfig.class);
+            return mapper.readValue(inputStream, SequenceConfig.class);
         } catch (final IOException e) {
             return null;
         }
     }
 
-    @Cacheable(value = "guidance/process")
-    public List<ProcessConfig> loadProcessConfig() {
+    @Cacheable(value = "guidance/sequence")
+    public List<SequenceConfig> loadSequenceConfig() {
         return Optional.of(new Reflections("guidance", Scanners.Resources))
-                .map(reflections -> {
-                    try {
-                        return reflections.getResources(Pattern.compile(".*\\.yml"));
-                    } catch (final Exception exception) {
-                        return (Set<String>)Collections.EMPTY_SET;
-                    }
-                })
-                .orElse(Collections.emptySet())
-                .stream().map(uri -> GuidanceConfigManager.getProcessConfig("/" + uri))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            .map(reflections -> {
+                try {
+                    return reflections.getResources(Pattern.compile(".*\\.yml"));
+                } catch (final Exception exception) {
+                    return (Set<String>) Collections.EMPTY_SET;
+                }
+            })
+            .orElse(Collections.emptySet())
+            .stream().map(uri -> GuidanceConfigManager.getSequenceConfig("/" + uri))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     @Nullable
-    private static ProcessConfig getProcessConfig(String uri) {
+    private static SequenceConfig getSequenceConfig(String uri) {
         try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(uri)) {
-            final ProcessConfig processConfig = mapper.readValue(inputStream, ProcessConfig.class);
-            processConfig.setUri(uri);
-            return processConfig;
+            final SequenceConfig sequenceConfig = mapper.readValue(inputStream, SequenceConfig.class);
+            sequenceConfig.setUri(uri);
+            return sequenceConfig;
         } catch (final IOException e) {
             // swallow exception for failed convertation
             return null;

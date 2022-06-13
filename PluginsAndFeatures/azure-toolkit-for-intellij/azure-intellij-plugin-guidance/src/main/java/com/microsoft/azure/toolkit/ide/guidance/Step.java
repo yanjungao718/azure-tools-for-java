@@ -62,11 +62,12 @@ public class Step {
             setStatus(Status.RUNNING);
             this.task.execute(context, this.output);
             setStatus(Status.SUCCEED);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             setStatus(Status.FAILED);
             throw e;
         }
     }
+
     private List<Consumer<Status>> listenerList = new ArrayList<>();
 
     public void addStatusListener(Consumer<Status> listener) {

@@ -17,7 +17,7 @@ public class StepPanel extends JPanel {
     private JPanel pnlOutputs;
     private JPanel pnlRoot;
 
-    private Step step;
+    private final Step step;
 
     public StepPanel(@Nonnull final Step step) {
         super();

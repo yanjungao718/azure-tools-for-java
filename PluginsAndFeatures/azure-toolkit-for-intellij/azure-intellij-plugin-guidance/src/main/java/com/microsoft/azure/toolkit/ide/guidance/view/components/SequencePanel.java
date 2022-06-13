@@ -4,24 +4,24 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.guidance.config.ProcessConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-public class ProcessPanel extends JPanel {
-    private ProcessConfig process;
+public class SequencePanel extends JPanel {
+    private final SequenceConfig sequence;
     private JPanel pnlRoot;
     private JLabel lblIcon;
     private JLabel lblTitle;
     private JTextPane areaDescription;
     private JButton startButton;
 
-    public ProcessPanel(@Nonnull ProcessConfig process) {
+    public SequencePanel(@Nonnull SequenceConfig sequence) {
         super();
-        this.process = process;
+        this.sequence = sequence;
         $$$setupUI$$$();
         init();
     }
@@ -35,10 +35,10 @@ public class ProcessPanel extends JPanel {
         this.add(pnlRoot, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         this.lblTitle.setFont(JBFont.h4());
         this.startButton.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Action.START));
-        // render process
+        // render sequence
         this.lblIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        this.lblTitle.setText(process.getTitle());
-        this.areaDescription.setText(process.getDescription());
+        this.lblTitle.setText(sequence.getTitle());
+        this.areaDescription.setText(sequence.getDescription());
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

@@ -6,8 +6,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
-import com.microsoft.azure.toolkit.ide.guidance.config.ProcessConfig;
-import com.microsoft.azure.toolkit.ide.guidance.view.components.ProcessPanel;
+import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.view.components.SequencePanel;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import rx.schedulers.Schedulers;
 
@@ -30,19 +30,19 @@ public class WelcomeView {
 
     private void init() {
         this.lblTitle.setFont(JBFont.h1());
-        AzureTaskManager.getInstance().runInBackgroundAsObservable("Loading lesson", () -> GuidanceConfigManager.getInstance().loadProcessConfig())
-                .subscribeOn(Schedulers.computation())
-                .subscribe(processes -> AzureTaskManager.getInstance().runLater(() -> this.fillProcess(processes)));
+        AzureTaskManager.getInstance().runInBackgroundAsObservable("Loading lesson", () -> GuidanceConfigManager.getInstance().loadSequenceConfig())
+            .subscribeOn(Schedulers.computation())
+            .subscribe(processes -> AzureTaskManager.getInstance().runLater(() -> this.fillProcess(processes)));
     }
 
-    private void fillProcess(final List<ProcessConfig> processConfigs) {
-        pnlProcesses.setLayout(new GridLayoutManager(processConfigs.size(), 1));
-        for (int i = 0; i < processConfigs.size(); i++) {
-            final ProcessConfig processConfig = processConfigs.get(i);
-            final ProcessPanel processPanel = new ProcessPanel(processConfig);
-            processPanel.setStartListener(e -> GuidanceViewManager.getInstance().showGuidance(project, processConfig));
+    private void fillProcess(final List<SequenceConfig> sequenceConfigs) {
+        pnlProcesses.setLayout(new GridLayoutManager(sequenceConfigs.size(), 1));
+        for (int i = 0; i < sequenceConfigs.size(); i++) {
+            final SequenceConfig sequenceConfig = sequenceConfigs.get(i);
+            final SequencePanel sequencePanel = new SequencePanel(sequenceConfig);
+            sequencePanel.setStartListener(e -> GuidanceViewManager.getInstance().showGuidance(project, sequenceConfig));
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            pnlProcesses.add(processPanel, gridConstraints);
+            pnlProcesses.add(sequencePanel, gridConstraints);
         }
     }
 

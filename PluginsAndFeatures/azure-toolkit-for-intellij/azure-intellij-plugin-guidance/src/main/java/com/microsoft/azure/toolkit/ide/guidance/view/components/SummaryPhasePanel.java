@@ -28,9 +28,10 @@ public class SummaryPhasePanel extends JPanel {
     private JPanel pnlRoot;
 
     private HideableDecorator phaseDecorator;
-    private Phase summaryPhase;
+    private final Phase summaryPhase;
 
     public SummaryPhasePanel(Phase summaryPhase) {
+        super();
         this.summaryPhase = summaryPhase;
         $$$setupUI$$$();
         init();
@@ -48,7 +49,7 @@ public class SummaryPhasePanel extends JPanel {
 
         renderActions();
 
-        summaryPhase.addStatusListener(phaseStatus -> update(phaseStatus));
+        summaryPhase.addStatusListener(this::update);
     }
 
     private void update(Status phaseStatus) {
@@ -75,7 +76,7 @@ public class SummaryPhasePanel extends JPanel {
         pnlTasks.setLayout(new GridLayoutManager(steps.size(), 1));
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
-            HyperlinkLabel hyperlinkLabel = new HyperlinkLabel();
+            final HyperlinkLabel hyperlinkLabel = new HyperlinkLabel();
             hyperlinkLabel.setHyperlinkText(StringUtils.capitalise(step.getTitle()));
             hyperlinkLabel.addHyperlinkListener(e -> runStep(step));
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
@@ -88,7 +89,7 @@ public class SummaryPhasePanel extends JPanel {
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running action: %s", step.getTitle()), () -> {
             try {
                 step.execute(context);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 AzureMessager.getMessager().error(e);
             }
         }));

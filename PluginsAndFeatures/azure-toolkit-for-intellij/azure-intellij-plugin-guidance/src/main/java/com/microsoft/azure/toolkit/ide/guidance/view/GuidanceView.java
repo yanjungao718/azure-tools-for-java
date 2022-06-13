@@ -8,9 +8,9 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 
 public class GuidanceView extends SimpleToolWindowPanel {
-    private Project project;
+    private final Project project;
     private JPanel pnlRoot;
-    private ProcessView pnlProcess;
+    private SequenceView pnlProcess;
     private WelcomeView pnlWelcome;
 
     public GuidanceView(final Project project) {
@@ -38,7 +38,7 @@ public class GuidanceView extends SimpleToolWindowPanel {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.pnlProcess = new ProcessView(project);
+        this.pnlProcess = new SequenceView(project);
         this.pnlWelcome = new WelcomeView(project);
     }
 }

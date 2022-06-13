@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.phase;
 
-import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.components.PhasePanel;
 import org.apache.commons.lang.StringUtils;

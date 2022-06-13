@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class TaskManager {
 
     private static final ExtensionPointName<GuidanceTaskProvider> exPoints =
-            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.guidanceTaskProvider");
+        ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.guidanceTaskProvider");
     private static List<GuidanceTaskProvider> providers;
 
     public synchronized static List<GuidanceTaskProvider> getTaskProviders() {
@@ -27,9 +27,9 @@ public class TaskManager {
     @Nonnull
     public static Task createTask(String id, Phase phase) {
         return getTaskProviders().stream()
-                .map(provider -> provider.createTask(id, phase))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported task id"));
+            .map(provider -> provider.createTask(id, phase))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported task id"));
     }
 }

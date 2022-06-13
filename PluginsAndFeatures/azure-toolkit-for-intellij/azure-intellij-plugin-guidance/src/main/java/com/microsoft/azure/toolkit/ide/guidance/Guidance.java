@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.guidance.config.ProcessConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -47,16 +47,16 @@ public class Guidance {
 
     private Phase currentPhase;
 
-    public Guidance(@Nonnull final ProcessConfig processConfig, @Nonnull Project project) {
+    public Guidance(@Nonnull final SequenceConfig sequenceConfig, @Nonnull Project project) {
         this.id = UUID.randomUUID().toString();
         this.project = project;
-        this.name = processConfig.getName();
-        this.title = processConfig.getTitle();
-        this.description = processConfig.getDescription();
-        this.repository = processConfig.getRepository();
+        this.name = sequenceConfig.getName();
+        this.title = sequenceConfig.getTitle();
+        this.description = sequenceConfig.getDescription();
+        this.repository = sequenceConfig.getRepository();
         this.context = new Context();
-        this.uri = processConfig.getUri();
-        this.phases = processConfig.getPhases().stream().map(config -> PhaseManager.createPhase(config, this)).collect(Collectors.toList());
+        this.uri = sequenceConfig.getUri();
+        this.phases = sequenceConfig.getPhases().stream().map(config -> PhaseManager.createPhase(config, this)).collect(Collectors.toList());
         this.initPhaseListener();
     }
 

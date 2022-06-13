@@ -8,7 +8,7 @@ import com.microsoft.azure.toolkit.ide.guidance.task.deploy.DeployWebAppTask;
 
 import javax.annotation.Nonnull;
 
-public class DefaultTaskProvider implements GuidanceTaskProvider{
+public class DefaultTaskProvider implements GuidanceTaskProvider {
     @Override
     public Task createTask(@Nonnull String taskId, @Nonnull Phase phase) {
         switch (taskId) {

@@ -55,10 +55,10 @@ public class DeployWebAppTask implements Task {
         final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getProperty(CreateWebAppTask.WEBAPP_ID), manager);
         manager.addConfiguration(settings);
         manager.setSelectedConfiguration(settings);
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), settings);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), settings);
         AzureMessager.getMessager().info(AzureString.format("Executing run configuration %s...", settings.getName()));
-        ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
+        final ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
         ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor -> {
             runContentDescriptor.getProcessHandler().addProcessListener(new ProcessAdapter() {
                 @Override
@@ -73,11 +73,11 @@ public class DeployWebAppTask implements Task {
     private RunnerAndConfigurationSettings getRunConfigurationSettings(String appId, RunManagerEx manager) {
         final ConfigurationFactory factory = WebAppConfigurationType.getInstance().getWebAppConfigurationFactory();
         final String runConfigurationName = String.format("Azure Sample: %s-%s", guidance.getName(), Utils.getTimestamp());
-        RunnerAndConfigurationSettings settings = manager.createConfiguration(runConfigurationName, factory);
+        final RunnerAndConfigurationSettings settings = manager.createConfiguration(runConfigurationName, factory);
         final RunConfiguration runConfiguration = settings.getConfiguration();
         if (runConfiguration instanceof WebAppConfiguration) {
             ((WebAppConfiguration) runConfiguration).setWebApp(Azure.az(AzureWebApp.class).webApp(appId));
-            List<AzureArtifact> allSupportedAzureArtifacts = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+            final List<AzureArtifact> allSupportedAzureArtifacts = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
             // todo: change to use artifact build by maven in last step if not exist
             final AzureArtifact azureArtifact = allSupportedAzureArtifacts.get(0);
             ((WebAppConfiguration) runConfiguration).saveArtifact(azureArtifact);
