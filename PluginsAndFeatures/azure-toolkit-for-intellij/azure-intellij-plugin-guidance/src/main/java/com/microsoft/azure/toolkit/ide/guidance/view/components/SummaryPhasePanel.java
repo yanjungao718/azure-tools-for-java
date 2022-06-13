@@ -85,10 +85,9 @@ public class SummaryPhasePanel extends JPanel {
     }
 
     private void runStep(final Step step) {
-        final Context context = summaryPhase.getGuidance().getContext();
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running action: %s", step.getTitle()), () -> {
             try {
-                step.execute(context);
+                step.execute();
             } catch (final Exception e) {
                 AzureMessager.getMessager().error(e);
             }

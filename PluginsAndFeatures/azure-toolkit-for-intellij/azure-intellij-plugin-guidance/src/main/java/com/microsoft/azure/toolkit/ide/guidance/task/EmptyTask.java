@@ -1,17 +1,11 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
-import com.microsoft.azure.toolkit.ide.guidance.Context;
-import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 
-public class EmptyTask implements Task {
-    @Override
-    public InputComponent getInput() {
-        return null;
-    }
+public class EmptyTask implements GuidanceTask {
 
     @Override
-    public void execute(Context context) throws Exception {
+    public void execute() throws Exception {
 
     }
 }

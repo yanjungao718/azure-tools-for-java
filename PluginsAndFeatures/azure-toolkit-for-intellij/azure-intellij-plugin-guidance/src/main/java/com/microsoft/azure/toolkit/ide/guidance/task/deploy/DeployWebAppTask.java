@@ -12,10 +12,9 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.guidance.Context;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
-import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.task.TaskContext;
 import com.microsoft.azure.toolkit.ide.guidance.task.create.webapp.CreateWebAppTask;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
@@ -30,44 +29,19 @@ import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class DeployWebAppTask implements Task {
+public class DeployWebAppTask implements GuidanceTask {
     private final Project project;
     private final Guidance guidance;
+    private final TaskContext context;
 
-    public DeployWebAppTask(@Nonnull Guidance guidance) {
-        this.guidance = guidance;
-        this.project = guidance.getProject();
-    }
-
-    @Override
-    public InputComponent getInput() {
-        return null;
-    }
-
-    @Override
-    public void execute(Context context) throws Exception {
-        AzureMessager.getMessager().info("Setting up run configuration for web app deployment...");
-        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getProperty(CreateWebAppTask.WEBAPP_ID), manager);
-        manager.addConfiguration(settings);
-        manager.setSelectedConfiguration(settings);
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        final ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), settings);
-        AzureMessager.getMessager().info(AzureString.format("Executing run configuration %s...", settings.getName()));
-        final ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
-        ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor -> {
-            runContentDescriptor.getProcessHandler().addProcessListener(new ProcessAdapter() {
-                @Override
-                public void processTerminated(@NotNull ProcessEvent event) {
-                    countDownLatch.countDown();
-                }
-            });
-        });
-        countDownLatch.await();
+    public DeployWebAppTask(@Nonnull TaskContext context) {
+        this.context = context;
+        this.project = context.getProject();
+        this.guidance = context.getGuidance();
     }
 
     private RunnerAndConfigurationSettings getRunConfigurationSettings(String appId, RunManagerEx manager) {
@@ -81,11 +55,33 @@ public class DeployWebAppTask implements Task {
             // todo: change to use artifact build by maven in last step if not exist
             final AzureArtifact azureArtifact = allSupportedAzureArtifacts.get(0);
             ((WebAppConfiguration) runConfiguration).saveArtifact(azureArtifact);
-            final List<BeforeRunTask> beforeRunTasks = Collections.singletonList(BuildArtifactBeforeRunTaskUtils.createBuildTask(azureArtifact, runConfiguration));
+            final List<BeforeRunTask> beforeRunTasks = new ArrayList<>();
+            beforeRunTasks.add(BuildArtifactBeforeRunTaskUtils.createBuildTask(azureArtifact, runConfiguration));
             beforeRunTasks.addAll(runConfiguration.getBeforeRunTasks());
             manager.setBeforeRunTasks(runConfiguration, beforeRunTasks);
             ((WebAppConfiguration) runConfiguration).setOpenBrowserAfterDeployment(false);
         }
         return settings;
+    }
+
+    @Override
+    public void execute() throws Exception {
+        AzureMessager.getMessager().info("Setting up run configuration for web app deployment...");
+        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
+        final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getParameter(CreateWebAppTask.WEBAPP_ID), manager);
+        manager.addConfiguration(settings);
+        manager.setSelectedConfiguration(settings);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), settings);
+        AzureMessager.getMessager().info(AzureString.format("Executing run configuration %s...", settings.getName()));
+        final ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
+        ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor ->
+                runContentDescriptor.getProcessHandler().addProcessListener(new ProcessAdapter() {
+            @Override
+            public void processTerminated(@NotNull ProcessEvent event) {
+                countDownLatch.countDown();
+            }
+        }));
+        countDownLatch.await();
     }
 }

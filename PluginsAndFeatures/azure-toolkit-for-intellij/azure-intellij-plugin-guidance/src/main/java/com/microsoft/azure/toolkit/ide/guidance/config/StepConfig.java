@@ -12,5 +12,5 @@ public class StepConfig {
     private String name;
     private String title;
     private String description;
-    private String task;
+    private TaskConfig task;
 }

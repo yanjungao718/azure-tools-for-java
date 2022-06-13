@@ -1,24 +1,25 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
-import com.microsoft.azure.toolkit.ide.guidance.Context;
-import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 
+import javax.annotation.Nonnull;
+
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 import static com.microsoft.azure.toolkit.ide.guidance.task.create.webapp.CreateWebAppTask.RESOURCE_ID;
 
-public class OpenResourceInAzureAction implements Task {
-    @Override
-    public InputComponent getInput() {
-        return null;
+public class OpenResourceInAzureTask implements GuidanceTask {
+    private final TaskContext taskContext;
+
+    public OpenResourceInAzureTask(@Nonnull TaskContext taskContext) {
+        this.taskContext = taskContext;
     }
 
     @Override
-    public void execute(Context context) throws Exception {
-        final String id = (String) context.getProperty(RESOURCE_ID);
+    public void execute() {
+        final String id = (String) taskContext.getParameter(RESOURCE_ID);
         final String url = "https://" + Azure.az(AzureWebApp.class).webApp(id).getHostName();
 //        final ResourceId resourceId = ResourceId.fromString(id);
 //        final IAccount account = Azure.az(IAzureAccount.class).account();

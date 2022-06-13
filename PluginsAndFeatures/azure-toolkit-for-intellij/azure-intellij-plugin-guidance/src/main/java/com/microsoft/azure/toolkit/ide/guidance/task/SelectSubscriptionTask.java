@@ -1,25 +1,18 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
-import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.guidance.Context;
-import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 
-public class SelectSubscriptionTask implements Task {
+import javax.annotation.Nonnull;
 
-    private final Project project;
+public class SelectSubscriptionTask implements GuidanceTask {
 
-    public SelectSubscriptionTask(Project project) {
-        this.project = project;
+    public SelectSubscriptionTask(@Nonnull final TaskContext context) {
     }
+
 
     @Override
-    public InputComponent getInput() {
-        return null;
-    }
-
-    @Override
-    public void execute(Context context) {
+    public void execute() {
 
     }
+
 }

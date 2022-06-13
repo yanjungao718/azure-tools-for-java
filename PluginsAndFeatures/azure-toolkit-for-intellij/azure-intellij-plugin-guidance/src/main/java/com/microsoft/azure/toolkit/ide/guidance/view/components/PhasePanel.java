@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
+import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
@@ -38,7 +39,7 @@ public class PhasePanel extends JPanel {
     private final Phase phase;
     private HideableDecorator phaseDecorator;
     private HideableDecorator stepDecorator;
-    private List<InputComponent> inputComponents;
+    private List<GuidanceInput> inputComponents;
 
     public PhasePanel(@Nonnull Phase phase) {
         super();
@@ -72,7 +73,7 @@ public class PhasePanel extends JPanel {
 
         runButton.addActionListener(e -> {
             txtOutput.setVisible(true);
-            inputComponents.forEach(component -> component.apply(phase.getGuidance().getContext()));
+            inputComponents.forEach(component -> component.applyResult());
             phase.execute();
         });
     }
@@ -140,9 +141,9 @@ public class PhasePanel extends JPanel {
         }
         pnlInputs.setLayout(new GridLayoutManager(inputComponents.size(), 1));
         for (int i = 0; i < inputComponents.size(); i++) {
-            final InputComponent component = inputComponents.get(i);
-            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            pnlInputs.add(component.getComponent(), gridConstraints);
+//            final InputComponent component = inputComponents.get(i);
+//            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
+//            pnlInputs.add(component.getComponent(), gridConstraints);
         }
     }
 

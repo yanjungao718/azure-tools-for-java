@@ -1,17 +1,18 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
-import com.microsoft.azure.toolkit.ide.guidance.Context;
-import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 
-public class CleanUpResourceTask implements Task {
-    @Override
-    public InputComponent getInput() {
-        return null;
+import javax.annotation.Nonnull;
+
+public class CleanUpResourceTask implements GuidanceTask {
+    private final TaskContext taskContext;
+
+    public CleanUpResourceTask(@Nonnull final TaskContext context) {
+        this.taskContext = context;
     }
 
     @Override
-    public void execute(Context context) throws Exception {
+    public void execute() {
 
     }
 }
