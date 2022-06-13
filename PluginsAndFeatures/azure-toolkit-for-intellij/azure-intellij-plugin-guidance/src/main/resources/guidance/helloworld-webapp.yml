@@ -1,0 +1,52 @@
+name: hello-webapp
+title: Deploy Your First Web App to Azure
+description: Sample project for Azure Web App with Application Insights resource connection. By running the sample, you will have an example of deploying project to Azure Web App.
+repository: https://github.com/spring-guides/gs-spring-boot.git
+context:
+phases:
+  - title: Clone
+    description: Clone demo project to your local machine
+    steps:
+      - title: Clone
+        description:
+        task: tasks.clone
+  - title: Sign-in
+    description: Sign in with your Azure account
+    steps:
+      - title: Sign-in
+        description:
+        task: task.signin
+      - title: Select Subscription
+        description:
+        task: task.select_subscription
+  - title: Prepare
+    description: Prepare dependent resources
+    doc: ./resources/aa_bb
+    steps:
+      - title: Create web app
+        description:
+        task: task.webapp.create
+      - title: Create application insight app
+        description:
+        task: task.application_insights.create
+  - title: Build & Deploy
+    description: Build artifacts, prepare dependent resources and deploy to Azure Web App
+    steps:
+      - title: Build Artifact
+        description:
+        task: task.webapp.build
+      - title: Deploy
+        description: Deploy to Azure Web App ${context.webapp.name}
+        task: task.webapp.deploy
+  - title: Done
+    type: summary
+    description: Your project has been deployed to Aure Web App, enjoy your Azure experience!
+    steps:
+      - title: view your web app in browser
+        description:
+        task: task.resource.open_in_portal
+      - title: clean up resources
+        description:
+        task: task.resource.clean_up
+
+
