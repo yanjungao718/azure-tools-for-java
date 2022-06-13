@@ -8,6 +8,7 @@
                         interface="com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInputProvider"/>
     </extensionPoints>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <guidanceInputProvider implementation="com.microsoft.azure.toolkit.ide.guidance.input.DefaultGuidanceInputProvider"/>
         <guidanceTaskProvider implementation="com.microsoft.azure.toolkit.ide.guidance.task.DefaultTaskProvider"/>
         <guidancePhaseProvider implementation="com.microsoft.azure.toolkit.ide.guidance.phase.DefaultPhaseProvider"/>
         <guidancePhaseProvider implementation="com.microsoft.azure.toolkit.ide.guidance.phase.SummaryPhaseProvider"/>
