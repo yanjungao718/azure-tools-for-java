@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.ide.guidance.input;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
+import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 
 import javax.annotation.Nonnull;
@@ -13,12 +14,21 @@ public class FileChooserInput implements GuidanceInput {
     public static final String SELECT_PATH_TO_SAVE_THE_PROJECT = "Select path to save the project";
     public static final String PATH_TO_SAVE_THE_DEMO_PROJECT = "Please select the target path to save the demo project";
     public static final String FILE_CHOOSER = "file-chooser";
+    public static final String DIRECTORY = "directory";
 
     private AzureFileInput input;
     private final InputContext context;
+    private final InputConfig config;
 
-    public FileChooserInput(@Nonnull InputContext inputContext) {
+    public FileChooserInput(@Nonnull InputConfig config, @Nonnull InputContext inputContext) {
         this.context = inputContext;
+        this.config = config;
+        initComponent();
+    }
+
+    @Override
+    public String getDescription() {
+        return config.getDescription();
     }
 
     @Override
@@ -28,7 +38,7 @@ public class FileChooserInput implements GuidanceInput {
 
     @Override
     public void applyResult() {
-        input.getValue();
+        context.applyResult(DIRECTORY, input.getValue());
     }
 
     private void initComponent() {

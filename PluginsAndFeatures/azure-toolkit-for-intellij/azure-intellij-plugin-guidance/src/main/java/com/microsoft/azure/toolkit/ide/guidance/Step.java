@@ -6,6 +6,8 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.microsoft.azure.toolkit.ide.guidance.config.StepConfig;
+import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.ide.guidance.input.InputManager;
 import com.microsoft.azure.toolkit.ide.guidance.task.TaskManager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import lombok.Data;
@@ -14,9 +16,12 @@ import lombok.RequiredArgsConstructor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Data
 @RequiredArgsConstructor
@@ -33,6 +38,9 @@ public class Step {
     private final GuidanceTask task;
 
     @Nonnull
+    private final List<GuidanceInput> inputs;
+
+    @Nonnull
     private final Phase phase;
 
     @Nonnull
@@ -46,6 +54,10 @@ public class Step {
         this.title = config.getTitle();
         this.description = config.getDescription();
         this.task = TaskManager.createTask(config.getTask(), phase.getGuidance().getContext());
+        this.inputs = Optional.ofNullable(config.getInputs())
+                .map(configs -> configs.stream().map(inputConfig ->
+                        InputManager.createInputComponent(inputConfig, phase.getGuidance().getContext())).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     public void setStatus(final Status status) {

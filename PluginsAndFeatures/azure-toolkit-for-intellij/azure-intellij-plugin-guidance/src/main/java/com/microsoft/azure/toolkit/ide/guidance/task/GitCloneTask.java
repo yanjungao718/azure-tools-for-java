@@ -1,14 +1,14 @@
-package com.microsoft.azure.toolkit.ide.guidance.task.clone;
+package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
-import com.microsoft.azure.toolkit.ide.guidance.task.TaskContext;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
 
 import javax.annotation.Nonnull;
@@ -56,11 +56,15 @@ public class GitCloneTask implements GuidanceTask {
     }
 
     private void copyConfigurationToWorkspace(final String projectPath) throws IOException {
+        if (StringUtils.isEmpty(guidance.getUri())) {
+            return;
+        }
         try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(guidance.getUri())) {
+            if (inputStream == null) {
+                return;
+            }
             final File complete = new File(projectPath, "complete");
             FileUtils.copyInputStreamToFile(inputStream, new File(complete, GuidanceConfigManager.GETTING_START_CONFIGURATION_NAME));
-        } catch (final IOException e) {
-            throw e;
         }
     }
 }

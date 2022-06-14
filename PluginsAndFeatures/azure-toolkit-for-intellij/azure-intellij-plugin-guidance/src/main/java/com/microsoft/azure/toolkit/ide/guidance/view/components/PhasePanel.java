@@ -6,7 +6,6 @@ import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.guidance.InputComponent;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
@@ -139,11 +138,18 @@ public class PhasePanel extends JPanel {
         if (CollectionUtils.isEmpty(inputComponents)) {
             return;
         }
-        pnlInputs.setLayout(new GridLayoutManager(inputComponents.size(), 1));
+        pnlInputs.setLayout(new GridLayoutManager(inputComponents.size(), 2));
         for (int i = 0; i < inputComponents.size(); i++) {
-//            final InputComponent component = inputComponents.get(i);
-//            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-//            pnlInputs.add(component.getComponent(), gridConstraints);
+            final GuidanceInput guidanceInput = inputComponents.get(i);
+            final JComponent component = guidanceInput.getComponent();
+            if (component == null) {
+                continue;
+            }
+            final JLabel inputLabel = new JLabel(guidanceInput.getDescription());
+            final GridConstraints labelConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
+            pnlInputs.add(inputLabel, labelConstraints);
+            final GridConstraints componentConstraints = new GridConstraints(i, 1, 1, 1, 0, 3, 3, 3, null, null, null, 0);
+            pnlInputs.add(component, componentConstraints);
         }
     }
 

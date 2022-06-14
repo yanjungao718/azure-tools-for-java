@@ -27,10 +27,13 @@ public class GuidanceViewManager {
 
     public void showGuidance(@Nonnull final Project project, @Nonnull final SequenceConfig sequenceConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
+        if (toolWindow == null) {
+            return;
+        }
         AzureTaskManager.getInstance().runLater(() -> {
             toolWindow.show();
             final GuidanceView guidanceView = (GuidanceView) Arrays.stream(toolWindow.getComponent().getComponents())
-                .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
+                    .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
             if (guidanceView != null) {
                 guidanceView.showProcess(GuidanceViewManager.createProcess(sequenceConfig, project));
             }
@@ -39,10 +42,13 @@ public class GuidanceViewManager {
 
     public void showGuidanceWelcome(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
+        if (toolWindow == null) {
+            return;
+        }
         AzureTaskManager.getInstance().runLater(() -> {
             toolWindow.show();
             final GuidanceView guidanceView = (GuidanceView) Arrays.stream(toolWindow.getComponent().getComponents())
-                .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
+                    .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
             if (guidanceView != null) {
                 guidanceView.showWelcomePage();
             }
@@ -61,7 +67,7 @@ public class GuidanceViewManager {
 
     public static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
         final Guidance guidance = new Guidance(config, project);
-        AzureTaskManager.getInstance().runOnPooledThread(() -> guidance.init());
+        AzureTaskManager.getInstance().runOnPooledThread(guidance::init);
         return guidance;
     }
 }

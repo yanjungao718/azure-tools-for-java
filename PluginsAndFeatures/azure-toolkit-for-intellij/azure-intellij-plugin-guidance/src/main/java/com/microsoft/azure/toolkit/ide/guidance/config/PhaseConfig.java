@@ -17,5 +17,4 @@ public class PhaseConfig {
     private String description;
     private String doc;
     private List<StepConfig> steps;
-    private List<InputConfig> inputs;
 }
