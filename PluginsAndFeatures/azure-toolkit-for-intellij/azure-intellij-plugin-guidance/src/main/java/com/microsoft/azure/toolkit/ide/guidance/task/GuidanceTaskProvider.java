@@ -1,10 +1,11 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
-import com.microsoft.azure.toolkit.ide.guidance.Phase;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.Context;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.config.TaskConfig;
 
 import javax.annotation.Nonnull;
 
 public interface GuidanceTaskProvider {
-    Task createTask(@Nonnull final String taskId, @Nonnull final Phase phase);
+    GuidanceTask createTask(@Nonnull final TaskConfig config, @Nonnull final Context context);
 }

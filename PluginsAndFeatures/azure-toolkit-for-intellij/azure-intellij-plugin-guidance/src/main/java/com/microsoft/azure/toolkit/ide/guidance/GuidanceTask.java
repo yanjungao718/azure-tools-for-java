@@ -11,10 +11,9 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 
 import java.net.URL;
 
-public interface Task {
-    InputComponent getInput();
+public interface GuidanceTask {
 
-    void execute(Context context) throws Exception;
+    void execute() throws Exception;
 
     default void init() {
     }
@@ -27,11 +26,11 @@ public interface Task {
         return null;
     }
 
-    default void execute(Context context, IAzureMessager messager) throws Exception {
+    default void execute(IAzureMessager messager) throws Exception {
         final IAzureMessager currentMessager = AzureMessager.getMessager();
         OperationContext.current().setMessager(messager);
         try {
-            execute(context);
+            execute();
         } finally {
             OperationContext.current().setMessager(currentMessager);
         }

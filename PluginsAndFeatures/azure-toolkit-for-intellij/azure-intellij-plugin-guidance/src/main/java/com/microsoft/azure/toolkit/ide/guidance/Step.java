@@ -30,7 +30,7 @@ public class Step {
     private final String description;
 
     @Nonnull
-    private final Task task;
+    private final GuidanceTask task;
 
     @Nonnull
     private final Phase phase;
@@ -45,7 +45,7 @@ public class Step {
         this.id = UUID.randomUUID().toString();
         this.title = config.getTitle();
         this.description = config.getDescription();
-        this.task = TaskManager.createTask(config.getTask(), phase);
+        this.task = TaskManager.createTask(config.getTask(), phase.getGuidance().getContext());
     }
 
     public void setStatus(final Status status) {
@@ -53,14 +53,10 @@ public class Step {
         this.listenerList.forEach(listener -> listener.accept(status));
     }
 
-    public InputComponent getInput() {
-        return getTask().getInput();
-    }
-
-    public void execute(final Context context) throws Exception {
+    public void execute() throws Exception {
         try {
             setStatus(Status.RUNNING);
-            this.task.execute(context, this.output);
+            this.task.execute(this.output);
             setStatus(Status.SUCCEED);
         } catch (final Exception e) {
             setStatus(Status.FAILED);

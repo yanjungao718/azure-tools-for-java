@@ -1,8 +1,9 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.microsoft.azure.toolkit.ide.guidance.Phase;
-import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.Context;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.config.TaskConfig;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -24,12 +25,11 @@ public class TaskManager {
         return providers;
     }
 
-    @Nonnull
-    public static Task createTask(String id, Phase phase) {
+    public static GuidanceTask createTask(@Nonnull final TaskConfig config, @Nonnull final Context context) {
         return getTaskProviders().stream()
-            .map(provider -> provider.createTask(id, phase))
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported task id"));
+                .map(provider -> provider.createTask(config, context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("Unsupported task :%s", config.getName())));
     }
 }
