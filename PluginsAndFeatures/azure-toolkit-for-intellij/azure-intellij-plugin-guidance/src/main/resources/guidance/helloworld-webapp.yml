@@ -13,7 +13,7 @@ phases:
           - name: file-chooser
             description: Location
         task:
-          name: tasks.clone
+          name: task.clone
   - title: Sign-in
     description: Sign in with your Azure account
     steps:
@@ -32,7 +32,7 @@ phases:
       - title: Create web app
         description:
         inputs:
-          - name: appServiceName
+          - name: input.appservice.name
             description: Name
         task:
           name: task.webapp.create

@@ -18,5 +18,5 @@ public class SequenceConfig {
     private String description;
     private String repository;
     private List<PhaseConfig> phases;
-    private Map<String, String> context;
+    private Map<String, Object> context;
 }
