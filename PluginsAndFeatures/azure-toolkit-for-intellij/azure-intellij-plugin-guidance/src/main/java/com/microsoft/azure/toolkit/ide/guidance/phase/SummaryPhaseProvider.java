@@ -3,7 +3,7 @@ package com.microsoft.azure.toolkit.ide.guidance.phase;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
-import com.microsoft.azure.toolkit.ide.guidance.view.components.SummaryPhasePanel;
+import com.microsoft.azure.toolkit.ide.guidance.view.components.SummaryPanel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -19,6 +19,6 @@ public class SummaryPhaseProvider implements GuidancePhaseProvider {
 
     @Override
     public JPanel createPhasePanel(@Nonnull Phase phase) {
-        return StringUtils.equals(phase.getType(), SUMMARY) ? new SummaryPhasePanel(phase) : null;
+        return StringUtils.equals(phase.getType(), SUMMARY) ? new SummaryPanel(phase) : null;
     }
 }
