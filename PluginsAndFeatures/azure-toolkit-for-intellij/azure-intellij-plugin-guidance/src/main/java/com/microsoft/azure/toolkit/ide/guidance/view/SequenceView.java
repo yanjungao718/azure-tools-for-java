@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.view;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -18,11 +19,12 @@ import java.util.List;
 
 public class SequenceView {
     private JPanel pnlRoot;
-    private JLabel lblIcon;
-    private JLabel lblTitle;
-    private JPanel pnlPhase;
-    private JPanel pnlDoc;
-    private HyperlinkLabel lblHome;
+    private JLabel guidanceIcon;
+    private JLabel titleLabel;
+    private JPanel phasesPanel;
+    private JPanel docPanel;
+    private HyperlinkLabel closeButton;
+    private JPanel bodyPanel;
 
     private final Project project;
 
@@ -33,24 +35,28 @@ public class SequenceView {
     }
 
     private void init() {
-        this.lblTitle.setFont(JBFont.h2());
+        this.titleLabel.setFont(JBFont.h2().asBold());
+        this.closeButton.setIcon(AllIcons.Actions.Cancel);
+        this.closeButton.setHyperlinkText("Abort");
+        this.closeButton.setHyperlinkTarget(null);
+        this.closeButton.addHyperlinkListener(e -> GuidanceViewManager.getInstance().showGuidanceWelcome(project));
     }
 
     public void showProcess(@Nonnull Guidance guidance) {
-        this.lblIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        this.lblTitle.setText(guidance.getTitle());
+        this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
+        this.titleLabel.setText(guidance.getTitle());
         fillPhase(guidance);
     }
 
     private void fillPhase(@Nonnull Guidance guidance) {
-        this.pnlPhase.removeAll();
+        this.phasesPanel.removeAll();
         final List<Phase> phases = guidance.getPhases();
-        pnlPhase.setLayout(new GridLayoutManager(phases.size(), 1));
+        this.phasesPanel.setLayout(new GridLayoutManager(phases.size(), 1));
         for (int i = 0; i < phases.size(); i++) {
             final Phase phase = phases.get(i);
             final JPanel phasePanel = PhaseManager.createPhasePanel(phase);
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            pnlPhase.add(phasePanel, gridConstraints);
+            this.phasesPanel.add(phasePanel, gridConstraints);
         }
     }
 
@@ -65,7 +71,5 @@ public class SequenceView {
     private void createUIComponents() {
         // TODO: place custom component creation code here
         //noinspection DialogTitleCapitalization
-        lblHome = new HyperlinkLabel("← Back");
-        lblHome.addHyperlinkListener(e -> GuidanceViewManager.getInstance().showGuidanceWelcome(project));
     }
 }

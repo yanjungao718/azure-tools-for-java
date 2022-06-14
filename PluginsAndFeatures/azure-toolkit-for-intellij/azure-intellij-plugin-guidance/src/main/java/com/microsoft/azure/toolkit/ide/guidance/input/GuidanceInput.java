@@ -1,12 +1,12 @@
 package com.microsoft.azure.toolkit.ide.guidance.input;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.swing.*;
 
 public interface GuidanceInput {
     public String getDescription();
 
-    @Nullable
+    @Nonnull
     public abstract JComponent getComponent();
 
     public abstract void applyResult();

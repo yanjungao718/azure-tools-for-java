@@ -55,9 +55,9 @@ public class Step {
         this.description = config.getDescription();
         this.task = TaskManager.createTask(config.getTask(), phase.getGuidance().getContext());
         this.inputs = Optional.ofNullable(config.getInputs())
-                .map(configs -> configs.stream().map(inputConfig ->
-                        InputManager.createInputComponent(inputConfig, phase.getGuidance().getContext())).collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
+            .map(configs -> configs.stream().map(inputConfig ->
+                InputManager.createInputComponent(inputConfig, phase.getGuidance().getContext())).collect(Collectors.toList()))
+            .orElse(Collections.emptyList());
     }
 
     public void setStatus(final Status status) {
@@ -65,14 +65,13 @@ public class Step {
         this.listenerList.forEach(listener -> listener.accept(status));
     }
 
-    public void execute() throws Exception {
+    public void execute() {
         try {
             setStatus(Status.RUNNING);
             this.task.execute(this.output);
             setStatus(Status.SUCCEED);
         } catch (final Exception e) {
             setStatus(Status.FAILED);
-            throw e;
         }
     }
 

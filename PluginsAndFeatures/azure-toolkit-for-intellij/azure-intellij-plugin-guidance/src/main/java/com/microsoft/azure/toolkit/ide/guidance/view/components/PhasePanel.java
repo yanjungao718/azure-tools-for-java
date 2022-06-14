@@ -1,44 +1,54 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.HideableDecorator;
+import com.intellij.openapi.ui.GraphicsConfig;
+import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.intellij.util.IconUtil;
+import com.intellij.util.ui.GraphicsUtil;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
+import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
 
 public class PhasePanel extends JPanel {
-    private JPanel pnlRoot;
-    private JPanel pnlRootContent;
-    private JLabel lblStatusIcon;
-    private JLabel lblTitle;
-    private JPanel pnlInputs;
-    private JButton runButton;
-    private JTextPane paneDescription;
-    private JTextArea txtOutput;
-    private JPanel pnlStepsHolder;
-    private JPanel pnlSteps;
-    private JPanel pnlOutput;
-    private JPanel pnlRootContentHolder;
-
+    // JBUI.CurrentTheme.Tree.Hover.background(true)
+    // com.intellij.notification.impl.NotificationComponent.NEW_COLOR
+    private static final JBColor BACKGROUND_COLOR = JBColor.namedColor("NotificationsToolwindow.newNotification.background", new JBColor(15134455, 4540746));
     private final Phase phase;
-    private HideableDecorator phaseDecorator;
-    private HideableDecorator stepDecorator;
-    private List<GuidanceInput> inputComponents;
+    private JPanel contentPanel;
+    private JButton actionButton;
+    private JLabel toggleIcon;
+    private JLabel statusIcon;
+    private JLabel titleLabel;
+    private JPanel detailsPanel;
+    private JTextPane descPanel;
+    private JTextArea outputPanel;
+    private JPanel inputsPanel;
+    private JPanel stepsPanel;
+    private boolean focused;
 
     public PhasePanel(@Nonnull Phase phase) {
         super();
@@ -48,126 +58,140 @@ public class PhasePanel extends JPanel {
     }
 
     private void init() {
-        this.setLayout(new GridLayoutManager(1, 1));
-        this.add(pnlRoot, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
+        final GridLayoutManager layout = new GridLayoutManager(1, 1);
+        final Insets margin = JBUI.insets(8, 8, 10, 8);
+        layout.setMargin(margin);
+        this.setLayout(layout);
+        this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL, 3, 3, null, null, null, 0));
 
-        renderPhase();
-        txtOutput.setVisible(false);
-    }
-
-    private void renderPhase() {
-        lblStatusIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        paneDescription.setText(phase.getDescription());
-
-        phaseDecorator = new HideableDecorator(pnlRootContentHolder, phase.getTitle(), false);
-        phaseDecorator.setOn(phase.getStatus() == Status.READY);
-        phaseDecorator.setContentComponent(pnlRootContent);
-        // Render Steps
-//        fillSteps();
-        renderInputs();
-        prepareOutput();
-        update(phase.getStatus());
-        runButton.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Action.START));
-        phase.addStatusListener(this::update);
-
-        runButton.addActionListener(e -> {
-            txtOutput.setVisible(true);
-            inputComponents.forEach(component -> component.applyResult());
-            phase.execute();
+        this.phase.addStatusListener(this::updateStatus);
+        //https://stackoverflow.com/questions/7115065/jlabel-vertical-alignment-not-working-as-expected
+        this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
+        this.titleLabel.setText(this.phase.getTitle());
+        final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
+        this.actionButton.setIcon(icon);
+        this.actionButton.addActionListener(e -> {
+            this.descPanel.setVisible(false);
+            this.outputPanel.setVisible(true);
+            this.phase.execute();
         });
+        this.toggleIcon.setIcon(AllIcons.Actions.ArrowExpand);
+        final MouseAdapter listener = toggleDetails();
+        this.toggleIcon.addMouseListener(listener);
+        this.titleLabel.addMouseListener(listener);
+        this.descPanel.setBorder(null);
+        this.descPanel.setText(this.phase.getDescription());
+        this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
+        this.initOutputPanel();
+        this.toggleDetails(false);
+        this.initInputsPanel();
+        this.initStepsPanel();
+        this.updateStatus(this.phase.getStatus());
     }
 
-    private void prepareOutput() {
+    private void initInputsPanel() {
+        final List<GuidanceInput> inputs = phase.getInputs();
+        if (CollectionUtils.isEmpty(inputs)) {
+            this.inputsPanel.setVisible(false);
+            return;
+        }
+        final GridLayoutManager layout = new GridLayoutManager(inputs.size(), 1);
+        this.inputsPanel.setLayout(layout);
+        for (int i = 0; i < inputs.size(); i++) {
+            final GuidanceInput component = inputs.get(i);
+            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
+            this.inputsPanel.add(component.getComponent(), gridConstraints);
+        }
+    }
+
+    private void initOutputPanel() {
         final IAzureMessager messager = new ConsoleTextMessager();
-        phase.setOutput(messager);
-        txtOutput.setBackground(new Color(40, 40, 40));
+        this.phase.setOutput(messager);
+        this.outputPanel.setVisible(false);
+        final CompoundBorder border = BorderFactory.createCompoundBorder(this.outputPanel.getBorder(), BorderFactory.createEmptyBorder(2, 4, 4, 4));
+        this.outputPanel.setBorder(border);
+        this.outputPanel.setBackground(JBUI.CurrentTheme.EditorTabs.background());
     }
 
     class ConsoleTextMessager implements IAzureMessager {
         @Override
         public boolean show(IAzureMessage message) {
-            txtOutput.setText(message.getContent());
+            PhasePanel.this.outputPanel.setText(message.getContent());
             return true;
         }
     }
 
-    private void update(final Status status) {
-        // update icon
-        lblStatusIcon.setIcon(getStatusIcons(status));
-        if (status == Status.INITIAL) {
-            this.runButton.setVisible(false);
+    private void updateStatus(Status status) {
+        this.statusIcon.setIcon(getStatusIcon(status));
+        this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
+        this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
+        this.actionButton.setVisible(this.focused);
+        if (this.focused) {
+            setBackgroundColor(this.contentPanel, BACKGROUND_COLOR);
         }
-        if (status == Status.READY) {
-            this.setBackgroundColor(this, new Color(69, 73, 74));
-            this.phaseDecorator.setOn(true);
-            this.runButton.setVisible(true);
-            this.runButton.setEnabled(true);
-        }
-        if (status == Status.RUNNING) {
-            this.runButton.setEnabled(false);
-        }
-        if (status == Status.SUCCEED) {
-            this.runButton.setVisible(false);
-            this.setBackgroundColor(this, JBColor.background());
-            this.phaseDecorator.setOn(false);
-        }
-        // update enable/disable
     }
 
-    private void setBackgroundColor(JPanel panel, Color color) {
-        panel.setBackground(color);
-        Arrays.stream(panel.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> setBackgroundColor((JPanel) child, color));
-        Arrays.stream(panel.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(child -> child.setBackground(color));
+    protected void paintComponent(@NotNull Graphics g) {
+        super.paintComponent(g);
+        if (this.focused) {
+            final Graphics2D graphics = (Graphics2D) g;
+            final GraphicsConfig config = GraphicsUtil.setupAAPainting(g);
+            g.setColor(BACKGROUND_COLOR);
+            g.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), 10, 10);
+            config.restore();
+        }
     }
 
-    @Nullable
-    private Icon getStatusIcons(final Status status) {
+    private void initStepsPanel() {
+        final List<Step> steps = phase.getSteps();
+        if (CollectionUtils.isEmpty(steps) || steps.size() == 1) {
+            // skip render steps panel for single task
+            this.stepsPanel.setVisible(false);
+            return;
+        }
+        this.stepsPanel.setVisible(true);
+        this.stepsPanel.setLayout(new GridLayoutManager(steps.size(), 1));
+        for (int i = 0; i < steps.size(); i++) {
+            final Step step = steps.get(i);
+            final JPanel stepPanel = new StepPanel(step);
+            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
+            this.stepsPanel.add(stepPanel, gridConstraints);
+        }
+    }
+
+    @Nonnull
+    private MouseAdapter toggleDetails() {
+        return new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                final boolean expanded = PhasePanel.this.toggleIcon.getIcon() == AllIcons.Actions.FindAndShowNextMatches;
+                PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.ArrowExpand : AllIcons.Actions.FindAndShowNextMatches);
+                PhasePanel.this.toggleDetails(!expanded);
+            }
+        };
+    }
+
+    private void toggleDetails(boolean expand) {
+        this.detailsPanel.setVisible(expand);
+    }
+
+    static void setBackgroundColor(JPanel c, Color color) {
+        c.setBackground(color);
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> setBackgroundColor((JPanel) child, color));
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(child -> child.setBackground(color));
+    }
+
+    @Nonnull
+    static Icon getStatusIcon(final Status status) {
         if (status == Status.RUNNING) {
-            return IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON);
+            return AnimatedIcon.Default.INSTANCE;
         } else if (status == Status.SUCCEED) {
             return AllIcons.RunConfigurations.ToolbarPassed;
         } else if (status == Status.FAILED) {
             return AllIcons.RunConfigurations.ToolbarError;
         } else {
-            return null;
+            return IconUtil.resizeSquared(AllIcons.Debugger.Db_muted_disabled_breakpoint, 14);
         }
-    }
-
-    private void renderInputs() {
-        inputComponents = phase.getInputs();
-        if (CollectionUtils.isEmpty(inputComponents)) {
-            return;
-        }
-        pnlInputs.setLayout(new GridLayoutManager(inputComponents.size(), 2));
-        for (int i = 0; i < inputComponents.size(); i++) {
-            final GuidanceInput guidanceInput = inputComponents.get(i);
-            final JComponent component = guidanceInput.getComponent();
-            if (component == null) {
-                continue;
-            }
-            final JLabel inputLabel = new JLabel(guidanceInput.getDescription());
-            final GridConstraints labelConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            pnlInputs.add(inputLabel, labelConstraints);
-            final GridConstraints componentConstraints = new GridConstraints(i, 1, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            pnlInputs.add(component, componentConstraints);
-        }
-    }
-
-    private void fillSteps() {
-//        final List<Step> steps = phase.getSteps();
-//        if (Collections.isEmpty(steps) || steps.size() == 1) {
-//            // skip render steps panel for single task
-//            return;
-//        }
-//        stepDecorator = new HideableDecorator(pnlStepsHolder, "Steps", false);
-//        stepDecorator.setContentComponent(pnlSteps);
-//        pnlSteps.setLayout(new GridLayoutManager(steps.size(), 1));
-//        for (int i = 0; i < steps.size(); i++) {
-//            final Step step = steps.get(i);
-//            final StepPanel stepPanel = new StepPanel(step);
-//            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-//            pnlSteps.add(stepPanel, gridConstraints);
-//        }
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
