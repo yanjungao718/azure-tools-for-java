@@ -17,7 +17,7 @@
         <toolWindow anchor="right"
                     icon="/icons/Common/Azure.svg"
                     factoryClass="com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager$GuidanceViewFactory"
-                    id="Azure Get Started" canCloseContents="false"/>
+                    id="Get Started with Azure" canCloseContents="false"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.ide.guidance.GuidanceStartupListener"/>
     </extensions>
     <applicationListeners>

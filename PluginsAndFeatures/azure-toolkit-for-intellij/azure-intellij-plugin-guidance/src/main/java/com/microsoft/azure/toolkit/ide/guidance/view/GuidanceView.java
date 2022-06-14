@@ -26,7 +26,7 @@ public class GuidanceView extends SimpleToolWindowPanel {
         pnlWelcome.setVisible(true);
     }
 
-    public void showProcess(@Nonnull Guidance guidance) {
+    public void showGuidance(@Nonnull Guidance guidance) {
         pnlWelcome.setVisible(false);
         pnlProcess.setVisible(true);
         pnlProcess.showProcess(guidance);

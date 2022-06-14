@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
@@ -13,11 +14,11 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
+import java.util.Objects;
 
 public class GuidanceViewManager {
 
-    public static final String TOOL_WINDOW_ID = "Azure Get Started";
+    public static final String TOOL_WINDOW_ID = "Get Started with Azure";
 
     private static final GuidanceViewManager instance = new GuidanceViewManager();
 
@@ -32,10 +33,9 @@ public class GuidanceViewManager {
         }
         AzureTaskManager.getInstance().runLater(() -> {
             toolWindow.show();
-            final GuidanceView guidanceView = (GuidanceView) Arrays.stream(toolWindow.getComponent().getComponents())
-                    .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
-            if (guidanceView != null) {
-                guidanceView.showProcess(GuidanceViewManager.createProcess(sequenceConfig, project));
+            if (Objects.nonNull(GuidanceViewFactory.guidanceView)) {
+                final Guidance guidance = GuidanceViewManager.createProcess(sequenceConfig, project);
+                GuidanceViewFactory.guidanceView.showGuidance(guidance);
             }
         });
     }
@@ -47,27 +47,28 @@ public class GuidanceViewManager {
         }
         AzureTaskManager.getInstance().runLater(() -> {
             toolWindow.show();
-            final GuidanceView guidanceView = (GuidanceView) Arrays.stream(toolWindow.getComponent().getComponents())
-                    .filter(component -> component instanceof GuidanceView).findFirst().orElse(null);
-            if (guidanceView != null) {
-                guidanceView.showWelcomePage();
+            if (Objects.nonNull(GuidanceViewFactory.guidanceView)) {
+                GuidanceViewFactory.guidanceView.showWelcomePage();
             }
         });
-    }
-
-    public static class GuidanceViewFactory implements ToolWindowFactory, DumbAware {
-        @Override
-        public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-            final GuidanceView view = new GuidanceView(project);
-            final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-            final Content content = contentFactory.createContent(view, "", false);
-            toolWindow.getContentManager().addContent(content);
-        }
     }
 
     public static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
         final Guidance guidance = new Guidance(config, project);
         AzureTaskManager.getInstance().runOnPooledThread(guidance::init);
         return guidance;
+    }
+
+    public static class GuidanceViewFactory implements ToolWindowFactory, DumbAware {
+        private static GuidanceView guidanceView;
+
+        @Override
+        public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+            guidanceView = new GuidanceView(project);
+            final JBScrollPane view = new JBScrollPane(guidanceView);
+            final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+            final Content content = contentFactory.createContent(view, "", false);
+            toolWindow.getContentManager().addContent(content);
+        }
     }
 }
