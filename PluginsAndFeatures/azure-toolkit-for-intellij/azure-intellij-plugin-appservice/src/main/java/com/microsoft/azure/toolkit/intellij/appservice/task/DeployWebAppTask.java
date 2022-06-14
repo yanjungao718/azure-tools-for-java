@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.ide.guidance.task.deploy;
+package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;
@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.ide.guidance.task.TaskContext;
-import com.microsoft.azure.toolkit.ide.guidance.task.create.webapp.CreateWebAppTask;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;

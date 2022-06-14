@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.ide.guidance.input.InputManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
@@ -22,9 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -47,8 +44,6 @@ public class Phase {
     @Nonnull
     private final List<Step> steps;
     @Nonnull
-    private final List<GuidanceInput> inputs;
-    @Nonnull
     private Status status = Status.INITIAL;
 
     private Step currentStep;
@@ -62,11 +57,6 @@ public class Phase {
         this.type = config.getType();
         this.description = config.getDescription();
         this.steps = config.getSteps().stream().map(stepConfig -> new Step(stepConfig, this)).collect(Collectors.toList());
-        this.inputs = Optional.ofNullable(config.getInputs())
-                .map(configs -> configs.stream()
-                        .map(inputConfig -> InputManager.createInputComponent(inputConfig, guidance.getContext()))
-                        .collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
         initStepListener();
     }
 
@@ -105,18 +95,19 @@ public class Phase {
         this.steps.forEach(step -> step.setOutput(output));
     }
 
+    public List<GuidanceInput> getInputs() {
+        return this.steps.stream().flatMap(step -> step.getInputs().stream()).collect(Collectors.toList());
+    }
+
     public void execute() {
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running phase : %s", this.getTitle()), () -> {
             final IAzureMessager currentMessager = AzureMessager.getMessager();
             OperationContext.current().setMessager(output);
-            setStatus(Status.RUNNING);
             try {
                 for (final Step step : steps) {
                     step.execute();
                 }
-                setStatus(Status.SUCCEED);
             } catch (final Exception e) {
-                setStatus(Status.FAILED);
                 AzureMessager.getMessager().error(e);
             } finally {
                 OperationContext.current().setMessager(currentMessager);

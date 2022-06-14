@@ -14,7 +14,7 @@ public class DefaultGuidanceInputProvider implements GuidanceInputProvider {
         final String name = config.getName();
         switch (name) {
             case FILE_CHOOSER:
-                return new FileChooserInput(inputContext);
+                return new FileChooserInput(config, inputContext);
             default:
                 return null;
         }

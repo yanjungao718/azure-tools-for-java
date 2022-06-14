@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.ide.guidance.task.create.webapp;
+package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
@@ -17,8 +17,8 @@ import java.util.Optional;
 public class CreateWebAppTask implements GuidanceTask {
     public static final String WEBAPP_NAME = "webappName";
     public static final String WEBAPP_ID = "webappId";
-    public static final String RESOURCE_ID = "webappId";
 
+    public static final String RESOURCE_ID = "webappId";
     private final TaskContext context;
 
     public CreateWebAppTask(@Nonnull final TaskContext context) {

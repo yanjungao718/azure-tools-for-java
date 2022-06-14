@@ -9,44 +9,61 @@ phases:
     steps:
       - title: Clone
         description:
-        task: tasks.clone
+        inputs:
+          - name: file-chooser
+            description: Location
+        task:
+          name: tasks.clone
   - title: Sign-in
     description: Sign in with your Azure account
     steps:
       - title: Sign-in
         description:
-        task: task.signin
+        task:
+          name: task.signin
       - title: Select Subscription
         description:
-        task: task.select_subscription
+        task:
+          name: task.select_subscription
   - title: Prepare
     description: Prepare dependent resources
     doc: ./resources/aa_bb
     steps:
       - title: Create web app
         description:
-        task: task.webapp.create
+        inputs:
+          - name: appServiceName
+            description: Name
+        task:
+          name: task.webapp.create
+          paramMapping:
+            webappName: appServiceName
       - title: Create application insight app
         description:
-        task: task.application_insights.create
+        task:
+          name: task.application_insights.create
   - title: Build & Deploy
     description: Build artifacts, prepare dependent resources and deploy to Azure Web App
     steps:
       - title: Build Artifact
         description:
-        task: task.webapp.build
+        task:
+          name: task.webapp.build
       - title: Deploy
         description: Deploy to Azure Web App ${context.webapp.name}
-        task: task.webapp.deploy
+        task:
+          name: task.webapp.deploy
   - title: Done
     type: summary
     description: Your project has been deployed to Aure Web App, enjoy your Azure experience!
     steps:
       - title: view your web app in browser
         description:
-        task: task.resource.open_in_portal
+        task:
+          name: task.resource.open_in_portal
       - title: clean up resources
         description:
-        task: task.resource.clean_up
+        task:
+          name: task.resource.clean_up
 
 

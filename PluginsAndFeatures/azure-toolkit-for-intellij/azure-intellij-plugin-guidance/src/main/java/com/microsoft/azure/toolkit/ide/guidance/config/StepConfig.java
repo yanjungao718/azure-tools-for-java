@@ -7,10 +7,13 @@ package com.microsoft.azure.toolkit.ide.guidance.config;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class StepConfig {
     private String name;
     private String title;
     private String description;
     private TaskConfig task;
+    private List<InputConfig> inputs;
 }

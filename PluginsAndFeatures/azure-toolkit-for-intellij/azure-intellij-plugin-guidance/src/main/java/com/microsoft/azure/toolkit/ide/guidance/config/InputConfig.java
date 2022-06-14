@@ -6,8 +6,8 @@ import java.util.Map;
 
 @Data
 public class InputConfig {
-    String name;
-    String description;
-    Map<String, String> paramMapping;
-    Map<String, String> resultMapping;
+    private String name;
+    private String description;
+    private Map<String, String> paramMapping;
+    private Map<String, String> resultMapping;
 }

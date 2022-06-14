@@ -10,7 +10,9 @@ import org.jetbrains.annotations.Nullable;
 public class ShowGettingStartAction extends AzureAnAction {
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
-        GuidanceViewManager.getInstance().showGuidanceWelcome(anActionEvent.getProject());
-        return false;
+        if (anActionEvent.getProject() != null) {
+            GuidanceViewManager.getInstance().showGuidanceWelcome(anActionEvent.getProject());
+        }
+        return true;
     }
 }
