@@ -21,15 +21,20 @@
         {
           "title": "Clone",
           "description": null,
-          "inputs":
-          [
+          "inputs": [
             {
               "name": "input.common.file-chooser",
-              "description": "Location"
+              "description": "Location",
+              "paramMapping": {
+                "value": "defaultLocation"
+              }
             }
           ],
           "task": {
-            "name": "task.clone"
+            "name": "task.clone",
+            "resultMapping": {
+              "defaultGitDirectory": "defaultLocation"
+            }
           }
         }
       ]
@@ -66,8 +71,11 @@
             {
               "name": "input.appservice.name",
               "description": "Name",
-              "resultMapping" : {
-                "appServiceName" : "newWebAppName"
+              "paramMapping": {
+                "value": "defaultWebAppName"
+              },
+              "resultMapping": {
+                "appServiceName": "newWebAppName"
               }
             }
           ],
@@ -75,6 +83,9 @@
             "name": "task.webapp.create",
             "paramMapping": {
               "webAppName": "newWebAppName"
+            },
+            "resultMapping": {
+              "defaultWebAppName": "defaultWebAppName"
             }
           }
         },

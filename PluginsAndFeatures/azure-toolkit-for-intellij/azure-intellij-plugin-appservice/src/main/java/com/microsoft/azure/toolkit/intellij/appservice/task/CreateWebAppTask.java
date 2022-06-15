@@ -20,6 +20,7 @@ public class CreateWebAppTask implements GuidanceTask {
     public static final String WEBAPP_ID = "webappId";
 
     public static final String RESOURCE_ID = "webappId";
+    public static final String DEFAULT_WEB_APP_NAME = "defaultWebAppName";
     private final ComponentContext context;
 
     public CreateWebAppTask(@Nonnull final ComponentContext context) {
@@ -30,7 +31,7 @@ public class CreateWebAppTask implements GuidanceTask {
     public void init() {
         GuidanceTask.super.init();
         final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
-        context.initParameter(WEBAPP_NAME, defaultWebAppName);
+        context.applyResult(DEFAULT_WEB_APP_NAME, defaultWebAppName);
     }
 
     @Override

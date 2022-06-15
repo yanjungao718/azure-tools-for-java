@@ -7,6 +7,8 @@ import com.intellij.util.IconUtil;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
+import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
+import java.util.Optional;
 
 public class StepPanel extends JPanel {
     private JPanel contentPanel;
@@ -39,6 +42,9 @@ public class StepPanel extends JPanel {
         this.actionButton.setHyperlinkText("run");
         this.actionButton.setHyperlinkTarget(null);
         this.actionButton.addHyperlinkListener(e -> {
+            if (!isInputsValid()) {
+                return;
+            }
             this.descPanel.setVisible(false);
             this.outputPanel.setVisible(true);
             this.step.execute();
@@ -46,9 +52,13 @@ public class StepPanel extends JPanel {
         this.descPanel.setBorder(null);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.step.getDescription()));
         this.renderDescription();
-        this.step.getContext().addContextListener(ignore -> this.renderDescription());
         this.initOutputPanel();
         this.updateStatus(this.step.getStatus());
+        this.step.getContext().addContextListener(ignore -> this.renderDescription());
+    }
+
+    private boolean isInputsValid() {
+        return this.step.getInputs().stream().map(GuidanceInput::getValidationInfo).allMatch(AzureValidationInfo::isValid);
     }
 
     private void renderDescription() {
@@ -68,7 +78,7 @@ public class StepPanel extends JPanel {
     class ConsoleTextMessager implements IAzureMessager {
         @Override
         public boolean show(IAzureMessage message) {
-            StepPanel.this.step.getPhase().getOutput().show(message); // Also write to step output
+            Optional.ofNullable(StepPanel.this.step.getPhase().getOutput()).ifPresent(messager -> messager.show(message)); // Also write to step output
             StepPanel.this.outputPanel.setText(message.getContent());
             return true;
         }
