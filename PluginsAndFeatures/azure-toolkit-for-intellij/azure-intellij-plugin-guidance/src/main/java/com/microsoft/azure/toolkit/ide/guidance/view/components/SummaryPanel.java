@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.GraphicsConfig;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
@@ -68,9 +67,8 @@ public class SummaryPanel extends JPanel {
         this.statusIcon.setIcon(PhasePanel.getStatusIcon(status));
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
         this.setVisible(this.focused);
-        if (this.focused) {
-            PhasePanel.setBackgroundColor(this.contentPanel, BACKGROUND_COLOR);
-        }
+        final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
+        PhasePanel.doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
     }
 
     protected void paintComponent(@Nonnull Graphics g) {

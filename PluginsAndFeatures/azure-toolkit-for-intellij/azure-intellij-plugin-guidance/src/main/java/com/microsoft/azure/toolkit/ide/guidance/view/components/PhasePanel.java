@@ -11,6 +11,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.GraphicsUtil;
 import com.intellij.util.ui.JBUI;
@@ -134,11 +135,9 @@ public class PhasePanel extends JPanel {
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
         this.actionButton.setVisible(this.focused);
-        if (this.focused) {
-            setBackgroundColor(this.contentPanel, BACKGROUND_COLOR);
-        } else {
-            setBackgroundColor(this.contentPanel, JBUI.CurrentTheme.ToolWindow.background());
-        }
+        final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
+        doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
+        doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
     }
 
     protected void paintComponent(@NotNull Graphics g) {
@@ -185,10 +184,10 @@ public class PhasePanel extends JPanel {
         this.detailsPanel.setVisible(expand);
     }
 
-    static void setBackgroundColor(JPanel c, Color color) {
-        c.setBackground(color);
-        Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> setBackgroundColor((JPanel) child, color));
-        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(child -> child.setBackground(color));
+    static void doForOffsprings(JComponent c, Consumer<Component> func) {
+        func.consume(c);
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(func::consume);
     }
 
     @Nonnull
