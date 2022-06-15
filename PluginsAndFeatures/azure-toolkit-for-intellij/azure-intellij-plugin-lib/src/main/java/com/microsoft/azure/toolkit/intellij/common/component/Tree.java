@@ -202,7 +202,9 @@ public class Tree extends SimpleTree implements DataProvider {
                     node.dispose();
                 }
             }
-            this.remove(0);
+            if (this.getChildCount() > 0) {
+                this.remove(0);
+            }
             this.refreshChildrenView();
             Optional.ofNullable(toSelect).ifPresent(p -> TreeUtil.selectPath(this.tree, p, false));
             this.loaded = true;
