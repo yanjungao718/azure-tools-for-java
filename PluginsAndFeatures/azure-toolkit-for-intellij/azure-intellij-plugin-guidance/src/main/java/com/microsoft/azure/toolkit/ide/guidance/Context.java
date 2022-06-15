@@ -6,7 +6,11 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import groovy.text.SimpleTemplateEngine;
+import groovy.text.Template;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -19,12 +23,15 @@ import java.util.function.Consumer;
 
 @Getter
 public class Context {
+
+    private static final SimpleTemplateEngine engine = new SimpleTemplateEngine();
+
     private final Guidance guidance;
     private final Project project;
     private final Map<String, Object> parameters = new HashMap<>();
 
-    private final Map<String, List<Consumer<Object>>> listenerMap = new HashMap<>();
-
+    private final Map<String, List<Consumer<Object>>> propertyChangeListenerMap = new HashMap<>();
+    private final List<Consumer<Context>> contextListenerList = new ArrayList<>();
 
     public Context(@Nonnull final Guidance guidance) {
         this.guidance = guidance;
@@ -39,16 +46,38 @@ public class Context {
         final Object origin = parameters.get(key);
         if (!Objects.equals(origin, value)) {
             parameters.put(key, value);
-            Optional.ofNullable(listenerMap.get(key)).ifPresent(list -> list.forEach(c -> c.accept(value)));
+            Optional.ofNullable(propertyChangeListenerMap.get(key))
+                    .ifPresent(list -> list.forEach(c -> AzureTaskManager.getInstance().runOnPooledThread(() -> c.accept(value))));
+            contextListenerList.forEach(listener -> AzureTaskManager.getInstance().runOnPooledThread(() -> listener.accept(this)));
         }
     }
 
     public void addPropertyListener(String key, Consumer<Object> listener) {
-        final List<Consumer<Object>> consumers = listenerMap.computeIfAbsent(key, ignore -> new ArrayList<>());
+        final List<Consumer<Object>> consumers = propertyChangeListenerMap.computeIfAbsent(key, ignore -> new ArrayList<>());
         consumers.add(listener);
     }
 
     public void removePropertyListener(String key, Consumer<Object> listener) {
-        Optional.ofNullable(listenerMap.get(key)).ifPresent(list -> list.remove(listener));
+        Optional.ofNullable(propertyChangeListenerMap.get(key)).ifPresent(list -> list.remove(listener));
+    }
+
+    public void addContextListener(Consumer<Context> listener) {
+        contextListenerList.add(listener);
+    }
+
+    public void removeContextChangeListener(Consumer<Context> listener) {
+        contextListenerList.remove(listener);
+    }
+
+    public String render(final String template) {
+        try {
+            final Map<String, Object> bindings = new HashMap<>();
+            bindings.put("context", this.parameters);
+            final Template tpl = engine.createTemplate(template);
+            // for not exists values, engine will render them as null, remove them in the final result
+            return tpl.make(bindings).toString().replace("null", "");
+        } catch (Exception e) {
+            return StringUtils.EMPTY;
+        }
     }
 }

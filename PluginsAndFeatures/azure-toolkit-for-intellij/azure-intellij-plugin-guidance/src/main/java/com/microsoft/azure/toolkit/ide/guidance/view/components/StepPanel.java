@@ -36,7 +36,6 @@ public class StepPanel extends JPanel {
         this.setLayout(new GridLayoutManager(1, 1));
         this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         this.step.addStatusListener(this::updateStatus);
-        this.titleLabel.setText(this.step.getTitle());
         this.actionButton.setHyperlinkText("run");
         this.actionButton.setHyperlinkTarget(null);
         this.actionButton.addHyperlinkListener(e -> {
@@ -45,10 +44,16 @@ public class StepPanel extends JPanel {
             this.step.execute();
         });
         this.descPanel.setBorder(null);
-        this.descPanel.setText(this.step.getDescription());
         this.descPanel.setVisible(StringUtils.isNotBlank(this.step.getDescription()));
+        this.renderDescription();
+        this.step.getContext().addContextListener(ignore -> this.renderDescription());
         this.initOutputPanel();
         this.updateStatus(this.step.getStatus());
+    }
+
+    private void renderDescription() {
+        titleLabel.setText(step.getRenderedTitle());
+        descPanel.setText(step.getRenderedDescription());
     }
 
     private void initOutputPanel() {
@@ -63,6 +68,7 @@ public class StepPanel extends JPanel {
     class ConsoleTextMessager implements IAzureMessager {
         @Override
         public boolean show(IAzureMessage message) {
+            StepPanel.this.step.getPhase().getOutput().show(message); // Also write to step output
             StepPanel.this.outputPanel.setText(message.getContent());
             return true;
         }

@@ -48,6 +48,8 @@ public class Step {
 
     private IAzureMessager output;
 
+    private List<Consumer<Status>> listenerList = new ArrayList<>();
+
     public Step(@Nonnull final StepConfig config, @Nonnull Phase phase) {
         this.phase = phase;
         this.id = UUID.randomUUID().toString();
@@ -75,7 +77,17 @@ public class Step {
         }
     }
 
-    private List<Consumer<Status>> listenerList = new ArrayList<>();
+    public String getRenderedDescription() {
+        return getContext().render(this.getDescription());
+    }
+
+    public String getRenderedTitle() {
+        return getContext().render(this.getTitle());
+    }
+
+    public Context getContext() {
+        return this.getPhase().getContext();
+    }
 
     public void addStatusListener(Consumer<Status> listener) {
         listenerList.add(listener);
