@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.ui.JBFont;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
@@ -29,6 +30,8 @@ public class SequenceView {
     private JPanel docPanel;
     private JLabel closeButton;
     private JPanel bodyPanel;
+    private JPanel headPanel;
+    private JPanel tailPanel;
 
     private final Project project;
 
@@ -61,13 +64,18 @@ public class SequenceView {
     private void fillPhase(@Nonnull Guidance guidance) {
         this.phasesPanel.removeAll();
         final List<Phase> phases = guidance.getPhases();
-        this.phasesPanel.setLayout(new GridLayoutManager(phases.size(), 1));
+        final GridLayoutManager layout = ((GridLayoutManager) this.phasesPanel.getLayout());
+        final GridLayoutManager newLayout = new GridLayoutManager(phases.size() + 1, 1, layout.getMargin(), -1, -1);
+        this.phasesPanel.setLayout(newLayout);
         for (int i = 0; i < phases.size(); i++) {
             final Phase phase = phases.get(i);
             final JPanel phasePanel = PhaseManager.createPhasePanel(phase);
-            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            this.phasesPanel.add(phasePanel, gridConstraints);
+            final GridConstraints c = new GridConstraints(i, 0, 1, 1, 1, 1, 3, 3, null, null, null, 0, false);
+            this.phasesPanel.add(phasePanel, c);
         }
+        final GridConstraints c = new GridConstraints(phases.size(), 0, 1, 1, 1, 2, 1, 6, null, null, null, 0, false);
+        final Spacer spacer = new Spacer();
+        this.phasesPanel.add(spacer, c);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
