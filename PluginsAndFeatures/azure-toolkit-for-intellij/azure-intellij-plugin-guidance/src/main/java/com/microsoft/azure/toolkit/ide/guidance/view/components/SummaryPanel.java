@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.GraphicsConfig;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
