@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
 import java.util.Objects;
 
 public class GuidanceViewManager {
@@ -65,7 +66,7 @@ public class GuidanceViewManager {
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
             guidanceView = new GuidanceView(project);
-            final JBScrollPane view = new JBScrollPane(guidanceView);
+            final JComponent view = new JBScrollPane(guidanceView, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final Content content = contentFactory.createContent(view, "", false);
             toolWindow.getContentManager().addContent(content);
