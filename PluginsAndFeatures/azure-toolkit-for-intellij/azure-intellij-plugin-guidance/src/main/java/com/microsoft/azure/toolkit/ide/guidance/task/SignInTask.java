@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -15,9 +16,9 @@ import java.util.List;
 public class SignInTask implements GuidanceTask {
 
     public static final String SUBSCRIPTION_ID = "subscriptionId";
-    private final TaskContext taskContext;
+    private final ComponentContext taskContext;
 
-    public SignInTask(@Nonnull final TaskContext taskContext) {
+    public SignInTask(@Nonnull final ComponentContext taskContext) {
         this.taskContext = taskContext;
     }
 

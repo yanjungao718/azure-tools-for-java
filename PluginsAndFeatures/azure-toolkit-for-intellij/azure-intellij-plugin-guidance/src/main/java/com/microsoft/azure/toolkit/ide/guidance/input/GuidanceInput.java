@@ -1,14 +1,20 @@
 package com.microsoft.azure.toolkit.ide.guidance.input;
 
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+
 import javax.annotation.Nonnull;
 import javax.swing.*;
 
 public interface GuidanceInput {
-    public String getDescription();
+    String getDescription();
 
     @Nonnull
-    public abstract JComponent getComponent();
+    abstract JComponent getComponent();
 
-    public abstract void applyResult();
+    abstract void applyResult();
+
+    default AzureValidationInfo getValidationInfo() {
+        return AzureValidationInfo.success(null);
+    }
 
 }

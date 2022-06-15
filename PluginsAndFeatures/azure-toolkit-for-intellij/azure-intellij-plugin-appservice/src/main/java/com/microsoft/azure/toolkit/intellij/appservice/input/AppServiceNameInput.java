@@ -1,12 +1,9 @@
 package com.microsoft.azure.toolkit.intellij.appservice.input;
 
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.ide.guidance.input.InputContext;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppNameInput;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -16,14 +13,19 @@ public class AppServiceNameInput implements GuidanceInput {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String APP_SERVICE_NAME = "appServiceName";
     private final InputConfig config;
-    private final InputContext context;
+    private final ComponentContext context;
 
-    private AppNameInput input;
+    private final AppServiceNameInputPanel inputPanel;
 
-    public AppServiceNameInput(@Nonnull InputConfig config, @Nonnull InputContext context) {
+    public AppServiceNameInput(@Nonnull InputConfig config, @Nonnull ComponentContext context) {
         this.config = config;
         this.context = context;
-        initComponent();
+        this.inputPanel = new AppServiceNameInputPanel();
+
+        this.setSubscriptionId((String) context.getParameter(SUBSCRIPTION_ID));
+        this.inputPanel.setValue((String) context.getParameter(APP_SERVICE_NAME));
+        context.addPropertyListener(APP_SERVICE_NAME, name -> inputPanel.setValue((String) name));
+        context.addPropertyListener(SUBSCRIPTION_ID, subscriptionId -> setSubscriptionId((String) subscriptionId));
     }
 
     @Override
@@ -33,25 +35,22 @@ public class AppServiceNameInput implements GuidanceInput {
 
     @Override
     public JComponent getComponent() {
-        return input;
+        return inputPanel.getRootPanel();
     }
 
     @Override
     public void applyResult() {
-        context.applyResult(APP_SERVICE_NAME, input.getValue());
+        context.applyResult(APP_SERVICE_NAME, inputPanel.getValue());
     }
 
-    private void initComponent() {
-        input = new AppNameInput();
-        updateSubscriptionId(context.getParameter(SUBSCRIPTION_ID));
-        context.addPropertyListener(SUBSCRIPTION_ID, this::updateSubscriptionId);
+    @Override
+    public AzureValidationInfo getValidationInfo() {
+        return inputPanel.getValidationInfo();
     }
 
-    private void updateSubscriptionId(Object subscriptionId) {
-        if (!(subscriptionId instanceof String) || StringUtils.isBlank((String) subscriptionId)) {
-            return;
+    private void setSubscriptionId(final String subscriptionId) {
+        if (StringUtils.isNotBlank(subscriptionId)) {
+            inputPanel.setSubscriptionId(subscriptionId);
         }
-        final Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription((String) subscriptionId);
-        input.setSubscription(subscription);
     }
 }

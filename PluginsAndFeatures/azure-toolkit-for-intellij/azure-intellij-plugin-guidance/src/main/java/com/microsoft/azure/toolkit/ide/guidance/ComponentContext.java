@@ -1,9 +1,8 @@
-package com.microsoft.azure.toolkit.ide.guidance.input;
+package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.guidance.Context;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.TaskConfig;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -11,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class InputContext {
+public class ComponentContext {
     @Nonnull
     private final Context context;
     @Nonnull
@@ -19,7 +18,13 @@ public class InputContext {
     @Nonnull
     private final Map<String, String> resultMapping;
 
-    public InputContext(@Nonnull final InputConfig config, @Nonnull final Context context) {
+    public ComponentContext(@Nonnull final TaskConfig config, @Nonnull final Context context) {
+        this.context = context;
+        this.paramMapping = Optional.ofNullable(config.getParamMapping()).orElse(Collections.emptyMap());
+        this.resultMapping = Optional.ofNullable(config.getResultMapping()).orElse(Collections.emptyMap());
+    }
+
+    public ComponentContext(@Nonnull final InputConfig config, @Nonnull final Context context) {
         this.context = context;
         this.paramMapping = Optional.ofNullable(config.getParamMapping()).orElse(Collections.emptyMap());
         this.resultMapping = Optional.ofNullable(config.getResultMapping()).orElse(Collections.emptyMap());
@@ -37,6 +42,11 @@ public class InputContext {
     public Object getParameter(@Nonnull final String key) {
         final String mappedKey = paramMapping.getOrDefault(key, key);
         return context.getProperty(mappedKey);
+    }
+
+    public void initParameter(@Nonnull final String key, final Object value) {
+        final String mappedKey = paramMapping.getOrDefault(key, key);
+        context.setProperty(mappedKey, value);
     }
 
     public void applyResult(@Nonnull final String key, @Nonnull final Object value) {

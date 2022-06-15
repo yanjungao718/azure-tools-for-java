@@ -20,9 +20,12 @@ import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -67,12 +70,12 @@ public class PhasePanel extends JPanel {
         this.phase.addStatusListener(this::updateStatus);
         //https://stackoverflow.com/questions/7115065/jlabel-vertical-alignment-not-working-as-expected
         this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
-        this.titleLabel.setText(this.phase.getTitle());
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(icon);
         this.actionButton.addActionListener(e -> {
             this.descPanel.setVisible(false);
             this.outputPanel.setVisible(true);
+            this.phase.getInputs().forEach(GuidanceInput::applyResult);
             this.phase.execute();
         });
         this.toggleIcon.setIcon(AllIcons.Actions.ArrowExpand);
@@ -80,12 +83,13 @@ public class PhasePanel extends JPanel {
         this.toggleIcon.addMouseListener(listener);
         this.titleLabel.addMouseListener(listener);
         this.descPanel.setBorder(null);
-        this.descPanel.setText(this.phase.getDescription());
         this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
         this.initOutputPanel();
         this.toggleDetails(false);
         this.initInputsPanel();
         this.initStepsPanel();
+        this.renderDescription();
+        this.phase.getContext().addContextListener(ignore -> this.renderDescription());
         this.updateStatus(this.phase.getStatus());
     }
 
@@ -102,6 +106,11 @@ public class PhasePanel extends JPanel {
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
             this.inputsPanel.add(component.getComponent(), gridConstraints);
         }
+    }
+
+    private void renderDescription() {
+        titleLabel.setText(phase.getRenderedTitle());
+        descPanel.setText(phase.getRenderedDescription());
     }
 
     private void initOutputPanel() {

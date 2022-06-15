@@ -50,6 +50,8 @@ public class Phase {
     @Nullable
     private IAzureMessager output;
 
+    private List<Consumer<Status>> listenerList = new ArrayList<>();
+
     public Phase(@Nonnull final PhaseConfig config, @Nonnull Guidance parent) {
         this.guidance = parent;
         this.id = UUID.randomUUID().toString();
@@ -115,6 +117,18 @@ public class Phase {
         }));
     }
 
+    public Context getContext() {
+        return this.getGuidance().getContext();
+    }
+
+    public String getRenderedDescription() {
+        return getContext().render(this.getDescription());
+    }
+
+    public String getRenderedTitle() {
+        return getContext().render(this.getTitle());
+    }
+
     @Nullable
     private Step getFollowingStep(Step step) {
         for (int i = 0; i < steps.size() - 1; i++) {
@@ -124,8 +138,6 @@ public class Phase {
         }
         return null;
     }
-
-    private List<Consumer<Status>> listenerList = new ArrayList<>();
 
     public void addStatusListener(Consumer<Status> listener) {
         listenerList.add(listener);

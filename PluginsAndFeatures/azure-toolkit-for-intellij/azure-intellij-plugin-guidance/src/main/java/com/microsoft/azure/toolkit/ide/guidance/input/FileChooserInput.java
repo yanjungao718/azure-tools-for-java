@@ -1,29 +1,25 @@
 package com.microsoft.azure.toolkit.ide.guidance.input;
 
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
-import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.io.File;
 
 public class FileChooserInput implements GuidanceInput {
-    public static final String SELECT_PATH_TO_SAVE_THE_PROJECT = "Select path to save the project";
-    public static final String PATH_TO_SAVE_THE_DEMO_PROJECT = "Please select the target path to save the demo project";
-    public static final String FILE_CHOOSER = "file-chooser";
     public static final String DIRECTORY = "directory";
+    public static final String FILE_CHOOSER = "input.common.file-chooser";
 
-    private AzureFileInput input;
-    private final InputContext context;
+    private FileChooserInputPanel inputPanel;
+    private final ComponentContext context;
     private final InputConfig config;
 
-    public FileChooserInput(@Nonnull InputConfig config, @Nonnull InputContext inputContext) {
+    public FileChooserInput(@Nonnull InputConfig config, @Nonnull ComponentContext inputContext) {
         this.context = inputContext;
         this.config = config;
-        initComponent();
+        this.inputPanel = new FileChooserInputPanel();
+
+        this.context.addPropertyListener(DIRECTORY, value -> inputPanel.setValue((String) value));
     }
 
     @Override
@@ -33,18 +29,11 @@ public class FileChooserInput implements GuidanceInput {
 
     @Override
     public JComponent getComponent() {
-        return input;
+        return inputPanel.getRootPanel();
     }
 
     @Override
     public void applyResult() {
-        context.applyResult(DIRECTORY, input.getValue());
-    }
-
-    private void initComponent() {
-        this.input = new AzureFileInput();
-        input.setValue(new File(System.getProperty("user.home"), context.getGuidance().getName()).getAbsolutePath());
-        input.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(SELECT_PATH_TO_SAVE_THE_PROJECT, PATH_TO_SAVE_THE_DEMO_PROJECT, input,
-                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        context.applyResult(DIRECTORY, inputPanel.getValue());
     }
 }

@@ -1,8 +1,12 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.jr.ob.JSON;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
@@ -27,7 +31,10 @@ public class GuidanceConfigManager {
     public static final String GETTING_START_CONFIGURATION_NAME = "azure-getting-started.yml";
 
     private static final GuidanceConfigManager instance = new GuidanceConfigManager();
-    private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+    private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+    private static final ObjectMapper JSON_MAPPER = new JsonMapper()
+            .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public static GuidanceConfigManager getInstance() {
         return instance;
@@ -40,7 +47,7 @@ public class GuidanceConfigManager {
             return null;
         }
         try (final InputStream inputStream = new FileInputStream(file)) {
-            return mapper.readValue(inputStream, SequenceConfig.class);
+            return YAML_MAPPER.readValue(inputStream, SequenceConfig.class);
         } catch (final IOException e) {
             return null;
         }
@@ -51,7 +58,7 @@ public class GuidanceConfigManager {
         return Optional.of(new Reflections("guidance", Scanners.Resources))
             .map(reflections -> {
                 try {
-                    return reflections.getResources(Pattern.compile(".*\\.yml"));
+                    return reflections.getResources(Pattern.compile(".*\\.json"));
                 } catch (final Exception exception) {
                     return (Set<String>) Collections.EMPTY_SET;
                 }
@@ -65,7 +72,7 @@ public class GuidanceConfigManager {
     @Nullable
     private static SequenceConfig getSequenceConfig(String uri) {
         try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(uri)) {
-            final SequenceConfig sequenceConfig = mapper.readValue(inputStream, SequenceConfig.class);
+            final SequenceConfig sequenceConfig = JSON_MAPPER.readValue(inputStream, SequenceConfig.class);
             sequenceConfig.setUri(uri);
             return sequenceConfig;
         } catch (final IOException e) {
@@ -73,4 +80,16 @@ public class GuidanceConfigManager {
             return null;
         }
     }
+
+//    @Nullable
+//    private static SequenceConfig getSequenceConfig(String uri) {
+//        try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(uri)) {
+//            final SequenceConfig sequenceConfig = YAML_MAPPER.readValue(inputStream, SequenceConfig.class);
+//            sequenceConfig.setUri(uri);
+//            return sequenceConfig;
+//        } catch (final IOException e) {
+//            // swallow exception for failed convertation
+//            return null;
+//        }
+//    }
 }
