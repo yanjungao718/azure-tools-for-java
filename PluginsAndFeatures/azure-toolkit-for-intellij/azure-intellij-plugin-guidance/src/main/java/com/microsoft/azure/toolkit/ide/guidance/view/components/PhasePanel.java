@@ -136,6 +136,8 @@ public class PhasePanel extends JPanel {
         this.actionButton.setVisible(this.focused);
         if (this.focused) {
             setBackgroundColor(this.contentPanel, BACKGROUND_COLOR);
+        } else {
+            setBackgroundColor(this.contentPanel, JBUI.CurrentTheme.ToolWindow.background());
         }
     }
 
