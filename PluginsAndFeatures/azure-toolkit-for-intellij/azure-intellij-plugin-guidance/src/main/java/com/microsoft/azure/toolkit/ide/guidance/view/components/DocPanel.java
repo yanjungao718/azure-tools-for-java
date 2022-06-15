@@ -46,7 +46,7 @@ public class DocPanel extends JPanel implements Disposable {
                 final String js = "" +
                         "document.body.style.backgroundColor='" + ColorUtil.toHtmlColor(JBUI.CurrentTheme.ToolWindow.background()) + "';\n" +
                         "var slidesData = [\n" +
-                        "  '<div><h5>Carousel in HTML</h5> <p>Carousels require the use of an id (in this case id=\"myCarousel\" ) for carousel controls to function properly. The class=\"carousel\" specifies that this contains a carousel. The . slide class adds a CSS transition and animation effect, which makes the items slide when showing a new item.</p> </div>',\n" +
+                        "  '<div><div>Carousel in HTML</div> <p>Carousels require the use of an id (in this case id=\"myCarousel\" ) for carousel controls to function properly. The class=\"carousel\" specifies that this contains a carousel. The . slide class adds a CSS transition and animation effect, which makes the items slide when showing a new item.</p> </div>',\n" +
                         "  '<div><q>But man is not made for defeat. A man can be destroyed but not defeated.</q> <p class=\"author\">- Ernest Hemingway</p></div>',\n" +
                         "  '<div><q>But man is not made for defeat. A man can be destroyed but not defeated.</q> <p class=\"author\">- Ernest Hemingway</p></div>',\n" +
                         "  '<div><q>I have not failed. I\\'ve just found 10,000 ways that won\\'t work.</q> <p class=\"author\">- Thomas A. Edison</p></div>',\n" +
