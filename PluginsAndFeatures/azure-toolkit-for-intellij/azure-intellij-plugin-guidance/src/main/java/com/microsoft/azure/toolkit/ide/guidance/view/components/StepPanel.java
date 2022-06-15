@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
+import java.awt.*;
 
 public class StepPanel extends JPanel {
     private JPanel contentPanel;
@@ -36,7 +37,8 @@ public class StepPanel extends JPanel {
         this.setLayout(new GridLayoutManager(1, 1));
         this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         this.step.addStatusListener(this::updateStatus);
-        this.actionButton.setHyperlinkText("run");
+        this.actionButton.setHyperlinkText("Run");
+        this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.actionButton.setHyperlinkTarget(null);
         this.actionButton.addHyperlinkListener(e -> {
             this.descPanel.setVisible(false);

@@ -20,12 +20,9 @@ import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -70,6 +67,7 @@ public class PhasePanel extends JPanel {
         this.phase.addStatusListener(this::updateStatus);
         //https://stackoverflow.com/questions/7115065/jlabel-vertical-alignment-not-working-as-expected
         this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
+        this.titleLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(icon);
         this.actionButton.addActionListener(e -> {
@@ -79,6 +77,7 @@ public class PhasePanel extends JPanel {
             this.phase.execute();
         });
         this.toggleIcon.setIcon(AllIcons.Actions.ArrowExpand);
+        this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final MouseAdapter listener = toggleDetails();
         this.toggleIcon.addMouseListener(listener);
         this.titleLabel.addMouseListener(listener);
