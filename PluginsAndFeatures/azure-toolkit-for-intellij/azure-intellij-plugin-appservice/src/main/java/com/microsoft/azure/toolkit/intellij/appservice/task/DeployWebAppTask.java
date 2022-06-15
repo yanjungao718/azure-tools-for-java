@@ -14,7 +14,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
-import com.microsoft.azure.toolkit.ide.guidance.task.TaskContext;
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
@@ -35,9 +35,9 @@ import java.util.concurrent.CountDownLatch;
 public class DeployWebAppTask implements GuidanceTask {
     private final Project project;
     private final Guidance guidance;
-    private final TaskContext context;
+    private final ComponentContext context;
 
-    public DeployWebAppTask(@Nonnull TaskContext context) {
+    public DeployWebAppTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.project = context.getProject();
         this.guidance = context.getGuidance();

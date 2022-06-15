@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
@@ -22,9 +23,9 @@ import static com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager.GET
 public class GitCloneTask implements GuidanceTask {
     public static final String DIRECTORY = "directory";
     private final Guidance guidance;
-    private final TaskContext context;
+    private final ComponentContext context;
 
-    public GitCloneTask(@Nonnull TaskContext context) {
+    public GitCloneTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.guidance = context.getGuidance();
     }
@@ -35,6 +36,12 @@ public class GitCloneTask implements GuidanceTask {
         // Check whether project was clone to local
         final File file = new File(guidance.getProject().getBasePath(), GETTING_START_CONFIGURATION_NAME);
         return file.exists();
+    }
+
+    @Override
+    public void init() {
+        final String defaultPath = new File(System.getProperty("user.home"), context.getGuidance().getName()).getAbsolutePath();
+        this.context.initParameter(DIRECTORY, defaultPath);
     }
 
     @Override

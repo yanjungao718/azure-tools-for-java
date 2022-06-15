@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.input;
 
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Context;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 
@@ -10,7 +11,7 @@ import static com.microsoft.azure.toolkit.ide.guidance.input.FileChooserInput.FI
 public class DefaultGuidanceInputProvider implements GuidanceInputProvider {
     @Override
     public GuidanceInput createInputComponent(@Nonnull InputConfig config, @Nonnull Context context) {
-        final InputContext inputContext = new InputContext(config, context);
+        final ComponentContext inputContext = new ComponentContext(config, context);
         final String name = config.getName();
         switch (name) {
             case FILE_CHOOSER:

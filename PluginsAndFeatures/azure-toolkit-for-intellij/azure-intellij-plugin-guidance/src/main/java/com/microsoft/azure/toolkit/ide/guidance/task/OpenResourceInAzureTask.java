@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
@@ -13,9 +14,9 @@ import javax.annotation.Nonnull;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 
 public class OpenResourceInAzureTask implements GuidanceTask {
-    private final TaskContext taskContext;
+    private final ComponentContext taskContext;
 
-    public OpenResourceInAzureTask(@Nonnull TaskContext taskContext) {
+    public OpenResourceInAzureTask(@Nonnull ComponentContext taskContext) {
         this.taskContext = taskContext;
     }
 

@@ -2,27 +2,35 @@ package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.task.SignInTask;
-import com.microsoft.azure.toolkit.ide.guidance.task.TaskContext;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public class CreateWebAppTask implements GuidanceTask {
-    public static final String WEBAPP_NAME = "webappName";
+    public static final String WEBAPP_NAME = "webAppName";
     public static final String WEBAPP_ID = "webappId";
 
     public static final String RESOURCE_ID = "webappId";
-    private final TaskContext context;
+    private final ComponentContext context;
 
-    public CreateWebAppTask(@Nonnull final TaskContext context) {
+    public CreateWebAppTask(@Nonnull final ComponentContext context) {
         this.context = context;
+    }
+
+    @Override
+    public void init() {
+        GuidanceTask.super.init();
+        final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        context.initParameter(WEBAPP_NAME, defaultWebAppName);
     }
 
     @Override
