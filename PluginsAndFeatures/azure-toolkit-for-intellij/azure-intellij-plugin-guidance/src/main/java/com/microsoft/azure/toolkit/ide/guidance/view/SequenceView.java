@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.ide.guidance.view;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
@@ -11,19 +10,24 @@ import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
+import com.microsoft.azure.toolkit.ide.guidance.view.components.DocPanel;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class SequenceView {
-    private JPanel pnlRoot;
+    private JPanel contentPanel;
     private JLabel guidanceIcon;
     private JLabel titleLabel;
     private JPanel phasesPanel;
     private JPanel docPanel;
-    private HyperlinkLabel closeButton;
+    private JLabel closeButton;
     private JPanel bodyPanel;
 
     private final Project project;
@@ -36,10 +40,16 @@ public class SequenceView {
 
     private void init() {
         this.titleLabel.setFont(JBFont.h2().asBold());
-        this.closeButton.setIcon(AllIcons.Actions.Cancel);
-        this.closeButton.setHyperlinkText("Abort");
-        this.closeButton.setHyperlinkTarget(null);
-        this.closeButton.addHyperlinkListener(e -> GuidanceViewManager.getInstance().showGuidanceWelcome(project));
+        this.closeButton.setIcon(AllIcons.Actions.Exit);
+        this.closeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        this.closeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (AzureMessager.getMessager().confirm("Some steps might be lost, are you sure to abort current process?")) {
+                    GuidanceViewManager.getInstance().showGuidanceWelcome(project);
+                }
+            }
+        });
     }
 
     public void showProcess(@Nonnull Guidance guidance) {
@@ -65,11 +75,10 @@ public class SequenceView {
     }
 
     public void setVisible(boolean visible) {
-        this.pnlRoot.setVisible(visible);
+        this.contentPanel.setVisible(visible);
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
-        //noinspection DialogTitleCapitalization
+        this.docPanel = new DocPanel();
     }
 }
