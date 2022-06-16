@@ -50,8 +50,8 @@ public class SummaryPanel extends JPanel {
         final Insets margin = JBUI.insets(8, 8, 10, 8);
         layout.setMargin(margin);
         this.setLayout(layout);
+        this.setVisible(false); // invisible in default
         this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL, 3, 3, null, null, null, 0));
-
         this.phase.addStatusListener(this::updateStatus);
         //https://stackoverflow.com/questions/7115065/jlabel-vertical-alignment-not-working-as-expected
         this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
@@ -66,9 +66,9 @@ public class SummaryPanel extends JPanel {
     private void updateStatus(Status status) {
         this.statusIcon.setIcon(PhasePanel.getStatusIcon(status));
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
-        if (this.focused) {
-            PhasePanel.setBackgroundColor(this.contentPanel, BACKGROUND_COLOR);
-        }
+        this.setVisible(this.focused);
+        final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
+        PhasePanel.doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
     }
 
     protected void paintComponent(@Nonnull Graphics g) {
