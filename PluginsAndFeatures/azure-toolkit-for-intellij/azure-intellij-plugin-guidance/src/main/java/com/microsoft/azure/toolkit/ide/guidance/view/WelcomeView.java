@@ -14,6 +14,7 @@ import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -28,7 +29,7 @@ public class WelcomeView {
 
     private final Project project;
 
-    private List<SequencePanel> sequencePanels = new ArrayList<>();
+    private final List<SequencePanel> sequencePanels = new ArrayList<>();
 
     public WelcomeView(@Nonnull Project project) {
         this.project = project;
@@ -52,6 +53,7 @@ public class WelcomeView {
         this.pnlProcesses.setLayout(new GridLayoutManager(sequenceConfigs.size(), 1));
         for (int i = 0; i < sequenceConfigs.size(); i++) {
             final SequencePanel sequencePanel = new SequencePanel(sequenceConfigs.get(i), this.project);
+            sequencePanel.getRootPanel().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(sequencePanel.getRootPanel(), new SequencePanelListener(sequencePanel));
             this.sequencePanels.add(sequencePanel);
             this.pnlProcesses.add(sequencePanel.getRootPanel(),

@@ -71,6 +71,7 @@ public class PhasePanel extends JPanel {
         this.titleLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(icon);
+        this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.actionButton.addActionListener(e -> {
             if (!isInputsValid()) {
                 return;
