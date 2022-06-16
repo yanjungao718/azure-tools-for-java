@@ -1,47 +1,72 @@
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.JBFont;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
-import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.ide.guidance.view.ViewUtils;
+import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.MouseListener;
+import java.util.Objects;
 
-public class SequencePanel extends JPanel {
+public class SequencePanel {
     private final SequenceConfig sequence;
-    private JPanel pnlRoot;
-    private JLabel lblIcon;
+    @Getter
+    private JPanel rootPanel;
     private JLabel lblTitle;
     private JTextPane areaDescription;
     private JButton startButton;
 
-    public SequencePanel(@Nonnull SequenceConfig sequence) {
+    private final Project project;
+
+    public SequencePanel(@Nonnull final SequenceConfig sequence, @Nonnull final Project project) {
         super();
         this.sequence = sequence;
+        this.project = project;
         $$$setupUI$$$();
         init();
     }
 
-    public void setStartListener(@Nonnull final ActionListener listener) {
-        this.startButton.addActionListener(listener);
+    private void init() {
+        this.lblTitle.setFont(JBFont.h4());
+        // render sequence
+        // this.lblIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
+        this.lblTitle.setText(sequence.getTitle());
+        this.lblTitle.setPreferredSize(new Dimension(-1, startButton.getPreferredSize().height));
+        this.startButton.setVisible(false);
+        this.startButton.addActionListener(e -> openGuidance());
+        this.areaDescription.setFont(JBFont.medium());
+        this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
+        this.areaDescription.setText(sequence.getDescription());
     }
 
-    private void init() {
-        this.setLayout(new GridLayoutManager(1, 1));
-        this.add(pnlRoot, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
-        this.lblTitle.setFont(JBFont.h4());
-        this.startButton.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Action.START));
-        // render sequence
-        this.lblIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        this.lblTitle.setText(sequence.getTitle());
-        this.areaDescription.setText(sequence.getDescription());
+    public void toggleSelectedStatus(final boolean isSelected) {
+        if (Objects.equals(isSelected, startButton.isVisible())) {
+            return;
+        }
+        this.startButton.setVisible(isSelected);
+        ViewUtils.setBackgroundColor(this.rootPanel, isSelected ? ViewUtils.NOTIFICATION_BACKGROUND_COLOR : UIUtil.getLabelBackground());
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     void $$$setupUI$$$() {
+    }
+
+    public void addMouseListener(@Nonnull final MouseListener sequencePanelListener) {
+        this.rootPanel.addMouseListener(sequencePanelListener);
+    }
+
+    public void openGuidance() {
+        GuidanceViewManager.getInstance().showGuidance(project, sequence);
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        this.rootPanel = new RoundedPanel(5);
     }
 }

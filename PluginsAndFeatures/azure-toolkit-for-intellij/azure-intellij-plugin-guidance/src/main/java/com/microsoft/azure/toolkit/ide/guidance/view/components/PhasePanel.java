@@ -20,12 +20,9 @@ import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -73,6 +70,9 @@ public class PhasePanel extends JPanel {
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(icon);
         this.actionButton.addActionListener(e -> {
+            if (!isInputsValid()) {
+                return;
+            }
             this.descPanel.setVisible(false);
             this.outputPanel.setVisible(true);
             this.phase.getInputs().forEach(GuidanceInput::applyResult);
@@ -89,8 +89,12 @@ public class PhasePanel extends JPanel {
         this.initInputsPanel();
         this.initStepsPanel();
         this.renderDescription();
-        this.phase.getContext().addContextListener(ignore -> this.renderDescription());
         this.updateStatus(this.phase.getStatus());
+        this.phase.getContext().addContextListener(ignore -> this.renderDescription());
+    }
+
+    private boolean isInputsValid() {
+        return this.phase.getInputs().stream().map(GuidanceInput::getValidationInfo).allMatch(info -> info.isValid());
     }
 
     private void initInputsPanel() {

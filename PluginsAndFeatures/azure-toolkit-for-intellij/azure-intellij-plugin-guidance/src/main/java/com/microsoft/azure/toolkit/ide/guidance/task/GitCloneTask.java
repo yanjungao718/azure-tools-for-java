@@ -22,6 +22,7 @@ import static com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager.GET
 
 public class GitCloneTask implements GuidanceTask {
     public static final String DIRECTORY = "directory";
+    public static final String DEFAULT_GIT_DIRECTORY = "defaultGitDirectory";
     private final Guidance guidance;
     private final ComponentContext context;
 
@@ -41,7 +42,7 @@ public class GitCloneTask implements GuidanceTask {
     @Override
     public void init() {
         final String defaultPath = new File(System.getProperty("user.home"), context.getGuidance().getName()).getAbsolutePath();
-        this.context.initParameter(DIRECTORY, defaultPath);
+        this.context.initParameter(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     @Override

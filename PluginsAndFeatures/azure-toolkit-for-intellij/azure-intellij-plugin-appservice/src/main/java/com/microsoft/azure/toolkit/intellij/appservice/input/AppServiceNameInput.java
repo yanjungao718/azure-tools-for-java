@@ -12,6 +12,7 @@ import javax.swing.*;
 public class AppServiceNameInput implements GuidanceInput {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String APP_SERVICE_NAME = "appServiceName";
+    public static final String VALUE = "value";
     private final InputConfig config;
     private final ComponentContext context;
 
@@ -23,8 +24,8 @@ public class AppServiceNameInput implements GuidanceInput {
         this.inputPanel = new AppServiceNameInputPanel();
 
         this.setSubscriptionId((String) context.getParameter(SUBSCRIPTION_ID));
-        this.inputPanel.setValue((String) context.getParameter(APP_SERVICE_NAME));
-        context.addPropertyListener(APP_SERVICE_NAME, name -> inputPanel.setValue((String) name));
+        this.inputPanel.setValue((String) context.getParameter(VALUE));
+        context.addPropertyListener(VALUE, name -> inputPanel.setValue((String) name));
         context.addPropertyListener(SUBSCRIPTION_ID, subscriptionId -> setSubscriptionId((String) subscriptionId));
     }
 

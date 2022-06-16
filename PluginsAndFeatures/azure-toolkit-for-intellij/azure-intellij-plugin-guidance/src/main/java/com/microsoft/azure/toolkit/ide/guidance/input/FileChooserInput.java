@@ -19,7 +19,7 @@ public class FileChooserInput implements GuidanceInput {
         this.config = config;
         this.inputPanel = new FileChooserInputPanel();
 
-        this.context.addPropertyListener(DIRECTORY, value -> inputPanel.setValue((String) value));
+        this.context.addPropertyListener("value", value -> inputPanel.setValue((String) value));
     }
 
     @Override
