@@ -52,7 +52,6 @@ public class SummaryPanel extends JPanel {
         this.setLayout(layout);
         this.setVisible(false); // invisible in default
         this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL, 3, 3, null, null, null, 0));
-        this.phase.addStatusListener(this::updateStatus);
         //https://stackoverflow.com/questions/7115065/jlabel-vertical-alignment-not-working-as-expected
         this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
         this.titleLabel.setText(this.phase.getTitle());
