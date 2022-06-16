@@ -133,14 +133,14 @@
           "title": "open your web app in browser",
           "description": null,
           "task": {
-            "name": "task.resource.open_in_portal"
+            "name": "task.webapp.open_in_browser"
           }
         },
         {
-          "title": "clean up resources",
+          "title": "open live metrics of your web app",
           "description": null,
           "task": {
-            "name": "task.resource.clean_up"
+            "name": "task.application_insights.live_metrics"
           }
         }
       ]

@@ -102,7 +102,7 @@ public class Phase {
     }
 
     public void execute() {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running phase : %s", this.getTitle()), () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run phase '%s'", this.getTitle()), () -> {
             final IAzureMessager currentMessager = AzureMessager.getMessager();
             OperationContext.current().setMessager(output);
             try {

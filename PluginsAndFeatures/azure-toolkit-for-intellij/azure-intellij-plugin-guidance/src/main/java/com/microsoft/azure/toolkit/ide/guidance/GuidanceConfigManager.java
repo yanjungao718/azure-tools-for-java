@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GuidanceConfigManager {
-    public static final String GETTING_START_CONFIGURATION_NAME = "azure-getting-started.yml";
+    public static final String GETTING_START_CONFIGURATION_NAME = "azure-getting-started.json";
 
     private static final GuidanceConfigManager instance = new GuidanceConfigManager();
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
@@ -47,7 +47,7 @@ public class GuidanceConfigManager {
             return null;
         }
         try (final InputStream inputStream = new FileInputStream(file)) {
-            return YAML_MAPPER.readValue(inputStream, SequenceConfig.class);
+            return JSON_MAPPER.readValue(inputStream, SequenceConfig.class);
         } catch (final IOException e) {
             return null;
         }

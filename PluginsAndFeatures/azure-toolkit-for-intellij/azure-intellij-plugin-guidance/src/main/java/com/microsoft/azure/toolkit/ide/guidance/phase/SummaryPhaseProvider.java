@@ -30,7 +30,7 @@ public class SummaryPhaseProvider implements GuidancePhaseProvider {
 
         @Override
         public void setStatus(Status status) {
-            if (status == Status.READY) {
+            if (status == Status.READY || status == Status.RUNNING) {
                 status = Status.SUCCEED;
             }
             super.setStatus(status);

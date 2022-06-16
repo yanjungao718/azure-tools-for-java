@@ -60,11 +60,12 @@ public class SummaryPanel extends JPanel {
         this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
         this.initDetailsPanel();
         this.updateStatus(this.phase.getStatus());
+        this.phase.addStatusListener(this::updateStatus);
     }
 
     private void updateStatus(Status status) {
         this.statusIcon.setIcon(PhasePanel.getStatusIcon(status));
-        this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
+        this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED || status == Status.SUCCEED;
         this.setVisible(this.focused);
         final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
         PhasePanel.doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));

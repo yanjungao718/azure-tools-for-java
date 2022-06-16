@@ -7,6 +7,7 @@ import com.microsoft.azure.toolkit.ide.guidance.config.TaskConfig;
 import com.microsoft.azure.toolkit.ide.guidance.task.GuidanceTaskProvider;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.task.CreateApplicationInsightsResourceConnectionTask;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.task.CreateApplicationInsightsTask;
+import com.microsoft.azure.toolkit.intellij.applicationinsights.task.OpenLiveMetricsTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +22,8 @@ public class ApplicationInsightsTaskProvider implements GuidanceTaskProvider {
                 return new CreateApplicationInsightsTask(taskContext);
             case "task.application_insights.create_connector":
                 return new CreateApplicationInsightsResourceConnectionTask(taskContext);
+            case "task.application_insights.live_metrics":
+                return new OpenLiveMetricsTask(taskContext);
             default:
                 return null;
         }
