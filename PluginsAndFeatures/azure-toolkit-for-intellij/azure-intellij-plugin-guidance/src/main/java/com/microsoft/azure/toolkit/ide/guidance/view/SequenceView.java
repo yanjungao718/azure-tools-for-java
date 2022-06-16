@@ -21,6 +21,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Objects;
 
 public class SequenceView {
     private JPanel contentPanel;
@@ -60,7 +61,9 @@ public class SequenceView {
         this.titleLabel.setText(guidance.getTitle());
         fillPhase(guidance);
         guidance.addPhaseListener((oldPhase, newPhase) -> {
-            ((DocPanel) this.docPanel).updateHelpDoc(newPhase);
+            if (Objects.nonNull(newPhase)) {
+                ((DocPanel) this.docPanel).updateHelpDoc(newPhase);
+            }
         });
     }
 
