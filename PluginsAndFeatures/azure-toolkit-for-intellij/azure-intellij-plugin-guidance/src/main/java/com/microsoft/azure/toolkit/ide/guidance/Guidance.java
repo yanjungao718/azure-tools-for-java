@@ -54,7 +54,7 @@ public class Guidance {
         this.title = sequenceConfig.getTitle();
         this.description = sequenceConfig.getDescription();
         this.repository = sequenceConfig.getRepository();
-        this.context = new Context(this);
+        this.context = new Context(this, sequenceConfig.getContext());
         this.uri = sequenceConfig.getUri();
         this.phases = sequenceConfig.getPhases().stream().map(config -> PhaseManager.createPhase(config, this)).collect(Collectors.toList());
         this.initPhaseListener();
