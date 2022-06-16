@@ -42,7 +42,7 @@ public class GitCloneTask implements GuidanceTask {
     @Override
     public void init() {
         final String defaultPath = new File(System.getProperty("user.home"), context.getGuidance().getName()).getAbsolutePath();
-        this.context.initParameter(DEFAULT_GIT_DIRECTORY, defaultPath);
+        this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     @Override
