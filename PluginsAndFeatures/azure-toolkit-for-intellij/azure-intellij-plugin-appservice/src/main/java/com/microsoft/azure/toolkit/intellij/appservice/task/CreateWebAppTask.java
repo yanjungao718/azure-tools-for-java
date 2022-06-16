@@ -21,6 +21,7 @@ public class CreateWebAppTask implements GuidanceTask {
 
     public static final String RESOURCE_ID = "webappId";
     public static final String DEFAULT_WEB_APP_NAME = "defaultWebAppName";
+    public static final String RESOURCE_GROUP = "resourceGroup";
     private final ComponentContext context;
 
     public CreateWebAppTask(@Nonnull final ComponentContext context) {
@@ -47,5 +48,6 @@ public class CreateWebAppTask implements GuidanceTask {
         final WebApp webApp = WebAppService.getInstance().createWebApp(webAppConfig);
         context.applyResult(WEBAPP_ID, webApp.getId());
         context.applyResult(RESOURCE_ID, webApp.getId());
+        context.applyResult(RESOURCE_GROUP, webApp.getResourceGroupName());
     }
 }
