@@ -13,6 +13,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,9 +34,10 @@ public class Context {
     private final Map<String, List<Consumer<Object>>> propertyChangeListenerMap = new HashMap<>();
     private final List<Consumer<Context>> contextListenerList = new ArrayList<>();
 
-    public Context(@Nonnull final Guidance guidance) {
+    public Context(@Nonnull final Guidance guidance, @Nullable Map<String, Object> context) {
         this.guidance = guidance;
         this.project = guidance.getProject();
+        Optional.ofNullable(context).ifPresent(config -> parameters.putAll(config));
     }
 
     public Object getProperty(String key) {
