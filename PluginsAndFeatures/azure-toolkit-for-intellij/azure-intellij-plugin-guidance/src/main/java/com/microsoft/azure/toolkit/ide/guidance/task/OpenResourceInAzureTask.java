@@ -29,4 +29,10 @@ public class OpenResourceInAzureTask implements GuidanceTask {
         final String url = String.format("%s/#@%s/resource%s", account.portalUrl(), subscription.getTenantId(), id);
         AzureActionManager.getInstance().getAction(OPEN_URL).handle(url);
     }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.common.open_portal";
+    }
 }

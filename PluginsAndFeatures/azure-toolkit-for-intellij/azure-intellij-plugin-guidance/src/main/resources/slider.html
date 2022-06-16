@@ -2,8 +2,8 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
     * {
       box-sizing: border-box
     }
@@ -81,29 +81,31 @@
     .dot:hover {
       background-color: #bbbbbb;
     }
-
-
-    </style>
+  </style>
 </head>
 
 <body>
 
-<div class="dot-container">
-</div>
+  <div class="dot-container">
+  </div>
 
-<div class="slides-container">
+  <div class="slides-container">
 
     <a class="prev" onclick="moveSlide(-1)">❮</a>
     <a class="next" onclick="moveSlide(1)">❯</a>
 
-</div>
+  </div>
 
-<script>
+  <script>
 
-    function initSlides(slides) {
+    function initSlides(slidesData) {
+      var slides = document.querySelectorAll(".slide-item");
+      var dots = document.querySelectorAll(".dot");
+      slides.forEach(s => s.remove());
+      dots.forEach(s => s.remove());
       var slidesContainer = document.querySelector(".slides-container");
       var dotContainer = document.querySelector(".dot-container");
-      slides.forEach((c, i, a) => {
+      slidesData.forEach((c, i, a) => {
         slidesContainer.insertAdjacentHTML('beforeend', '<div class="slide-item">' + c + '</div>')
         dotContainer.insertAdjacentHTML('beforeend', '<span class="dot" onclick="showSlide(' + i + ')"></span>')
       });
@@ -131,17 +133,12 @@
       slides[currentSlide - 1].style.display = "block";
       dots[currentSlide - 1].className += " active";
     }
-
-    // var slidesData = [
-    //   '<div><div>Carousel in HTML</div> <p>Carousels require the use of an id (in this case id=\"myCarousel\" ) for carousel controls to function properly. The class=\"carousel\" specifies that this contains a carousel. The . slide class adds a CSS transition and animation effect, which makes the items slide when showing a new item.</p> </div>',
-    //   '<div><q>But man is not made for defeat. A man can be destroyed but not defeated.</q> <p class=\"author\">- Ernest Hemingway</p></div>',
-    //   '<div><q>But man is not made for defeat. A man can be destroyed but not defeated.</q> <p class=\"author\">- Ernest Hemingway</p></div>',
-    //   '<div><q>I have not failed. I\'ve just found 10,000 ways that won\'t work.</q> <p class=\"author\">- Thomas A. Edison</p></div>'
-    // ]
-    // currentSlide = 1;
-    // initSlides(slidesData);
-    // showSlide(currentSlide);
-</script>
+    document.body.style.backgroundColor = '#3c3f41';
+    var slidesData = ["<div><div>task.webapp.create_app</div><p>task.webapp.create_appdesc</p></div>", "<div><div>task.ai.create_ai</div><p>task.ai.create_aidesc</p></div>", "<div><div>task.ai.create_connection</div><p>task.ai.create_connectiondesc</p></div>"];
+    currentSlide = 1;
+    initSlides(slidesData);
+    showSlide(currentSlide);
+  </script>
 
 </body>
 

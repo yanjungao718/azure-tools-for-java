@@ -28,4 +28,10 @@ public class OpenLiveMetricsTask implements GuidanceTask {
                 .applicationInsights(resourceId.subscriptionId()).get(applicationInsightsId);
         AzureActionManager.getInstance().getAction(LIVE_METRICS).handle(applicationInsight);
     }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.common.open_metrics";
+    }
 }

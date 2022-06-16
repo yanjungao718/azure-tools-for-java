@@ -7,11 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.connection.ApplicationInsightsResourceDefinition;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
+import com.microsoft.azure.toolkit.intellij.connector.*;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
@@ -47,6 +43,12 @@ public class CreateApplicationInsightsResourceConnectionTask implements Guidance
                     resource.getName(), consumer.getName());
             AzureMessager.getMessager().success(message);
         }
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.ai.create_connection";
     }
 
     private Resource<ApplicationInsight> getResource() {

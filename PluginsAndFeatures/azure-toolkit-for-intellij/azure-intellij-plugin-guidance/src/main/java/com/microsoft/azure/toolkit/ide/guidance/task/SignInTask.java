@@ -35,4 +35,10 @@ public class SignInTask implements GuidanceTask {
             AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
         }
     }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.auth.signin";
+    }
 }

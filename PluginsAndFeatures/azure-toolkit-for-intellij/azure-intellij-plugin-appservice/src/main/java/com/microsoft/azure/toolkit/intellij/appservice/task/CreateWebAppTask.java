@@ -1,8 +1,8 @@
 package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.ide.guidance.task.SignInTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -33,6 +33,12 @@ public class CreateWebAppTask implements GuidanceTask {
         GuidanceTask.super.init();
         final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_WEB_APP_NAME, defaultWebAppName);
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.webapp.create_app";
     }
 
     @Override

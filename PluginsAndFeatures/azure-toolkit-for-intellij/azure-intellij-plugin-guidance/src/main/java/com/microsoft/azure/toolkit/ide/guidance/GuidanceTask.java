@@ -9,8 +9,8 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.net.URL;
 
 public interface GuidanceTask {
 
@@ -23,8 +23,16 @@ public interface GuidanceTask {
         return false;
     }
 
+    @Nonnull
+    String getName();
+
     @Nullable
-    default URL getDocUrl() {
+    default String getDescription() {
+        return this.getName() + "desc";
+    }
+
+    @Nullable
+    default String getDoc() {
         return null;
     }
 

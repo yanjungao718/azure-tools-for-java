@@ -57,4 +57,10 @@ public class CreateApplicationInsightsTask implements GuidanceTask {
         context.applyResult(DEFAULT_APPLICATION_INSIGHTS_NAME, defaultApplicationInsightsName);
     }
 
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.ai.create_ai";
+    }
+
 }

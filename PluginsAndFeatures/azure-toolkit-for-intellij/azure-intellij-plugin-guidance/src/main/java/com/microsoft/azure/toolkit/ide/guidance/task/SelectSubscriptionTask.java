@@ -10,10 +10,15 @@ public class SelectSubscriptionTask implements GuidanceTask {
     public SelectSubscriptionTask(@Nonnull final ComponentContext context) {
     }
 
-
     @Override
     public void execute() {
 
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.auth.select_subscription";
     }
 
 }

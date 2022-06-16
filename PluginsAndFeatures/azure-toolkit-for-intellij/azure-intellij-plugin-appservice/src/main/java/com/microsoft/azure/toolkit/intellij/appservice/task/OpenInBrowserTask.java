@@ -26,4 +26,10 @@ public class OpenInBrowserTask implements GuidanceTask {
         final WebApp webApp = Azure.az(AzureWebApp.class).webApp(webAppId);
         AzureActionManager.getInstance().getAction(OPEN_IN_BROWSER).handle(webApp);
     }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.common.open_browser";
+    }
 }

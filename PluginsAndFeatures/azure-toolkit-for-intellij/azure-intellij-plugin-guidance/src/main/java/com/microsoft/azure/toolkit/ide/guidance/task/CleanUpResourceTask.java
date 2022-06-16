@@ -16,4 +16,10 @@ public class CleanUpResourceTask implements GuidanceTask {
     public void execute() {
 
     }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.common.cleanup";
+    }
 }

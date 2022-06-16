@@ -39,6 +39,12 @@ public class GitCloneTask implements GuidanceTask {
         return file.exists();
     }
 
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.common.clone";
+    }
+
     @Override
     public void init() {
         final String defaultPath = new File(System.getProperty("user.home"), context.getGuidance().getName()).getAbsolutePath();

@@ -12,9 +12,9 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
-import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
@@ -76,11 +76,17 @@ public class DeployWebAppTask implements GuidanceTask {
         final ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
         ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor ->
                 runContentDescriptor.getProcessHandler().addProcessListener(new ProcessAdapter() {
-            @Override
-            public void processTerminated(@NotNull ProcessEvent event) {
-                countDownLatch.countDown();
-            }
-        }));
+                    @Override
+                    public void processTerminated(@NotNull ProcessEvent event) {
+                        countDownLatch.countDown();
+                    }
+                }));
         countDownLatch.await();
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return "task.webapp.deploy";
     }
 }

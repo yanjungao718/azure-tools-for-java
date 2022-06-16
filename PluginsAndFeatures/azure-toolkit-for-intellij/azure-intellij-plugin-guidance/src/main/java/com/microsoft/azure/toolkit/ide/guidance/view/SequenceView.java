@@ -59,6 +59,9 @@ public class SequenceView {
         this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
         this.titleLabel.setText(guidance.getTitle());
         fillPhase(guidance);
+        guidance.addPhaseListener((oldPhase, newPhase) -> {
+            ((DocPanel) this.docPanel).updateHelpDoc(newPhase);
+        });
     }
 
     private void fillPhase(@Nonnull Guidance guidance) {
