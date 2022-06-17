@@ -8,9 +8,11 @@ import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -48,8 +50,8 @@ public class StepPanel extends JPanel {
                 return;
             }
             this.descPanel.setVisible(false);
-            this.outputPanel.setVisible(true);
-            this.step.execute();
+            final AzureString title = AzureString.format("run step '%s'", this.step.getTitle());
+            AzureTaskManager.getInstance().runInBackground(title, this.step::execute);
         });
         this.descPanel.setBorder(null);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.step.getDescription()));
@@ -81,7 +83,6 @@ public class StepPanel extends JPanel {
         @Override
         public boolean show(IAzureMessage message) {
             Optional.ofNullable(StepPanel.this.step.getPhase().getOutput()).ifPresent(messager -> messager.show(message)); // Also write to step output
-            StepPanel.this.outputPanel.setText(message.getContent());
             return true;
         }
     }
