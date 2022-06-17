@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
-import com.microsoft.azure.toolkit.ide.guidance.view.components.DocPanel;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 
@@ -21,18 +20,15 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.Objects;
 
 public class SequenceView {
     private JPanel contentPanel;
     private JLabel guidanceIcon;
     private JLabel titleLabel;
     private JPanel phasesPanel;
-    private JPanel docPanel;
     private JLabel closeButton;
     private JPanel bodyPanel;
     private JPanel headPanel;
-    private JPanel tailPanel;
 
     private final Project project;
 
@@ -60,11 +56,6 @@ public class SequenceView {
         this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
         this.titleLabel.setText(guidance.getTitle());
         fillPhase(guidance);
-        guidance.addPhaseListener((oldPhase, newPhase) -> {
-            if (Objects.nonNull(newPhase)) {
-                ((DocPanel) this.docPanel).updateHelpDoc(newPhase);
-            }
-        });
     }
 
     private void fillPhase(@Nonnull Guidance guidance) {
@@ -93,6 +84,5 @@ public class SequenceView {
     }
 
     private void createUIComponents() {
-        this.docPanel = new DocPanel();
     }
 }
