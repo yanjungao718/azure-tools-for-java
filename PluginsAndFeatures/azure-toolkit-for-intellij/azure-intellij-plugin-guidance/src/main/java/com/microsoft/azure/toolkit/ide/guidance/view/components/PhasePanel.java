@@ -15,7 +15,6 @@ import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.GraphicsUtil;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
@@ -77,8 +76,6 @@ public class PhasePanel extends JPanel {
             if (!isInputsValid()) {
                 return;
             }
-            this.descPanel.setVisible(false);
-            this.outputPanel.setVisible(true);
             this.phase.getInputs().forEach(GuidanceInput::applyResult);
             this.phase.execute();
         });
@@ -89,9 +86,8 @@ public class PhasePanel extends JPanel {
         this.titleLabel.addMouseListener(listener);
         this.descPanel.setBorder(null);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
-        this.descPanel.setEditorKit(new UIUtil.JBWordWrapHtmlEditorKit());
         this.initOutputPanel();
-        this.toggleDetails(false);
+        this.detailsPanel.setVisible(false);
         this.initInputsPanel();
         this.initStepsPanel();
         this.renderDescription();
@@ -140,6 +136,8 @@ public class PhasePanel extends JPanel {
 
     private void updateStatus(Status status) {
         this.statusIcon.setIcon(getStatusIcon(status));
+        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (status == Status.INITIAL || status == Status.READY));
+        this.outputPanel.setVisible(status == Status.RUNNING || (StringUtils.isNotBlank(this.outputPanel.getText()) && (status == Status.SUCCEED || status == Status.FAILED)));
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
         this.actionButton.setVisible(this.focused);
@@ -166,7 +164,6 @@ public class PhasePanel extends JPanel {
             this.stepsPanel.setVisible(false);
             return;
         }
-        this.stepsPanel.setVisible(true);
         this.stepsPanel.setLayout(new GridLayoutManager(steps.size(), 1));
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
@@ -183,13 +180,9 @@ public class PhasePanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 final boolean expanded = PhasePanel.this.toggleIcon.getIcon() == AllIcons.Actions.FindAndShowNextMatches;
                 PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.ArrowExpand : AllIcons.Actions.FindAndShowNextMatches);
-                PhasePanel.this.toggleDetails(!expanded);
+                PhasePanel.this.detailsPanel.setVisible(!expanded);
             }
         };
-    }
-
-    private void toggleDetails(boolean expand) {
-        this.detailsPanel.setVisible(expand);
     }
 
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
