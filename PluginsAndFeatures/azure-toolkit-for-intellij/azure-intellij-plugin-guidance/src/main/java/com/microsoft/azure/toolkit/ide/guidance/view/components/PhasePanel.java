@@ -144,6 +144,9 @@ public class PhasePanel extends JPanel {
         final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
         doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
         doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
+        if (status == Status.FAILED) {
+            this.actionButton.setText("Retry From Failed Step");
+        }
     }
 
     protected void paintComponent(@NotNull Graphics g) {

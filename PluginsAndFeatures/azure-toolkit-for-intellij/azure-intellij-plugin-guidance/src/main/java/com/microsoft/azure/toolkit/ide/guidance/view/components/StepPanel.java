@@ -92,6 +92,9 @@ public class StepPanel extends JPanel {
         this.statusIcon.setIcon(icon);
         this.actionButton.setVisible(status == Status.READY || status == Status.RUNNING || status == Status.FAILED);
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
+        if (status == Status.FAILED) {
+            this.actionButton.setHyperlinkText("Retry");
+        }
     }
 
     void $$$setupUI$$$() {
