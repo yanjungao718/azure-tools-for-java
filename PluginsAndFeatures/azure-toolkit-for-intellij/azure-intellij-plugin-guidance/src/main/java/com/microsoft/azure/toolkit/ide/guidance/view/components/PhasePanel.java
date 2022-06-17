@@ -15,10 +15,12 @@ import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.GraphicsUtil;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -46,7 +47,7 @@ public class PhasePanel extends JPanel {
     private JLabel titleLabel;
     private JPanel detailsPanel;
     private JTextPane descPanel;
-    private JTextArea outputPanel;
+    private JTextPane outputPanel;
     private JPanel inputsPanel;
     private JPanel stepsPanel;
     private boolean focused;
@@ -88,6 +89,7 @@ public class PhasePanel extends JPanel {
         this.titleLabel.addMouseListener(listener);
         this.descPanel.setBorder(null);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
+        this.descPanel.setEditorKit(new UIUtil.JBWordWrapHtmlEditorKit());
         this.initOutputPanel();
         this.toggleDetails(false);
         this.initInputsPanel();
@@ -98,7 +100,7 @@ public class PhasePanel extends JPanel {
     }
 
     private boolean isInputsValid() {
-        return this.phase.getInputs().stream().map(GuidanceInput::getValidationInfo).allMatch(info -> info.isValid());
+        return this.phase.getInputs().stream().map(GuidanceInput::getValidationInfo).allMatch(AzureValidationInfo::isValid);
     }
 
     private void initInputsPanel() {
@@ -124,10 +126,8 @@ public class PhasePanel extends JPanel {
     private void initOutputPanel() {
         final IAzureMessager messager = new ConsoleTextMessager();
         this.phase.setOutput(messager);
+        this.outputPanel.setBorder(null);
         this.outputPanel.setVisible(false);
-        final CompoundBorder border = BorderFactory.createCompoundBorder(this.outputPanel.getBorder(), BorderFactory.createEmptyBorder(2, 4, 4, 4));
-        this.outputPanel.setBorder(border);
-        this.outputPanel.setBackground(JBUI.CurrentTheme.EditorTabs.background());
     }
 
     class ConsoleTextMessager implements IAzureMessager {

@@ -78,13 +78,12 @@
           <editable value="false"/>
         </properties>
       </component>
-      <component id="60966" class="javax.swing.JTextArea" binding="outputPanel">
+      <component id="5148b" class="javax.swing.JTextPane" binding="outputPanel">
         <constraints>
           <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <editable value="false"/>
-          <lineWrap value="true"/>
         </properties>
       </component>
       <component id="db623" class="javax.swing.JButton" binding="actionButton">
