@@ -79,7 +79,7 @@ public class PhasePanel extends JPanel {
             this.phase.getInputs().forEach(GuidanceInput::applyResult);
             this.phase.execute();
         });
-        this.toggleIcon.setIcon(AllIcons.Actions.ArrowExpand);
+        this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
         this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final MouseAdapter listener = toggleDetails();
         this.toggleIcon.addMouseListener(listener);
@@ -146,6 +146,7 @@ public class PhasePanel extends JPanel {
         doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
         if (status == Status.FAILED) {
             this.actionButton.setText("Retry From Failed Step");
+            this.toggleDetails(true);
         }
     }
 
@@ -181,11 +182,15 @@ public class PhasePanel extends JPanel {
         return new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                final boolean expanded = PhasePanel.this.toggleIcon.getIcon() == AllIcons.Actions.FindAndShowNextMatches;
-                PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.ArrowExpand : AllIcons.Actions.FindAndShowNextMatches);
-                PhasePanel.this.detailsPanel.setVisible(!expanded);
+                final boolean expanded = PhasePanel.this.toggleIcon.getIcon() == AllIcons.Actions.FindAndShowPrevMatches;
+                toggleDetails(expanded);
             }
         };
+    }
+
+    private void toggleDetails(boolean expanded) {
+        PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowNextMatches : AllIcons.Actions.FindAndShowPrevMatches);
+        PhasePanel.this.detailsPanel.setVisible(!expanded);
     }
 
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
