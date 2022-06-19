@@ -29,7 +29,6 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
-import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.toolkit.ide.appservice.util.JsonUtils;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -74,6 +73,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.STORAGE_ACCOUNT;
 
 public class FunctionUtils {
     private static final int MAX_PORT = 65535;
@@ -501,8 +501,7 @@ public class FunctionUtils {
     }
 
     private static void patchStorageBinding(final PsiMethod method, final List<Binding> bindings) {
-        final PsiAnnotation storageAccount = AnnotationUtil.findAnnotation(method,
-                                                                           StorageAccount.class.getCanonicalName());
+        final PsiAnnotation storageAccount = AnnotationUtil.findAnnotation(method, STORAGE_ACCOUNT);
 
         if (storageAccount != null) {
             // todo: Remove System.out.println
