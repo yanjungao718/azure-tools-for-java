@@ -1,5 +1,5 @@
 {
-  "$schema": "Sequence.json",
+  "$schema": "../flow-schema/Sequence.json",
   "name": "hello-webapp",
   "title": "Deploy Your First Web App to Azure",
   "description": "Sample project for Azure Web App with Application Insights resource connection. By running the sample, you will have an example of deploying project to Azure Web App.",
@@ -23,7 +23,6 @@
           "inputs": [
             {
               "name": "input.common.file-chooser",
-              "description": "Location",
               "paramMapping": {
                 "value": "defaultLocation"
               }
@@ -68,7 +67,6 @@
           "inputs": [
             {
               "name": "input.appservice.name",
-              "description": "Name",
               "paramMapping": {
                 "value": "defaultWebAppName"
               },

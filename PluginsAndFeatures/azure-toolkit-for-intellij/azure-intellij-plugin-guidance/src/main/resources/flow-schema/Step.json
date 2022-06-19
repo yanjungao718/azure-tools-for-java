@@ -26,13 +26,19 @@
         "null"
       ]
     },
-    "input": {
+    "inputs": {
       "description": "Inputs for user to update configuration",
-      "type": "object",
-      "required": [
-        "name"
-      ],
-      "$ref": "inputs.json"
+      "type": "array",
+      "items": {
+        "description": "Inputs for user to update configuration",
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "$ref": "inputs.json"
+      },
+      "minItems": 0,
+      "uniqueItems": true
     },
     "task": {
       "description": "task to be executed at this step",

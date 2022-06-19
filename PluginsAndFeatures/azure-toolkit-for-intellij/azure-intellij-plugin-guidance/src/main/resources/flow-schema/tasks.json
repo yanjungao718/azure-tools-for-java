@@ -1,5 +1,26 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "anyOf": [
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.clone"
+        },
+        "paramMapping": {
+          "additionalProperties": false
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "defaultGitDirectory": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     {
       "additionalProperties": false,
       "description": "",
@@ -57,7 +78,7 @@
         "paramMapping": {
           "additionalProperties": false,
           "properties": {
-            "webAppConfig": {
+            "webAppName": {
               "title": "WebAppConfig",
               "description": "config used to create webapp in Azure",
               "type": "string"
@@ -67,6 +88,12 @@
         "resultMapping": {
           "additionalProperties": false,
           "properties": {
+            "defaultWebAppName": {
+              "type": "string"
+            },
+            "resourceGroup": {
+              "type": "string"
+            }
           }
         }
       }
@@ -81,11 +108,22 @@
         "paramMapping": {
           "additionalProperties": false,
           "properties": {
+            "resourceGroup": {
+              "title": "resource group name where this ai would be created",
+              "type": "string"
+            }
           }
         },
         "resultMapping": {
           "additionalProperties": false,
           "properties": {
+            "defaultApplicationInsightsName": {
+              "title": "resource group name where this ai would be created",
+              "type": "string"
+            },
+            "resourceId": {
+              "type": "string"
+            }
           }
         }
       }
@@ -153,6 +191,63 @@
       "properties": {
         "name": {
           "const": "task.resource.clean_up"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.application_insights.create_connector"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.webapp.open_in_browser"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.application_insights.live_metrics"
         },
         "paramMapping": {
           "additionalProperties": false,

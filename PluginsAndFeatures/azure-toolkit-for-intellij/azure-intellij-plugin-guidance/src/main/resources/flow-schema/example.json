@@ -48,19 +48,21 @@
         {
           "title": "Create web app",
           "description": null,
-          "input": {
-            "name": "input.webapp.name",
-            "paramMapping": {
-              "subscriptionId": "context.subscriptionId"
-            },
-            "resultMapping": {
-              "webappName": "context.webAppConfig.name"
+          "inputs": [
+            {
+              "name": "input.webapp.name",
+              "paramMapping": {
+                "subscriptionId": "context.subscriptionId"
+              },
+              "resultMapping": {
+                "webappName": "context.webAppConfig.name"
+              }
             }
-          },
+          ],
           "task": {
             "name": "task.webapp.create",
             "paramMapping": {
-              "webAppConfig": "context.webAppConfig"
+              "webAppName": "context.webAppName"
             }
           }
         },
