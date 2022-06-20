@@ -5,9 +5,11 @@ import com.intellij.ui.components.JBList;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.components.SequencePanel;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections.CollectionUtils;
 import rx.schedulers.Schedulers;
@@ -26,6 +28,8 @@ public class WelcomeView {
     private JPanel pnlRoot;
     private JPanel pnlProcesses;
     private JLabel lblTitle;
+    private JPanel pnlLoading;
+    private JLabel lblLoading;
 
     private final Project project;
 
@@ -40,6 +44,7 @@ public class WelcomeView {
 
     private void init() {
         this.lblTitle.setFont(JBFont.h2().asBold());
+        this.lblLoading.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON));
         AzureTaskManager.getInstance().runInBackgroundAsObservable("Loading lesson", () -> GuidanceConfigManager.getInstance().loadSequenceConfig())
                 .subscribeOn(Schedulers.computation())
                 .subscribe(processes -> AzureTaskManager.getInstance().runLater(() -> this.fillProcess(processes)));
@@ -47,6 +52,7 @@ public class WelcomeView {
 
     private void fillProcess(final List<SequenceConfig> sequenceConfigs) {
         this.sequencePanels.clear();
+        this.lblLoading.setVisible(true);
         if (CollectionUtils.isEmpty(sequenceConfigs)) {
             return;
         }
@@ -59,6 +65,7 @@ public class WelcomeView {
             this.pnlProcesses.add(sequencePanel.getRootPanel(),
                     new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         }
+        this.lblLoading.setVisible(false);
         this.sequencePanels.get(0).toggleSelectedStatus(true);
     }
 
