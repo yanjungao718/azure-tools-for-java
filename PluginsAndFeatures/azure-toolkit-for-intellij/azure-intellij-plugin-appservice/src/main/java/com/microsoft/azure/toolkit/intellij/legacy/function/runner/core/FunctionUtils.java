@@ -19,7 +19,6 @@ import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -46,7 +45,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionCo
 import com.microsoft.intellij.secure.IntelliJSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -93,6 +91,8 @@ public class FunctionUtils {
     private static final Map<BindingEnum, List<String>> REQUIRED_ATTRIBUTE_MAP = new HashMap<>();
     private static final List<String> CUSTOM_BINDING_RESERVED_PROPERTIES = Arrays.asList("type", "name", "direction");
     private static final String AZURE_FUNCTIONS_APP_SETTINGS = "Azure Functions App Settings";
+    private static final String AZURE_FUNCTIONS_JAVA_LIBRARY = "azure-functions-java-library";
+    private static final String AZURE_FUNCTIONS_JAVA_CORE_LIBRARY = "azure-functions-java-core-library";
 
     static {
         //initialize required attributes, which will be saved to function.json even if it equals to its default value
@@ -279,34 +279,26 @@ public class FunctionUtils {
         final File hostJsonFile = new File(stagingFolder.toFile(), "host.json");
         copyFilesWithDefaultContent(hostJson, hostJsonFile, DEFAULT_HOST_JSON);
 
-        final List<File> jarFiles = new ArrayList<>();
+        final List<File> dependencies = new ArrayList<>();
         if (gradleProject.isValid()) {
-            gradleProject.getDependencies().forEach(lib -> {
-                if (!lib.exists() || StringUtils.startsWithIgnoreCase(lib.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
-                    return;
-                }
-                jarFiles.add(lib);
-            });
-
+            gradleProject.getDependencies().forEach(lib -> dependencies.add(lib));
         } else {
             OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
-                if (StringUtils.isNotEmpty(lib.getName()) && ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
-                    return true;
-                }
-
-                for (final VirtualFile virtualFile : lib.getFiles(OrderRootType.CLASSES)) {
-                    final File file = new File(stripExtraCharacters(virtualFile.getPath()));
-                    if (file.exists()) {
-                        jarFiles.add(file);
-                    }
-                }
+                Arrays.stream(lib.getFiles(OrderRootType.CLASSES)).map(virtualFile -> new File(stripExtraCharacters(virtualFile.getPath())))
+                        .filter(File::exists)
+                        .forEach(dependencies::add);
                 return true;
             });
         }
+        final String libraryToExclude = dependencies.stream()
+                .filter(artifact -> StringUtils.equalsAnyIgnoreCase(artifact.getName(), AZURE_FUNCTIONS_JAVA_CORE_LIBRARY))
+                .map(File::getName).findFirst().orElse(AZURE_FUNCTIONS_JAVA_LIBRARY);
 
         final File libFolder = new File(stagingFolder.toFile(), "lib");
-        for (final File file : jarFiles) {
-            FileUtils.copyFileToDirectory(file, libFolder);
+        for (final File file : dependencies) {
+            if (!StringUtils.containsIgnoreCase(file.getName(), libraryToExclude)) {
+                FileUtils.copyFileToDirectory(file, libFolder);
+            }
         }
         return configMap;
     }
