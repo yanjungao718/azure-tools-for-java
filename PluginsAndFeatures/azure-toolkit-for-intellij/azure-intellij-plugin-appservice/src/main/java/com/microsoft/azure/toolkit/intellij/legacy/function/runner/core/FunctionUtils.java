@@ -567,10 +567,10 @@ public class FunctionUtils {
         }
     }
 
-    public static int findFreePort(int startPort) {
+    public static int findFreePort(int startPort, int... skipPorts) {
         ServerSocket socket = null;
         for (int port = startPort; port <= MAX_PORT; port++) {
-            if (isPortFree(port)) {
+            if (!ArrayUtils.contains(skipPorts, port) && isPortFree(port)) {
                 return port;
             }
         }
