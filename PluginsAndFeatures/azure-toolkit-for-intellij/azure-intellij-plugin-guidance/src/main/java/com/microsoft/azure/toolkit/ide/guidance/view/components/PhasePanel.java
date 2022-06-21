@@ -127,7 +127,7 @@ public class PhasePanel extends JPanel {
 
     private void updateStatus(Status status) {
         this.statusIcon.setIcon(getStatusIcon(status));
-        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (status == Status.INITIAL || status == Status.READY));
+        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || status != Status.SUCCEED));
         this.outputPanel.setVisible(status == Status.RUNNING || (StringUtils.isNotBlank(this.outputPanel.getText()) && (status == Status.SUCCEED || status == Status.FAILED)));
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
@@ -181,7 +181,8 @@ public class PhasePanel extends JPanel {
 
     private void toggleDetails(boolean expanded) {
         this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
-        this.detailsPanel.setVisible(expanded);
+        this.detailsPanel.setVisible(expanded && (this.inputsPanel.isVisible() || this.stepsPanel.isVisible()));
+        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || this.phase.getStatus() != Status.SUCCEED));
         this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && this.actionButton.isVisible());
     }
 
