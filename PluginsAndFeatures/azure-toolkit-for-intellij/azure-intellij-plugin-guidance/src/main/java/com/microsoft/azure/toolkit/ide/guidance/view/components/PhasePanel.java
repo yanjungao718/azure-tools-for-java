@@ -48,6 +48,7 @@ public class PhasePanel extends JPanel {
     private JTextPane outputPanel;
     private JPanel inputsPanel;
     private JPanel stepsPanel;
+    private JSeparator detailsSeparator;
     private boolean focused;
 
     public PhasePanel(@Nonnull Phase phase) {
@@ -69,7 +70,7 @@ public class PhasePanel extends JPanel {
         this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
         this.titleLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
-        this.actionButton.setIcon(icon);
+        this.actionButton.setIcon(AllIcons.Actions.Execute);
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.actionButton.addActionListener(e -> this.phase.execute(true));
         this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
@@ -178,8 +179,9 @@ public class PhasePanel extends JPanel {
     }
 
     private void toggleDetails(boolean expanded) {
-        PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
-        PhasePanel.this.detailsPanel.setVisible(expanded);
+        this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
+        this.detailsPanel.setVisible(expanded);
+        this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && this.actionButton.isVisible());
     }
 
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
