@@ -183,7 +183,7 @@ public class PhasePanel extends JPanel {
         this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
         this.detailsPanel.setVisible(expanded && (this.inputsPanel.isVisible() || this.stepsPanel.isVisible()));
         this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || this.phase.getStatus() != Status.SUCCEED));
-        this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && this.actionButton.isVisible());
+        this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && (this.actionButton.isVisible() || this.outputPanel.isVisible()));
     }
 
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
