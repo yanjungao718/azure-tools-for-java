@@ -85,6 +85,7 @@ public class PhasePanel extends JPanel {
         this.initInputsPanel();
         this.initStepsPanel();
         this.renderDescription();
+        this.toggleIcon.setVisible(this.inputsPanel.isVisible() || this.stepsPanel.isVisible());
         this.updateStatus(this.phase.getStatus());
         this.phase.getContext().addContextListener(ignore -> this.renderDescription());
     }
