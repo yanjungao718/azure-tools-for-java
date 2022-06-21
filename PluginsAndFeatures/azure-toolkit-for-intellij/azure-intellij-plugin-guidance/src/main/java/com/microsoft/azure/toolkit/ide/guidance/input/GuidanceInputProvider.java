@@ -8,5 +8,5 @@ import javax.annotation.Nullable;
 
 public interface GuidanceInputProvider {
     @Nullable
-    GuidanceInput createInputComponent(@Nonnull final InputConfig config, @Nonnull final Context context);
+    GuidanceInput<?> createInputComponent(@Nonnull final InputConfig config, @Nonnull final Context context);
 }

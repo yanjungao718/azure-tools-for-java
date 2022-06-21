@@ -4,13 +4,12 @@ import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 
 import javax.annotation.Nonnull;
-import javax.swing.*;
 
-public class FileChooserInput implements GuidanceInput {
+public class FileChooserInput implements GuidanceInput<String> {
     public static final String DIRECTORY = "directory";
     public static final String FILE_CHOOSER = "input.common.file-chooser";
 
-    private FileChooserInputPanel inputPanel;
+    private final FileChooserInputPanel inputPanel;
     private final ComponentContext context;
     private final InputConfig config;
 
@@ -28,8 +27,8 @@ public class FileChooserInput implements GuidanceInput {
     }
 
     @Override
-    public JComponent getComponent() {
-        return inputPanel.getRootPanel();
+    public FileChooserInputPanel getComponent() {
+        return inputPanel;
     }
 
     @Override

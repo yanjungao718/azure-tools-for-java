@@ -3,13 +3,11 @@ package com.microsoft.azure.toolkit.intellij.appservice.input;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.swing.*;
 
-public class AppServiceNameInput implements GuidanceInput {
+public class AppServiceNameInput implements GuidanceInput<String> {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String APP_SERVICE_NAME = "appServiceName";
     public static final String VALUE = "value";
@@ -35,18 +33,13 @@ public class AppServiceNameInput implements GuidanceInput {
     }
 
     @Override
-    public JComponent getComponent() {
-        return inputPanel.getRootPanel();
+    public AppServiceNameInputPanel getComponent() {
+        return inputPanel;
     }
 
     @Override
     public void applyResult() {
         context.applyResult(APP_SERVICE_NAME, inputPanel.getValue());
-    }
-
-    @Override
-    public AzureValidationInfo getValidationInfo() {
-        return inputPanel.getValidationInfo();
     }
 
     private void setSubscriptionId(final String subscriptionId) {

@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.collections4.CollectionUtils;
@@ -72,13 +71,7 @@ public class PhasePanel extends JPanel {
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(icon);
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        this.actionButton.addActionListener(e -> {
-            if (!isInputsValid()) {
-                return;
-            }
-            this.phase.getInputs().forEach(GuidanceInput::applyResult);
-            this.phase.execute();
-        });
+        this.actionButton.addActionListener(e -> this.phase.execute(true));
         this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
         this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final MouseAdapter listener = toggleDetails();
@@ -95,12 +88,8 @@ public class PhasePanel extends JPanel {
         this.phase.getContext().addContextListener(ignore -> this.renderDescription());
     }
 
-    private boolean isInputsValid() {
-        return this.phase.getInputs().stream().map(GuidanceInput::getValidationInfo).allMatch(AzureValidationInfo::isValid);
-    }
-
     private void initInputsPanel() {
-        final List<GuidanceInput> inputs = phase.getInputs();
+        final List<GuidanceInput<?>> inputs = phase.getInputs();
         if (CollectionUtils.isEmpty(inputs)) {
             this.inputsPanel.setVisible(false);
             return;
@@ -108,9 +97,9 @@ public class PhasePanel extends JPanel {
         final GridLayoutManager layout = new GridLayoutManager(inputs.size(), 1);
         this.inputsPanel.setLayout(layout);
         for (int i = 0; i < inputs.size(); i++) {
-            final GuidanceInput component = inputs.get(i);
+            final GuidanceInput<?> component = inputs.get(i);
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            this.inputsPanel.add(component.getComponent(), gridConstraints);
+            this.inputsPanel.add(component.getComponent().getContentPanel(), gridConstraints);
         }
     }
 
@@ -183,14 +172,14 @@ public class PhasePanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 final boolean expanded = PhasePanel.this.toggleIcon.getIcon() == AllIcons.Actions.FindAndShowPrevMatches;
-                toggleDetails(expanded);
+                toggleDetails(!expanded);
             }
         };
     }
 
     private void toggleDetails(boolean expanded) {
-        PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowNextMatches : AllIcons.Actions.FindAndShowPrevMatches);
-        PhasePanel.this.detailsPanel.setVisible(!expanded);
+        PhasePanel.this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
+        PhasePanel.this.detailsPanel.setVisible(expanded);
     }
 
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
