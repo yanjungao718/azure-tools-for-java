@@ -91,7 +91,7 @@
         <properties>
           <font size="10" style="1"/>
           <icon value="actions/execute.png"/>
-          <text value="Run All Steps"/>
+          <text value="Run"/>
         </properties>
       </component>
       <vspacer id="87430">
