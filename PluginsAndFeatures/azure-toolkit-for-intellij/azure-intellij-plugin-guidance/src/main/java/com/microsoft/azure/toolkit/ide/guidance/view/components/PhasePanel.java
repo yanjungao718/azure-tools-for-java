@@ -14,6 +14,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.GraphicsUtil;
+import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
@@ -67,7 +68,7 @@ public class PhasePanel extends JPanel {
 
         this.phase.addStatusListener(this::updateStatus);
         //https://stackoverflow.com/questions/7115065/jlabel-vertical-alignment-not-working-as-expected
-        this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
+//        this.titleLabel.setBorder(BorderFactory.createEmptyBorder(-2 /*top*/, 0, 0, 0));
         this.titleLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(AllIcons.Actions.Execute);
@@ -126,7 +127,7 @@ public class PhasePanel extends JPanel {
     }
 
     private void updateStatus(Status status) {
-        this.statusIcon.setIcon(getStatusIcon(status));
+        this.updateStatusIcon(status);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || status != Status.SUCCEED));
         this.outputPanel.setVisible(status == Status.RUNNING || (StringUtils.isNotBlank(this.outputPanel.getText()) && (status == Status.SUCCEED || status == Status.FAILED)));
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
@@ -190,6 +191,19 @@ public class PhasePanel extends JPanel {
         func.consume(c);
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(func::consume);
+    }
+
+    void updateStatusIcon(final Status status) {
+        if (status == Status.RUNNING || status == Status.SUCCEED) {
+            this.statusIcon.setIcon(getStatusIcon(status));
+            this.statusIcon.setText("");
+        } else {
+            this.statusIcon.setIcon(null);
+            final int index = this.phase.getGuidance().getPhases().indexOf(this.phase) + 1;
+            this.statusIcon.setText(String.format("%02d", index));
+            this.statusIcon.setFont(JBFont.label().asBold().deriveFont(14f));
+            this.statusIcon.setForeground(JBUI.CurrentTheme.Label.disabledForeground());
+        }
     }
 
     @Nonnull

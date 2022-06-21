@@ -16,6 +16,7 @@
           </grid>
         </constraints>
         <properties>
+          <horizontalAlignment value="0"/>
           <icon value="actions/commit.png"/>
           <text value=""/>
         </properties>
