@@ -7,26 +7,29 @@ package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @RequiredArgsConstructor
 public class Phase {
     @Nonnull
@@ -46,11 +49,13 @@ public class Phase {
     @Nonnull
     private Status status = Status.INITIAL;
 
+    @ToString.Exclude
     private Step currentStep;
     @Nullable
     private IAzureMessager output;
-
     private List<Consumer<Status>> listenerList = new ArrayList<>();
+
+    private boolean autoExecute = false;
 
     public Phase(@Nonnull final PhaseConfig config, @Nonnull Guidance parent) {
         this.guidance = parent;
@@ -63,18 +68,26 @@ public class Phase {
     }
 
     private void initStepListener() {
-        this.steps.forEach(step -> step.addStatusListener(status -> {
-            if (status == Status.RUNNING || status == Status.FAILED) {
-                this.setStatus(status);
-            } else if (status == Status.SUCCEED) {
-                this.currentStep = getFollowingStep(step);
-                if (currentStep == null) {
-                    this.setStatus(Status.SUCCEED);
-                } else {
-                    currentStep.init();
-                }
+        this.steps.forEach(step -> step.addStatusListener(this::handleStepStatus));
+    }
+
+    private void handleStepStatus(final Status status) {
+        if (status == Status.RUNNING) {
+            this.setStatus(status);
+        } else if (status == Status.FAILED) {
+            this.autoExecute = false;
+            this.setStatus(status);
+        } else if (status == Status.SUCCEED) {
+            this.currentStep = getFollowingStep(); // update current step
+            if (this.currentStep == null) {
+                this.setStatus(Status.SUCCEED);
+                return;
             }
-        }));
+            this.currentStep.init();
+            if (isAutoExecute()) {
+                currentStep.execute();
+            }
+        }
     }
 
     public void init() {
@@ -89,7 +102,18 @@ public class Phase {
 
     public void setStatus(final Status status) {
         this.status = status;
-        this.listenerList.forEach(listener -> listener.accept(status));
+        this.listenerList.forEach(listener -> AzureTaskManager.getInstance().runOnPooledThread(() -> listener.accept(status)));
+    }
+
+    public boolean validateInputs() {
+        final AzureValidationInfo azureValidationInfo = getInputs().stream().map(input -> input.getAllValidationInfos(true))
+                .flatMap(List::stream)
+                .filter(info -> !info.isValid()).findFirst().orElse(null);
+        if (azureValidationInfo != null) {
+            final IAzureMessager messager = Optional.ofNullable(output).orElseGet(AzureMessager::getMessager);
+            messager.warning(azureValidationInfo.getMessage());
+        }
+        return azureValidationInfo == null;
     }
 
     public void setOutput(@Nullable IAzureMessager output) {
@@ -97,24 +121,29 @@ public class Phase {
         this.steps.forEach(step -> step.setOutput(output));
     }
 
-    public List<GuidanceInput> getInputs() {
+    public List<GuidanceInput<?>> getInputs() {
         return this.steps.stream().flatMap(step -> step.getInputs().stream()).collect(Collectors.toList());
     }
 
+    public void execute(final boolean autoExecute) {
+        this.autoExecute = autoExecute;
+        execute();
+    }
+
     public void execute() {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run phase '%s'", this.getTitle()), () -> {
-            final IAzureMessager currentMessager = AzureMessager.getMessager();
-            OperationContext.current().setMessager(output);
-            try {
-                for (final Step step : steps) {
-                    step.execute();
-                }
-            } catch (final Exception e) {
-                AzureMessager.getMessager().error(e);
-            } finally {
-                OperationContext.current().setMessager(currentMessager);
-            }
-        }));
+        setStatus(Status.RUNNING);
+        AzureTaskManager.getInstance().runInBackgroundAsObservable("Validating inputs", () -> validateInputs())
+                .subscribeOn(Schedulers.io())
+                .subscribe(result -> {
+                    if (result) {
+                        final Step currentStep = getCurrentStep();
+                        if (currentStep != null) {
+                            currentStep.execute();
+                        }
+                    } else {
+                        setStatus(Status.FAILED);
+                    }
+                });
     }
 
     public Context getContext() {
@@ -130,9 +159,10 @@ public class Phase {
     }
 
     @Nullable
-    private Step getFollowingStep(Step step) {
+    private Step getFollowingStep() {
+        final Step currentStep = getCurrentStep();
         for (int i = 0; i < steps.size() - 1; i++) {
-            if (StringUtils.equals(step.getId(), steps.get(i).getId())) {
+            if (StringUtils.equals(currentStep.getId(), steps.get(i).getId())) {
                 return steps.get(i + 1);
             }
         }

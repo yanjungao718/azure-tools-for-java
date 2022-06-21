@@ -5,10 +5,6 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -34,15 +30,5 @@ public interface GuidanceTask {
     @Nullable
     default String getDoc() {
         return null;
-    }
-
-    default void execute(IAzureMessager messager) throws Exception {
-        final IAzureMessager currentMessager = AzureMessager.getMessager();
-        OperationContext.current().setMessager(messager);
-        try {
-            execute();
-        } finally {
-            OperationContext.current().setMessager(currentMessager);
-        }
     }
 }

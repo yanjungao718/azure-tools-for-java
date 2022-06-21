@@ -9,9 +9,18 @@ import com.microsoft.azure.toolkit.ide.guidance.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.ide.guidance.input.InputManager;
 import com.microsoft.azure.toolkit.ide.guidance.task.TaskManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,7 +32,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @RequiredArgsConstructor
 public class Step {
     @Nonnull
@@ -38,16 +48,15 @@ public class Step {
     private final GuidanceTask task;
 
     @Nonnull
-    private final List<GuidanceInput> inputs;
+    private final List<? extends GuidanceInput<?>> inputs;
 
     @Nonnull
+    @ToString.Exclude
     private final Phase phase;
 
     @Nonnull
     private Status status = Status.INITIAL;
-
     private IAzureMessager output;
-
     private List<Consumer<Status>> listenerList = new ArrayList<>();
 
     public Step(@Nonnull final StepConfig config, @Nonnull Phase phase) {
@@ -64,17 +73,29 @@ public class Step {
 
     public void setStatus(final Status status) {
         this.status = status;
-        this.listenerList.forEach(listener -> listener.accept(status));
+        this.listenerList.forEach(listener -> AzureTaskManager.getInstance().runOnPooledThread(() -> listener.accept(status)));
     }
 
     public void execute() {
-        try {
-            setStatus(Status.RUNNING);
-            this.task.execute(this.output);
-            setStatus(Status.SUCCEED);
-        } catch (final Exception e) {
-            setStatus(Status.FAILED);
-        }
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run task '%s'", this.getTitle()), () -> {
+            final IAzureMessager currentMessager = AzureMessager.getMessager();
+            OperationContext.current().setMessager(output);
+            try {
+                setStatus(Status.RUNNING);
+                if (this.phase.validateInputs()) {
+                    this.applyInputs();
+                    this.task.execute();
+                    setStatus(Status.SUCCEED);
+                } else {
+                    setStatus(Status.FAILED);
+                }
+            } catch (final Exception e) {
+                setStatus(Status.FAILED);
+                AzureMessager.getMessager().error(e);
+            } finally {
+                OperationContext.current().setMessager(currentMessager);
+            }
+        }));
     }
 
     public String getRenderedDescription() {
@@ -100,5 +121,9 @@ public class Step {
     public void init() {
         task.init();
         this.setStatus(task.isDone() ? Status.SUCCEED : Status.READY);
+    }
+
+    private void applyInputs() {
+        this.phase.getInputs().forEach(GuidanceInput::applyResult);
     }
 }

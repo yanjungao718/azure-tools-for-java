@@ -57,7 +57,7 @@ public class BaseAzureTextInput<T> extends ExtendableTextField
 
     public void onDocumentChanged() {
         if (this.needValidation()) {
-            this.setValidationExtension(VALIDATING);
+            this.setValidationInfo(AzureValidationInfo.pending(this));
         }
         this.debouncer.debounce();
     }

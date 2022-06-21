@@ -9,7 +9,10 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -21,7 +24,8 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @RequiredArgsConstructor
 public class Guidance {
     @Nonnull
@@ -44,7 +48,7 @@ public class Guidance {
     private final Context context;
     @Nonnull
     private Status status = Status.INITIAL;
-
+    private List<BiConsumer<Phase, Phase>> phaseListeners = new ArrayList<>();
     private Phase currentPhase;
 
     public Guidance(@Nonnull final SequenceConfig sequenceConfig, @Nonnull Project project) {
@@ -100,8 +104,6 @@ public class Guidance {
         this.currentPhase = phase;
         this.phaseListeners.forEach(listener -> listener.accept(oldPhase, phase));
     }
-
-    private List<BiConsumer<Phase, Phase>> phaseListeners = new ArrayList<>();
 
     public void addPhaseListener(BiConsumer<Phase, Phase> listener) {
         phaseListeners.add(listener);

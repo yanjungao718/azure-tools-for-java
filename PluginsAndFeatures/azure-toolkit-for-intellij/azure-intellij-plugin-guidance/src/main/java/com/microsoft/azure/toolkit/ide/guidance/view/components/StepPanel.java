@@ -46,9 +46,6 @@ public class StepPanel extends JPanel {
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.actionButton.setHyperlinkTarget(null);
         this.actionButton.addHyperlinkListener(e -> {
-            if (!isInputsValid()) {
-                return;
-            }
             this.descPanel.setVisible(false);
             final AzureString title = AzureString.format("run step '%s'", this.step.getTitle());
             AzureTaskManager.getInstance().runInBackground(title, this.step::execute);
@@ -59,10 +56,6 @@ public class StepPanel extends JPanel {
         this.initOutputPanel();
         this.updateStatus(this.step.getStatus());
         this.step.getContext().addContextListener(ignore -> this.renderDescription());
-    }
-
-    private boolean isInputsValid() {
-        return this.step.getInputs().stream().map(GuidanceInput::getValidationInfo).allMatch(AzureValidationInfo::isValid);
     }
 
     private void renderDescription() {

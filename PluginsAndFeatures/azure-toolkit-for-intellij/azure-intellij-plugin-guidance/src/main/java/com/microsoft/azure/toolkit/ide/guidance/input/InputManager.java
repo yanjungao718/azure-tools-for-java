@@ -25,7 +25,7 @@ public class InputManager {
     }
 
     @Nonnull
-    public static GuidanceInput createInputComponent(@Nonnull final InputConfig config, @Nonnull final Context context) {
+    public static GuidanceInput<?> createInputComponent(@Nonnull final InputConfig config, @Nonnull final Context context) {
         return getTaskProviders().stream()
                 .map(provider -> provider.createInputComponent(config, context))
                 .filter(Objects::nonNull)
