@@ -74,7 +74,7 @@ public class GitCloneTask implements GuidanceTask {
             final File target = StringUtils.isEmpty(repositoryPath) ? new File(directory) : new File(directory, repositoryPath);
             AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
             copyConfigurationToWorkspace(target);
-            ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.newProject());
+            ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.build().asNewProject());
             GuidanceViewManager.getInstance().closeGuidance(context.getProject());
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);
