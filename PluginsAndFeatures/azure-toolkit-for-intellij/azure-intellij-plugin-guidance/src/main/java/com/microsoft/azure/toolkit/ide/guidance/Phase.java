@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ public class Phase {
     private Step currentStep;
     @Nullable
     private IAzureMessager output;
-    private List<Consumer<Status>> listenerList = new ArrayList<>();
+    private List<Consumer<Status>> listenerList = new CopyOnWriteArrayList<>();
 
     private boolean autoExecute = false;
 

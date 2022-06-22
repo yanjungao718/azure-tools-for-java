@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class Guidance {
     private final Context context;
     @Nonnull
     private Status status = Status.INITIAL;
-    private List<BiConsumer<Phase, Phase>> phaseListeners = new ArrayList<>();
+    private List<BiConsumer<Phase, Phase>> phaseListeners = new CopyOnWriteArrayList<>();
     private Phase currentPhase;
 
     public Guidance(@Nonnull final SequenceConfig sequenceConfig, @Nonnull Project project) {
