@@ -22,7 +22,6 @@ import lombok.ToString;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -91,6 +90,7 @@ public class Step {
             } catch (final Exception e) {
                 setStatus(Status.FAILED);
                 AzureMessager.getMessager().error(e);
+                AzureMessager.getDefaultMessager().error(e);
             } finally {
                 OperationContext.current().setMessager(currentMessager);
             }
