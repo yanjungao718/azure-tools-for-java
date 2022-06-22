@@ -116,8 +116,8 @@ public class Step {
         listenerList.remove(listener);
     }
 
-    public void init() {
-        task.init();
+    public void prepare() {
+        task.prepare();
         this.setStatus(task.isDone() ? Status.SUCCEED : Status.READY);
     }
 

@@ -8,11 +8,9 @@ package com.microsoft.azure.toolkit.ide.guidance;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -64,11 +62,11 @@ public class Guidance {
         this.initPhaseStatusListener();
     }
 
-    public void init() {
+    public void prepare() {
         this.setStatus(Status.READY);
         if (CollectionUtils.isNotEmpty(phases)) {
             this.setCurrentPhase(phases.get(0));
-            currentPhase.init();
+            currentPhase.prepare();
         } else {
             this.setStatus(Status.SUCCEED);
         }
@@ -83,7 +81,7 @@ public class Guidance {
                 if (currentPhase == null) {
                     this.setStatus(Status.SUCCEED);
                 } else {
-                    currentPhase.init();
+                    currentPhase.prepare();
                 }
             }
         }));

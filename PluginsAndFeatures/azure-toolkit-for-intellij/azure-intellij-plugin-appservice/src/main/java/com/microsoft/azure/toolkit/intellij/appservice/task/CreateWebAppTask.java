@@ -26,13 +26,7 @@ public class CreateWebAppTask implements GuidanceTask {
 
     public CreateWebAppTask(@Nonnull final ComponentContext context) {
         this.context = context;
-    }
-
-    @Override
-    public void init() {
-        GuidanceTask.super.init();
-        final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
-        context.applyResult(DEFAULT_WEB_APP_NAME, defaultWebAppName);
+        this.init();
     }
 
     @Nonnull
@@ -55,5 +49,10 @@ public class CreateWebAppTask implements GuidanceTask {
         context.applyResult(WEBAPP_ID, webApp.getId());
         context.applyResult(RESOURCE_ID, webApp.getId());
         context.applyResult(RESOURCE_GROUP, webApp.getResourceGroupName());
+    }
+
+    private void init() {
+        final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        context.applyResult(DEFAULT_WEB_APP_NAME, defaultWebAppName);
     }
 }

@@ -83,18 +83,18 @@ public class Phase {
                 this.setStatus(Status.SUCCEED);
                 return;
             }
-            this.currentStep.init();
+            this.currentStep.prepare();
             if (isAutoExecute()) {
                 currentStep.execute();
             }
         }
     }
 
-    public void init() {
+    public void prepare() {
         this.setStatus(Status.READY);
         if (CollectionUtils.isNotEmpty(steps)) {
             currentStep = steps.get(0);
-            currentStep.init();
+            currentStep.prepare();
         } else {
             this.setStatus(Status.SUCCEED);
         }

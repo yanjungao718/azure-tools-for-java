@@ -36,6 +36,7 @@ public class GitCloneTask implements GuidanceTask {
     public GitCloneTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.guidance = context.getGuidance();
+        init();
     }
 
 
@@ -50,13 +51,6 @@ public class GitCloneTask implements GuidanceTask {
     @Override
     public String getName() {
         return "task.common.clone";
-    }
-
-    @Override
-    public void init() {
-        final String directoryName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
-        final String defaultPath = new File(System.getProperty("user.home"), directoryName).getAbsolutePath();
-        this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     @Override
@@ -81,6 +75,12 @@ public class GitCloneTask implements GuidanceTask {
             AzureMessager.getMessager().error(ex);
             throw new AzureToolkitRuntimeException(ex);
         }
+    }
+
+    private void init() {
+        final String directoryName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String defaultPath = new File(System.getProperty("user.home"), directoryName).getAbsolutePath();
+        this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     private void copyConfigurationToWorkspace(final File target) throws IOException {

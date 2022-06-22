@@ -68,7 +68,7 @@ public class GuidanceViewManager {
 
     private static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
         final Guidance guidance = new Guidance(config, project);
-        AzureTaskManager.getInstance().runOnPooledThread(guidance::init);
+        AzureTaskManager.getInstance().runOnPooledThread(guidance::prepare);
         return guidance;
     }
 
