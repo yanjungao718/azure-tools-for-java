@@ -6,6 +6,8 @@ import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
@@ -71,8 +73,10 @@ public class GitCloneTask implements GuidanceTask {
             cloneCommand.call();
             // Copy get start file to path
             final File target = StringUtils.isEmpty(repositoryPath) ? new File(directory) : new File(directory, repositoryPath);
+            AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
             copyConfigurationToWorkspace(target);
             ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.newProject());
+            GuidanceViewManager.getInstance().closeGuidance(context.getProject());
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);
             throw new AzureToolkitRuntimeException(ex);

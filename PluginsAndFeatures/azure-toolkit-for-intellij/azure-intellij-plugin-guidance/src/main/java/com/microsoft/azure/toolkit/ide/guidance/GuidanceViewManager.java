@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
@@ -54,7 +53,20 @@ public class GuidanceViewManager {
         });
     }
 
-    public static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
+    public void closeGuidance(@Nonnull final Project project) {
+        final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
+        if (toolWindow == null) {
+            return;
+        }
+        AzureTaskManager.getInstance().runLater(() -> {
+            if (Objects.nonNull(GuidanceViewFactory.guidanceView)) {
+                GuidanceViewFactory.guidanceView.showWelcomePage();
+            }
+            toolWindow.hide();
+        });
+    }
+
+    private static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
         final Guidance guidance = new Guidance(config, project);
         AzureTaskManager.getInstance().runOnPooledThread(guidance::init);
         return guidance;
@@ -67,7 +79,6 @@ public class GuidanceViewManager {
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
             guidanceView = new GuidanceView(project);
             final JComponent view = guidanceView;
-//            final JComponent view = new JBScrollPane(guidanceView, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final Content content = contentFactory.createContent(view, "", false);
             toolWindow.getContentManager().addContent(content);
