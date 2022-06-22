@@ -46,10 +46,12 @@ public class PhasePanel extends JPanel {
     private JLabel titleLabel;
     private JPanel detailsPanel;
     private JTextPane descPanel;
-    private JTextPane outputPanel;
     private JPanel inputsPanel;
     private JPanel stepsPanel;
     private JSeparator detailsSeparator;
+    private JPanel outputContainer;
+    private JLabel outputStatusIcon;
+    private JTextPane outputPanel;
     private boolean focused;
 
     public PhasePanel(@Nonnull Phase phase) {
@@ -115,7 +117,7 @@ public class PhasePanel extends JPanel {
         final IAzureMessager messager = new ConsoleTextMessager();
         this.phase.setOutput(messager);
         this.outputPanel.setBorder(null);
-        this.outputPanel.setVisible(false);
+        this.outputContainer.setVisible(false);
     }
 
     class ConsoleTextMessager implements IAzureMessager {
@@ -129,7 +131,7 @@ public class PhasePanel extends JPanel {
     private void updateStatus(Status status) {
         this.updateStatusIcon(status);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || status != Status.SUCCEED));
-        this.outputPanel.setVisible(status == Status.RUNNING || (StringUtils.isNotBlank(this.outputPanel.getText()) && (status == Status.SUCCEED || status == Status.FAILED)));
+        this.outputContainer.setVisible(status == Status.RUNNING || (StringUtils.isNotBlank(this.outputPanel.getText()) && (status == Status.SUCCEED || status == Status.FAILED)));
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
         this.actionButton.setVisible(this.focused);
@@ -184,7 +186,7 @@ public class PhasePanel extends JPanel {
         this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
         this.detailsPanel.setVisible(expanded && (this.inputsPanel.isVisible() || this.stepsPanel.isVisible()));
         this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || this.phase.getStatus() != Status.SUCCEED));
-        this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && (this.actionButton.isVisible() || this.outputPanel.isVisible()));
+        this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && (this.actionButton.isVisible() || this.outputContainer.isVisible()));
     }
 
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
@@ -194,6 +196,7 @@ public class PhasePanel extends JPanel {
     }
 
     void updateStatusIcon(final Status status) {
+        this.outputStatusIcon.setIcon(IconUtil.scale(PhasePanel.getStatusIcon(status), this.statusIcon, 0.875f));
         if (status == Status.RUNNING || status == Status.SUCCEED) {
             this.statusIcon.setIcon(getStatusIcon(status));
             this.statusIcon.setText("");
