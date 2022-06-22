@@ -4,7 +4,6 @@ import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
-import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
@@ -95,7 +94,7 @@ public class StepPanel extends JPanel {
             this.statusIcon.setText("");
         } else {
             this.statusIcon.setIcon(null);
-            this.statusIcon.setFont(JBFont.label().asBold().deriveFont(12f));
+            this.statusIcon.setFont(JBUI.Fonts.create("JetBrains Mono", 12).asBold());
             final int index = this.step.getPhase().getSteps().indexOf(this.step);
             this.statusIcon.setText(String.valueOf((char) ('a' + index)));
             this.statusIcon.setForeground(JBUI.CurrentTheme.Label.disabledForeground());
