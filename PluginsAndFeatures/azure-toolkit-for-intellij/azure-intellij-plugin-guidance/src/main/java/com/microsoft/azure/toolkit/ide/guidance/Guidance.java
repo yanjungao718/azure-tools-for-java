@@ -8,11 +8,9 @@ package com.microsoft.azure.toolkit.ide.guidance;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -21,6 +19,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,7 @@ public class Guidance {
     private final Context context;
     @Nonnull
     private Status status = Status.INITIAL;
-    private List<BiConsumer<Phase, Phase>> phaseListeners = new ArrayList<>();
+    private List<BiConsumer<Phase, Phase>> phaseListeners = new CopyOnWriteArrayList<>();
     private Phase currentPhase;
 
     public Guidance(@Nonnull final SequenceConfig sequenceConfig, @Nonnull Project project) {
@@ -64,11 +63,11 @@ public class Guidance {
         this.initPhaseStatusListener();
     }
 
-    public void init() {
+    public void prepare() {
         this.setStatus(Status.READY);
         if (CollectionUtils.isNotEmpty(phases)) {
             this.setCurrentPhase(phases.get(0));
-            currentPhase.init();
+            currentPhase.prepare();
         } else {
             this.setStatus(Status.SUCCEED);
         }
@@ -83,7 +82,7 @@ public class Guidance {
                 if (currentPhase == null) {
                     this.setStatus(Status.SUCCEED);
                 } else {
-                    currentPhase.init();
+                    currentPhase.prepare();
                 }
             }
         }));

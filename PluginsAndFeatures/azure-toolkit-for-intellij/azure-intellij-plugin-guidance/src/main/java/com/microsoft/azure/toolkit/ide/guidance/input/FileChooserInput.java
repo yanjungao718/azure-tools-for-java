@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 public class FileChooserInput implements GuidanceInput<String> {
     public static final String DIRECTORY = "directory";
     public static final String FILE_CHOOSER = "input.common.file-chooser";
+    public static final String VALUE = "value";
 
     private final FileChooserInputPanel inputPanel;
     private final ComponentContext context;
@@ -18,7 +19,8 @@ public class FileChooserInput implements GuidanceInput<String> {
         this.config = config;
         this.inputPanel = new FileChooserInputPanel();
 
-        this.context.addPropertyListener("value", value -> inputPanel.setValue((String) value));
+        this.inputPanel.setValue((String) context.getParameter(VALUE));
+        this.context.addPropertyListener(VALUE, value -> inputPanel.setValue((String) value));
     }
 
     @Override

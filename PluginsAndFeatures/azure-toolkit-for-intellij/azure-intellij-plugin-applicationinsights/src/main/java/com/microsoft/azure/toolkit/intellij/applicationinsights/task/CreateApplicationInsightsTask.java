@@ -28,6 +28,7 @@ public class CreateApplicationInsightsTask implements GuidanceTask {
 
     public CreateApplicationInsightsTask(@Nonnull final ComponentContext context) {
         this.context = context;
+        init();
     }
 
     @Override
@@ -49,9 +50,7 @@ public class CreateApplicationInsightsTask implements GuidanceTask {
         context.applyResult(RESOURCE_ID, result.getId());
     }
 
-    @Override
-    public void init() {
-        GuidanceTask.super.init();
+    private void init() {
         final String defaultApplicationInsightsName =
                 String.format("ai-%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_APPLICATION_INSIGHTS_NAME, defaultApplicationInsightsName);

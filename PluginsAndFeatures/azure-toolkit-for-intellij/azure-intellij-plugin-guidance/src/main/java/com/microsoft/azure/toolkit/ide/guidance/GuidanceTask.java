@@ -12,7 +12,7 @@ public interface GuidanceTask {
 
     void execute() throws Exception;
 
-    default void init() {
+    default void prepare() {
     }
 
     default boolean isDone() {

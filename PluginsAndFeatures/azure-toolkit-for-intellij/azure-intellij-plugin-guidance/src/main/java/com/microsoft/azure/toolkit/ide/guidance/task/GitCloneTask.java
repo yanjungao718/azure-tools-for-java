@@ -6,6 +6,9 @@ import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
+import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
@@ -19,8 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-
-import static com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager.GETTING_START_CONFIGURATION_NAME;
+import java.util.Optional;
 
 public class GitCloneTask implements GuidanceTask {
     public static final String DIRECTORY = "directory";
@@ -34,27 +36,26 @@ public class GitCloneTask implements GuidanceTask {
     public GitCloneTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.guidance = context.getGuidance();
+        init();
     }
 
 
     @Override
     public boolean isDone() {
         // Check whether project was clone to local
-        final File file = new File(guidance.getProject().getBasePath(), GETTING_START_CONFIGURATION_NAME);
-        return file.exists();
+        final SequenceConfig workspaceConfig = GuidanceConfigManager.getInstance().getProcessConfigFromWorkspace(context.getProject());
+        if (workspaceConfig != null && StringUtils.equals(workspaceConfig.getName(), guidance.getName())) {
+            Optional.ofNullable(context.getProject().getBasePath()).ifPresent(path -> this.context.applyResult(DEFAULT_GIT_DIRECTORY, path));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Nonnull
     @Override
     public String getName() {
         return "task.common.clone";
-    }
-
-    @Override
-    public void init() {
-        final String directoryName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
-        final String defaultPath = new File(System.getProperty("user.home"), directoryName).getAbsolutePath();
-        this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     @Override
@@ -71,12 +72,20 @@ public class GitCloneTask implements GuidanceTask {
             cloneCommand.call();
             // Copy get start file to path
             final File target = StringUtils.isEmpty(repositoryPath) ? new File(directory) : new File(directory, repositoryPath);
+            AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
             copyConfigurationToWorkspace(target);
             ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.newProject());
+            GuidanceViewManager.getInstance().closeGuidance(context.getProject());
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);
             throw new AzureToolkitRuntimeException(ex);
         }
+    }
+
+    private void init() {
+        final String directoryName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String defaultPath = new File(System.getProperty("user.home"), directoryName).getAbsolutePath();
+        this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     private void copyConfigurationToWorkspace(final File target) throws IOException {

@@ -30,6 +30,7 @@ public class SignInTask implements GuidanceTask {
         if (az.isSignedIn()) {
             // if already signed in, finish directly
             AzureMessager.getMessager().info(AzureString.format("Sign in successfully"));
+            return;
         }
         final AuthMethodDetails methodDetails;
         if (isAzureCliAuthenticated()) {
