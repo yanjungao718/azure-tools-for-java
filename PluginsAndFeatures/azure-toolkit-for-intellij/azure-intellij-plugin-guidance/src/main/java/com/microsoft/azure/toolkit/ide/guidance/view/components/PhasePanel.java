@@ -14,8 +14,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.GraphicsUtil;
-import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
@@ -52,7 +52,7 @@ public class PhasePanel extends JPanel {
     private JPanel outputContainer;
     private JLabel outputStatusIcon;
     private JTextPane outputPanel;
-    private boolean focused;
+    private boolean isOutputBlank = true;
 
     public PhasePanel(@Nonnull Phase phase) {
         super();
@@ -78,9 +78,6 @@ public class PhasePanel extends JPanel {
         this.actionButton.addActionListener(e -> this.phase.execute(true));
         this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
         this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        final MouseAdapter listener = toggleDetails();
-        this.toggleIcon.addMouseListener(listener);
-        this.titleLabel.addMouseListener(listener);
         this.descPanel.setBorder(null);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
         this.initOutputPanel();
@@ -88,7 +85,13 @@ public class PhasePanel extends JPanel {
         this.initInputsPanel();
         this.initStepsPanel();
         this.renderDescription();
-        this.toggleIcon.setVisible(this.inputsPanel.isVisible() || this.stepsPanel.isVisible());
+        final boolean toggleable = this.inputsPanel.isVisible() || this.stepsPanel.isVisible();
+        this.toggleIcon.setVisible(toggleable);
+        if (toggleable) {
+            final MouseAdapter listener = toggleDetails();
+            this.toggleIcon.addMouseListener(listener);
+            this.titleLabel.addMouseListener(listener);
+        }
         this.updateStatus(this.phase.getStatus());
         this.phase.getContext().addContextListener(ignore -> this.renderDescription());
     }
@@ -108,53 +111,6 @@ public class PhasePanel extends JPanel {
         }
     }
 
-    private void renderDescription() {
-        titleLabel.setText(phase.getRenderedTitle());
-        descPanel.setText(phase.getRenderedDescription());
-    }
-
-    private void initOutputPanel() {
-        final IAzureMessager messager = new ConsoleTextMessager();
-        this.phase.setOutput(messager);
-        this.outputPanel.setBorder(null);
-        this.outputContainer.setVisible(false);
-    }
-
-    class ConsoleTextMessager implements IAzureMessager {
-        @Override
-        public boolean show(IAzureMessage message) {
-            PhasePanel.this.outputPanel.setText(message.getContent());
-            return true;
-        }
-    }
-
-    private void updateStatus(Status status) {
-        this.updateStatusIcon(status);
-        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || status != Status.SUCCEED));
-        this.outputContainer.setVisible(status == Status.RUNNING || (StringUtils.isNotBlank(this.outputPanel.getText()) && (status == Status.SUCCEED || status == Status.FAILED)));
-        this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
-        this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
-        this.actionButton.setVisible(this.focused);
-        final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
-        doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
-        doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
-        if (status == Status.FAILED) {
-            this.actionButton.setText("Retry");
-            this.toggleDetails(true);
-        }
-    }
-
-    protected void paintComponent(@NotNull Graphics g) {
-        super.paintComponent(g);
-        if (this.focused) {
-            final Graphics2D graphics = (Graphics2D) g;
-            final GraphicsConfig config = GraphicsUtil.setupAAPainting(g);
-            g.setColor(BACKGROUND_COLOR);
-            g.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), 10, 10);
-            config.restore();
-        }
-    }
-
     private void initStepsPanel() {
         final List<Step> steps = phase.getSteps();
         if (CollectionUtils.isEmpty(steps) || steps.size() == 1) {
@@ -171,6 +127,56 @@ public class PhasePanel extends JPanel {
         }
     }
 
+    private void initOutputPanel() {
+        final IAzureMessager messager = new ConsoleTextMessager();
+        this.phase.setOutput(messager);
+        this.outputPanel.setBorder(null);
+        this.outputPanel.setEditorKit(new UIUtil.JBWordWrapHtmlEditorKit());
+        this.outputContainer.setVisible(false);
+    }
+
+    class ConsoleTextMessager implements IAzureMessager {
+        @Override
+        public boolean show(IAzureMessage message) {
+            final String content = message.getContent();
+            PhasePanel.this.isOutputBlank = StringUtils.isBlank(content);
+            PhasePanel.this.outputPanel.setText(content);
+            return true;
+        }
+    }
+
+    private void updateStatus(Status status) {
+        this.updateStatusIcon(status);
+        this.updateView(status, this.detailsPanel.isVisible());
+        final boolean focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
+        this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
+        this.actionButton.setVisible(focused);
+        final Color bgColor = focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
+        doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
+        doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
+        if (status == Status.FAILED) {
+            this.actionButton.setText("Retry");
+            this.toggleDetails(true);
+        }
+    }
+
+    protected void paintComponent(@NotNull Graphics g) {
+        super.paintComponent(g);
+        final Status status = this.phase.getStatus();
+        if (status == Status.READY || status == Status.RUNNING || status == Status.FAILED) {
+            final Graphics2D graphics = (Graphics2D) g;
+            final GraphicsConfig config = GraphicsUtil.setupAAPainting(g);
+            g.setColor(BACKGROUND_COLOR);
+            g.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), 10, 10);
+            config.restore();
+        }
+    }
+
+    private void renderDescription() {
+        titleLabel.setText(phase.getRenderedTitle());
+        descPanel.setText(phase.getRenderedDescription());
+    }
+
     @Nonnull
     private MouseAdapter toggleDetails() {
         return new MouseAdapter() {
@@ -183,16 +189,18 @@ public class PhasePanel extends JPanel {
     }
 
     private void toggleDetails(boolean expanded) {
-        this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
-        this.detailsPanel.setVisible(expanded && (this.inputsPanel.isVisible() || this.stepsPanel.isVisible()));
-        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || this.phase.getStatus() != Status.SUCCEED));
-        this.detailsSeparator.setVisible(expanded && this.stepsPanel.isVisible() && (this.actionButton.isVisible() || this.outputContainer.isVisible()));
+        this.updateView(this.phase.getStatus(), expanded);
     }
 
-    static void doForOffsprings(JComponent c, Consumer<Component> func) {
-        func.consume(c);
-        Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
-        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(func::consume);
+    private synchronized void updateView(Status status, boolean expanded) {
+        final boolean hasInputs = this.inputsPanel.isVisible();
+        final boolean hasSteps = this.stepsPanel.isVisible();
+        this.toggleIcon.setIcon(expanded ? AllIcons.Actions.FindAndShowPrevMatches : AllIcons.Actions.FindAndShowNextMatches);
+        this.detailsPanel.setVisible(expanded && (hasInputs || hasSteps));
+        this.descPanel.setVisible(StringUtils.isNotBlank(this.descPanel.getText()) && (this.detailsPanel.isVisible() || status != Status.SUCCEED));
+        this.outputContainer.setVisible(!this.isOutputBlank);
+        this.detailsSeparator.setVisible(expanded && hasSteps && (this.actionButton.isVisible() || this.outputContainer.isVisible()));
+        this.outputStatusIcon.setVisible(!this.isOutputBlank && (this.detailsPanel.isVisible() || status != Status.SUCCEED));
     }
 
     void updateStatusIcon(final Status status) {
@@ -220,6 +228,12 @@ public class PhasePanel extends JPanel {
         } else {
             return IconUtil.resizeSquared(AllIcons.Debugger.Db_muted_disabled_breakpoint, 14);
         }
+    }
+
+    static void doForOffsprings(JComponent c, Consumer<Component> func) {
+        func.consume(c);
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(func::consume);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

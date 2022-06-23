@@ -1,6 +1,5 @@
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
-import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
@@ -25,7 +24,7 @@ public class StepPanel extends JPanel {
     private JLabel titleLabel;
     private JTextPane descPanel;
     private JTextArea outputPanel;
-    private HyperlinkLabel actionButton;
+    private com.intellij.ui.components.ActionLink actionButton;
 
     private final Step step;
 
@@ -40,11 +39,9 @@ public class StepPanel extends JPanel {
         this.setLayout(new GridLayoutManager(1, 1));
         this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         this.step.addStatusListener(this::updateStatus);
-        this.actionButton.setHyperlinkText("Run");
+        this.actionButton.setText("Run");
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        this.actionButton.setHyperlinkTarget(null);
-        this.actionButton.addHyperlinkListener(e -> {
-            this.descPanel.setVisible(false);
+        this.actionButton.addActionListener(e -> {
             final AzureString title = AzureString.format("run step '%s'", this.step.getTitle());
             AzureTaskManager.getInstance().runInBackground(title, this.step::execute);
         });
@@ -83,7 +80,7 @@ public class StepPanel extends JPanel {
         this.actionButton.setVisible(status != Status.SUCCEED);
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
         if (status == Status.FAILED) {
-            this.actionButton.setHyperlinkText("Retry");
+            this.actionButton.setText("Retry");
         }
     }
 
