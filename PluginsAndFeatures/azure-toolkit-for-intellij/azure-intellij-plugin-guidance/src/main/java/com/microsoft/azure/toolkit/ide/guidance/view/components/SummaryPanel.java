@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.GraphicsConfig;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
@@ -64,7 +65,7 @@ public class SummaryPanel extends JPanel {
     }
 
     private void updateStatus(Status status) {
-        this.statusIcon.setIcon(PhasePanel.getStatusIcon(status));
+        this.statusIcon.setIcon(AllIcons.General.BalloonInformation);
         this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED || status == Status.SUCCEED;
         this.setVisible(this.focused);
         final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
@@ -95,6 +96,8 @@ public class SummaryPanel extends JPanel {
             final HyperlinkLabel hyperlinkLabel = new HyperlinkLabel();
             hyperlinkLabel.setHyperlinkText(StringUtils.capitalize(step.getTitle()));
             hyperlinkLabel.addHyperlinkListener(e -> executeStep(step));
+            hyperlinkLabel.setIcon(AllIcons.Ide.External_link_arrow);
+            hyperlinkLabel.setIconAtRight(true);
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
             this.detailsPanel.add(hyperlinkLabel, gridConstraints);
         }
