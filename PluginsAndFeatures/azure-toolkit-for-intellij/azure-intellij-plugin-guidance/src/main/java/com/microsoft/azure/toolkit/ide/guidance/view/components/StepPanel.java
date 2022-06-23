@@ -7,9 +7,7 @@ import com.intellij.util.IconUtil;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
-import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -81,12 +79,25 @@ public class StepPanel extends JPanel {
     }
 
     private void updateStatus(Status status) {
-        final Icon icon = IconUtil.scale(PhasePanel.getStatusIcon(status), this.statusIcon, 0.875f);
-        this.statusIcon.setIcon(icon);
-        this.actionButton.setVisible(status == Status.READY || status == Status.RUNNING || status == Status.FAILED);
+        this.updateStatusIcon(status);
+        this.actionButton.setVisible(status != Status.SUCCEED);
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
         if (status == Status.FAILED) {
             this.actionButton.setHyperlinkText("Retry");
+        }
+    }
+
+    void updateStatusIcon(final Status status) {
+        if (status == Status.RUNNING || status == Status.SUCCEED || status == Status.FAILED) {
+            final Icon icon = IconUtil.scale(PhasePanel.getStatusIcon(status), this.statusIcon, 0.875f);
+            this.statusIcon.setIcon(icon);
+            this.statusIcon.setText("");
+        } else {
+            this.statusIcon.setIcon(null);
+            this.statusIcon.setFont(JBUI.Fonts.create("JetBrains Mono", 12).asBold());
+            final int index = this.step.getPhase().getSteps().indexOf(this.step);
+            this.statusIcon.setText(String.valueOf((char) ('a' + index)));
+            this.statusIcon.setForeground(JBUI.CurrentTheme.Label.disabledForeground());
         }
     }
 
