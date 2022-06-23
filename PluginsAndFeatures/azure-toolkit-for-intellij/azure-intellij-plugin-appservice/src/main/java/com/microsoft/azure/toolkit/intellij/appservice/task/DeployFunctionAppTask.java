@@ -1,6 +1,5 @@
 package com.microsoft.azure.toolkit.intellij.appservice.task;
 
-import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -11,64 +10,48 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
-import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
+import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-public class DeployWebAppTask implements GuidanceTask {
+public class DeployFunctionAppTask implements GuidanceTask {
+    private final AzureFunctionSupportConfigurationType functionType = AzureFunctionSupportConfigurationType.getInstance();
+
     private final Project project;
     private final Guidance guidance;
     private final ComponentContext context;
 
-    public DeployWebAppTask(@Nonnull ComponentContext context) {
+    public DeployFunctionAppTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.project = context.getProject();
         this.guidance = context.getGuidance();
     }
 
-    private RunnerAndConfigurationSettings getRunConfigurationSettings(String appId, RunManagerEx manager) {
-        final ConfigurationFactory factory = WebAppConfigurationType.getInstance().getWebAppConfigurationFactory();
-        final String runConfigurationName = String.format("Azure Sample: %s-%s", guidance.getName(), Utils.getTimestamp());
-        final RunnerAndConfigurationSettings settings = manager.createConfiguration(runConfigurationName, factory);
-        final RunConfiguration runConfiguration = settings.getConfiguration();
-        if (runConfiguration instanceof WebAppConfiguration) {
-            ((WebAppConfiguration) runConfiguration).setWebApp(Objects.requireNonNull(Azure.az(AzureWebApp.class).webApp(appId)));
-            final List<AzureArtifact> allSupportedAzureArtifacts = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
-            // todo: change to use artifact build by maven in last step if not exist
-            final AzureArtifact azureArtifact = allSupportedAzureArtifacts.get(0);
-            ((WebAppConfiguration) runConfiguration).saveArtifact(azureArtifact);
-            final List<BeforeRunTask> beforeRunTasks = new ArrayList<>();
-            beforeRunTasks.add(BuildArtifactBeforeRunTaskUtils.createBuildTask(azureArtifact, runConfiguration));
-            beforeRunTasks.addAll(runConfiguration.getBeforeRunTasks());
-            manager.setBeforeRunTasks(runConfiguration, beforeRunTasks);
-            ((WebAppConfiguration) runConfiguration).setOpenBrowserAfterDeployment(false);
-        }
-        return settings;
-    }
-
     @Override
     public void execute() throws Exception {
-        AzureMessager.getMessager().info("Setting up run configuration for web app deployment...");
+        AzureMessager.getMessager().info("Setting up run configuration for function app deployment...");
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getParameter(CreateWebAppTask.WEBAPP_ID), manager);
+        final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getParameter("functionId"), manager);
         manager.addConfiguration(settings);
         manager.setSelectedConfiguration(settings);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -85,9 +68,24 @@ public class DeployWebAppTask implements GuidanceTask {
         countDownLatch.await();
     }
 
+    private RunnerAndConfigurationSettings getRunConfigurationSettings(final String appId, final RunManagerEx manager) {
+        final ConfigurationFactory factory = new FunctionDeploymentConfigurationFactory(functionType);
+        final String runConfigurationName = String.format("Azure Sample: %s-%s", guidance.getName(), Utils.getTimestamp());
+        final RunnerAndConfigurationSettings settings = manager.createConfiguration(runConfigurationName, factory);
+        final RunConfiguration runConfiguration = settings.getConfiguration();
+        if (runConfiguration instanceof FunctionDeployConfiguration) {
+            final Module[] functionModules = FunctionUtils.listFunctionModules(project);
+            ((FunctionDeployConfiguration) runConfiguration).saveTargetModule(functionModules[0]);
+            final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(appId);
+            final FunctionAppConfig config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(Objects.requireNonNull(functionApp));
+            ((FunctionDeployConfiguration) runConfiguration).saveConfig(config);
+        }
+        return settings;
+    }
+
     @Nonnull
     @Override
     public String getName() {
-        return "task.webapp.deploy";
+        return "task.function.deploy";
     }
 }
