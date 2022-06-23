@@ -2,7 +2,7 @@
   "$schema": "../flow-schema/Sequence.json",
   "name": "hello-webapp",
   "title": "Deploy Your First Web App to Azure",
-  "description": "Azure App Service enables you to build and host web apps, mobile back ends, and RESTful APIs in the programming language of your choice without managing infrastructure. This tutorial shows how to use the IntelliJ toolkit to deploy a spring boot project to Azure and connect the app service with Application Insights.",
+  "description": "This tutorial shows how to use the IntelliJ toolkit to deploy a spring boot project to Azure and connect the app service with Application Insights.",
   "repository": "https://github.com/spring-guides/gs-spring-boot.git",
   "context": {
     "repository": "https://github.com/spring-guides/gs-spring-boot.git",
