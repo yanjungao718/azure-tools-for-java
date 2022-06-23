@@ -7,6 +7,7 @@ import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -38,12 +39,14 @@ public class SignInTask implements GuidanceTask {
         }
         final AuthMethodDetails methodDetails;
         if (isAzureCliAuthenticated()) {
+            AzureMessager.getMessager().info("Signing in with Azure Cli...");
             methodDetails = IdentityAzureManager.getInstance().signInAzureCli().block();
         } else {
+            AzureMessager.getMessager().info("Signing in with OAuth...");
             methodDetails = IdentityAzureManager.getInstance().signInOAuth().block();
         }
         if (!az.isSignedIn() || CollectionUtils.isEmpty(az.getSubscriptions())) {
-            AzureMessager.getMessager().warning("Failed to sign in or there is no subscription in your account");
+            throw new AzureToolkitRuntimeException("Failed to sign in or there is no subscription in your account");
         } else {
             AzureMessager.getMessager().info(AzureString.format("Sign in successfully with %s", methodDetails.getAccountEmail()));
         }
