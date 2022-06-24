@@ -2,7 +2,7 @@
   "$schema": "../flow-schema/Sequence.json",
   "name": "hello-function",
   "title": "Deploy Your First Function App to Azure",
-  "description": "Azure Functions is a cloud service available on-demand that provides all the continually updated infrastructure and resources needed to run your applications. You focus on the pieces of code that matter most to you, and Functions handles the rest. In this tutorial, you use Intellij toolkit to create a Java function that responds to HTTP requests and deploy it to the serverless environment of Azure Functions.",
+  "description": "This tutorial shows how to use IntelliJ toolkit to create a Java function that responds to HTTP requests and deploy it to the serverless environment of Azure Functions.",
   "repository": "https://github.com/spring-guides/gs-spring-boot.git",
   "context": {
     "repository": "https://github.com/Azure-Samples/azure-functions-samples-java.git",
@@ -99,9 +99,9 @@
       ]
     },
     {
-      "title": "Done",
+      "title": "Congratulations!",
       "type": "summary",
-      "description": "Your project has been deployed to Aure Function App, enjoy your Azure experience!",
+      "description": "Your project has been deployed to Aure Function App, see your app in Azure Explorer now!",
       "steps": [
         {
           "title": "trigger your function",

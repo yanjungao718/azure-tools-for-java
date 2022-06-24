@@ -141,6 +141,7 @@ public class PhasePanel extends JPanel {
             final String content = message.getContent();
             PhasePanel.this.isOutputBlank = StringUtils.isBlank(content);
             PhasePanel.this.outputPanel.setText(content);
+            PhasePanel.this.updateView(PhasePanel.this.phase.getStatus(), PhasePanel.this.detailsPanel.isVisible());
             return true;
         }
     }
@@ -151,7 +152,7 @@ public class PhasePanel extends JPanel {
         final boolean focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
         this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
         this.actionButton.setVisible(focused);
-        final Color bgColor = focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
+        final Color bgColor = focused ? BACKGROUND_COLOR : null;
         doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
         doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
         if (status == Status.FAILED) {
