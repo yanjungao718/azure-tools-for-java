@@ -53,6 +53,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("resource.pin");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("common.open_url");
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("common.open_azure_settings");
+    public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("common.open_azure_explorer");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
@@ -149,6 +150,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder openSettingsView = new ActionView.Builder("Open Azure Settings")
             .title((s) -> OperationBundle.description("common.open_azure_settings"));
         am.registerAction(OPEN_AZURE_SETTINGS, new Action<>(OPEN_AZURE_SETTINGS, openSettingsView).setAuthRequired(false));
+
+        final ActionView.Builder openAzureExplorer = new ActionView.Builder("Open Azure Explorer")
+            .title((s) -> OperationBundle.description("common.open_azure_explorer"));
+        am.registerAction(OPEN_AZURE_EXPLORER, new Action<>(OPEN_AZURE_EXPLORER, openAzureExplorer).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", AzureIcons.Action.CREATE.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> {
