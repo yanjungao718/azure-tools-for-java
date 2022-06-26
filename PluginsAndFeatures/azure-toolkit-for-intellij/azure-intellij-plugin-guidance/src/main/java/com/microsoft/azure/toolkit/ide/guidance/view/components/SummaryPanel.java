@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.GraphicsConfig;
-import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -26,6 +25,9 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
+
+import static com.intellij.uiDesigner.core.GridConstraints.FILL_NONE;
 
 public class SummaryPanel extends JPanel {
     // JBUI.CurrentTheme.Tree.Hover.background(true)
@@ -38,6 +40,8 @@ public class SummaryPanel extends JPanel {
     private JPanel detailsPanel;
     private JTextPane descPanel;
     private boolean focused;
+
+    private JButton defaultButton = null;
 
     public SummaryPanel(@Nonnull Phase phase) {
         super();
@@ -70,6 +74,9 @@ public class SummaryPanel extends JPanel {
         this.setVisible(this.focused);
         final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
         PhasePanel.doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
+        if (this.focused) {
+            Optional.ofNullable(defaultButton).ifPresent(button -> Optional.ofNullable(getRootPane()).ifPresent(pane -> pane.setDefaultButton(button)));
+        }
     }
 
     protected void paintComponent(@Nonnull Graphics g) {
@@ -90,16 +97,16 @@ public class SummaryPanel extends JPanel {
             this.detailsPanel.setVisible(false);
             return;
         }
-        this.detailsPanel.setLayout(new GridLayoutManager(steps.size(), 1));
+        this.detailsPanel.setLayout(new GridLayoutManager(1, steps.size()));
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
-            final HyperlinkLabel hyperlinkLabel = new HyperlinkLabel();
-            hyperlinkLabel.setHyperlinkText(StringUtils.capitalize(step.getTitle()));
-            hyperlinkLabel.addHyperlinkListener(e -> executeStep(step));
-            hyperlinkLabel.setIcon(AllIcons.Ide.External_link_arrow);
-            hyperlinkLabel.setIconAtRight(true);
-            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            this.detailsPanel.add(hyperlinkLabel, gridConstraints);
+            final JButton button = new JButton(step.getTitle());
+            button.addActionListener(e -> executeStep(step));
+            if (i == 0) {
+                SummaryPanel.this.defaultButton = button;
+            }
+            final GridConstraints gridConstraints = new GridConstraints(0, i, 1, 1, 0, FILL_NONE, 3, 3, null, null, null, 0);
+            this.detailsPanel.add(button, gridConstraints);
         }
     }
 
