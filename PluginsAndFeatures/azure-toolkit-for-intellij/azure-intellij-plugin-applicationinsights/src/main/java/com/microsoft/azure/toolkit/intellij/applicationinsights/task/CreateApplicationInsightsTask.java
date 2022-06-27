@@ -52,7 +52,7 @@ public class CreateApplicationInsightsTask implements GuidanceTask {
 
     private void init() {
         final String defaultApplicationInsightsName =
-                String.format("ai-%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+                String.format("ai-%s-%s", context.getCourse().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_APPLICATION_INSIGHTS_NAME, defaultApplicationInsightsName);
     }
 

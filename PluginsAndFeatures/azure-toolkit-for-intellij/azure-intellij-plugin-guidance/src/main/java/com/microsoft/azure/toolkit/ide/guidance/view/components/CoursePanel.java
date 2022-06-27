@@ -62,7 +62,7 @@ public class CoursePanel {
     }
 
     public void openGuidance() {
-        GuidanceViewManager.getInstance().openCourse(project, course);
+        GuidanceViewManager.getInstance().openCourseView(project, course);
     }
 
     private void createUIComponents() {

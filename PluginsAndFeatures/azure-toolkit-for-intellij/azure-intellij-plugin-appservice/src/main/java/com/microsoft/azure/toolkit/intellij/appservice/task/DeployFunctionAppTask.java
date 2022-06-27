@@ -14,13 +14,12 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -38,13 +37,13 @@ public class DeployFunctionAppTask implements GuidanceTask {
     private final AzureFunctionSupportConfigurationType functionType = AzureFunctionSupportConfigurationType.getInstance();
 
     private final Project project;
-    private final Guidance guidance;
+    private final Course guidance;
     private final ComponentContext context;
 
     public DeployFunctionAppTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.project = context.getProject();
-        this.guidance = context.getGuidance();
+        this.guidance = context.getCourse();
     }
 
     @Override

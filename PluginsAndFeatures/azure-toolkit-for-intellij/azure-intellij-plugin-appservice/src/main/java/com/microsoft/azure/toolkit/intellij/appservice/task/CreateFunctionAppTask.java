@@ -53,7 +53,7 @@ public class CreateFunctionAppTask implements GuidanceTask {
     }
 
     private void init() {
-        final String defaultFunctionAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String defaultFunctionAppName = String.format("%s-%s", context.getCourse().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_FUNCTION_APP_NAME, defaultFunctionAppName);
     }
 }

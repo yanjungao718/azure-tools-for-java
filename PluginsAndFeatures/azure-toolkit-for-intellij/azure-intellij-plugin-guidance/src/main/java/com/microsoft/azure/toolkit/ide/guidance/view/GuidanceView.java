@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.ide.guidance.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -18,18 +18,18 @@ public class GuidanceView extends SimpleToolWindowPanel {
         this.project = project;
         $$$setupUI$$$();
         this.setContent(pnlRoot);
-        showWelcomePage();
+        showCoursesView();
     }
 
-    public void showWelcomePage() {
+    public void showCoursesView() {
         pnlCourse.setVisible(false);
         pnlCourses.setVisible(true);
     }
 
-    public void showGuidance(@Nonnull Guidance guidance) {
+    public void showCourseView(@Nonnull Course course) {
         pnlCourses.setVisible(false);
         pnlCourse.setVisible(true);
-        pnlCourse.showCourse(guidance);
+        pnlCourse.showCourse(course);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

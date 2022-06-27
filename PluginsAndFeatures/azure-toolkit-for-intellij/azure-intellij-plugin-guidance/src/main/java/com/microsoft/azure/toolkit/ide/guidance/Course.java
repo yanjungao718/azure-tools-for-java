@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Guidance {
+public class Course {
     @Nonnull
     private final String id;
     @Nonnull
@@ -49,7 +49,7 @@ public class Guidance {
     private List<BiConsumer<Phase, Phase>> phaseListeners = new CopyOnWriteArrayList<>();
     private Phase currentPhase;
 
-    public Guidance(@Nonnull final CourseConfig courseConfig, @Nonnull Project project) {
+    public Course(@Nonnull final CourseConfig courseConfig, @Nonnull Project project) {
         this.id = UUID.randomUUID().toString();
         this.project = project;
         this.name = courseConfig.getName();

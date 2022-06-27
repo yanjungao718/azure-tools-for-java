@@ -52,7 +52,7 @@ public class CreateWebAppTask implements GuidanceTask {
     }
 
     private void init() {
-        final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String defaultWebAppName = String.format("%s-%s", context.getCourse().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_WEB_APP_NAME, defaultWebAppName);
     }
 }

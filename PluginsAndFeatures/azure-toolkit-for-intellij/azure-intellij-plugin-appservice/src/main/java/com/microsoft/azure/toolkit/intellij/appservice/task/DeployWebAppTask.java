@@ -13,7 +13,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
@@ -35,13 +35,13 @@ import java.util.concurrent.CountDownLatch;
 
 public class DeployWebAppTask implements GuidanceTask {
     private final Project project;
-    private final Guidance guidance;
+    private final Course guidance;
     private final ComponentContext context;
 
     public DeployWebAppTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.project = context.getProject();
-        this.guidance = context.getGuidance();
+        this.guidance = context.getCourse();
     }
 
     private RunnerAndConfigurationSettings getRunConfigurationSettings(String appId, RunManagerEx manager) {

@@ -18,12 +18,12 @@ public class GuidanceStartupListener implements StartupActivity.DumbAware {
     public void runActivity(@NotNull Project project) {
         final CourseConfig courseConfigFromWorkspace = GuidanceConfigManager.getInstance().getCourseConfigFromWorkspace(project);
         Optional.ofNullable(courseConfigFromWorkspace)
-                .ifPresent(config -> GuidanceViewManager.getInstance().openCourse(project, courseConfigFromWorkspace));
+                .ifPresent(config -> GuidanceViewManager.getInstance().openCourseView(project, courseConfigFromWorkspace));
         // show guidance tool window after install
         final IIdeStore ideStore = AzureStoreManager.getInstance().getIdeStore();
         if (StringUtils.isEmpty(ideStore.getProperty(GUIDANCE, GUIDANCE_SHOWN))) {
             ideStore.setProperty(GUIDANCE, GUIDANCE_SHOWN, String.valueOf(true));
-            GuidanceViewManager.getInstance().listCourses(project);
+            GuidanceViewManager.getInstance().showCoursesView(project);
         }
     }
 }

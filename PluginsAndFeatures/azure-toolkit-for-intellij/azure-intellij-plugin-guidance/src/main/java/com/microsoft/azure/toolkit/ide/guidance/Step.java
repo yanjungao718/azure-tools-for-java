@@ -62,10 +62,10 @@ public class Step {
         this.id = UUID.randomUUID().toString();
         this.title = config.getTitle();
         this.description = config.getDescription();
-        this.task = TaskManager.createTask(config.getTask(), phase.getGuidance().getContext());
+        this.task = TaskManager.createTask(config.getTask(), phase.getCourse().getContext());
         this.inputs = Optional.ofNullable(config.getInputs())
             .map(configs -> configs.stream().map(inputConfig ->
-                InputManager.createInputComponent(inputConfig, phase.getGuidance().getContext())).collect(Collectors.toList()))
+                InputManager.createInputComponent(inputConfig, phase.getCourse().getContext())).collect(Collectors.toList()))
             .orElse(Collections.emptyList());
     }
 
