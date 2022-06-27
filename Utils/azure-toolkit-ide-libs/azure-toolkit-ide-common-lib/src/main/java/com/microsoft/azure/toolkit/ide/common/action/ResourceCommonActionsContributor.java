@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -54,6 +55,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<String> OPEN_URL = Action.Id.of("common.open_url");
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("common.open_azure_settings");
     public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("common.open_azure_explorer");
+    public static final Action.Id<AzResource<?, ?, ?>> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("common.highlight_resource_in_explorer");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
@@ -154,6 +156,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionView.Builder openAzureExplorer = new ActionView.Builder("Open Azure Explorer")
             .title((s) -> OperationBundle.description("common.open_azure_explorer"));
         am.registerAction(OPEN_AZURE_EXPLORER, new Action<>(OPEN_AZURE_EXPLORER, openAzureExplorer).setAuthRequired(false));
+
+        final ActionView.Builder highlightResourceView = new ActionView.Builder("highlight resource in Azure Explorer")
+            .title((s) -> OperationBundle.description("common.highlight_resource_in_explorer"));
+        am.registerAction(HIGHLIGHT_RESOURCE_IN_EXPLORER, new Action<>(HIGHLIGHT_RESOURCE_IN_EXPLORER, highlightResourceView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", AzureIcons.Action.CREATE.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> {
