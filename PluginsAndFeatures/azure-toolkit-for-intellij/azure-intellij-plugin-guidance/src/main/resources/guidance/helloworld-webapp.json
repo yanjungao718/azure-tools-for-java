@@ -53,84 +53,77 @@
         }
       ]
     },
-//    {
-//      "title": "Prepare",
-//      "description": "Create resources and related resource connection for deployment",
-//      "steps": [
-//        {
-//          "title": "Create web app",
-//          "description": null,
-//          "inputs": [
-//            {
-//              "name": "input.appservice.name",
-//              "paramMapping": {
-//                "value": "defaultWebAppName"
-//              },
-//              "resultMapping": {
-//                "appServiceName": "newWebAppName"
-//              }
-//            }
-//          ],
-//          "task": {
-//            "name": "task.webapp.create",
-//            "paramMapping": {
-//              "webAppName": "newWebAppName"
-//            },
-//            "resultMapping": {
-//              "resourceGroup" : "guidanceResourceGroup"
-//            }
-//          }
-//        },
-//        {
-//          "title": "Create application insight app",
-//          "description": null,
-//          "task": {
-//            "name": "task.application_insights.create",
-//            "paramMapping": {
-//              "resourceGroup" : "guidanceResourceGroup"
-//            },
-//            "resultMapping": {
-//              "defaultApplicationInsightsName": "applicationInsightsName",
-//              "resourceId" : "applicationInsightsId"
-//            }
-//          }
-//        },
-//        {
-//          "title": "Create resource connection between your project and application insight ${context.applicationInsightName}",
-//          "description": null,
-//          "task": {
-//            "name": "task.application_insights.create_connector"
-//          }
-//        }
-//      ]
-//    },
-//    {
-//      "title": "Build & Deploy",
-//      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Web App ${context.newWebAppName}",
-//      "steps": [
-//        {
-//          "title": "Deploy",
-//          "description": "Deploy to Azure Web App ${context.webapp.name}",
-//          "task": {
-//            "name": "task.webapp.deploy"
-//          }
-//        }
-//      ]
-//    },
     {
-      "title": "Done",
-      "type": "summary",
-      "description": "Your project has been deployed to Azure Web App, see your app in Azure Explorer now!",
+      "title": "Prepare",
+      "description": "Create resources and related resource connection for deployment",
       "steps": [
         {
-          "title": "open your web app in browser",
+          "title": "Create web app",
           "description": null,
+          "inputs": [
+            {
+              "name": "input.appservice.name",
+              "paramMapping": {
+                "value": "defaultWebAppName"
+              },
+              "resultMapping": {
+                "appServiceName": "newWebAppName"
+              }
+            }
+          ],
           "task": {
-            "name": "task.webapp.open_in_browser"
+            "name": "task.webapp.create",
+            "paramMapping": {
+              "webAppName": "newWebAppName"
+            },
+            "resultMapping": {
+              "resourceGroup" : "guidanceResourceGroup"
+            }
           }
         },
         {
-          "title": "open web app in Azure Explorer",
+          "title": "Create application insight app",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.create",
+            "paramMapping": {
+              "resourceGroup" : "guidanceResourceGroup"
+            },
+            "resultMapping": {
+              "defaultApplicationInsightsName": "applicationInsightsName",
+              "resourceId" : "applicationInsightsId"
+            }
+          }
+        },
+        {
+          "title": "Create resource connection between your project and application insight ${context.applicationInsightName}",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.create_connector"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build & Deploy",
+      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Web App ${context.newWebAppName}",
+      "steps": [
+        {
+          "title": "Deploy",
+          "description": "Deploy to Azure Web App ${context.webapp.name}",
+          "task": {
+            "name": "task.webapp.deploy"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Congratulations!",
+      "type": "summary",
+      "description": "Your project has been deployed to Azure Web App, enjoy your Azure experience!",
+      "steps": [
+        {
+          "title": "View in Azure Explorer",
           "description": null,
           "task": {
             "name": "task.common.focus_resource_in_explorer",
@@ -140,10 +133,10 @@
           }
         },
         {
-          "title": "open live metrics of your web app",
+          "title": "Open in browser",
           "description": null,
           "task": {
-            "name": "task.application_insights.live_metrics"
+            "name": "task.webapp.open_in_browser"
           }
         }
       ]

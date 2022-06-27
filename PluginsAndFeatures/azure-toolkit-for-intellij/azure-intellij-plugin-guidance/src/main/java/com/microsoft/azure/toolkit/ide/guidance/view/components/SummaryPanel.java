@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.GraphicsConfig;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.ui.GraphicsUtil;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
@@ -27,6 +28,8 @@ import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 
+import static com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH;
+import static com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL;
 import static com.intellij.uiDesigner.core.GridConstraints.FILL_NONE;
 
 public class SummaryPanel extends JPanel {
@@ -97,7 +100,7 @@ public class SummaryPanel extends JPanel {
             this.detailsPanel.setVisible(false);
             return;
         }
-        this.detailsPanel.setLayout(new GridLayoutManager(1, steps.size()));
+        this.detailsPanel.setLayout(new GridLayoutManager(1, steps.size() + 1));
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
             final JButton button = new JButton(step.getTitle());
@@ -108,6 +111,7 @@ public class SummaryPanel extends JPanel {
             final GridConstraints gridConstraints = new GridConstraints(0, i, 1, 1, 0, FILL_NONE, 3, 3, null, null, null, 0);
             this.detailsPanel.add(button, gridConstraints);
         }
+        detailsPanel.add(new Spacer(), new GridConstraints(0, steps.size(), 1, 1, 0, FILL_HORIZONTAL, 7, 3, null, null, null, 0));
     }
 
     private void executeStep(final Step step) {
