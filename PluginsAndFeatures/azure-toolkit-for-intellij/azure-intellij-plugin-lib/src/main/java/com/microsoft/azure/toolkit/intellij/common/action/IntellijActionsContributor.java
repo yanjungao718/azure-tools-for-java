@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class IntellijActionsContributor implements IActionsContributor {
@@ -26,11 +27,11 @@ public class IntellijActionsContributor implements IActionsContributor {
             (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()),
             (s, e) -> IntellijShowPropertiesViewAction.showPropertyView(s, Objects.requireNonNull(e.getProject())));
 
-        final Consumer<AzResource<?, ?, ?>> highlightResource = r -> {
+        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> highlightResource = (r, e) -> {
             AzureEventBus.emit("azure.explorer.highlight_resource", r);
-            AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_EXPLORER).handle(null);
+            AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_EXPLORER).handle(null, e);
         };
-        am.registerHandler(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER, Objects::nonNull, highlightResource);
+        am.registerHandler(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER, (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()), highlightResource);
     }
 
     @Override

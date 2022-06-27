@@ -159,8 +159,11 @@ public class Phase {
     }
 
     @Nullable
-    private Step getFollowingStep() {
+    private synchronized Step getFollowingStep() {
         final Step currentStep = getCurrentStep();
+        if (currentStep == null) {
+            return null;
+        }
         for (int i = 0; i < steps.size() - 1; i++) {
             if (StringUtils.equals(currentStep.getId(), steps.get(i).getId())) {
                 return steps.get(i + 1);

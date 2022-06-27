@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.appservice.task;
 
+import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
@@ -17,12 +18,15 @@ import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +35,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 
 public class DeployWebAppTask implements Task {
     private final Project project;
@@ -71,18 +74,23 @@ public class DeployWebAppTask implements Task {
         final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getParameter(CreateWebAppTask.WEBAPP_ID), manager);
         manager.addConfiguration(settings);
         manager.setSelectedConfiguration(settings);
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
         final ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), settings);
         AzureMessager.getMessager().info(AzureString.format("Executing run configuration %s...", settings.getName()));
         final ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
-        ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor ->
-                Objects.requireNonNull(runContentDescriptor.getProcessHandler()).addProcessListener(new ProcessAdapter() {
-                    @Override
-                    public void processTerminated(@NotNull ProcessEvent event) {
-                        countDownLatch.countDown();
-                    }
-                }));
-        countDownLatch.await();
+        final SettableFuture<Void> future = SettableFuture.create();
+        AzureTaskManager.getInstance().runLater(() -> ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor -> Objects.requireNonNull(runContentDescriptor.getProcessHandler()).addProcessListener(new ProcessAdapter() {
+            @Override
+            public void processTerminated(@NotNull ProcessEvent event) {
+                final Boolean result = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_RESULT);
+                final Throwable throwable = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_EXCEPTION);
+                if (Boolean.TRUE.equals(result)) {
+                    future.set(null);
+                } else {
+                    future.setException(Objects.requireNonNullElseGet(throwable, () -> new AzureToolkitRuntimeException("Execution was terminated, please see output below")));
+                }
+            }
+        })));
+        future.get();
     }
 
     @Nonnull
