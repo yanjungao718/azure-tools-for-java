@@ -22,6 +22,8 @@ public class DefaultTaskProvider implements GuidanceTaskProvider {
                 return new OpenResourceInAzureTask(taskContext);
             case "task.resource.clean_up":
                 return new CleanUpResourceTask(taskContext);
+            case FocusResourceInAzureExplorerTask.ID:
+                return new FocusResourceInAzureExplorerTask(taskContext);
             default:
                 return new EmptyTask();
         }

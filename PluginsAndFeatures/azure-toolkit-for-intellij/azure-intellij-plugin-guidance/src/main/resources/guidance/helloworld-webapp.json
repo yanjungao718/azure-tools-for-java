@@ -131,6 +131,16 @@
           }
         },
         {
+          "title": "open web app in Azure Explorer",
+          "description": null,
+          "task": {
+            "name": "task.common.focus_resource_in_explorer",
+            "paramMapping": {
+              "resourceId": "webappId"
+            }
+          }
+        },
+        {
           "title": "open live metrics of your web app",
           "description": null,
           "task": {
