@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.EmptyAction;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import javax.annotation.Nonnull;
 
 @RequiredArgsConstructor
-public class FocusResourceInAzureExplorerTask implements GuidanceTask {
+public class FocusResourceInAzureExplorerTask implements Task {
     public static final String RESOURCE_ID = "resourceId";
     public static final String ID = "task.common.focus_resource_in_explorer";
 

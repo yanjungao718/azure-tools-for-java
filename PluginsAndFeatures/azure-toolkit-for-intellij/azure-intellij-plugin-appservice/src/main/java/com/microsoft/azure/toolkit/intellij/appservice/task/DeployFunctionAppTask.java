@@ -15,7 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-public class DeployFunctionAppTask implements GuidanceTask {
+public class DeployFunctionAppTask implements Task {
     private final AzureFunctionSupportConfigurationType functionType = AzureFunctionSupportConfigurationType.getInstance();
 
     private final Project project;

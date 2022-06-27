@@ -3,7 +3,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StartStreamingLogsAction;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 
 import javax.annotation.Nonnull;
 
-public class OpenLogStreamingTask implements GuidanceTask {
+public class OpenLogStreamingTask implements Task {
     public static final String RESOURCE_ID = "resource_id";
     private final Project project;
     private final Course guidance;

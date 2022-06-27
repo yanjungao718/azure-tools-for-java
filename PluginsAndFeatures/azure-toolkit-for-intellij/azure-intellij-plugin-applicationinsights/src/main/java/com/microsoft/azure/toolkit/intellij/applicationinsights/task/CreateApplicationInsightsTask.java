@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.applicationinsights.task;
 
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightDraft;
@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public class CreateApplicationInsightsTask implements GuidanceTask {
+public class CreateApplicationInsightsTask implements Task {
 
     public static final String APPLICATION_INSIGHTS_NAME = "applicationInsightsName";
     public static final String SUBSCRIPTION_ID = "subscriptionId";

@@ -14,7 +14,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-public class DeployWebAppTask implements GuidanceTask {
+public class DeployWebAppTask implements Task {
     private final Project project;
     private final Course guidance;
     private final ComponentContext context;

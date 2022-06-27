@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.EmptyAction;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAccountActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -26,7 +26,7 @@ import java.util.Objects;
 import static com.microsoft.azure.toolkit.lib.auth.model.AuthType.AZURE_CLI;
 
 @RequiredArgsConstructor
-public class SignInTask implements GuidanceTask {
+public class SignInTask implements Task {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
 
     @Nonnull

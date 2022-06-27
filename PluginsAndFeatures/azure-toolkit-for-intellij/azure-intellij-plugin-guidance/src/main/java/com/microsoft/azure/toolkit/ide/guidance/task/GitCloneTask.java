@@ -5,7 +5,7 @@ import com.intellij.ide.impl.ProjectUtil;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-public class GitCloneTask implements GuidanceTask {
+public class GitCloneTask implements Task {
     public static final String DIRECTORY = "directory";
     public static final String DEFAULT_GIT_DIRECTORY = "defaultGitDirectory";
     public static final String BRANCH = "branch";

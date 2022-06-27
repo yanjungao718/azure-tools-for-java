@@ -43,7 +43,7 @@ public class Step {
     private final String description;
 
     @Nonnull
-    private final GuidanceTask task;
+    private final Task task;
 
     @Nonnull
     private final List<? extends GuidanceInput<?>> inputs;
