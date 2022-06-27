@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.GuidanceView;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,7 @@ public class GuidanceViewManager {
         return instance;
     }
 
-    public void showGuidance(@Nonnull final Project project, @Nonnull final SequenceConfig sequenceConfig) {
+    public void openCourse(@Nonnull final Project project, @Nonnull final CourseConfig courseConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         if (toolWindow == null) {
             return;
@@ -36,13 +36,13 @@ public class GuidanceViewManager {
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                final Guidance guidance = GuidanceViewManager.createProcess(sequenceConfig, project);
+                final Guidance guidance = GuidanceViewManager.createCourse(courseConfig, project);
                 guidanceView.showGuidance(guidance);
             }
         });
     }
 
-    public void showGuidanceWelcome(@Nonnull final Project project) {
+    public void listCourses(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         if (toolWindow == null) {
             return;
@@ -56,7 +56,7 @@ public class GuidanceViewManager {
         });
     }
 
-    public void closeGuidance(@Nonnull final Project project) {
+    public void closeCourse(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         if (toolWindow == null) {
             return;
@@ -70,7 +70,7 @@ public class GuidanceViewManager {
         });
     }
 
-    private static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
+    private static Guidance createCourse(@Nonnull final CourseConfig config, @Nonnull Project project) {
         final Guidance guidance = new Guidance(config, project);
         AzureTaskManager.getInstance().runOnPooledThread(guidance::prepare);
         return guidance;

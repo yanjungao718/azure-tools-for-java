@@ -21,7 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class SequenceView {
+public class CourseView {
     private JPanel contentPanel;
     private JLabel guidanceIcon;
     private JLabel titleLabel;
@@ -32,7 +32,7 @@ public class SequenceView {
 
     private final Project project;
 
-    public SequenceView(@Nonnull final Project project) {
+    public CourseView(@Nonnull final Project project) {
         this.project = project;
         $$$setupUI$$$();
         init();
@@ -46,13 +46,13 @@ public class SequenceView {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (AzureMessager.getMessager().confirm("Some steps might be lost, are you sure to abort current process?")) {
-                    GuidanceViewManager.getInstance().showGuidanceWelcome(project);
+                    GuidanceViewManager.getInstance().listCourses(project);
                 }
             }
         });
     }
 
-    public void showProcess(@Nonnull Guidance guidance) {
+    public void showCourse(@Nonnull Guidance guidance) {
         this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
         this.titleLabel.setText(guidance.getTitle());
         fillPhase(guidance);

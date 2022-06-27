@@ -1,5 +1,5 @@
 {
-  "$schema": "../flow-schema/Sequence.json",
+  "$schema": "../flow-schema/Course.json",
   "name": "hello-function",
   "title": "Deploy Your First Function App to Azure",
   "description": "This tutorial shows how to use IntelliJ toolkit to create a Java function that responds to HTTP requests and deploy it to the serverless environment of Azure Functions.",

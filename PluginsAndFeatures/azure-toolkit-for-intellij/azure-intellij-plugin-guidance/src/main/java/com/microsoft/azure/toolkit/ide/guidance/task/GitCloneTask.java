@@ -7,7 +7,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Guidance;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -43,7 +43,7 @@ public class GitCloneTask implements GuidanceTask {
     @Override
     public boolean isDone() {
         // Check whether project was clone to local
-        final SequenceConfig workspaceConfig = GuidanceConfigManager.getInstance().getProcessConfigFromWorkspace(context.getProject());
+        final CourseConfig workspaceConfig = GuidanceConfigManager.getInstance().getCourseConfigFromWorkspace(context.getProject());
         if (workspaceConfig != null && StringUtils.equals(workspaceConfig.getName(), guidance.getName())) {
             Optional.ofNullable(context.getProject().getBasePath()).ifPresent(path -> this.context.applyResult(DEFAULT_GIT_DIRECTORY, path));
             return true;
@@ -75,7 +75,7 @@ public class GitCloneTask implements GuidanceTask {
             AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
             copyConfigurationToWorkspace(target);
             ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.newProject());
-            GuidanceViewManager.getInstance().closeGuidance(context.getProject());
+            GuidanceViewManager.getInstance().closeCourse(context.getProject());
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);
             throw new AzureToolkitRuntimeException(ex);

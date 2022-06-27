@@ -1,5 +1,5 @@
 {
-  "$schema": "../flow-schema/Sequence.json",
+  "$schema": "../flow-schema/Course.json",
   "name": "hello-webapp",
   "title": "Deploy Your First Web App to Azure",
   "description": "This tutorial shows how to use the IntelliJ toolkit to deploy a spring boot project to Azure and connect the app service with Application Insights.",
