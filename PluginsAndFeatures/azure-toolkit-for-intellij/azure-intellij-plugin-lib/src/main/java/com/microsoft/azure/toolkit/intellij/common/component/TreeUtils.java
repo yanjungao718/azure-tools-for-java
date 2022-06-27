@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.BooleanUtils;
@@ -180,7 +181,6 @@ public class TreeUtils {
         }
         final Object highlighted = tree.getClientProperty(HIGHLIGHTED_RESOURCE_KEY);
         final boolean toHighlightThisNode = Optional.ofNullable(highlighted).map(h -> ((Pair<Object, Long>) h))
-            .filter(h -> System.currentTimeMillis() - h.getRight() < 10000)
             .filter(h -> Objects.equals(node.getUserObject(), h.getLeft())).isPresent();
         if (selected && toHighlightThisNode) {
             renderer.setBorder(BorderFactory.createLineBorder(JBColor.RED));
@@ -188,6 +188,9 @@ public class TreeUtils {
             renderer.setForeground(JBColor.RED);
             renderer.setOpaque(false);
         } else {
+            if(selected){
+                tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, null);
+            }
             renderer.setOpaque(true);
             renderer.setBorder(null);
             renderer.setBackground(null);
@@ -213,7 +216,9 @@ public class TreeUtils {
     public static void highlightResource(@Nonnull JTree tree, @Nonnull Object resource) {
         final Condition<DefaultMutableTreeNode> condition = n -> isInAppCentricView(n) && Objects.equals(n.getUserObject(), resource);
         final DefaultMutableTreeNode node = TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), condition);
-        Optional.ofNullable(node).ifPresent(n -> TreeUtil.selectPath(tree, new TreePath(node.getPath()), true));
-        tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, Pair.of(resource, System.currentTimeMillis()));
+        AzureTaskManager.getInstance().runLater(() -> {
+            tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, Pair.of(resource, System.currentTimeMillis()));
+            Optional.ofNullable(node).ifPresent(n -> TreeUtil.selectPath(tree, new TreePath(node.getPath()), false));
+        });
     }
 }
