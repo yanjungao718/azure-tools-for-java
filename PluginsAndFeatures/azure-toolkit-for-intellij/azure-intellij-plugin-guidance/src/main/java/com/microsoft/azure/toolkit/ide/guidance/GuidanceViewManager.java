@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GuidanceViewManager {
 
-    public static final String TOOL_WINDOW_ID = "Get Started with Azure";
+    public static final String TOOL_WINDOW_ID = "Getting Started with Azure";
 
     private static final GuidanceViewManager instance = new GuidanceViewManager();
 
