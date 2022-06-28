@@ -139,7 +139,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     @Override
     public SpringCloudAppConfig getValue() {
         final SpringCloudApp app = Objects.requireNonNull(this.selectorApp.getValue(), "target app is not specified.");
-        final SpringCloudAppConfig config = app instanceof SpringCloudAppDraft ?
+        final SpringCloudAppConfig config = app.isDraftForCreating() ?
             ((SpringCloudAppDraft) app).getConfig() : SpringCloudAppConfig.fromApp(app);
         return this.getValue(config);
     }
