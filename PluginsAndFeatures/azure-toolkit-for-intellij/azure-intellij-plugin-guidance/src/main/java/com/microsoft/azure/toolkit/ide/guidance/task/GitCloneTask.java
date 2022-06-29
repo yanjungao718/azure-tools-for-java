@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -62,6 +63,7 @@ public class GitCloneTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.clone", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String repository = (String) context.getParameter(REPOSITORY);
         final String branch = (String) context.getParameter(BRANCH);

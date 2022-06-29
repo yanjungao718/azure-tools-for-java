@@ -8,6 +8,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
@@ -26,6 +27,7 @@ public class SelectSubscriptionTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.select_subscription", type = AzureOperation.Type.SERVICE)
     public void execute() {
         selectSubscription();
     }
