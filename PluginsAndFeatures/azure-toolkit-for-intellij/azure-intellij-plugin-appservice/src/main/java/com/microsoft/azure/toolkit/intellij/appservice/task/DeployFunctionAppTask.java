@@ -36,8 +36,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 // todo: @hanli Remove duplicates with DeployWebAppTask, may create common Deploy Resource Task
 public class DeployFunctionAppTask implements Task {
@@ -77,11 +75,6 @@ public class DeployFunctionAppTask implements Task {
                 }
             }
         })));
-        try {
-            future.get(10, TimeUnit.MINUTES);
-        } catch (final TimeoutException e) {
-            throw new AzureToolkitRuntimeException("Failed to deploy resource to Azure", e);
-        }
     }
 
     private RunnerAndConfigurationSettings getRunConfigurationSettings(final String appId, final RunManagerEx manager) {

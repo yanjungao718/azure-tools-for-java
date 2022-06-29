@@ -36,8 +36,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class DeployWebAppTask implements Task {
     private final Project project;
@@ -94,11 +92,6 @@ public class DeployWebAppTask implements Task {
                 }
             }
         })));
-        try {
-            future.get(10, TimeUnit.MINUTES);
-        } catch (final TimeoutException e) {
-            throw new AzureToolkitRuntimeException("Failed to deploy resource to Azure", e);
-        }
     }
 
     @Nonnull

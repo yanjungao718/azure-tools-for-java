@@ -53,8 +53,7 @@ public class StepPanel extends JPanel {
 
     @AzureOperation(name = "guidance.execute_step.step", params = {"this.step.getTitle()"}, type = AzureOperation.Type.ACTION)
     private void execute() {
-        final AzureString title = AzureString.format("run step '%s'", this.step.getTitle());
-        AzureTaskManager.getInstance().runInBackground(title, this.step::execute);
+        this.step.execute();
     }
 
     private void renderDescription() {
