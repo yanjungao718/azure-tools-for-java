@@ -88,10 +88,8 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ## 3.66.0
 ### Added
 - New "Getting Started with Azure" experience.    
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.gettingstarted.png" alt="screenshot of 'getting started'" width="500"/>
 - Support for IntelliJ IDEA 2022.2(EAP).
 - SNAPSHOT and BETA versions of this plugin are available in [`Dev` channel](https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij/versions/dev).    
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.devchannel.png" alt="screenshot of 'dev channel'" width="500"/>
 
 ### Fixed
 - Error "java.lang.IllegalStateException" occurs if there are resources having same name but different resource groups.
