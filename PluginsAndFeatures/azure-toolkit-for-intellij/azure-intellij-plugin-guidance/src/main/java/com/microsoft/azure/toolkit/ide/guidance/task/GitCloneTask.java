@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
-import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
@@ -23,7 +22,6 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.Optional;
 
 public class GitCloneTask implements Task {
@@ -85,7 +83,7 @@ public class GitCloneTask implements Task {
             copyConfigurationToWorkspace(workspace);
             ProjectUtil.openOrImport(workspace.toPath(), OpenProjectTask.newProject());
             if (!context.getProject().isDisposed()) {
-                GuidanceViewManager.getInstance().closeCourseView(context.getProject());
+                GuidanceViewManager.getInstance().closeGuidanceToolWindow(context.getProject());
             }
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);

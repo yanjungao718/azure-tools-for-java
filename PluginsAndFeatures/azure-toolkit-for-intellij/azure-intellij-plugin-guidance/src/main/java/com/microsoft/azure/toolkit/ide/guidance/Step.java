@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.Disposable;
 import com.microsoft.azure.toolkit.ide.guidance.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.ide.guidance.input.InputManager;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Step {
+public class Step implements Disposable {
     @Nonnull
     private final String id;
     @Nonnull
@@ -124,5 +125,10 @@ public class Step {
 
     private void applyInputs() {
         this.phase.getInputs().forEach(GuidanceInput::applyResult);
+    }
+
+    @Override
+    public void dispose() {
+        Optional.of(this.getTask()).ifPresent(Task::dispose);
     }
 }

@@ -21,7 +21,11 @@ public class SelectSubscriptionTask implements Task {
     public SelectSubscriptionTask(@Nonnull final ComponentContext context) {
         this.context = context;
         this.accountListener = new AzureEventBus.EventListener(ignore ->
-                AzureTaskManager.getInstance().runOnPooledThread(() -> selectSubscription()));
+                AzureTaskManager.getInstance().runOnPooledThread(this::selectSubscription));
+    }
+
+    @Override
+    public void prepare() {
         AzureEventBus.on("account.subscription_changed.account", accountListener);
     }
 
@@ -43,4 +47,8 @@ public class SelectSubscriptionTask implements Task {
         AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
     }
 
+    @Override
+    public void dispose() {
+        AzureEventBus.off("account.subscription_changed.account", accountListener);
+    }
 }
