@@ -75,6 +75,7 @@ public class DeployFunctionAppTask implements Task {
                 }
             }
         })));
+        future.get();
     }
 
     private RunnerAndConfigurationSettings getRunConfigurationSettings(final String appId, final RunManagerEx manager) {

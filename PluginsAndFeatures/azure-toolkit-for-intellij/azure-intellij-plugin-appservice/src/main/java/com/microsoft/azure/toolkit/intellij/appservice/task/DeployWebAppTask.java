@@ -92,6 +92,7 @@ public class DeployWebAppTask implements Task {
                 }
             }
         })));
+        future.get();
     }
 
     @Nonnull
