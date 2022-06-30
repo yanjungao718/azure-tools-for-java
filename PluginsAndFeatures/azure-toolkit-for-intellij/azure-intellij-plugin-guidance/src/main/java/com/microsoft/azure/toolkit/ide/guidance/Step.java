@@ -100,7 +100,7 @@ public class Step implements Disposable {
     }
 
     @Nullable
-    @AzureOperation(name = "guidance.execute_task", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "guidance.execute_task.step", params = "this.title", type = AzureOperation.Type.TASK)
     private Object executeTask() throws Exception {
         OperationContext.current().setMessager(output);
         this.task.execute();
