@@ -37,7 +37,7 @@ public class GuidanceViewManager {
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                final Course course = GuidanceViewManager.createCourse(courseConfig, project);
+                final Course course = new Course(courseConfig, project);
                 guidanceView.showCourseView(course);
             }
         });
@@ -57,7 +57,7 @@ public class GuidanceViewManager {
     }
 
     @AzureOperation(name = "guidance.close_course", type = AzureOperation.Type.ACTION)
-    public void closeCourseView(@Nonnull final Project project) {
+    public void closeGuidanceToolWindow(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
@@ -67,12 +67,6 @@ public class GuidanceViewManager {
             assert toolWindow != null;
             toolWindow.hide();
         });
-    }
-
-    private static Course createCourse(@Nonnull final CourseConfig config, @Nonnull Project project) {
-        final Course course = new Course(config, project);
-        AzureTaskManager.getInstance().runOnPooledThread(course::prepare);
-        return course;
     }
 
     public static class GuidanceViewFactory implements ToolWindowFactory {
