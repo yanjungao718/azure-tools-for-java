@@ -1,4 +1,5 @@
 intellij {
+    plugins = ['remote-run']
 }
 
 sourceSets {

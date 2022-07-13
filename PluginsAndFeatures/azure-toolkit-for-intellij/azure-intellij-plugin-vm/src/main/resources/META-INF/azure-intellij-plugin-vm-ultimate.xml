@@ -1,5 +1,9 @@
 <idea-plugin>
+    <depends>org.jetbrains.plugins.remote-run</depends>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <actions implementation="com.microsoft.azure.toolkit.intellij.vm.IntelliJVMActionsContributorForUltimate"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <executionTargetType implementation="com.microsoft.azure.toolkit.intellij.vm.runtarget.AzureVmTargetType"/>
     </extensions>
 </idea-plugin>
