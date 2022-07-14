@@ -12,10 +12,13 @@ import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetEnvironmentCon
 import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetEnvironmentConfigurationBase;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.TempSshTargetEnvironmentConfigurationBase;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 public class AzureVmTargetEnvironmentConfiguration extends SshTargetEnvironmentConfiguration {
 
@@ -27,5 +30,22 @@ public class AzureVmTargetEnvironmentConfiguration extends SshTargetEnvironmentC
     @SneakyThrows
     private void init() {
         FieldUtils.writeField(this, "typeId", AzureVmTargetType.TYPE_ID, true);
+    }
+
+    @Nullable
+    @Override
+    public SshConfig findSshConfig(@Nullable Project project) {
+        final String caller = StackWalker.getInstance().
+            walk(stream -> stream.skip(1).findFirst().get()).
+            getMethodName();
+        // Display name of this Run Target would be reset to the name of the associated SSHConfig
+        // (com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel.saveTargetName)
+        // when creating this Run Target, this is not the excepted.
+        // return null if called from `saveTargetName` to prevent resetting display name of this run target
+        // `getDisplayName`/`setDisplayName` and `saveTargetName` are all `final`
+        if (StringUtils.containsIgnoreCase(caller, "saveTargetName")) {
+            return null;
+        }
+        return super.findSshConfig(project);
     }
 }
