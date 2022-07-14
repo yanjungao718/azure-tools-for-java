@@ -56,7 +56,10 @@ public class AzureVmTargetConnectionStep extends SshTargetStepBase implements Ta
         System.out.println(commitType);
         if (commitType == CommitType.Next) {
             final ConnectionData connectionData = getModel().getConnectionData();
-            this.configurable.apply(connectionData, vm -> this.steps.forEach(s -> setTitle(s, vm.getName())));
+            this.configurable.apply(connectionData, vm -> {
+                this.steps.forEach(s -> setTitle(s, vm.getName()));
+                this.getModel().getSubject().setDisplayName(vm.getName());
+            });
         }
     }
 

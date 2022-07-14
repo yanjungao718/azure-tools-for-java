@@ -46,15 +46,7 @@ public class VirtualMachineConnectionConfigurable {
     private JPanel contentPanel;
     private SubscriptionComboBox cbSubscription;
     private VirtualMachineComboBox cbVirtualMachine;
-    private JRadioButton rdoKeyPair;
-    private JRadioButton rdoPassword;
-    private AzureFileInput txtCertificate;
-    private AzureTextInput txtUsername;
-    private JPasswordField txtPassword;
-    private JLabel lblPassword;
-    private JLabel lblKey;
-    private JCheckBox cbxSavePassword;
-    private AzurePasswordFieldInput passwordFieldInput;
+    private JTextField txtUsername;
 
     public VirtualMachineConnectionConfigurable(Project project) {
         this.project = project;
@@ -63,29 +55,9 @@ public class VirtualMachineConnectionConfigurable {
     }
 
     public void init() {
-        passwordFieldInput = new AzurePasswordFieldInput(txtPassword);
-        txtUsername.setRequired(true);
-        final ButtonGroup authenticationGroup = new ButtonGroup();
-        authenticationGroup.add(rdoPassword);
-        authenticationGroup.add(rdoKeyPair);
+        this.txtUsername.setText(System.getProperty("user.name"));
         cbSubscription.addItemListener(this::onSubscriptionChanged);
         cbVirtualMachine.addItemListener(this::onVirtualMachineChanged);
-        rdoPassword.addItemListener(e -> toggleAuthenticationType(false));
-        rdoKeyPair.addItemListener(e -> toggleAuthenticationType(true));
-        rdoKeyPair.setSelected(true);
-
-        final Path defaultKeyPath = Path.of(System.getProperty("user.home"), ".ssh", "id_rsa");
-        txtCertificate.setToolTipText(defaultKeyPath.toString());
-        File defaultBrowserPath = new File(System.getProperty("user.home") + File.separator + ".ssh");
-        if (!defaultBrowserPath.exists()) {
-            defaultBrowserPath = new File(System.getProperty("user.home"));
-        }
-        txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(
-            VMCreationDialog.SELECT_CERT_TITLE,
-            VMCreationDialog.SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
-            this.project,
-            FileChooserDescriptorFactory.createSingleLocalFileDescriptor(),
-            TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
     }
 
     public void apply(@Nonnull ConnectionData connectionData, Consumer<VirtualMachine> callback) throws CommitStepException {
@@ -96,18 +68,7 @@ public class VirtualMachineConnectionConfigurable {
         connectionData.setUseExistingConfig(false);
         connectionData.setSavePassphrase(true);
         connectionData.setOpenSshAgentConnectionState(ConnectionData.OpenSshAgentConnectionState.NOT_STARTED);
-        connectionData.setUsername(txtUsername.getValue());
-        if (rdoPassword.isSelected()) {
-            connectionData.setAuthType(AuthType.PASSWORD);
-            connectionData.setPassword(String.valueOf(txtPassword.getPassword()));
-            connectionData.setSavePassword(cbxSavePassword.isSelected());
-        } else if (rdoKeyPair.isSelected()) {
-            connectionData.setAuthType(AuthType.KEY_PAIR);
-            connectionData.setPrivateKey(txtCertificate.getValue());
-            if (StringUtils.isBlank(txtCertificate.getValue())) {
-                connectionData.setPrivateKey(System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
-            }
-        }
+        connectionData.setUsername(txtUsername.getText());
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             final String hostIp = vm.getHostIp();
             if (StringUtils.isBlank(hostIp)) {
@@ -118,16 +79,6 @@ public class VirtualMachineConnectionConfigurable {
             callback.accept(vm);
             connectionData.checkAgentConnection(project, ModalityState.any());
         });
-    }
-
-    private void toggleAuthenticationType(boolean isSSH) {
-        txtPassword.setVisible(!isSSH);
-        lblPassword.setVisible(!isSSH);
-        cbxSavePassword.setVisible(!isSSH);
-        passwordFieldInput.setRequired(!isSSH);
-
-        lblKey.setVisible(isSSH);
-        txtCertificate.setVisible(isSSH);
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
