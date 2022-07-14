@@ -9,6 +9,7 @@ import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetAuthSte
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetConnectionStep;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetStepBase;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel;
+import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import lombok.Getter;
@@ -36,7 +37,7 @@ public class AzureVmTargetConnectionStep extends SshTargetStepBase implements Ta
     public AzureVmTargetConnectionStep(@Nonnull SshTargetWizardModel model, @Nonnull ArrayList<AbstractWizardStepEx> steps) {
         super(model);
         this.steps = steps;
-        this.configurable = new VirtualMachineConnectionConfigurable(this.getModel().getProject());
+        this.configurable = new VirtualMachineConnectionConfigurable(this.getModel());
     }
 
     @Override
@@ -53,13 +54,9 @@ public class AzureVmTargetConnectionStep extends SshTargetStepBase implements Ta
 
     @Override
     protected void doCommit(CommitType commitType) throws CommitStepException {
-        System.out.println(commitType);
         if (commitType == CommitType.Next) {
-            final ConnectionData connectionData = getModel().getConnectionData();
-            this.configurable.apply(connectionData, vm -> {
-                this.steps.forEach(s -> setTitle(s, vm.getName()));
-                this.getModel().getSubject().setDisplayName(vm.getName());
-            });
+            final VirtualMachine vm = this.configurable.apply();
+            this.steps.forEach(s -> setTitle(s, vm.getName()));
         }
     }
 
@@ -71,7 +68,6 @@ public class AzureVmTargetConnectionStep extends SshTargetStepBase implements Ta
     @Nonnull
     @Override
     protected JComponent createMainPanel() {
-//        this.configurable.init();
         return configurable.getContentPanel();
     }
 

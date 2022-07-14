@@ -7,49 +7,31 @@ package com.microsoft.azure.toolkit.intellij.vm.runtarget;
 
 import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.openapi.vfs.VirtualFileSystem;
-import com.intellij.remote.AuthType;
-import com.intellij.testFramework.LightVirtualFile;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.ConnectionData;
-import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
-import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
-import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
+import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.intellij.vm.creation.VMCreationDialog;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineComboBox;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.io.File;
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class VirtualMachineConnectionConfigurable {
-    private final Project project;
+    private final SshTargetWizardModel model;
     @Getter
     private JPanel contentPanel;
     private SubscriptionComboBox cbSubscription;
     private VirtualMachineComboBox cbVirtualMachine;
     private JTextField txtUsername;
 
-    public VirtualMachineConnectionConfigurable(Project project) {
-        this.project = project;
+    public VirtualMachineConnectionConfigurable(SshTargetWizardModel model) {
+        this.model = model;
         this.$$$setupUI$$$();
         this.init();
     }
@@ -60,25 +42,26 @@ public class VirtualMachineConnectionConfigurable {
         cbVirtualMachine.addItemListener(this::onVirtualMachineChanged);
     }
 
-    public void apply(@Nonnull ConnectionData connectionData, Consumer<VirtualMachine> callback) throws CommitStepException {
+    public VirtualMachine apply() throws CommitStepException {
         final VirtualMachine vm = this.cbVirtualMachine.getValue();
         if (Objects.isNull(vm)) {
             throw new CommitStepException("no vm is selected.");
         }
+        this.model.getSubject().setDisplayName(vm.getName());
+        final ConnectionData connectionData = this.model.getConnectionData();
         connectionData.setUseExistingConfig(false);
         connectionData.setSavePassphrase(true);
         connectionData.setOpenSshAgentConnectionState(ConnectionData.OpenSshAgentConnectionState.NOT_STARTED);
         connectionData.setUsername(txtUsername.getText());
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final String hostIp = vm.getHostIp();
-            if (StringUtils.isBlank(hostIp)) {
-                AzureMessager.getMessager().alert("ssh is not enabled for the selected vm.");
-                return;
-            }
-            connectionData.setHost(Optional.of(hostIp).orElse(""));
-            callback.accept(vm);
-            connectionData.checkAgentConnection(project, ModalityState.any());
-        });
+//        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+        final String hostIp = vm.getHostIp();
+        if (StringUtils.isBlank(hostIp)) {
+            throw new CommitStepException("ssh is not enabled for the selected vm.");
+        }
+        connectionData.setHost(Optional.of(hostIp).orElse(""));
+        connectionData.checkAgentConnection(model.getProject(), ModalityState.any());
+        return vm;
+//        });
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
