@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.Resou
 import com.microsoft.azure.toolkit.intellij.vm.creation.VMCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
@@ -31,10 +32,23 @@ import java.util.stream.Collectors;
 
 public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
     private final List<VirtualMachine> draftItems = new ArrayList<>();
+    private Subscription subscription;
 
     @Override
     protected String getItemText(Object item) {
         return item instanceof VirtualMachine ? ((VirtualMachine) item).getName() : super.getItemText(item);
+    }
+
+    public void setSubscription(Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
+            return;
+        }
+        this.subscription = subscription;
+        if (subscription == null) {
+            this.clear();
+            return;
+        }
+        this.refreshItems();
     }
 
 //    @Nullable
@@ -47,14 +61,17 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
     @Nonnull
     @Override
     protected List<? extends VirtualMachine> loadItems() {
-        final List<VirtualMachine> groups = new ArrayList<>();
+        final List<VirtualMachine> vms = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(this.draftItems)) {
-            groups.addAll(new ArrayList<>(this.draftItems));
+            vms.addAll(new ArrayList<>(this.draftItems));
         }
-        final List<VirtualMachine> remoteGroups = Azure.az(AzureCompute.class).virtualMachines().stream()
-            .sorted(Comparator.comparing(VirtualMachine::getName)).collect(Collectors.toList());
-        groups.addAll(remoteGroups);
-        return groups;
+        if (Objects.nonNull(subscription)) {
+            final List<VirtualMachine> remoteVms = Azure.az(AzureCompute.class)
+                .virtualMachines(subscription.getId()).list().stream()
+                .sorted(Comparator.comparing(VirtualMachine::getName)).collect(Collectors.toList());
+            vms.addAll(remoteVms);
+        }
+        return vms;
     }
 
     private void showVirtualMachineCreationPopup() {

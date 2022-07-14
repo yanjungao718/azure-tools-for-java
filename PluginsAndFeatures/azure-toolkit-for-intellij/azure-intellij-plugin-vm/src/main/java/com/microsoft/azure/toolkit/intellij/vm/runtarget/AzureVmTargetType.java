@@ -8,7 +8,6 @@ import com.intellij.execution.target.TargetEnvironmentConfiguration;
 import com.intellij.execution.target.TargetEnvironmentRequest;
 import com.intellij.execution.target.TargetEnvironmentType;
 import com.intellij.execution.target.TargetPlatform;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.wizard.AbstractWizardStepEx;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.options.Configurable;
@@ -33,13 +32,7 @@ import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetLanguag
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.vm.runtarget.wizard.AzureVmTarget1ConnectionStep;
-import com.microsoft.azure.toolkit.intellij.vm.runtarget.wizard.AzureVmTarget2AuthStep;
-import com.microsoft.azure.toolkit.intellij.vm.runtarget.wizard.AzureVmTarget3IntrospectionStep;
-import com.microsoft.azure.toolkit.intellij.vm.runtarget.wizard.AzureVmTarget4ConfigureCustomToolStep;
-import com.microsoft.azure.toolkit.intellij.vm.runtarget.wizard.AzureVmTarget5LanguageStep;
 import kotlin.collections.CollectionsKt;
-import kotlin.jvm.internal.Intrinsics;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
@@ -52,8 +45,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @Getter
@@ -81,13 +74,12 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
         final SshTargetWizardModel model = new SshTargetWizardModel(project, config, data);
         model.setLanguageType$intellij_remoteRun(runtimeType);
         model.setCustomToolConfiguration$intellij_remoteRun(isCustomToolConfiguration);
-        return CollectionsKt.listOf(
-            new AzureVmTarget1ConnectionStep(config, model),
-            new AzureVmTarget2AuthStep(config, new SshTargetAuthStep(model)),
-            new AzureVmTarget3IntrospectionStep(config, new SshTargetIntrospectionStep(model)),
-            isCustomToolConfiguration ?
-                new AzureVmTarget4ConfigureCustomToolStep(config, new SshConfigureCustomToolStep(model)) :
-                new AzureVmTarget5LanguageStep(config, new SshTargetLanguageStep(model)));
+        final ArrayList<AbstractWizardStepEx> steps = new ArrayList<>(4);
+        steps.add(new AzureVmTargetConnectionStep(model, steps));
+        steps.add(new SshTargetAuthStep(model));
+        steps.add(new SshTargetIntrospectionStep(model));
+        steps.add(isCustomToolConfiguration ? new SshConfigureCustomToolStep(model) : new SshTargetLanguageStep(model));
+        return steps;
     }
 
     @Nonnull
