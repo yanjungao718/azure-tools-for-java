@@ -8,7 +8,6 @@ package com.microsoft.intellij.ui;
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
@@ -59,11 +58,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private AzureFileInput txtStorageExplorer;
 
     private AzureConfiguration originalConfig;
-    private final Project project;
-
-    public AzurePanel(Project project) {
-        this.project = project;
-    }
 
     @Override
     public void init() {
@@ -261,10 +255,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     }
 
     private void createUIComponents() {
-        this.funcCoreToolsPath = new FunctionCoreToolsCombobox(project, false);
+        this.funcCoreToolsPath = new FunctionCoreToolsCombobox(null, false);
+        this.funcCoreToolsPath.setPrototypeDisplayValue(StringUtils.EMPTY);
         this.txtStorageExplorer = new AzureFileInput();
         txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
-                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+                null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
     }
 }

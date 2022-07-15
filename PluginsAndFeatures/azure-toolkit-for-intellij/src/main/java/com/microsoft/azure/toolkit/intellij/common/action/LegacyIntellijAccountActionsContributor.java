@@ -67,8 +67,8 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
                 return ArrayUtils.isEmpty(openProjects) ? null : openProjects[0];
             });
             final AzureString title = OperationBundle.description("common.open_azure_settings");
-            AzureTaskManager.getInstance().runAndWait(new AzureTask<>(title, () ->
-                ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class)));
+            AzureTaskManager.getInstance().runLater(new AzureTask<>(title, () ->
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.class)));
         };
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
 
