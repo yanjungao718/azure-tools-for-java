@@ -5,9 +5,7 @@
 
 package com.microsoft.azuretools.core.mvp.model;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Deployment;
-import com.microsoft.azure.management.resources.fluentcore.arm.implementation.ManagerBase;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
 import com.microsoft.azure.management.resources.implementation.ResourceManager;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;

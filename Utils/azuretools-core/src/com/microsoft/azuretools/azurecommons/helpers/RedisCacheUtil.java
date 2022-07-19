@@ -5,9 +5,9 @@
 
 package com.microsoft.azuretools.azurecommons.helpers;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.implementation.RedisManager;
+import com.microsoft.azure.management.resources.implementation.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
@@ -47,7 +47,7 @@ public final class RedisCacheUtil {
     private static final String REQUIRE_PRICE_TIER = "Pricing tier cannot be null or empty.";
 
     public static LinkedHashMap<String, String> initSkus() {
-        LinkedHashMap<String, String> skus = new LinkedHashMap<String, String>();
+        final LinkedHashMap<String, String> skus = new LinkedHashMap<String, String>();
         skus.put(C0_BASIC_SKU, "BASIC0");
         skus.put(C1_BASIC_SKU, "BASIC1");
         skus.put(C2_BASIC_SKU, "BASIC2");
@@ -96,39 +96,41 @@ public final class RedisCacheUtil {
         }
     }
 
-    public static ProcessingStrategy doGetProcessor(Azure azure,
-            LinkedHashMap<String, String> skus,
-            String dnsNameValue, String selectedRegionValue,
-            String selectedResGrpValue,
-            String selectedPriceTierValue,
-            boolean noSSLPort,
-            boolean newResGrp) {
-        if (azure != null) {
-            RedisCacheCreator creator = new RedisCacheCreator(azure.redisCaches(),
-                    dnsNameValue,
-                    selectedRegionValue,
-                    selectedResGrpValue
-                    );
-            if (noSSLPort) {
-                if (newResGrp && canCreateNewResGrp(azure, selectedResGrpValue)) {
-                    //e.g. BASIC0NewNoSSL
-                    return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "NewNoSSL");
-                } else {
-                    return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "ExistingNoSSL");
-                }
+    public static ProcessingStrategy doGetProcessor(
+        String sid,
+        LinkedHashMap<String, String> skus,
+        String dnsNameValue, String selectedRegionValue,
+        String selectedResGrpValue,
+        String selectedPriceTierValue,
+        boolean noSSLPort,
+        boolean newResGrp) {
+        final RedisManager.Configurable configurable = RedisManager.configure();
+        final RedisManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t, sid));
+        final RedisCacheCreator creator = new RedisCacheCreator(azure.redisCaches(),
+            dnsNameValue,
+            selectedRegionValue,
+            selectedResGrpValue
+        );
+        if (noSSLPort) {
+            if (newResGrp && canCreateNewResGrp(sid, selectedResGrpValue)) {
+                //e.g. BASIC0NewNoSSL
+                return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "NewNoSSL");
             } else {
-                if (newResGrp && canCreateNewResGrp(azure, selectedResGrpValue)) {
-                    //e.g. BASIC0NewNoSSL
-                    return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "New");
-                } else {
-                    return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "Existing");
-                }
+                return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "ExistingNoSSL");
+            }
+        } else {
+            if (newResGrp && canCreateNewResGrp(sid, selectedResGrpValue)) {
+                //e.g. BASIC0NewNoSSL
+                return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "New");
+            } else {
+                return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "Existing");
             }
         }
-        return null;
     }
 
-    public static boolean canCreateNewResGrp(Azure azure, String resGrpName) {
+    public static boolean canCreateNewResGrp(final String sid, String resGrpName) {
+        final ResourceManager.Configurable configurable = ResourceManager.configure();
+        final ResourceManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t).withSubscription(sid));
         return (!azure.resourceGroups().checkExistence(resGrpName));
     }
 }
