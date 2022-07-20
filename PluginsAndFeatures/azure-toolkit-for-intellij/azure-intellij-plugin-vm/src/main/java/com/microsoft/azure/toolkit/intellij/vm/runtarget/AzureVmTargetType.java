@@ -32,7 +32,8 @@ import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetLanguag
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import kotlin.collections.CollectionsKt;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
@@ -67,6 +68,8 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
 
     @Nullable
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "vm.open_create_run_target_dialog", type = AzureOperation.Type.ACTION)
     @SuppressWarnings("KotlinInternalInJava")
     public List<AbstractWizardStepEx> createStepsForNewWizard(@Nonnull Project project, @Nonnull AzureVmTargetEnvironmentConfiguration config, @Nullable LanguageRuntimeType<?> runtimeType) {
         final boolean isCustomToolConfiguration = runtimeType instanceof CustomToolLanguageRuntimeType;
@@ -114,6 +117,8 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
 
     @Nonnull
     @Override
+    @ExceptionNotification
+    @AzureOperation(name = "vm.create_environment_request", type = AzureOperation.Type.ACTION)
     @SuppressWarnings("UnstableApiUsage")
     public TargetEnvironmentRequest createEnvironmentRequest(@Nonnull Project project, @Nonnull AzureVmTargetEnvironmentConfiguration config) {
         return new SshRemoteEnvironmentRequest(project, config, new TargetPlatform(Platform.UNIX));
