@@ -15,6 +15,8 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -25,6 +27,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -47,13 +50,13 @@ public class ResourceConnectionExplorer extends Tree {
     private Node<Project> buildRoot() {
         final ConnectionManager cm = this.project.getService(ConnectionManager.class);
         return new RootNode(project).lazy(false)
-                .view(new NodeView.Static("Resource Connections", AzureIcons.Common.AZURE.getIconPath()))
-                .addChildren(project -> Arrays.asList(ModuleManager.getInstance(project).getModules().clone()), (m, n) -> new ModuleNode(m).lazy(false)
-                        .view(new NodeView.Static(m.getName(), "/icons/module"))
-                        .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                        .addChildren(module -> cm.getConnectionsByConsumerId(module.getName()), (c, mn) -> new Node<>(c).lazy(false)
-                                .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
-                                .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
+            .view(new NodeView.Static("Resource Connections", AzureIcons.Common.AZURE.getIconPath()))
+            .addChildren(project -> Arrays.asList(ModuleManager.getInstance(project).getModules().clone()), (m, n) -> new ModuleNode(m).lazy(false)
+                .view(new NodeView.Static(m.getName(), "/icons/module"))
+                .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
+                .addChildren(module -> cm.getConnectionsByConsumerId(module.getName()), (c, mn) -> new Node<>(c).lazy(false)
+                    .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
+                    .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }
 
     private static class ModuleNode extends Node<Module> {
@@ -107,7 +110,13 @@ public class ResourceConnectionExplorer extends Tree {
     }
 
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
-        public static final String ID = "Azure Resource Connector";
+        public static final String ID = "Resource Connections";
+
+        @Override
+        public boolean shouldBeAvailable(@NotNull Project project) {
+            final ConnectionManager cm = project.getService(ConnectionManager.class);
+            return cm.getConnections().size() > 0;
+        }
 
         @Override
         @ExceptionNotification
@@ -127,9 +136,8 @@ public class ResourceConnectionExplorer extends Tree {
         public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
             final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowFactory.ID);
             assert toolWindow != null;
-            if (!toolWindow.isVisible()) {
-                toolWindow.show();
-            }
+            toolWindow.setAvailable(true);
+            toolWindow.activate(null);
         }
     }
 }
