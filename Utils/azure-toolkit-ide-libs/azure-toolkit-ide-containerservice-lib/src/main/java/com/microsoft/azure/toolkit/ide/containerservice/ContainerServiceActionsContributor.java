@@ -11,7 +11,9 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
 
@@ -29,9 +31,15 @@ public class ContainerServiceActionsContributor implements IActionsContributor {
     public static final Action.Id<KubernetesCluster> DOWNLOAD_CONFIG_USER = Action.Id.of("kubernetes.kubu_config_user");
     public static final Action.Id<KubernetesCluster> GET_CREDENTIAL_ADMIN = Action.Id.of("kubernetes.get_credential_admin");
     public static final Action.Id<KubernetesCluster> GET_CREDENTIAL_USER = Action.Id.of("kubernetes.get_credential_user");
-
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_KUBERNETES_SERVICE = Action.Id.of("group.create_kubernetes");
     @Override
     public void registerActions(AzureActionManager am) {
+        final ActionView.Builder createClusterView = new ActionView.Builder("Kubernetes service")
+                .title(s -> Optional.ofNullable(s).map(r ->
+                        description("group.create_kubernetes.group", ((ResourceGroup) r).getName())).orElse(null))
+                .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_KUBERNETES_SERVICE, new Action<>(GROUP_CREATE_KUBERNETES_SERVICE, createClusterView));
+
         final ActionView.Builder adminConfigView = new ActionView.Builder("Download Kubeconfig (Admin)")
                 .title(s -> Optional.ofNullable(s).map(r -> description("kubernetes.kubu_config_admin.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isRunning());
@@ -86,6 +94,9 @@ public class ContainerServiceActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(AGENT_POOL_ACTIONS, agentPoolGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_KUBERNETES_SERVICE);
     }
 
     @Override

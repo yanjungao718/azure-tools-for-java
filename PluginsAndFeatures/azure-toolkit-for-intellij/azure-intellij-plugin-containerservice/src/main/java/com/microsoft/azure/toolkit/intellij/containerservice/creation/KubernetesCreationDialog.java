@@ -149,7 +149,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         buttonGroup.add(autoScaleRadioButton);
         // todo: add validator for k8s name
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
-        this.cbResourceGroup.addItemListener(e -> this.txtName.onDocumentChanged()); // trigger validation after resource group changed
+        this.cbResourceGroup.addItemListener(e -> this.txtName.validateValueAsync()); // trigger validation after resource group changed
         this.cbRegion.addItemListener(e -> this.cbKubernetesVersion.refreshItems());
 
         this.manualRadioButton.addItemListener(e -> toggleScaleMethod(!manualRadioButton.isSelected()));
@@ -199,7 +199,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             this.cbResourceGroup.setSubscription(subscription);
             this.cbRegion.setSubscription(subscription);
             this.cbKubernetesVersion.refreshItems();
-            this.txtName.onDocumentChanged(); // trigger validation after subscription changed
+            this.txtName.validateValueAsync(); // trigger validation after subscription changed
         }
     }
 
@@ -236,7 +236,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         final ResourceGroup resourceGroup = cbResourceGroup.getValue();
         if (ObjectUtils.allNotNull(subscription, resourceGroup)) {
             final KubernetesCluster kubernetesCluster = Azure.az(AzureContainerService.class).kubernetes(subscription.getId()).get(name, resourceGroup.getName());
-            if (!kubernetesCluster.exists()) {
+            if (kubernetesCluster != null && kubernetesCluster.exists()) {
                 return AzureValidationInfo.error(AzureMessageBundle.message("kubernetes.cluster.name.validate.exist").toString(), txtName);
             }
         }

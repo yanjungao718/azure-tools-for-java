@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.containerservice.AzureContainerService;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesClusterDraft;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesClusterModule;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 
@@ -39,10 +40,11 @@ public class CreateKubernetesServiceAction {
         });
     }
 
-    public static KubernetesClusterDraft.Config getDefaultConfig(){
+    public static KubernetesClusterDraft.Config getDefaultConfig(final ResourceGroup resourceGroup){
         final KubernetesClusterDraft.Config config = new KubernetesClusterDraft.Config();
         final String name = String.format("kubernetes-service-%s", Utils.getTimestamp());
         config.setName(name);
+        config.setResourceGroup(resourceGroup);
         config.setDnsPrefix(String.format("%s-dns", name));
         config.setMinVMCount(3);
         config.setMaxVMCount(5);

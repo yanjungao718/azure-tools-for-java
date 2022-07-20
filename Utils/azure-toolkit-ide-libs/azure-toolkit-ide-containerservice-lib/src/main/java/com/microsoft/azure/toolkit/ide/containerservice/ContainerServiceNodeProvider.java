@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.containerservice.AzureContainerService;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
-import com.microsoft.azure.toolkit.lib.containerservice.KubernetesClusterAgentPool;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +33,7 @@ public class ContainerServiceNodeProvider implements IExplorerNodeProvider {
 
     @Override
     public boolean accept(@NotNull Object data, @Nullable Node<?> parent, ViewType type) {
-        return data instanceof AzureContainerService || data instanceof KubernetesCluster || data instanceof KubernetesClusterAgentPool;
+        return data instanceof AzureContainerService || data instanceof KubernetesCluster;
     }
 
     @Nullable
@@ -53,16 +52,17 @@ public class ContainerServiceNodeProvider implements IExplorerNodeProvider {
                     .view(new AzureResourceLabelView<>(server))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
                     .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
-                    .actions(ContainerServiceActionsContributor.CLUSTER_ACTIONS)
-                    .addChildren(cluster -> cluster.agentPools().list(), (agentPool, clusterNode) -> this.createNode(agentPool, clusterNode, manager));
-        } else if (data instanceof KubernetesClusterAgentPool) {
-            final KubernetesClusterAgentPool server = (KubernetesClusterAgentPool) data;
-            return new Node<>(server)
-                    .view(new AzureResourceLabelView<>(server))
-                    .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
-                    .actions(ContainerServiceActionsContributor.AGENT_POOL_ACTIONS);
+                    .actions(ContainerServiceActionsContributor.CLUSTER_ACTIONS);
+//                    .addChildren(cluster -> cluster.agentPools().list(), (agentPool, clusterNode) -> this.createNode(agentPool, clusterNode, manager));
         }
+//        else if (data instanceof KubernetesClusterAgentPool) {
+//            final KubernetesClusterAgentPool server = (KubernetesClusterAgentPool) data;
+//            return new Node<>(server)
+//                    .view(new AzureResourceLabelView<>(server))
+//                    .inlineAction(ResourceCommonActionsContributor.PIN)
+//                    .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
+//                    .actions(ContainerServiceActionsContributor.AGENT_POOL_ACTIONS);
+//        }
         return null;
     }
 }

@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.containerservice.creation.CreateKube
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.containerservice.AzureContainerService;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -25,8 +26,12 @@ public class IntelliJContainerServiceActionsContributor implements IActionsContr
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> serviceCondition = (r, e) -> r instanceof AzureContainerService;
-        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateKubernetesServiceAction.create(e.getProject(), getDefaultConfig());
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateKubernetesServiceAction.create(e.getProject(), getDefaultConfig(null));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, serviceCondition, handler);
+
+        final BiConsumer<ResourceGroup, AnActionEvent> groupCreateHandler = (r, e) ->
+                CreateKubernetesServiceAction.create(e.getProject(), getDefaultConfig(r));
+        am.registerHandler(ContainerServiceActionsContributor.GROUP_CREATE_KUBERNETES_SERVICE, (r, e) -> true, groupCreateHandler);
 
         final BiPredicate<KubernetesCluster, AnActionEvent> clusterCondition = (r, e) -> r instanceof KubernetesCluster;
         am.registerHandler(ContainerServiceActionsContributor.GET_CREDENTIAL_USER, clusterCondition, (c, e) ->
