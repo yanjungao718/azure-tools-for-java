@@ -6,19 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.vm.runtarget;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.remote.RemoteCredentials;
 import com.intellij.ssh.config.unified.SshConfig;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetEnvironmentConfiguration;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetEnvironmentConfigurationBase;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.TempSshTargetEnvironmentConfigurationBase;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Optional;
 
 public class AzureVmTargetEnvironmentConfiguration extends SshTargetEnvironmentConfiguration {
 

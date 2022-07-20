@@ -11,7 +11,6 @@ import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.ConnectionData;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineComboBox;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import lombok.Getter;
