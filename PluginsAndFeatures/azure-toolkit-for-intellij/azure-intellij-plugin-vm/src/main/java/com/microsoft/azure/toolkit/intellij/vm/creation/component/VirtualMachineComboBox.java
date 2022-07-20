@@ -59,6 +59,7 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
             final List<VirtualMachine> remoteVms = Azure.az(AzureCompute.class)
                 .virtualMachines(subscription.getId()).list().stream()
                 .sorted(Comparator.comparing(VirtualMachine::getName)).collect(Collectors.toList());
+            remoteVms.parallelStream().forEach(v -> v.getHostIp()); // pre-load host ip
             vms.addAll(remoteVms);
         }
         return vms;
