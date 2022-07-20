@@ -38,7 +38,9 @@ public class GetKubuCredentialAction {
     private static void mergeConfigToKubConfig(File newConfigFile) throws IOException {
         final File configFile = Path.of(System.getProperty("user.home"), KubeConfig.KUBEDIR, KubeConfig.KUBECONFIG).toFile();
         if (!configFile.exists() || configFile.getTotalSpace() == 0) {
-
+            FileUtils.copyFile(newConfigFile, configFile);
+            AzureMessager.getMessager().info(AzureString.format("Kubeconfig has been saved to %s", configFile.getAbsolutePath()));
+            return;
         }
         final KubeConfig origin = KubeConfig.loadKubeConfig(new FileReader(configFile));
         final ArrayList<Object> users = origin.getUsers();
