@@ -5,7 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.containerservice.actions;
 
+import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.options.ex.ConfigurableExtensionPointUtil;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.FileChooser;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -16,8 +18,10 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
@@ -42,7 +46,14 @@ public class DownloadKubuConfigAction {
         }
     }
 
-    private static Action getOpenKubernetesAction(@Nonnull Project project, @Nonnull File file) {
+    @Nullable
+    private static Action<?> getOpenKubernetesAction(@Nonnull Project project, @Nonnull File file) {
+        final Configurable kubernetes = ConfigurableExtensionPointUtil.getConfigurables(project, true).stream()
+                .filter(configurable -> StringUtils.equals(configurable.getDisplayName(), "Kubernetes"))
+                .findFirst().orElse(null);
+        if (kubernetes == null) {
+            return null;
+        }
         final Consumer<Void> consumer = ignore -> {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(file.getAbsolutePath()), null);
             AzureTaskManager.getInstance().runLater(() -> ShowSettingsUtil.getInstance().showSettingsDialog(project, "Kubernetes"));
