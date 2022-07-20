@@ -43,6 +43,8 @@ import java.util.regex.Pattern;
 public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft.Config> implements AzureForm<KubernetesClusterDraft.Config> {
     private static final Pattern KUBERNETES_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]([\\w-]*[a-zA-Z0-9])?$");
     private static final Pattern DNS_NAME_PREFIX_PATTERN = Pattern.compile("^[a-zA-Z0-9]([a-zA-Z0-9-]{0,52}[a-zA-Z0-9])?$");
+    public static final int MAX_NODE_COUNT = 1000;
+    public static final int MIN_NODE_COUNT = 1;
 
     private JPanel pnlRoot;
     private JLabel lblSubscription;
@@ -100,11 +102,11 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         result.setKubernetesVersion(cbKubernetesVersion.getValue());
         result.setSize(cbNodeSize.getValue());
         if (autoScaleRadioButton.isSelected()) {
-            result.setVmCount(Integer.valueOf(txtMinNodeCount.getValue()));
-            result.setMinVMCount(Integer.valueOf(txtMinNodeCount.getValue()));
-            result.setMaxVMCount(Integer.valueOf(txtMaxNodeCount.getValue()));
+            result.setVmCount(txtMinNodeCount.getValue());
+            result.setMinVMCount(txtMinNodeCount.getValue());
+            result.setMaxVMCount(txtMaxNodeCount.getValue());
         } else {
-            result.setVmCount(Integer.valueOf(txtNodeCount.getValue()));
+            result.setVmCount(txtNodeCount.getValue());
         }
         result.setDnsPrefix(txtDnsPrefix.getValue());
         return result;
@@ -155,8 +157,14 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         this.manualRadioButton.addItemListener(e -> toggleScaleMethod(!manualRadioButton.isSelected()));
         this.autoScaleRadioButton.addItemListener(e -> toggleScaleMethod(autoScaleRadioButton.isSelected()));
         this.autoScaleRadioButton.setSelected(true);
-        this.txtMinNodeCount.setMinValue(1);
-        this.txtMaxNodeCount.setMinValue(1);
+
+        this.txtNodeCount.setMinValue(MIN_NODE_COUNT);
+        this.txtNodeCount.setMaxValue(MAX_NODE_COUNT);
+        this.txtMinNodeCount.setMinValue(MIN_NODE_COUNT);
+        this.txtMaxNodeCount.setMaxValue(MAX_NODE_COUNT);
+        this.txtMaxNodeCount.setMinValue(MIN_NODE_COUNT);
+        this.txtMaxNodeCount.setMaxValue(MAX_NODE_COUNT);
+        this.txtMaxNodeCount.addValidator(this::validateNodeCount);
 
         this.lblSubscription.setLabelFor(cbSubscription);
         this.lblResourceGroup.setLabelFor(cbResourceGroup);
@@ -222,6 +230,15 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             }
         };
         this.cbNodeSize.setRequired(true);
+    }
+
+    public AzureValidationInfo validateNodeCount() {
+        final Integer min = txtMinNodeCount.getValue();
+        final Integer max = txtMaxNodeCount.getValue();
+        if (ObjectUtils.allNotNull(min, max) && min > max) {
+            return AzureValidationInfo.error("Min node count is higher than max node count", txtMaxNodeCount);
+        }
+        return AzureValidationInfo.success(txtMaxNodeCount);
     }
 
     private AzureValidationInfo validateKubernetesClusterName() {
