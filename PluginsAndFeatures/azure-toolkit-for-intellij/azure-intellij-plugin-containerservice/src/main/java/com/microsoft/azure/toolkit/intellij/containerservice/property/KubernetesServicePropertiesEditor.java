@@ -145,7 +145,7 @@ public class KubernetesServicePropertiesEditor extends AzResourcePropertiesEdito
         final Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(server.getSubscriptionId());
         subscriptionTextField.setText(subscription.getName());
         subscriptionIDTextField.setText(subscription.getId());
-        txtKubernetesVersion.setText(server.getVersion());
+        txtKubernetesVersion.setText(server.getKubernetesVersion());
         txtApiServerAddress.setText(server.getApiServerAddress());
 //
         final ContainerServiceNetworkProfile profile = server.getContainerServiceNetworkProfile();
