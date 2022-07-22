@@ -5,6 +5,11 @@
 package com.microsoft.azure.toolkit.intellij.containerservice.actions;
 
 import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.PluginsAdvertiser;
@@ -26,42 +31,51 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class KubernetesUtils {
-    private static final String KUBERNETES_PLUGIN_ID = "com.intellij.kubernetes";
-    private static final String REDHAT_KUBERNETES_PLUGIN_ID = "com.redhat.devtools.intellij.kubernetes";
+    public static final String KUBERNETES_PLUGIN_ID = "com.intellij.kubernetes";
+    public static final String REDHAT_KUBERNETES_PLUGIN_ID = "com.redhat.devtools.intellij.kubernetes";
     private static final Map<String, String> KUBERNETES_TERMINAL_MAP = new LinkedHashMap<>() {{
         put(KUBERNETES_PLUGIN_ID, "Services");
         put(REDHAT_KUBERNETES_PLUGIN_ID, "Kubernetes");
     }};
 
-    public static Action<?> getKubernetesConnectActions(@Nonnull final Project project) {
-        // if kubernetes plugin installed, return open view action
+    private static final Map<String, String> KUBERNETES_REFRESH_ACTION_MAP = new LinkedHashMap<>() {{
+        put(KUBERNETES_PLUGIN_ID, "Kubernetes.RefreshConfiguration");
+        put(REDHAT_KUBERNETES_PLUGIN_ID, "com.redhat.devtools.intellij.kubernetes.actions.RefreshAction");
+    }};
+
+    public static Action<?> getConnectKubernetesActions(@Nonnull final Project project) {
         final String installedPluginId = getInstalledKubernetesPlugin();
         if (StringUtils.isNoneBlank(installedPluginId)) {
-            return getOpenKubernetesPluginAction(project, installedPluginId);
+            return getOpenInKubernetesPluginAction(project, installedPluginId);
         } else {
             return getRecommendKubernetesPluginAction(project);
         }
     }
 
-    private static Action<?> getOpenKubernetesPluginAction(Project project, String installedPluginId) {
-        final Consumer<Void> consumer = ignore -> openKubernetesPluginToolWindow(project, installedPluginId);
-        final ActionView.Builder view = new ActionView.Builder("Open kubernetes plugin")
-                .title(ignore -> AzureString.fromString("Open IntelliJ kubernetes plugin")).enabled(ignore -> true);
+    private static Action<?> getOpenInKubernetesPluginAction(@Nonnull final Project project, String installedPluginId) {
+        final Consumer<Void> consumer = ignore -> openInKubernetesPlugin(project, installedPluginId);
+        final ActionView.Builder view = new ActionView.Builder("Open in kubernetes plugin")
+                .title(ignore -> AzureString.fromString("Open in kubernetes plugin")).enabled(ignore -> true);
         final Action.Id<Void> id = Action.Id.of("kubernetes.open_kubernetes_plugin");
         return new Action<>(id, consumer, view);
     }
 
-    private static void openKubernetesPluginToolWindow(Project project, String pluginId) {
+    private static void openInKubernetesPlugin(@Nonnull final Project project, String pluginId) {
+        final AnAction action = ActionManager.getInstance().getAction(KUBERNETES_REFRESH_ACTION_MAP.get(pluginId));
         final String windowId = KUBERNETES_TERMINAL_MAP.get(pluginId);
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(windowId);
-        if (toolWindow == null) {
-            AzureMessager.getMessager().warning(AzureString.format("Failed to get tool window of kubernetes plugin, please check whether plugin %s is enabled", pluginId));
-        } else {
-            AzureTaskManager.getInstance().runLater(toolWindow::show);
+        if (toolWindow == null || action == null) {
+            AzureMessager.getMessager().warning(AzureString.format("Failed to get kubernetes plugin, please check whether plugin %s is enabled", pluginId));
+            return;
         }
+        final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
+        AzureTaskManager.getInstance().runLater(() -> {
+            ActionUtil.invokeAction(action, context, "KubernetesNotification", null, null);
+            toolWindow.activate(null);
+        });
     }
 
-    private static Action getRecommendKubernetesPluginAction(Project project) {
+    private static Action<?> getRecommendKubernetesPluginAction(@Nonnull final Project project) {
         final String recommendPlugin = PlatformUtils.isIdeaUltimate() ? KUBERNETES_PLUGIN_ID : REDHAT_KUBERNETES_PLUGIN_ID;
         final PluginId recommendPluginId = PluginId.getId(recommendPlugin);
         final Consumer<Void> consumer = ignore -> AzureTaskManager.getInstance().runLater(() ->
