@@ -28,7 +28,7 @@ public class GetKubuCredentialAction {
         try {
             final byte[] content = isAdmin ? cluster.getAdminKubeConfig() : cluster.getUserKubeConfig();
             mergeConfigToKubConfig(content);
-            AzureMessager.getMessager().info(AzureString.format("Kubeconfig for %s has been merged to local kube config and as default context", cluster.getName()),
+            AzureMessager.getMessager().info(AzureString.format("Kubeconfig for %s has been merged to local kube config and set as default context", cluster.getName()),
                     null, KubernetesUtils.getKubernetesConnectActions(project));
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e);
@@ -77,7 +77,7 @@ public class GetKubuCredentialAction {
                 final Object existingObject = result.stream().filter(map -> (map instanceof Map) &&
                         StringUtils.equals(((Map<?, ?>) map).get("name").toString(), name)).findFirst().orElse(null);
                 if (existingObject != null) {
-                    AzureMessager.getMessager().info(AzureString.format("%s (%s) already exists, skipping", type, name));
+                    AzureMessager.getMessager().info(AzureString.format("skip merging as  %s (%s) already exists in kubeconfig", type, name));
                 } else {
                     result.add(o);
                 }
