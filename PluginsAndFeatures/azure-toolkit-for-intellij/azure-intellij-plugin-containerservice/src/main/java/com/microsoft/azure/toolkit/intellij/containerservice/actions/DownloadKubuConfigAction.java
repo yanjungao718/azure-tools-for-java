@@ -40,7 +40,7 @@ public class DownloadKubuConfigAction {
             final byte[] content = isAdmin ? cluster.getAdminKubeConfig() : cluster.getUserKubeConfig();
             FileUtils.writeByteArrayToFile(destFile, content);
             AzureMessager.getMessager().info(AzureString.format("Save kubernetes configuration file for %s to %s successfully.",
-                    cluster.getName(), destFile.getAbsolutePath()), "Azure", getOpenKubernetesAction(project, destFile));
+                    cluster.getName(), destFile.getAbsolutePath()), null, KubernetesUtils.getKubernetesConnectActions(project), getOpenKubernetesAction(project, destFile));
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e);
         }
