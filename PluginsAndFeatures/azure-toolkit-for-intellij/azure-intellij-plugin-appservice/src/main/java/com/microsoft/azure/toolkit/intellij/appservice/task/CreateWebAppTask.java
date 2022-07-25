@@ -21,8 +21,6 @@ import java.util.Optional;
 public class CreateWebAppTask implements Task {
     public static final String WEBAPP_NAME = "webAppName";
     public static final String WEBAPP_ID = "webappId";
-
-    public static final String RESOURCE_ID = "webappId";
     public static final String DEFAULT_WEB_APP_NAME = "defaultWebAppName";
     public static final String RESOURCE_GROUP = "resourceGroup";
     private final ComponentContext context;
@@ -51,7 +49,6 @@ public class CreateWebAppTask implements Task {
         webAppConfig.setRuntime(Runtime.LINUX_JAVA11);
         final WebApp webApp = WebAppService.getInstance().createWebApp(webAppConfig);
         context.applyResult(WEBAPP_ID, webApp.getId());
-        context.applyResult(RESOURCE_ID, webApp.getId());
         context.applyResult(RESOURCE_GROUP, webApp.getResourceGroupName());
     }
 

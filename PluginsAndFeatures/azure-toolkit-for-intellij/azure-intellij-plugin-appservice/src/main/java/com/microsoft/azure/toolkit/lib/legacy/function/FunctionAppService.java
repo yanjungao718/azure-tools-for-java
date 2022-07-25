@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
 import javax.annotation.Nonnull;
@@ -170,7 +171,9 @@ public class FunctionAppService {
         try {
             return new GetOrCreateApplicationInsightsTask(subscriptionId, resourceGroup, region, name).execute();
         } catch (final Throwable e) {
-            AzureMessager.getMessager().warning(AzureString.format("Failed to get/create application insights %s, caused by %s", name, e.getMessage()));
+            final Throwable rootCause = ExceptionUtils.getRootCause(e);
+            AzureMessager.getMessager().warning(AzureString.format("Failed to get/create application insights %s, caused by %s", name,
+                    StringUtils.firstNonBlank(rootCause.getMessage(), rootCause.getClass().getSimpleName())));
             return null;
         }
     }
