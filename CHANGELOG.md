@@ -97,7 +97,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Most Tool Windows will hide by default and show only when they are triggered by related actions.
 - An explicit search box is added on subscription dialog to filter subscriptions more conveniently.
   - support for toggling selection of subscriptions by `space` key even checkbox is not focused.
-- A loading spinner would show before the feedback page loading.
+- A loading spinner would show first when the feedback page is loading.
 - Entries of some common actions in `<Toolbar>/Tools/Azure` are also added into the gear actions group of Azure Explorer.
 
 ### Fixed

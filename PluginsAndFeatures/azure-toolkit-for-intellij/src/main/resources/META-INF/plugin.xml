@@ -46,7 +46,7 @@
                   <li>support for toggling selection of subscriptions by `space` key even checkbox is not focused.</li>
               </ul>
           </li>
-          <li>A loading spinner would show before the feedback page loading.</li>
+          <li>A loading spinner would show first when the feedback page is loading.</li>
           <li>Entries of some common actions in <code>&lt;Toolbar&gt;/Tools/Azure</code> are also added into the gear actions group of Azure Explorer.
           </li>
       </ul>
