@@ -102,6 +102,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Fixed
 - Error occurs if expand or download files/logs of a stopped function app.
+- Known CVE issues.
 
 ## 3.66.0
 ### Added

@@ -53,6 +53,7 @@
       <h4>Fixed</h4>
       <ul>
           <li>Error occurs if expand or download files/logs of a stopped function app.</li>
+          <li>Known CVE issues.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

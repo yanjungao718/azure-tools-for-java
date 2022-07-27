@@ -19,6 +19,7 @@
 
 ### Fixed
 - Error occurs if expand or download files/logs of a stopped function app.
+- Known CVE issues.
 
 ## 3.66.0
 ### Added
