@@ -5,7 +5,7 @@
     ```
     $ git clone https://github.com/microsoft/azure-maven-plugins.git
     $ cd azure-maven-plugins/azure-toolkit-libs
-    $ maven clean install
+    $ mvn clean install
     ```
 * Clone the repository with HTTPS or SSH:
     ```
