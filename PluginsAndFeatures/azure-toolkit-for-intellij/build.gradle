@@ -170,6 +170,7 @@ dependencyManagement {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-plugin-lib-java')
     compile project(':azure-sdk-reference-book')
     compile project(':azure-intellij-resource-connector-lib')
     compile project(':azure-intellij-resource-connector-aad')
