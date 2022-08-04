@@ -28,7 +28,6 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
-import com.microsoft.azure.toolkit.ide.appservice.util.JsonUtils;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
@@ -39,6 +38,7 @@ import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.Binding;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
@@ -105,7 +105,7 @@ public class FunctionUtils {
         if (StringUtils.isEmpty(key)) {
             return;
         }
-        final String appSettingsJsonValue = JsonUtils.toJsonString(appSettings);
+        final String appSettingsJsonValue = JsonUtils.toJson(appSettings);
         IntelliJSecureStore.getInstance().savePassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null, appSettingsJsonValue);
     }
 
@@ -356,7 +356,7 @@ public class FunctionUtils {
             json.put("bindings", lists.toArray());
         }
         file.getParentFile().mkdirs();
-        JsonUtils.writeJsonToFile(file, json);
+        JsonUtils.writeToJsonFile(file, json);
     }
 
     private static String stripExtraCharacters(String fileName) {
@@ -533,11 +533,10 @@ public class FunctionUtils {
     }
 
     private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
-        final JsonObject jsonObject = ObjectUtils.firstNonNull(JsonUtils.readJsonFile(target), new JsonObject());
-        final JsonObject valueObject = new JsonObject();
-        appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
-        jsonObject.add("Values", valueObject);
-        JsonUtils.writeJsonToFile(target, jsonObject);
+        final Map<String, Object> jsonObject = ObjectUtils.firstNonNull(JsonUtils.readFromJsonFile(target, Map.class), new HashMap<>());
+        final Map<String, Object> valueObject = new HashMap<>(appSettings);
+        jsonObject.put("Values", valueObject);
+        JsonUtils.writeToJsonFile(target, jsonObject);
     }
 
     private static boolean isModuleInTestScope(Module module) {
